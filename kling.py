@@ -37,6 +37,10 @@ ROOT = Path(__file__).parent
 PANELS = ROOT / "data" / "panels"
 
 BASE = os.environ.get("KLING_BASE", "https://api.klingai.com")
+# Twee manieren om je te legitimeren, afhankelijk van waar je sleutel vandaan komt:
+#   Kuaishou zelf  -> KLING_ACCESS_KEY + KLING_SECRET_KEY, waarmee we een JWT maken
+#   een tussenpartij -> KLING_API_KEY, één bearer-token dat we onveranderd meesturen
+# Staat het allebei ingevuld, dan wint de bearer: die is expliciet gekozen.
 MODEL = os.environ.get("KLING_MODEL", "kling-v2")
 # Sommige versies van de API heten het veld `model_name`, oudere `model`.
 # We sturen ze allebei; een onbekend veld wordt genegeerd.
@@ -85,9 +89,28 @@ def token(access_key, secret_key):
 
 
 def credentials():
+    bearer = os.environ.get("KLING_API_KEY", "").strip()
+    if bearer:
+        return ("bearer", bearer)
     ak = os.environ.get("KLING_ACCESS_KEY", "").strip()
     sk = os.environ.get("KLING_SECRET_KEY", "").strip()
-    return (ak, sk) if ak and sk else None
+    if ak and sk:
+        return ("jwt", ak, sk)
+    return None
+
+
+def auth_header():
+    creds = credentials()
+    if not creds:
+        raise KlingError("Geen Kling-sleutel ingesteld.")
+    if creds[0] == "bearer":
+        return "Bearer " + creds[1]
+    return "Bearer " + token(creds[1], creds[2])
+
+
+def mode():
+    creds = credentials()
+    return creds[0] if creds else "uit"
 
 
 def enabled():
@@ -99,16 +122,14 @@ def enabled():
 # --------------------------------------------------------------------------- #
 
 def _call(method, path, body=None):
-    creds = credentials()
-    if not creds:
-        raise KlingError("Geen Kling-sleutels ingesteld.")
+    header = auth_header()
     data = json.dumps(body).encode() if body is not None else None
     req = urllib.request.Request(
         BASE + path,
         data=data,
         method=method,
         headers={
-            "Authorization": "Bearer " + token(*creds),
+            "Authorization": header,
             "Content-Type": "application/json",
         },
     )
@@ -248,7 +269,8 @@ def check():
 
     print("basis   :", BASE)
     print("model   :", MODEL)
-    print("token   :", token(*credentials())[:32] + "…")
+    print("modus   :", mode(), "(bearer = losse sleutel, jwt = access+secret)")
+    print("header  :", auth_header()[:40] + "…")
     prompt = panel_prompt({
         "image": "a figure gliding high above dark mountain ridges at night",
         "palette": "crown",
