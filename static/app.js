@@ -15,6 +15,9 @@
   var episode = null, index = 0, voiceOn = false;
   var panelImages = {};   // paneelnummer -> pad naar de illustratie van Kling
   var kernVideo = null;   // {panel: nummer, src: pad, status: "busy"|"done"|"failed"}
+  var stemmen = {};       // paneelnummer -> opgenomen vertelstem
+  var filmpjes = {};      // paneelnummer -> gekochte video voor dat paneel
+  var speler = new Audio();
   var pollTimer = null;
 
   /* ---------------------------------------------------------------- velden */
@@ -107,12 +110,60 @@
 
   /* ----------------------------------------------------------------- stem */
 
+  /* De verteller. Vera's eigen stem (Violet) kan hier niet gebruikt worden:
+     avatarstemmen en voorleesstemmen zijn bij Runway twee losse verzamelingen.
+     Wat wel kan is de browser een vrouwenstem laten pakken in plaats van de
+     eerste de beste — dat is in het Nederlands vaak een man. */
+  var verteller = null;
+
+  var VROUWELIJK = ["fenna", "colette", "lotte", "saskia", "ellen", "google nederlands",
+                    "eva", "claire", "laura", "female", "vrouw"];
+  var MANNELIJK = ["frank", "maarten", "xander", "daan", "male", "man"];
+
+  function kiesVerteller() {
+    if (!("speechSynthesis" in window)) { return; }
+    var alle = window.speechSynthesis.getVoices() || [];
+    if (!alle.length) { return; }
+    var nl = alle.filter(function (v) { return (v.lang || "").toLowerCase().indexOf("nl") === 0; });
+    var kandidaten = nl.length ? nl : alle;
+
+    function scoor(v) {
+      var n = (v.name || "").toLowerCase();
+      for (var i = 0; i < VROUWELIJK.length; i++) { if (n.indexOf(VROUWELIJK[i]) !== -1) { return 2; } }
+      for (var k = 0; k < MANNELIJK.length; k++) { if (n.indexOf(MANNELIJK[k]) !== -1) { return 0; } }
+      return 1;   // onbekend: liever dit dan een stem waarvan we weten dat het een man is
+    }
+    kandidaten.sort(function (a, b) { return scoor(b) - scoor(a); });
+    verteller = kandidaten[0] || null;
+  }
+
+  if ("speechSynthesis" in window) {
+    kiesVerteller();
+    // De lijst is bij het laden vaak nog leeg en komt later binnen.
+    window.speechSynthesis.onvoiceschanged = kiesVerteller;
+  }
+
   function speak(text) {
-    if (!voiceOn || !("speechSynthesis" in window)) { return; }
+    if (!voiceOn) { return; }
+    // Is het paneel ingesproken door de echte verteller, dan die - altijd
+    // dezelfde stem, op elk apparaat.
+    if (stemmen[index]) {
+      try {
+        window.speechSynthesis && window.speechSynthesis.cancel();
+        speler.pause();
+        speler.src = stemmen[index];
+        speler.play().catch(function () { /* browser wil geen geluid; jammer */ });
+        return;
+      } catch (e) { /* val terug op de browserstem */ }
+    }
+    if (!("speechSynthesis" in window)) { return; }
     try {
       window.speechSynthesis.cancel();
       var u = new SpeechSynthesisUtterance(text);
-      u.lang = "nl-NL"; u.rate = 0.86; u.pitch = 0.95;
+      u.lang = "nl-NL";
+      if (verteller) { u.voice = verteller; }
+      // Iets lager en langzamer dan standaard: dit is een droom, geen mededeling.
+      u.rate = 0.84; u.pitch = 1.05;
       window.speechSynthesis.speak(u);
     } catch (e) { /* stil terugvallen op alleen tekst */ }
   }
@@ -124,11 +175,13 @@
     index = Math.max(0, Math.min(total - 1, n));
     var panel = episode.panels[index];
     stage.innerHTML = scene(panel);
+    // Een gekochte film: elk paneel beweegt.
+    var eigenFilm = filmpjes[index];
     // Het kernmoment: op dit ene paneel staat geen plaatje maar echte video.
-    if (kernVideo && kernVideo.panel === index && kernVideo.src) {
+    if (eigenFilm || (kernVideo && kernVideo.panel === index && kernVideo.src)) {
       var v = document.createElement("video");
       v.className = "kernmoment";
-      v.src = kernVideo.src;
+      v.src = eigenFilm || kernVideo.src;
       v.playsInline = true;
       v.loop = true;
       v.controls = false;
@@ -137,7 +190,7 @@
       v.play().catch(function () { v.muted = true; v.play().catch(function () {}); });
       var merk = document.createElement("span");
       merk.className = "kern-merk";
-      merk.textContent = "kernmoment";
+      merk.textContent = eigenFilm ? "film" : "kernmoment";
       stage.appendChild(merk);
       narration.textContent = panel.narration;
       counter.textContent = (index + 1) + " / " + total;
@@ -185,6 +238,15 @@
         Object.keys(state.images || {}).forEach(function (k) {
           if (!panelImages[k]) { panelImages[k] = state.images[k]; fresh = true; }
         });
+        if (state.film) {
+          // Een gekochte film vervangt alle panelen door bewegend beeld.
+          Object.keys(state.film).forEach(function (k) {
+            filmpjes[k] = state.film[k];
+          });
+        }
+        if (state.stem) {
+          Object.keys(state.stem).forEach(function (k) { stemmen[k] = state.stem[k]; });
+        }
         if (state.video_panel !== undefined) {
           var was = kernVideo && kernVideo.src;
           kernVideo = { panel: state.video_panel, src: state.video || null,
@@ -204,6 +266,9 @@
     episode = ep;
     panelImages = {};
     kernVideo = null;
+    stemmen = {};
+    filmpjes = {};
+    try { speler.pause(); } catch (e) { /* niets aan de hand */ }
     if (pollTimer) { clearTimeout(pollTimer); pollTimer = null; }
     if (ep.images_pending) { pollPanels(ep.number, 90); }
     el("title").textContent = ep.title;
@@ -234,6 +299,11 @@
       d2.textContent = "Deze droom staat nog op zichzelf. Vanaf je tweede of derde droom vormt het web zich.";
       threadsEl.appendChild(d2);
     }
+
+    el("extras").hidden = !ep.number;
+    el("extras").dataset.dream = ep.number || "";
+    el("extras-melding").textContent = "";
+    el("extras-melding").className = "extras-melding";
 
     el("reading-section").hidden = false;
     // De slotvraag krijgt een antwoordveld: zonder dat is het een doodlopende weg.
@@ -389,6 +459,36 @@
     if (e.target === input || !episode) { return; }
     if (e.key === "ArrowRight") { el("next").click(); }
     if (e.key === "ArrowLeft" && index > 0) { show(index - 1); }
+  });
+
+  // Losse aankopen: meer beeld bij deze droom, tegen tokens.
+  el("extras").addEventListener("click", function (e) {
+    var knop = e.target.closest ? e.target.closest(".koop") : null;
+    if (!knop) { return; }
+    var nummer = Number(el("extras").dataset.dream);
+    var melding = el("extras-melding");
+    melding.className = "extras-melding";
+    melding.textContent = "Bezig met aanvragen…";
+    knop.disabled = true;
+    fetch("/api/extra", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ dream: nummer, kind: knop.dataset.kind })
+    })
+      .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, body: d }; }); })
+      .then(function (res) {
+        if (!res.ok) { throw new Error(res.body.error || "Dat lukte niet."); }
+        melding.textContent = "Onderweg. Het duurt ongeveer een minuut per paneel; " +
+                              "je ziet het vanzelf verschijnen.";
+        toonAccount(res.body.account);
+        laadVerbruik();
+        pollPanels(nummer, 90);
+      })
+      .catch(function (err) {
+        melding.className = "extras-melding err";
+        melding.textContent = err.message;
+      })
+      .then(function () { knop.disabled = false; });
   });
 
   el("antwoord-op").addEventListener("click", function () {

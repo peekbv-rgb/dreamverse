@@ -9,6 +9,7 @@ Serveert de speler uit static/ en drie eindpunten:
     POST   /api/account                        -> pakket of saldo zetten (tijdelijk)
     POST   /api/profile      {"name": "..."}   -> naam onthouden
     POST   /api/answer                         -> antwoord op de slotvraag bewaren
+    POST   /api/extra                          -> losse aankoop met tokens
     GET    /api/episode/<nr>                   -> een eerdere aflevering terugkijken
     GET    /api/panels/<nr>                    -> de stand van het tekenwerk
     POST   /api/vera/session                   -> WebRTC-gegevens voor een gesprek
@@ -138,7 +139,7 @@ class Handler(SimpleHTTPRequestHandler):
             name = os.path.basename(self.path)
             target = kling.PANELS / name
             types = {".png": "image/png", ".jpg": "image/jpeg", ".webp": "image/webp",
-                     ".mp4": "video/mp4"}
+                     ".mp4": "video/mp4", ".mp3": "audio/mpeg"}
             if target.suffix.lower() not in types or not target.is_file():
                 return self.send_json({"error": "Niet gevonden."}, 404)
             blob = target.read_bytes()
@@ -169,6 +170,39 @@ class Handler(SimpleHTTPRequestHandler):
         if self.path == "/api/profile":
             payload = self.read_json() or {}
             return self.send_json(dreamverse.set_name(payload.get("name", "")))
+
+        if self.path == "/api/extra":
+            # Losse aankopen: het kernmoment op het beste model, of de hele
+            # aflevering als film. Eerst het saldo, dan pas het werk starten.
+            payload = self.read_json() or {}
+            soort = payload.get("kind", "")
+            try:
+                nummer = int(payload.get("dream", 0))
+                plans.check_extra(soort)
+            except plans.Refused as e:
+                return self.send_json({"error": str(e), "need_tokens": e.need_tokens}, 402)
+            except (ValueError, TypeError):
+                return self.send_json({"error": "Ongeldige aanvraag."}, 400)
+
+            episode = dreamverse.load_episode(nummer)
+            if not episode:
+                return self.send_json({"error": "Die aflevering is er niet meer."}, 404)
+
+            import video
+            if soort == "kernmoment_top":
+                gestart = video.render_async(nummer, episode["panels"],
+                                             episode.get("key_panel"), plans.VIDEO["top"])
+            elif soort == "film_snel":
+                gestart = video.film_async(nummer, episode["panels"], plans.VIDEO["snel"])
+            elif soort == "film_top":
+                gestart = video.film_async(nummer, episode["panels"], plans.VIDEO["top"])
+            else:
+                gestart = False
+
+            if not gestart:
+                return self.send_json({"error": "Dit kon niet gestart worden."}, 500)
+            plans.charge_extra(soort)
+            return self.send_json({"ok": True, "kind": soort, "account": plans.account()})
 
         if self.path == "/api/answer":
             payload = self.read_json() or {}

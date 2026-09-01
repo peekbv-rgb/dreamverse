@@ -201,6 +201,25 @@ def check_call():
     )
 
 
+def check_extra(soort):
+    """Mag deze losse aankoop? Geeft het aantal tokens terug dat het kost."""
+    if soort not in EXTRAS:
+        raise Refused("Dat is niet te koop.")
+    prijs = EXTRAS[soort]["tokens"]
+    saldo = account()["tokens"]
+    if saldo < prijs:
+        raise Refused(
+            "{} kost {} tokens en je hebt er {}.".format(EXTRAS[soort]["naam"], prijs, saldo),
+            need_tokens=prijs - saldo)
+    return prijs
+
+
+def charge_extra(soort):
+    prijs = EXTRAS[soort]["tokens"]
+    add_tokens(-prijs)
+    return prijs
+
+
 def charge_dream(tokens):
     if tokens:
         add_tokens(-tokens)

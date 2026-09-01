@@ -112,6 +112,11 @@ def hero_video(number, index, instelling):
                     "eur": instelling.get("kost")})
 
 
+def narration(number, panelen, eur):
+    return _append({"kind": "narration", "who": _who(), "dream": number,
+                    "panels": panelen, "eur": round(eur, 4)})
+
+
 _sessions = {}
 
 
@@ -191,6 +196,8 @@ def summary():
         "panelen": round(totaal["panels"] * r["eur_per_panel"], 4),
         "video": round(sum(rec.get("eur") or 0 for rec in records
                            if rec.get("kind") == "hero_video"), 4),
+        "stem": round(sum(rec.get("eur") or 0 for rec in records
+                          if rec.get("kind") == "narration"), 4),
         "avatar": round(avatar, 4),
     }
     kosten["totaal"] = round(sum(kosten.values()), 4)

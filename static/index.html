@@ -12,8 +12,6 @@
 <body>
 
 <canvas id="achtergrond" aria-hidden="true"></canvas>
-<div class="golven" aria-hidden="true"></div>
-<div class="stralen" aria-hidden="true"></div>
 
 <div class="wrap">
 
@@ -76,6 +74,19 @@
     <div class="caption">
       <div class="bar" id="bar" aria-hidden="true"></div>
       <p class="narration" id="narration"></p>
+      <div class="extras" id="extras" hidden>
+        <span class="extras-kop">Meer van deze droom</span>
+        <button type="button" class="koop" data-kind="kernmoment_top">
+          Kernmoment op het beste model <b>10 tokens</b>
+        </button>
+        <button type="button" class="koop" data-kind="film_snel">
+          Hele aflevering als film <b>30 tokens</b>
+        </button>
+        <button type="button" class="koop" data-kind="film_top">
+          Als film, beste model <b>60 tokens</b>
+        </button>
+        <p class="extras-melding" id="extras-melding"></p>
+      </div>
       <div class="row">
         <button type="button" id="prev">Terug</button>
         <button type="button" class="primary" id="next">Verder</button>

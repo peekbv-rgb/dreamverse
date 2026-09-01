@@ -122,6 +122,34 @@ def _werk(number, panels, key_index, instelling):
     print("video: kernmoment van droom {} klaar ({})".format(number, instelling["model"]), flush=True)
 
 
+def _werk_alles(number, panels, instelling):
+    """Elk paneel apart animeren: de hele aflevering als film."""
+    _in_state(number, film_status="busy")
+    gemaakt = {}
+    for i in range(len(panels)):
+        try:
+            doel = PANELS / "{}-film-{}.mp4".format(number, i)
+            bron = render(number, panels, i, instelling)
+            bron.replace(doel)
+            gemaakt[str(i)] = "/panels/" + doel.name
+            _in_state(number, film=gemaakt)
+        except Exception as e:
+            print("video: paneel {} van droom {} mislukt: {}".format(i, number, e), flush=True)
+    import usage
+    for i in gemaakt:
+        usage.hero_video(number, int(i), instelling)
+    _in_state(number, film_status="done", film=gemaakt)
+    print("video: film van droom {} klaar ({} panelen)".format(number, len(gemaakt)), flush=True)
+
+
+def film_async(number, panels, instelling):
+    """De hele aflevering als film. Kost tokens, dus alleen op verzoek."""
+    if not instelling:
+        return False
+    threading.Thread(target=_werk_alles, args=(number, panels, instelling), daemon=True).start()
+    return True
+
+
 def render_async(number, panels, key_index, instelling):
     """Start het animeren op de achtergrond. Geeft meteen terug."""
     if not instelling or key_index is None:

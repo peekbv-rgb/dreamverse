@@ -19,6 +19,7 @@ from pathlib import Path
 
 import kling
 import plans
+import stem
 import usage
 
 ROOT = Path(__file__).parent
@@ -474,6 +475,8 @@ def create(dream):
         episode["images_pending"] = kling.render_async(
             number, episode["panels"], episode.get("key_panel"), instelling)
         episode["video_pending"] = bool(instelling)
+        # Inspreken heeft de beelden niet nodig en loopt er dus naast.
+        episode["voice_pending"] = stem.render_async(number, episode["panels"])
     else:
         episode["images_pending"] = False
         episode["video_pending"] = False

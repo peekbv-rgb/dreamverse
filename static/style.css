@@ -701,3 +701,22 @@ body::before { opacity: .55; }
   border-radius: 100px; padding: .3rem 1.1rem; margin: .3rem 0 0;
 }
 .seizoen::before { content: "Je zit in: "; font-style: normal; color: var(--muted); font-size: .8rem; }
+
+/* De statische lagen zijn eruit: die dekten de bewegende achtergrond toe.
+   Wat overblijft is het levende doek plus de geometrie erover. */
+body::before { display: none; }
+.golven, .golven-twee, .stralen { display: none; }
+body::after { opacity: .34; }
+#achtergrond { filter: blur(26px) saturate(1.6) brightness(1.2); z-index: -3; }
+
+/* Losse aankopen onder de speler */
+.extras { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; padding-top: .3rem; }
+.extras-kop { font-size: .64rem; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; color: var(--muted); width: 100%; }
+.koop {
+  background: rgba(43, 28, 74, .6); border-color: rgba(242, 198, 76, .45);
+  font-weight: 500; font-size: .8rem; display: inline-flex; gap: .5rem; align-items: baseline;
+}
+.koop b { color: var(--solar); font-weight: 700; }
+.koop[disabled] { opacity: .5; }
+.extras-melding { width: 100%; margin: .2rem 0 0; font-size: .84rem; color: var(--muted); }
+.extras-melding.err { color: #F5A08F; }
