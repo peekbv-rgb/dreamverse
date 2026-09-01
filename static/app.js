@@ -378,10 +378,29 @@
       });
   }
 
+  // De keuzelijst bij "Los te koop" vullen met je dromen.
+  function vulKeuzelijst(dreams) {
+    var kies = el("kies");
+    if (!kies) { return; }
+    kies.innerHTML = "";
+    dreams.forEach(function (d) {
+      var o = document.createElement("option");
+      o.value = d.n;
+      o.textContent = "Droom " + d.n + " — " + (d.title || d.text || "").slice(0, 40);
+      kies.appendChild(o);
+    });
+    if (!dreams.length) {
+      var leeg = document.createElement("option");
+      leeg.textContent = "nog geen dromen";
+      leeg.value = "";
+      kies.appendChild(leeg);
+    }
+  }
+
   function loadArchive() {
     fetch("/api/archive")
       .then(function (r) { return r.json(); })
-      .then(function (d) { renderArchive(d.dreams || []); })
+      .then(function (d) { renderArchive(d.dreams || []); vulKeuzelijst(d.dreams || []); })
       .catch(function () { /* archief is bijzaak; de app werkt zonder */ });
   }
 
@@ -461,12 +480,13 @@
     if (e.key === "ArrowLeft" && index > 0) { show(index - 1); }
   });
 
-  // Losse aankopen: meer beeld bij deze droom, tegen tokens.
-  el("extras").addEventListener("click", function (e) {
+  // Losse aankopen: meer beeld bij een droom, tegen tokens.
+  function koopKlik(e, nummerBron, meldingId) {
     var knop = e.target.closest ? e.target.closest(".koop") : null;
     if (!knop) { return; }
-    var nummer = Number(el("extras").dataset.dream);
-    var melding = el("extras-melding");
+    var nummer = Number(nummerBron());
+    if (!nummer) { return; }
+    var melding = el(meldingId);
     melding.className = "extras-melding";
     melding.textContent = "Bezig met aanvragen…";
     knop.disabled = true;
@@ -489,6 +509,13 @@
         melding.textContent = err.message;
       })
       .then(function () { knop.disabled = false; });
+  }
+
+  el("extras").addEventListener("click", function (e) {
+    koopKlik(e, function () { return el("extras").dataset.dream; }, "extras-melding");
+  });
+  document.querySelector(".kies-droom").addEventListener("click", function (e) {
+    koopKlik(e, function () { return el("kies").value; }, "kies-melding");
   });
 
   el("antwoord-op").addEventListener("click", function () {

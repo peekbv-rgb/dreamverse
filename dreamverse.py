@@ -145,7 +145,22 @@ def load_episode(number):
         with (EPISODES / "{}.json".format(number)).open(encoding="utf-8") as f:
             episode = json.load(f)
     except (FileNotFoundError, json.JSONDecodeError, OSError):
-        return None
+        # Dromen van voor het bewaren bestaan alleen nog als panelen op schijf.
+        # Daar valt genoeg uit af te leiden om er beeld bij te kunnen kopen.
+        panelen = sorted(kling.PANELS.glob("{}-[0-9].*".format(number)))
+        beelden = [p for p in panelen if p.suffix.lower() in (".png", ".jpg", ".webp")]
+        if not beelden:
+            return None
+        titel = next((x.get("title") for x in load_archive() if x.get("n") == number), None)
+        return {
+            "number": number,
+            "title": titel or "Droom {}".format(number),
+            "panels": [{"narration": "", "image": "", "palette": "crown", "motif": "expanse"}
+                       for _ in beelden],
+            "key_panel": min(2, len(beelden) - 1),
+            "threads": [], "why": "", "meaning": "", "future": "", "question": "",
+            "onvolledig": True,
+        }
     for d in load_archive():
         if d.get("n") == number and d.get("answer"):
             episode["answer"] = d["answer"]
