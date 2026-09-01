@@ -406,6 +406,16 @@
     if (reason) { guideLine.textContent = reason; }
   }
 
+  // Afbreken met een melding die blíjft staan. De oude versie liet hem na twee
+  // seconden verdwijnen, waardoor een mislukking eruitzag als "hij doet niets".
+  function staken(bericht) {
+    console.warn("vera:", bericht);
+    hangup();
+    statusEl.className = "status err";
+    statusEl.textContent = bericht;
+    guideLine.textContent = "Ik kon je niet horen.";
+  }
+
   async function callVera() {
     var btn = el("call");
     btn.disabled = true;
@@ -414,15 +424,30 @@
     veil(true);
     callStatus("Vera wordt wakker…");
 
+    // De verbinding moet beveiligd zijn, anders geeft de browser de microfoon
+    // niet vrij. localhost is de enige uitzondering.
+    if (!window.isSecureContext || !navigator.mediaDevices) {
+      return staken("Je browser geeft de microfoon alleen vrij op een beveiligde " +
+                    "verbinding (https). Op dit adres kan dat niet.");
+    }
+    if (typeof LivekitClient === "undefined") {
+      return staken("Het onderdeel dat de verbinding maakt is niet geladen. Ververs de pagina.");
+    }
+
     var stream;
     try {
       // Microfoon eerst, binnen de klik: browsers trekken de toestemming
       // anders in zodra er een await tussen zit.
       stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     } catch (e) {
-      callStatus("Zonder microfoon kan ze je niet horen.");
-      setTimeout(function () { hangup("Geen toegang tot je microfoon."); }, 2500);
-      return;
+      var uitleg = {
+        NotAllowedError: "Je hebt de microfoon geweigerd, of de browser blokkeert hem. " +
+                         "Klik op het slotje in de adresbalk en zet de microfoon op toestaan.",
+        NotFoundError: "Er is geen microfoon gevonden op dit apparaat.",
+        NotReadableError: "De microfoon is in gebruik door een ander programma.",
+        SecurityError: "De browser staat de microfoon hier niet toe."
+      }[e && e.name] || ("De microfoon kon niet worden geopend: " + (e && e.name ? e.name : "onbekende fout"));
+      return staken(uitleg);
     }
 
     var creds;
@@ -432,13 +457,15 @@
       if (!r.ok) { throw new Error(creds.error || "Verbinden mislukte."); }
     } catch (e) {
       stream.getTracks().forEach(function (t) { t.stop(); });
-      callStatus(e.message);
-      setTimeout(function () { hangup(e.message); }, 3000);
-      return;
+      return staken(e.message);
     }
 
     sessionId = creds.session_id;
     callStatus("Ze komt in beeld…");
+    if (!creds.server_url || !creds.token) {
+      stream.getTracks().forEach(function (t) { t.stop(); });
+      return staken("Runway gaf geen bruikbare verbindingsgegevens terug.");
+    }
 
     room = new LivekitClient.Room({ adaptiveStream: true, dynacast: true });
 
@@ -455,9 +482,10 @@
       micTrack = pub;
     } catch (e) {
       stream.getTracks().forEach(function (t) { t.stop(); });
-      callStatus("De verbinding kwam niet tot stand.");
-      setTimeout(function () { hangup("De verbinding kwam niet tot stand. Probeer het opnieuw."); }, 3000);
-      return;
+      console.error("vera: verbinden mislukte", e);
+      return staken("De verbinding met Vera kwam niet tot stand: " +
+                    ((e && e.message) || "onbekende fout") +
+                    ". Deze sessie is nu op; druk opnieuw op de knop voor een nieuwe.");
     }
 
     btn.textContent = "In gesprek";
