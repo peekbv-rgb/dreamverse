@@ -135,6 +135,19 @@ De server weigert met **402** en zegt erbij hoeveel tokens er tekortkomen.
 Afrekenen van een gesprek gebeurt ná afloop op werkelijk gesproken tijd, naar
 boven afgerond per begonnen minuut.
 
+## Op je telefoon kijken
+
+Start met `HOST=0.0.0.0` en open `http://<het ip van deze pc>:8000` op een
+toestel in hetzelfde netwerk. Windows Firewall laat poort 8000 niet vanzelf door;
+daar is eenmalig een regel voor nodig.
+
+**Wat daar niet werkt: de microfoon.** Browsers geven `getUserMedia` en
+spraakherkenning alleen op een beveiligde verbinding, en `localhost` is de enige
+uitzondering. Op `http://192.168.x.x` blijven *Inspreken* en *Praat met Vera*
+dus stil. Lezen, typen en de panelen werken wel. Wil je die twee op je telefoon,
+dan moet de app achter https staan — Render doet dat vanzelf, en `render.yaml`
+ligt klaar.
+
 ## Open punten
 
 - **Beantwoord:** een avatarminuut kost €0,18 en een gesprek van vijf minuten

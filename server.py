@@ -208,7 +208,33 @@ class Handler(SimpleHTTPRequestHandler):
         print("{} {}".format(self.address_string(), fmt % args), flush=True)
 
 
+def poort_al_bezet():
+    """Draait er al een server op deze poort?
+
+    Windows staat toe dat twee processen op dezelfde poort luisteren, en dan
+    beantwoordt de oudste de verzoeken — met oude code. Dat heeft hier drie keer
+    voor verwarrende uitkomsten gezorgd, dus weigeren we te starten.
+    """
+    import urllib.error
+    import urllib.request
+    try:
+        urllib.request.urlopen("http://127.0.0.1:{}/api/health".format(PORT), timeout=2)
+        return True
+    except urllib.error.HTTPError:
+        return True          # antwoordt iets, dus er zit iemand
+    except Exception:
+        return False
+
+
 if __name__ == "__main__":
+    if poort_al_bezet():
+        raise SystemExit("\n".join([
+            "Er luistert al iets op poort {}. Stop dat eerst, anders beantwoordt".format(PORT),
+            "de oude server je verzoeken met oude code. In PowerShell:",
+            "",
+            "  Get-CimInstance Win32_Process -Filter \"Name = 'python.exe'\" |",
+            "    Where-Object { $_.CommandLine -like '*server.py*' } | Stop-Process -Force",
+        ]))
     if not dreamverse.credentials_available():
         print("let op: geen inloggegevens — elke droom geeft de voorbeeldaflevering.", flush=True)
         print("        zet ANTHROPIC_API_KEY in .env, of draai: ant auth login", flush=True)

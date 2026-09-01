@@ -349,7 +349,7 @@
         laadVerbruik();
         laadAccount();
         statusEl.textContent = ep.demo
-          ? "Voorbeeldaflevering — er staat nog geen ANTHROPIC_API_KEY in .env."
+          ? (ep.demo_reason || "Voorbeeldaflevering.")
           : "Klaar. Dit was Droom " + ep.number + "; hij telt mee in je volgende duiding.";
         guideLine.textContent = "Kijk maar. Ik heb er iets van gemaakt.";
         player.scrollIntoView({ behavior: "smooth", block: "start" });

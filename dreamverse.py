@@ -267,12 +267,27 @@ def parse_episode(raw):
 # Schrijven
 # --------------------------------------------------------------------------- #
 
+def voorbeeldaflevering(reden):
+    """Wat we tonen als er niet geschreven kan worden.
+
+    Ligt er een met de hand geschreven exemplaar in data/handmade.json, dan die —
+    veel overtuigender om te laten zien dan de ingebouwde tekst. Altijd gemarkeerd
+    als demo, met de reden erbij, zodat niemand denkt dat dit zijn eigen droom is.
+    """
+    try:
+        with (DATA / "handmade.json").open(encoding="utf-8") as f:
+            episode = parse_episode(f.read())
+    except (FileNotFoundError, OSError, DreamverseError, json.JSONDecodeError):
+        episode = dict(DEMO_EPISODE)
+    episode["demo"] = True
+    episode["demo_reason"] = reden
+    return episode
+
+
 def write_episode(dream, archive, number, name=None):
     """Vraag Claude om de aflevering. Zonder sleutel: de voorbeeldaflevering."""
     if not credentials_available():
-        demo = dict(DEMO_EPISODE)
-        demo["demo"] = True
-        return demo
+        return voorbeeldaflevering("Er zijn geen inloggegevens; dit is een voorbeeldaflevering.")
 
     try:
         import anthropic
@@ -300,10 +315,12 @@ def write_episode(dream, archive, number, name=None):
         # Deze komt vaak genoeg voor om apart te benoemen: ingelogd zijn en
         # tegoed hebben zijn twee verschillende dingen.
         if "credit balance" in str(e).lower():
-            raise DreamverseError(
-                "Er staat geen tegoed op je Anthropic-account. Waardeer op via "
-                "console.anthropic.com onder Plans & Billing; een droom kost "
-                "ongeveer vijf cent.")
+            # Wel ingelogd, geen tegoed. De aflevering kan dan niet geschreven
+            # worden; we tonen de voorbeeldaflevering en zeggen erbij waarom.
+            return voorbeeldaflevering(
+                "Geen tegoed op je Anthropic-account, dus dit is een voorbeeldaflevering. "
+                "Waardeer op via console.anthropic.com onder Plans & Billing; "
+                "een droom kost ongeveer vijf cent.")
         raise DreamverseError("De API gaf een fout ({}). Probeer het later opnieuw.".format(e.status_code))
 
     if response.stop_reason == "refusal":

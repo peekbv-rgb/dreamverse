@@ -408,3 +408,31 @@ table.dagen td { font-variant-numeric: tabular-nums; }
 .account .schakel { margin-left: auto; flex-direction: row; gap: .4rem; align-items: center; }
 .account .schakel button { font-size: .74rem; padding: .3rem .8rem; }
 .account .schakel button[aria-pressed="true"] { border-color: var(--crown); color: var(--crown); }
+
+/* Telefoon. De gidskaart legt op een breed scherm alles op één regel; op een
+   smal scherm moet dat onder elkaar, anders valt de belknop buiten beeld. */
+@media (max-width: 640px) {
+  body { padding: 0 .9rem 4rem; }
+  header.top { padding-top: 2.5rem; }
+
+  .guide { flex-wrap: wrap; gap: .9rem; }
+  .guide .guide-text { flex: 1 1 60%; min-width: 0; }
+  .guide-line { font-size: 1.15rem; }
+
+  .who { margin-left: 0; flex: 1 1 100%; }
+  .who input { width: 100%; }
+  .call { width: 100%; margin-left: 0; text-align: center; }
+
+  /* Knoppenrijen: liever twee brede knoppen dan vier die inklappen. */
+  .composer .row button { flex: 1 1 auto; }
+  .composer .row .spacer { display: none; }
+
+  .account { gap: 1rem 1.2rem; }
+  .account .schakel { margin-left: 0; flex: 1 1 100%; flex-wrap: wrap; }
+
+  .caption .row .spacer { display: none; }
+  .meter-cel b { font-size: 1.6rem; }
+
+  /* Een tabel met vijf kolommen past niet; laat hem zelf schuiven. */
+  table.dagen { display: block; overflow-x: auto; white-space: nowrap; }
+}
