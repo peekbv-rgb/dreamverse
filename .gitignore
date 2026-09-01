@@ -1,0 +1,13 @@
+# Never commit credentials, and never a backup of them either. A stray copy
+# named .env.bak-nfd once reached GitHub through `git add -A` in another
+# project here, so the patterns below are deliberately wide.
+.env
+*.env
+.env.*
+*.env.*
+!.env.example
+
+# Runtime and build noise
+__pycache__/
+*.pyc
+run.log

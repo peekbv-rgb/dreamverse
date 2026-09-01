@@ -1,0 +1,26 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Nieuwe app</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root { color-scheme: light dark; }
+  body {
+    font: 16px/1.6 system-ui, sans-serif;
+    max-width: 40rem;
+    margin: 4rem auto;
+    padding: 0 1.5rem;
+  }
+  code { background: color-mix(in srgb, currentColor 10%, transparent); padding: .1em .3em; }
+</style>
+
+<h1>Nieuwe app</h1>
+<p>De server draait. <span id="status">verbinden…</span></p>
+<p>Frontend staat in <code>static/</code>, de server in <code>server.py</code>.</p>
+
+<script>
+  fetch("/api/health")
+    .then(r => r.json())
+    .then(d => document.getElementById("status").textContent =
+      d.ok ? "API antwoordt." : "API antwoordt, maar niet ok.")
+    .catch(() => document.getElementById("status").textContent = "API onbereikbaar.");
+</script>

@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: nieuwe-app
+    runtime: python
+    # Free sleeps after fifteen minutes and the next visitor waits thirty to
+    # sixty seconds on an empty page. Fine while building; switch to starter
+    # before anyone outside sees it.
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python server.py
+    envVars:
+      # Render injects PORT itself. HOST must be the external interface -
+      # loopback answers nothing from outside the container.
+      - key: HOST
+        value: 0.0.0.0
+      # Set these in the Render dashboard, not here.
+      - key: AUTH_USER
+        sync: false
+      - key: AUTH_PASSWORD
+        sync: false
