@@ -21,6 +21,7 @@ import time
 import httpx
 from runwayml import RunwayML
 
+import plans
 import usage
 
 RUNWAY_VERSION = "2024-11-06"
@@ -58,12 +59,13 @@ def client():
         return _client
 
 
-def create():
+def create(duur=None):
+    duur = duur or MAX_DURATION
     c = client()
     created = c.realtime_sessions.create(
         model="gwm1_avatars",
         avatar={"type": "custom", "avatar_id": character_id()},
-        max_duration=MAX_DURATION,
+        max_duration=duur,
     )
     return created.id
 
@@ -108,7 +110,12 @@ def consume(session_id, session_key):
 
 def end(session_id):
     """Sessie afsluiten zodat de teller stopt. Faalt stil: het is opruimwerk."""
-    usage.session_ended(session_id, MAX_DURATION)
+    rec = usage.session_ended(session_id, MAX_DURATION)
+    # Afrekenen op werkelijk gesproken tijd, pas als het gesprek voorbij is.
+    try:
+        plans.charge_call(rec.get("seconds", 0))
+    except Exception as e:
+        print("vera: afrekenen mislukte voor {}: {}".format(session_id, e), flush=True)
     try:
         client().realtime_sessions.delete(session_id)
         return True
@@ -122,7 +129,11 @@ def start():
     if not enabled():
         raise VeraError("Vera is niet aangesloten: zet RUNWAYML_API_SECRET en "
                         "RUNWAY_CHARACTER_ID in .env.")
-    session_id = create()
+    # Hoeveel mag deze beller? Weigeren gebeurt hier, vóór er een worker draait.
+    toegestaan, uit_tokens = plans.check_call()
+    duur = max(60, min(MAX_DURATION, int(toegestaan)))
+
+    session_id = create(duur)
     try:
         session_key = wait_until_ready(session_id)
         creds = consume(session_id, session_key)
@@ -137,5 +148,6 @@ def start():
         "server_url": creds.get("url") or creds.get("serverUrl") or creds.get("server_url"),
         "token": creds.get("token"),
         "room": creds.get("roomName"),
-        "max_duration": MAX_DURATION,
+        "max_duration": duur,
+        "uit_tokens": uit_tokens,
     }

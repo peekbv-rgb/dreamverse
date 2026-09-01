@@ -347,6 +347,7 @@
         input.value = "";
         loadArchive();
         laadVerbruik();
+        laadAccount();
         statusEl.textContent = ep.demo
           ? "Voorbeeldaflevering — er staat nog geen ANTHROPIC_API_KEY in .env."
           : "Klaar. Dit was Droom " + ep.number + "; hij telt mee in je volgende duiding.";
@@ -395,7 +396,7 @@
     if (sessionId) {
       // Afsluiten bij Runway, anders loopt de teller door.
       fetch("/api/vera/session/" + sessionId, { method: "DELETE" })
-        .then(laadVerbruik).catch(function () {});
+        .then(function () { laadVerbruik(); laadAccount(); }).catch(function () {});
       sessionId = null;
     }
     el("call-panel").hidden = true;
@@ -504,6 +505,46 @@
     })
     .catch(function () {});
 
+  /* ------------------------------------------------------ pakket en saldo */
+
+  function toonAccount(a) {
+    var op = a.dromen_over === 0 ? " op" : "";
+    var minuten = Math.floor(a.avatar_seconden_over / 60);
+    var html = "";
+    html += "<div class='" + op + "'><b>" + a.dromen_over + "</b><span>dromen over</span></div>";
+    html += "<div><b>" + a.tokens + "</b><span>tokens</span></div>";
+    html += "<div><b>" + (minuten + Math.floor(a.tokens / a.tokens_per_minuut)) +
+            "</b><span>minuten vera</span></div>";
+    html += "<div><b>" + a.plan_naam + "</b><span>pakket</span></div>";
+    html += "<div class='schakel'>";
+    ["gratis", "plus", "ultra"].forEach(function (p) {
+      html += "<button type='button' data-plan='" + p + "' aria-pressed='" +
+              (a.plan === p ? "true" : "false") + "'>" + p + "</button>";
+    });
+    html += "<button type='button' data-tokens='10'>+10 tokens</button></div>";
+    el("account").innerHTML = html;
+
+    el("account").querySelectorAll("[data-plan]").forEach(function (b) {
+      b.addEventListener("click", function () { zetAccount({ plan: b.dataset.plan }); });
+    });
+    el("account").querySelectorAll("[data-tokens]").forEach(function (b) {
+      b.addEventListener("click", function () { zetAccount({ tokens: 10 }); });
+    });
+  }
+
+  function zetAccount(body) {
+    fetch("/api/account", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    }).then(function (r) { return r.json(); }).then(toonAccount).catch(function () {});
+  }
+
+  function laadAccount() {
+    fetch("/api/account").then(function (r) { return r.json(); })
+      .then(toonAccount).catch(function () {});
+  }
+
   /* ----------------------------------------------------------- wat het kost */
 
   function euro(n) { return "€" + n.toFixed(2).replace(".", ","); }
@@ -555,6 +596,7 @@
   setupMic();
   loadArchive();
   laadVerbruik();
+  laadAccount();
   fetch("/api/health")
     .then(function (r) { return r.json(); })
     .then(function (d) {

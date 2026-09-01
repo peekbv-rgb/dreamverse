@@ -18,6 +18,7 @@ from datetime import date
 from pathlib import Path
 
 import kling
+import plans
 import usage
 
 ROOT = Path(__file__).parent
@@ -301,6 +302,9 @@ def create(dream):
     if len(dream) > 4000:
         raise DreamverseError("Dat is een lange droom. Vat hem samen in maximaal 4000 tekens.")
 
+    # Poortje vóór het geld uitgeven, niet erna.
+    kosten_tokens = plans.check_dream()
+
     with _lock:
         archive = load_archive()
         number = next_number(archive)
@@ -321,12 +325,20 @@ def create(dream):
         })
         save_archive(archive)
 
+    plans.charge_dream(kosten_tokens)
+    episode["tokens_charged"] = kosten_tokens
+
     u = episode.get("usage") or {}
     usage.episode(number, u.get("input_tokens", 0), u.get("output_tokens", 0),
                   demo=episode.get("demo"))
 
     # Het tekenwerk loopt op de achtergrond verder; de aflevering is al leesbaar.
-    episode["images_pending"] = kling.render_async(number, episode["panels"])
+    # In het gratis pakket blijft het bij de getekende composities.
+    if plans.panels_allowed():
+        episode["images_pending"] = kling.render_async(number, episode["panels"])
+    else:
+        episode["images_pending"] = False
+        episode["panels_locked"] = True
 
     return episode
 

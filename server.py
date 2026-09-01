@@ -5,6 +5,8 @@ Serveert de speler uit static/ en drie eindpunten:
     POST   /api/episode      {"dream": "..."}  -> de aflevering
     GET    /api/profile                        -> wie de dromer is
     GET    /api/usage                          -> wat het tot nu toe gekost heeft
+    GET    /api/account                        -> pakket, saldo en wat er over is
+    POST   /api/account                        -> pakket of saldo zetten (tijdelijk)
     POST   /api/profile      {"name": "..."}   -> naam onthouden
     GET    /api/panels/<nr>                    -> de stand van het tekenwerk
     POST   /api/vera/session                   -> WebRTC-gegevens voor een gesprek
@@ -29,6 +31,7 @@ from dotenv import load_dotenv
 import dreamverse
 import kling
 import vera
+import plans
 import usage
 
 ROOT = Path(__file__).parent
@@ -97,6 +100,8 @@ class Handler(SimpleHTTPRequestHandler):
             return self.send_json(dreamverse.load_profile())
         if self.path == "/api/usage":
             return self.send_json(usage.summary())
+        if self.path == "/api/account":
+            return self.send_json(plans.account())
         if self.path == "/api/archive":
             archive = sorted(dreamverse.load_archive(), key=lambda d: d.get("n", 0), reverse=True)
             return self.send_json({"dreams": archive})
@@ -140,6 +145,8 @@ class Handler(SimpleHTTPRequestHandler):
         if self.path == "/api/vera/session":
             try:
                 return self.send_json(vera.start())
+            except plans.Refused as e:
+                return self.send_json({"error": str(e), "need_tokens": e.need_tokens}, 402)
             except vera.VeraError as e:
                 return self.send_json({"error": str(e)}, 502)
             except Exception as e:
@@ -150,6 +157,19 @@ class Handler(SimpleHTTPRequestHandler):
             payload = self.read_json() or {}
             return self.send_json(dreamverse.set_name(payload.get("name", "")))
 
+        if self.path == "/api/account":
+            # Zolang er geen betaling is, worden pakket en saldo met de hand
+            # gezet. Dit eindpunt moet dicht voordat dit ergens publiek draait.
+            payload = self.read_json() or {}
+            try:
+                if payload.get("plan"):
+                    plans.set_plan(payload["plan"])
+                if payload.get("tokens") is not None:
+                    plans.add_tokens(int(payload["tokens"]))
+            except (plans.Refused, ValueError, TypeError) as e:
+                return self.send_json({"error": str(e)}, 400)
+            return self.send_json(plans.account())
+
         if self.path != "/api/episode":
             return self.send_json({"error": "Onbekend eindpunt."}, 404)
 
@@ -159,6 +179,8 @@ class Handler(SimpleHTTPRequestHandler):
 
         try:
             episode = dreamverse.create(payload.get("dream", ""))
+        except plans.Refused as e:
+            return self.send_json({"error": str(e), "need_tokens": e.need_tokens}, 402)
         except dreamverse.DreamverseError as e:
             return self.send_json({"error": str(e)}, 400)
         except Exception:

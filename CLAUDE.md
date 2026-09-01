@@ -39,7 +39,8 @@ Geen framework — dat houdt de deploy op één bestand, net als de andere proje
 | Afleveringen schrijven, archief, prompt | `dreamverse.py` |
 | Panelen als illustraties (optioneel) | `kling.py` |
 | Live gesprek met de avatar | `vera.py` |
-| Verbruik meten (geen limieten) | `usage.py`, `data/usage.jsonl` |
+| Verbruik meten | `usage.py`, `data/usage.jsonl` |
+| Pakketten, tokens en grenzen | `plans.py` |
 | Persona en kennisdocumenten | `persona/`, `knowledge/` |
 | Id's van gekoppelde documenten (**niet weggooien**) | `build/document-ids.json` |
 | HTTP en routes | `server.py` |
@@ -101,7 +102,11 @@ en het scheelt direct in de kostprijs per aflevering.
   op en moet er een nieuwe komen.
 - **Het archief is een bestand op schijf** en dus weg bij elke Render-deploy. Voor
   iets echts hoort daar een database.
-- **Geen accounts en geen betaling.** De prijslagen staan alleen als tekst in de UI.
+- **Geen betaling.** Pakket en tokensaldo staan in `data/profile.json` en worden
+  met de hand gezet via `POST /api/account`. **Dat eindpunt moet dicht voordat dit
+  ergens publiek draait** — nu kan iedereen zichzelf Ultra geven.
+- **Geen accounts.** Eén profiel per installatie. De verbruiksregels dragen al een
+  `who`-veld, zodat de cijfers straks niet opnieuw verzameld hoeven te worden.
 
 ## Vera bij Runway
 
@@ -113,6 +118,22 @@ id's mee die moeten blijven — ze staan in `build/document-ids.json`.
 Gekoppeld: `intuitief-dromen` en `soorten-dromen`. Met de persona erbij zit je op
 11.864 tekens van de 100.000. Boven die grens gaat de avatar zwijgen zonder dat
 iets een fout meldt.
+
+## Wat er in de pakketten zit
+
+| | prijs | dromen/maand | panelen | avatar |
+|---|---|---|---|---|
+| Gratis | € 0 | 3 | nee, alleen de getekende composities | alleen met tokens |
+| Plus | € 4,99 | 10 | ja | alleen met tokens |
+| Ultra | € 17,99 | 30 | ja | 10 minuten inbegrepen |
+
+Eén token is € 0,25. Een avatarminuut kost 2 tokens (kostprijs € 0,18, dus 64%
+marge), een extra droom kost er ook 2. De avatar zit bewust in géén enkel pakket
+onbeperkt: bij € 4,99 is één gesprek van vijf minuten al een vijfde van de omzet.
+
+De server weigert met **402** en zegt erbij hoeveel tokens er tekortkomen.
+Afrekenen van een gesprek gebeurt ná afloop op werkelijk gesproken tijd, naar
+boven afgerond per begonnen minuut.
 
 ## Open punten
 

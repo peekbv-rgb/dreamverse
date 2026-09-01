@@ -391,3 +391,20 @@ table.dagen th, table.dagen td { text-align: right; padding: .35rem .5rem; borde
 table.dagen th:first-child, table.dagen td:first-child { text-align: left; }
 table.dagen th { color: var(--muted); font-weight: 500; font-size: .7rem; letter-spacing: .12em; text-transform: uppercase; }
 table.dagen td { font-variant-numeric: tabular-nums; }
+
+/* Pakket en saldo */
+.account {
+  display: flex; flex-wrap: wrap; gap: 1.4rem; align-items: baseline;
+  background: var(--panel); backdrop-filter: blur(10px);
+  border: 1px solid var(--line); border-radius: 14px; padding: .9rem 1.2rem;
+}
+.account div { display: flex; flex-direction: column; gap: .1rem; }
+.account b {
+  font-family: var(--display); font-weight: 300; font-size: 1.5rem; line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.account span { font-size: .64rem; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+.account .op b { color: var(--sacral); }
+.account .schakel { margin-left: auto; flex-direction: row; gap: .4rem; align-items: center; }
+.account .schakel button { font-size: .74rem; padding: .3rem .8rem; }
+.account .schakel button[aria-pressed="true"] { border-color: var(--crown); color: var(--crown); }
