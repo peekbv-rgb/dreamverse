@@ -9,6 +9,7 @@ Serveert de speler uit static/ en drie eindpunten:
     POST   /api/account                        -> pakket of saldo zetten (tijdelijk)
     POST   /api/profile      {"name": "..."}   -> naam onthouden
     POST   /api/answer                         -> antwoord op de slotvraag bewaren
+    GET    /api/episode/<nr>                   -> een eerdere aflevering terugkijken
     GET    /api/panels/<nr>                    -> de stand van het tekenwerk
     POST   /api/vera/session                   -> WebRTC-gegevens voor een gesprek
     DELETE /api/vera/session/<id>              -> gesprek afsluiten
@@ -113,6 +114,16 @@ class Handler(SimpleHTTPRequestHandler):
                 "kling": kling.enabled(),
                 "vera": vera.enabled(),
             })
+        if self.path.startswith("/api/episode/"):
+            # Terugkijken kost niets: de tekst staat op schijf en de beelden ook.
+            try:
+                number = int(self.path.rsplit("/", 1)[1])
+            except ValueError:
+                return self.send_json({"error": "Onbekende aflevering."}, 400)
+            episode = dreamverse.load_episode(number)
+            if episode is None:
+                return self.send_json({"error": "Die aflevering is er niet meer."}, 404)
+            return self.send_json({"episode": episode})
         if self.path.startswith("/api/panels/"):
             try:
                 number = int(self.path.rsplit("/", 1)[1])

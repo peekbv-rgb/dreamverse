@@ -266,8 +266,40 @@
       var no = document.createElement("span"); no.className = "no"; no.textContent = "Droom " + d.n;
       var txt = document.createElement("span"); txt.className = "txt"; txt.textContent = d.title || d.text;
       row.appendChild(no); row.appendChild(txt);
+      row.tabIndex = 0;
+      row.title = "Terugkijken";
+      row.addEventListener("click", function () { herbekijk(d.n); });
+      row.addEventListener("keydown", function (e) {
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); herbekijk(d.n); }
+      });
       archiveEl.appendChild(row);
     });
+  }
+
+  // Terugkijken kost niets: tekst, panelen en video staan al op de schijf.
+  function herbekijk(nummer) {
+    statusEl.className = "status";
+    statusEl.textContent = "Droom " + nummer + " terughalen…";
+    fetch("/api/episode/" + nummer)
+      .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, body: d }; }); })
+      .then(function (res) {
+        if (!res.ok) { throw new Error(res.body.error || "Terughalen lukte niet."); }
+        var ep = res.body.episode;
+        render(ep);
+        if (ep.answer) {
+          el("antwoord").value = ep.answer;
+          el("antwoord-blok").classList.add("bewaard");
+          el("antwoord-uitleg").textContent = "Dit antwoord telt mee in je volgende duiding.";
+        }
+        // De beelden en de video die er al zijn ophalen, zonder iets te maken.
+        pollPanels(nummer, 3);
+        statusEl.textContent = "Droom " + nummer + " — al eerder gemaakt, kost je niets.";
+        player.scrollIntoView({ behavior: "smooth", block: "start" });
+      })
+      .catch(function (e) {
+        statusEl.className = "status err";
+        statusEl.textContent = e.message;
+      });
   }
 
   function loadArchive() {

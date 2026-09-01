@@ -25,6 +25,7 @@ ROOT = Path(__file__).parent
 DATA = ROOT / "data"
 ARCHIVE = DATA / "archive.json"
 PROFILE = DATA / "profile.json"
+EPISODES = DATA / "episodes"
 
 MODEL = "claude-opus-5"
 MAX_ARCHIVE_IN_PROMPT = 15  # meer geschiedenis maakt de duiding niet beter, wel duurder
@@ -119,6 +120,35 @@ def set_name(name):
         profile["name"] = name
         save_profile(profile)
     return profile
+
+
+def save_episode(number, episode):
+    """Bewaar de hele aflevering, zodat hij terug te kijken is.
+
+    Zonder dit is een aflevering weg zodra je de pagina ververst, en zou iemand
+    opnieuw moeten betalen voor beelden die al gemaakt zijn. De panelen en de
+    video staan al als bestand in data/panels; hier komt de tekst bij die erbij
+    hoort.
+    """
+    EPISODES.mkdir(parents=True, exist_ok=True)
+    pad = EPISODES / "{}.json".format(number)
+    tmp = pad.with_suffix(".tmp")
+    with tmp.open("w", encoding="utf-8") as f:
+        json.dump(episode, f, ensure_ascii=False, indent=2)
+    tmp.replace(pad)
+
+
+def load_episode(number):
+    """Een eerder gemaakte aflevering terughalen. None als hij er niet is."""
+    try:
+        with (EPISODES / "{}.json".format(number)).open(encoding="utf-8") as f:
+            episode = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError, OSError):
+        return None
+    for d in load_archive():
+        if d.get("n") == number and d.get("answer"):
+            episode["answer"] = d["answer"]
+    return episode
 
 
 def answer_question(number, answer):
@@ -414,6 +444,8 @@ def create(dream):
     u = episode.get("usage") or {}
     usage.episode(number, u.get("input_tokens", 0), u.get("output_tokens", 0),
                   demo=episode.get("demo"))
+
+    save_episode(number, episode)
 
     # Het tekenwerk loopt op de achtergrond verder; de aflevering is al leesbaar.
     # In het gratis pakket blijft het bij de getekende composities.
