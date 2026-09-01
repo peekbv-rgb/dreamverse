@@ -3,6 +3,8 @@
 Serveert de speler uit static/ en drie eindpunten:
 
     POST   /api/episode      {"dream": "..."}  -> de aflevering
+    GET    /api/profile                        -> wie de dromer is
+    POST   /api/profile      {"name": "..."}   -> naam onthouden
     GET    /api/panels/<nr>                    -> de stand van het tekenwerk
     POST   /api/vera/session                   -> WebRTC-gegevens voor een gesprek
     DELETE /api/vera/session/<id>              -> gesprek afsluiten
@@ -89,6 +91,8 @@ class Handler(SimpleHTTPRequestHandler):
     def do_GET(self):
         if not self.guard():
             return
+        if self.path == "/api/profile":
+            return self.send_json(dreamverse.load_profile())
         if self.path == "/api/archive":
             archive = sorted(dreamverse.load_archive(), key=lambda d: d.get("n", 0), reverse=True)
             return self.send_json({"dreams": archive})
@@ -137,6 +141,10 @@ class Handler(SimpleHTTPRequestHandler):
             except Exception as e:
                 self.log_message("vera-sessie mislukte: %s", e)
                 return self.send_json({"error": "Vera kon niet opstarten."}, 502)
+
+        if self.path == "/api/profile":
+            payload = self.read_json() or {}
+            return self.send_json(dreamverse.set_name(payload.get("name", "")))
 
         if self.path != "/api/episode":
             return self.send_json({"error": "Onbekend eindpunt."}, 404)

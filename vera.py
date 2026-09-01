@@ -26,8 +26,9 @@ POLL_TIMEOUT = 60
 POLL_INTERVAL = 1.0
 
 # Harde bovengrens per gesprek. Een avatar die blijft draaien kost geld, en een
-# droom vertellen duurt geen half uur.
-MAX_DURATION = max(60, min(1800, int(os.environ.get("VERA_MAX_DURATION", "600"))))
+# droom vertellen duurt geen half uur. Runway kapt zelf af op deze waarde; de
+# klok in de browser is alleen om het zichtbaar te maken, geen beveiliging.
+MAX_DURATION = max(60, min(1800, int(os.environ.get("VERA_MAX_DURATION", "300"))))
 
 _client = None
 _lock = threading.Lock()

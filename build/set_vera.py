@@ -124,10 +124,25 @@ def main():
         update["voice"] = {"type": "runway-live-preset", "preset_id": stem}
 
     # document_ids staat er bewust niet in: meesturen zou de hele set vervangen.
-    c.avatars.update(VERA, **update)
+    #
+    # Het inhoudsfilter van Runway is grillig: exact dezelfde tekst wordt soms
+    # zes keer geweigerd en de zevende keer geaccepteerd, met een melding over
+    # inhoud terwijl er niets aan de inhoud mankeert. Dus blijven proberen.
+    import time
+    for poging in range(1, 16):
+        try:
+            c.avatars.update(VERA, **update)
+            if poging > 1:
+                print("(het filter weigerde %d keer voordat het lukte)" % (poging - 1))
+            break
+        except Exception as e:
+            if "cannot be used for an avatar" not in str(e):
+                sys.exit("Omzetten mislukte: %s" % e)
+            time.sleep(3)
+    else:
+        sys.exit("Vijftien keer geweigerd door het filter. Probeer het zo nog eens.")
 
     # Runway leest even achter op een schrijfactie, dus niet meteen aflezen.
-    import time
     time.sleep(2)
     print("Omgezet. Vera staat nu zo:\n")
     toon(c.avatars.retrieve(VERA))

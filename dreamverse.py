@@ -22,6 +22,7 @@ import kling
 ROOT = Path(__file__).parent
 DATA = ROOT / "data"
 ARCHIVE = DATA / "archive.json"
+PROFILE = DATA / "profile.json"
 
 MODEL = "claude-opus-5"
 MAX_ARCHIVE_IN_PROMPT = 15  # meer geschiedenis maakt de duiding niet beter, wel duurder
@@ -70,6 +71,32 @@ def save_archive(archive):
 
 def next_number(archive):
     return max((d.get("n", 0) for d in archive), default=0) + 1
+
+
+def load_profile():
+    try:
+        with PROFILE.open(encoding="utf-8") as f:
+            data = json.load(f)
+        return data if isinstance(data, dict) else {}
+    except (FileNotFoundError, json.JSONDecodeError, OSError):
+        return {}
+
+
+def save_profile(profile):
+    DATA.mkdir(exist_ok=True)
+    tmp = PROFILE.with_suffix(".tmp")
+    with tmp.open("w", encoding="utf-8") as f:
+        json.dump(profile, f, ensure_ascii=False, indent=2)
+    tmp.replace(PROFILE)
+
+
+def set_name(name):
+    name = (name or "").strip()[:60]
+    with _lock:
+        profile = load_profile()
+        profile["name"] = name
+        save_profile(profile)
+    return profile
 
 
 def clear_archive():
@@ -141,9 +168,16 @@ def _history(archive):
     )
 
 
-def build_prompt(dream, archive, number):
+def build_prompt(dream, archive, number, name=None):
+    wie = ""
+    if name:
+        # Spaarzaam gebruiken: een duiding die elke zin je naam noemt klinkt als
+        # een verkooptelefoontje, niet als iemand die naar je luistert.
+        wie = ("\n\nDe dromer heet {}. Gebruik die naam hooguit een of twee keer "
+               "in de hele aflevering, op een moment dat het iets doet.").format(name)
     return (
         RULES
+        + wie
         + "\n\n--- eerdere dromen ---\n"
         + _history(archive)
         + "\n\n--- de droom van vannacht (dit wordt Droom {}) ---\n".format(number)
@@ -211,7 +245,7 @@ def parse_episode(raw):
 # Schrijven
 # --------------------------------------------------------------------------- #
 
-def write_episode(dream, archive, number):
+def write_episode(dream, archive, number, name=None):
     """Vraag Claude om de aflevering. Zonder sleutel: de voorbeeldaflevering."""
     if not os.environ.get("ANTHROPIC_API_KEY"):
         demo = dict(DEMO_EPISODE)
@@ -231,7 +265,7 @@ def write_episode(dream, archive, number):
             # Middelhoge effort: dit is schrijfwerk, geen redeneerpuzzel, en het
             # scheelt direct in de kostprijs per aflevering.
             output_config={"effort": "medium"},
-            messages=[{"role": "user", "content": build_prompt(dream, archive, number)}],
+            messages=[{"role": "user", "content": build_prompt(dream, archive, number, name)}],
         )
     except anthropic.RateLimitError:
         raise DreamverseError("Te veel aanvragen achter elkaar. Wacht even en probeer opnieuw.")
@@ -270,7 +304,7 @@ def create(dream):
         archive = load_archive()
         number = next_number(archive)
 
-    episode = write_episode(dream, archive, number)
+    episode = write_episode(dream, archive, number, load_profile().get("name"))
     episode["number"] = number
 
     with _lock:

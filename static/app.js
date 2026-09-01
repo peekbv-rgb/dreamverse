@@ -379,8 +379,12 @@
   function tick() {
     var left = Math.max(0, Math.round((callEnds - Date.now()) / 1000));
     var m = Math.floor(left / 60), sec = left % 60;
-    el("call-time").textContent = "nog " + m + ":" + (sec < 10 ? "0" : "") + sec;
-    if (left <= 0) { hangup("De tijd voor dit gesprek zat erop."); }
+    var klok = el("call-time");
+    klok.textContent = m + ":" + (sec < 10 ? "0" : "") + sec;
+    // Onder de minuut oranje, onder tien seconden rood: je wilt niet dat het
+    // gesprek er zonder waarschuwing uit klapt.
+    klok.className = "call-time" + (left <= 10 ? " kritiek" : left <= 60 ? " bijna" : "");
+    if (left <= 0) { hangup("De vijf minuten zaten erop."); }
   }
 
   function hangup(reason) {
@@ -464,6 +468,39 @@
   el("hangup").addEventListener("click", function () { hangup("Tot morgenochtend."); });
   // Een dichtgeklapt tabblad mag geen sessie laten doorlopen.
   window.addEventListener("pagehide", function () { if (sessionId) { hangup(); } });
+
+  /* ----------------------------------------------------------------- naam */
+
+  var naamVeld = el("naam");
+  var naamOpslaan = null;
+
+  function bewaarNaam() {
+    var naam = naamVeld.value.trim();
+    fetch("/api/profile", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: naam })
+    }).then(function () {
+      if (naam) { guideLine.textContent = "Dag " + naam + ". Vertel me wat je zag."; }
+    }).catch(function () { /* naam is een extraatje, geen voorwaarde */ });
+  }
+
+  naamVeld.addEventListener("input", function () {
+    // Niet bij elke toetsaanslag naar de server; even wachten tot het stil is.
+    if (naamOpslaan) { clearTimeout(naamOpslaan); }
+    naamOpslaan = setTimeout(bewaarNaam, 800);
+  });
+  naamVeld.addEventListener("blur", bewaarNaam);
+
+  fetch("/api/profile")
+    .then(function (r) { return r.json(); })
+    .then(function (p) {
+      if (p.name) {
+        naamVeld.value = p.name;
+        guideLine.textContent = "Goedemorgen " + p.name + ". Heb je lekker geslapen?";
+      }
+    })
+    .catch(function () {});
 
   /* --------------------------------------------------------------- starten */
 

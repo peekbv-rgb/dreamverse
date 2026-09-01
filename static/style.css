@@ -338,10 +338,32 @@ footer.end {
 .call-veil p { margin: 0; font-family: var(--display); font-size: 1.2rem; font-weight: 300; }
 
 .call-bar { display: flex; align-items: center; gap: .6rem; padding: .8rem 1rem; }
-.call-time { font-size: .78rem; color: var(--muted); font-variant-numeric: tabular-nums; letter-spacing: .08em; }
+.call-time {
+  font-family: var(--display); font-size: 1.5rem; font-weight: 300;
+  color: var(--ink); font-variant-numeric: tabular-nums;
+  min-width: 3.4rem; transition: color 400ms ease;
+}
+.call-time::after {
+  content: " resterend"; font-family: var(--body); font-size: .72rem;
+  letter-spacing: .14em; text-transform: uppercase; color: var(--muted);
+}
+.call-time.bijna { color: var(--sacral); }
+.call-time.kritiek { color: var(--root); }
 #hangup { background: linear-gradient(100deg, var(--root), var(--sacral)); color: #fff; border-color: transparent; }
 
 @media (prefers-reduced-motion: reduce) { .call-veil span { animation: none; } }
 
 .tier-live { color: var(--heart) !important; font-weight: 500; }
 .tier-live::before { content: "● "; }
+
+/* Naam van de dromer */
+.who { display: flex; flex-direction: column; gap: .25rem; margin-left: auto; flex: none; }
+.who label { font-size: .6rem; font-weight: 600; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); }
+.who input {
+  width: 8.5rem; background: rgba(10, 7, 20, .55); color: var(--ink);
+  border: 1px solid var(--line); border-radius: 100px;
+  padding: .35rem .85rem; font-family: var(--display); font-size: 1rem;
+}
+.who input::placeholder { color: rgba(167, 154, 203, .5); font-style: italic; }
+.who input:focus-visible { outline: 2px solid var(--crown); outline-offset: 2px; }
+.call { margin-left: 0; }
