@@ -15,11 +15,14 @@ Hoe het loopt:
 De afbeeldingen worden bewust gedownload: de URL's van Kling verlopen, en een
 aflevering die je over een maand terugkijkt hoort er nog te zijn.
 
-LET OP - deze client is geschreven op de publieke documentatie, niet getest
-tegen de echte API; er was hier geen sleutel. Klopt een veldnaam niet, dan zie
-je dat meteen: draai `python kling.py --check` en de volledige respons komt in
-beeld. Het model heet in oudere documentatie `model` in plaats van `model_name`;
-staat allebei in KLING_FIELD hieronder.
+Geschreven tegen de officiele documentatie op kling.ai/document-api (gelezen op
+1 september 2026), maar niet uitgevoerd tegen de echte API - er was hier geen
+sleutel. Draai daarom eerst `python kling.py --check`: die maakt een afbeelding
+en drukt af wat er terugkomt.
+
+Kling wist gegenereerde afbeeldingen na dertig dagen. Daarom halen we ze binnen
+en bewaren we ze zelf; een droom van vorige maand hoort er over een jaar nog te
+zijn.
 """
 
 import base64
@@ -36,15 +39,15 @@ from pathlib import Path
 ROOT = Path(__file__).parent
 PANELS = ROOT / "data" / "panels"
 
-BASE = os.environ.get("KLING_BASE", "https://api.klingai.com")
+BASE = os.environ.get("KLING_BASE", "https://api-singapore.klingai.com")
 # Twee manieren om je te legitimeren, afhankelijk van waar je sleutel vandaan komt:
 #   Kuaishou zelf  -> KLING_ACCESS_KEY + KLING_SECRET_KEY, waarmee we een JWT maken
 #   een tussenpartij -> KLING_API_KEY, één bearer-token dat we onveranderd meesturen
 # Staat het allebei ingevuld, dan wint de bearer: die is expliciet gekozen.
-MODEL = os.environ.get("KLING_MODEL", "kling-v2")
-# Sommige versies van de API heten het veld `model_name`, oudere `model`.
-# We sturen ze allebei; een onbekend veld wordt genegeerd.
-KLING_FIELD = ("model_name", "model")
+# Keuze uit kling-v1, kling-v1-5, kling-v2, kling-v2-new, kling-v2-1, kling-v3.
+# v2-1 is wat Kling zelf in hun voorbeeld gebruikt; v3 is nieuwer en duurder.
+MODEL = os.environ.get("KLING_MODEL", "kling-v2-1")
+RESOLUTION = os.environ.get("KLING_RESOLUTION", "1k")  # 1k of 2k
 
 TIMEOUT = 30
 POLL_EVERY = 3
@@ -150,9 +153,13 @@ def _call(method, path, body=None):
 
 
 def submit(prompt, aspect_ratio="16:9"):
-    body = {"prompt": prompt[:2400], "aspect_ratio": aspect_ratio, "n": 1}
-    for field in KLING_FIELD:
-        body[field] = MODEL
+    body = {
+        "model_name": MODEL,          # het oude veld heette `model` en betekent nu v1
+        "prompt": prompt[:2500],      # harde grens van de API
+        "aspect_ratio": aspect_ratio,
+        "resolution": RESOLUTION,
+        "n": 1,
+    }
     payload = _call("POST", "/v1/images/generations", body)
     task_id = (payload.get("data") or {}).get("task_id")
     if not task_id:
