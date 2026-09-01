@@ -14,11 +14,13 @@ Let op bij `consume`: die is eenmalig. Loopt de WebRTC-verbinding daarna stuk,
 dan is de sessie op en moet er een nieuwe komen — opnieuw consumen kan niet.
 """
 
+import json
 import os
 import threading
 import time
+import urllib.error
+import urllib.request
 
-import httpx
 from runwayml import RunwayML
 
 import plans
@@ -91,21 +93,26 @@ def wait_until_ready(session_id):
 def consume(session_id, session_key):
     """Wissel de sessionKey in voor WebRTC-gegevens. Eenmalig."""
     c = client()
-    response = httpx.post(
+    req = urllib.request.Request(
         "{}/v1/realtime_sessions/{}/consume".format(c.base_url, session_id),
+        # Een lege body wordt geweigerd met "Incorrect content type", dus een
+        # expliciet leeg JSON-object.
+        data=b"{}",
+        method="POST",
         headers={
             "Authorization": "Bearer {}".format(session_key),
             "X-Runway-Version": RUNWAY_VERSION,
+            "Content-Type": "application/json",
         },
-        # Zonder expliciete body stuurt httpx niets en weigert de API het
-        # verzoek met "Incorrect content type".
-        json={},
-        timeout=30,
     )
-    if response.status_code >= 400:
+    try:
+        with urllib.request.urlopen(req, timeout=30) as response:
+            return json.loads(response.read().decode("utf-8"))
+    except urllib.error.HTTPError as e:
         raise VeraError("Verbinden mislukte ({}): {}".format(
-            response.status_code, response.text[:200]))
-    return response.json()
+            e.code, e.read().decode("utf-8", "replace")[:200]))
+    except urllib.error.URLError as e:
+        raise VeraError("Runway niet bereikbaar: {}".format(e.reason))
 
 
 def end(session_id):

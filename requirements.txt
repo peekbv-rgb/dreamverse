@@ -1,6 +1,5 @@
-# Alles wat de code importeert. Lokaal werkte het ook zonder runwayml en httpx
-# omdat ze er al stonden; op een schone container van Render niet.
+# Alles wat de code importeert, en niets meer. httpx stond hier eerder bij voor
+# één aanroep in vera.py; die gaat nu via de standaardbibliotheek.
 anthropic>=1.2.0
 python-dotenv>=1.2.3
 runwayml>=5.14.0
-httpx>=0.28.1
