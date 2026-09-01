@@ -11,12 +11,16 @@ kan tellen levert alleen ruzie op.
 De tarieven komen uit usage.py, dus wat hier "kost" heet is te herleiden tot een
 echte factuur:
 
-    droom (tekst + vijf panelen)   ongeveer EUR 0,15
-    avatar, per gesprekminuut      EUR 0,18
-    avatar, gesprek van vijf min   EUR 0,94
+    droom, alleen stilstaande panelen        EUR 0,14
+    droom met bewegend kernmoment (snel)     EUR 0,67
+    droom met bewegend kernmoment (top)      EUR 1,59
+    avatar, per gesprekminuut                EUR 0,18
+    avatar, gesprek van vijf minuten         EUR 0,94
 
-Daarom zit de avatar in geen enkel vast pakket volledig inbegrepen: bij EUR 4,99
-per maand is een gesprek van vijf minuten al een vijfde van je omzet.
+Video is duur en dat bepaalt de hele prijslijst. Vier seconden op het beste model
+kost EUR 1,47; een hele aflevering van twintig seconden kost EUR 7,36. Daarom
+krijgt elke aflevering een kernmoment en niet vijf, en daarom is een volledige
+film iets dat je met tokens koopt in plaats van iets dat in een pakket zit.
 """
 
 from datetime import datetime, timezone
@@ -27,7 +31,23 @@ import usage
 # twee tokens per minuut ongeveer 64% marge over.
 EUR_PER_TOKEN = 0.25
 TOKENS_PER_AVATAR_MINUTE = 2
-TOKENS_PER_EXTRA_DREAM = 2
+TOKENS_PER_EXTRA_DREAM = 3
+
+# Wat je los kunt kopen. De marges staan erbij omdat ze anders wegzakken zodra
+# iemand een tarief aanpast.
+EXTRAS = {
+    "film_snel": {"naam": "Hele aflevering als film, 20 seconden", "tokens": 30, "kost": 2.76},
+    "film_top": {"naam": "Hele aflevering als film op het beste model", "tokens": 60, "kost": 7.36},
+    "kernmoment_top": {"naam": "Kernmoment op het beste model", "tokens": 10, "kost": 1.47},
+}
+
+# Welk videomodel hoort bij welk pakket. gen4_turbo laten we links liggen: dat is
+# het model dat eruitzag als een bewegend plaatje.
+VIDEO = {
+    "geen": None,
+    "snel": {"model": "veo3.1_fast", "audio": True, "seconden": 4, "kost": 0.55},
+    "top": {"model": "veo3.1", "audio": True, "seconden": 4, "kost": 1.47},
+}
 
 PLANS = {
     "gratis": {
@@ -35,21 +55,24 @@ PLANS = {
         "prijs": 0.00,
         "dromen": 3,            # per maand
         "panelen": False,       # alleen de getekende composities
+        "video": "geen",
         "avatar_minuten": 0,    # alleen met tokens
     },
     "plus": {
         "naam": "Plus",
-        "prijs": 4.99,
-        "dromen": 10,
+        "prijs": 9.99,
+        "dromen": 6,
         "panelen": True,
-        "avatar_minuten": 0,    # bewust nul: EUR 0,94 per gesprek past hier niet in
+        "video": "snel",        # EUR 4,04 aan kosten, 60% marge
+        "avatar_minuten": 0,
     },
     "ultra": {
         "naam": "Ultra",
-        "prijs": 17.99,
-        "dromen": 30,
+        "prijs": 29.99,
+        "dromen": 10,
         "panelen": True,
-        "avatar_minuten": 10,   # EUR 1,88 aan kosten, ruim 10% van de prijs
+        "video": "top",         # EUR 17,77 aan kosten, 41% marge
+        "avatar_minuten": 10,
     },
 }
 
@@ -97,6 +120,12 @@ def account():
         "dromen_inbegrepen": plan["dromen"],
         "dromen_over": max(0, plan["dromen"] - dromen),
         "panelen_inbegrepen": plan["panelen"],
+        "video": plan["video"],
+        "video_omschrijving": {
+            "geen": "stilstaande panelen",
+            "snel": "een bewegend kernmoment van vier seconden",
+            "top": "een kernmoment van vier seconden op het beste model",
+        }[plan["video"]],
         "avatar_seconden_gebruikt": avatar_seconden,
         "avatar_seconden_inbegrepen": inbegrepen_seconden,
         "avatar_seconden_over": max(0, inbegrepen_seconden - avatar_seconden),
@@ -147,6 +176,11 @@ def check_dream():
 def panels_allowed():
     """Getekende illustraties zitten niet in het gratis pakket."""
     return account()["panelen_inbegrepen"]
+
+
+def video_for_plan():
+    """De video-instelling van het huidige pakket, of None bij gratis."""
+    return VIDEO[account()["video"]]
 
 
 def check_call():

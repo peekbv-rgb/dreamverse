@@ -37,6 +37,7 @@ MAX_DURATION = max(60, min(1800, int(os.environ.get("VERA_MAX_DURATION", "300"))
 
 _client = None
 _lock = threading.Lock()
+_begroeting = None   # welke openingszin er nu bij Runway staat
 
 
 class VeraError(Exception):
@@ -59,6 +60,43 @@ def client():
         if _client is None:
             _client = RunwayML()
         return _client
+
+
+def begroeting_voor(naam):
+    """De openingszin, met de naam erin als we die kennen."""
+    basis = ("Vertel me wat je vannacht zag, voordat het wegzakt — "
+             "het hoeft niet op volgorde en het hoeft niet te kloppen.")
+    if naam:
+        kop = "Goedemorgen {}. Heb je lekker geslapen?".format(naam)
+    else:
+        kop = "Goedemorgen. Hier is Vera, heb je lekker geslapen?"
+    return kop + "\n" + basis
+
+
+def zet_begroeting(naam):
+    """Werk Vera's openingszin bij zodat ze de dromer bij naam begroet.
+
+    Alleen als hij veranderd is: elke aanroep kost tijd, en het inhoudsfilter van
+    Runway weigert regelmatig een tekst die er niets mis mee heeft. Lukt het niet,
+    dan gaat het gesprek gewoon door met de oude zin — een begroeting is het niet
+    waard om een gesprek voor af te blazen.
+    """
+    global _begroeting
+    nieuw = begroeting_voor(naam)
+    if nieuw == _begroeting:
+        return True
+    for poging in range(4):
+        try:
+            client().avatars.update(character_id(), start_script=nieuw)
+            _begroeting = nieuw
+            return True
+        except Exception as e:
+            if "cannot be used for an avatar" not in str(e):
+                print("vera: openingszin bijwerken mislukte: {}".format(str(e)[:120]), flush=True)
+                return False
+            time.sleep(2)
+    print("vera: het filter weigerde de openingszin vier keer; oude zin blijft staan", flush=True)
+    return False
 
 
 def create(duur=None):
@@ -139,6 +177,14 @@ def start():
     # Hoeveel mag deze beller? Weigeren gebeurt hier, vóór er een worker draait.
     toegestaan, uit_tokens = plans.check_call()
     duur = max(60, min(MAX_DURATION, int(toegestaan)))
+
+    # Ken je de naam, laat haar die dan uitspreken. Gebeurt vóór het aanmaken
+    # van de sessie, want daarna leest de worker de openingszin niet meer.
+    try:
+        import dreamverse
+        zet_begroeting((dreamverse.load_profile().get("name") or "").strip())
+    except Exception as e:
+        print("vera: naam ophalen mislukte: {}".format(str(e)[:100]), flush=True)
 
     session_id = create(duur)
     try:
