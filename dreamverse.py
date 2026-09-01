@@ -43,6 +43,26 @@ CHAKRA_HINT = (
 _lock = threading.Lock()
 
 
+def credentials_available():
+    """Kunnen we bij de API, hoe dan ook?
+
+    Twee routes: een sleutel in de omgeving, of een profiel van `ant auth login`
+    dat de SDK zelf oppikt. Alleen op de sleutel controleren zou de app in
+    voorbeeldmodus houden terwijl hij prima kan schrijven.
+    """
+    if os.environ.get("ANTHROPIC_API_KEY") or os.environ.get("ANTHROPIC_AUTH_TOKEN"):
+        return True
+    for basis in (os.environ.get("ANTHROPIC_CONFIG_DIR"),
+                  os.path.join(os.environ.get("APPDATA", ""), "Anthropic"),
+                  os.path.expanduser("~/.config/anthropic")):
+        if not basis:
+            continue
+        map_ = Path(basis) / "credentials"
+        if map_.is_dir() and any(map_.glob("*.json")):
+            return True
+    return False
+
+
 class DreamverseError(Exception):
     """Iets ging mis bij het schrijven; de melding is bedoeld voor de gebruiker."""
 
@@ -249,7 +269,7 @@ def parse_episode(raw):
 
 def write_episode(dream, archive, number, name=None):
     """Vraag Claude om de aflevering. Zonder sleutel: de voorbeeldaflevering."""
-    if not os.environ.get("ANTHROPIC_API_KEY"):
+    if not credentials_available():
         demo = dict(DEMO_EPISODE)
         demo["demo"] = True
         return demo
@@ -272,7 +292,8 @@ def write_episode(dream, archive, number, name=None):
     except anthropic.RateLimitError:
         raise DreamverseError("Te veel aanvragen achter elkaar. Wacht even en probeer opnieuw.")
     except anthropic.AuthenticationError:
-        raise DreamverseError("De API-sleutel wordt niet geaccepteerd. Controleer ANTHROPIC_API_KEY in .env.")
+        raise DreamverseError("De inloggegevens worden niet geaccepteerd. Controleer "
+                              "ANTHROPIC_API_KEY in .env, of draai `ant auth login` opnieuw.")
     except anthropic.APIConnectionError:
         raise DreamverseError("Geen verbinding met de API. Controleer je internetverbinding.")
     except anthropic.APIStatusError as e:

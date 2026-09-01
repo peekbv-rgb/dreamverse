@@ -108,7 +108,7 @@ class Handler(SimpleHTTPRequestHandler):
         if self.path == "/api/health":
             return self.send_json({
                 "ok": True,
-                "key": bool(os.environ.get("ANTHROPIC_API_KEY")),
+                "key": dreamverse.credentials_available(),
                 "kling": kling.enabled(),
                 "vera": vera.enabled(),
             })
@@ -209,8 +209,9 @@ class Handler(SimpleHTTPRequestHandler):
 
 
 if __name__ == "__main__":
-    if not os.environ.get("ANTHROPIC_API_KEY"):
-        print("let op: geen ANTHROPIC_API_KEY — elke droom geeft de voorbeeldaflevering", flush=True)
+    if not dreamverse.credentials_available():
+        print("let op: geen inloggegevens — elke droom geeft de voorbeeldaflevering.", flush=True)
+        print("        zet ANTHROPIC_API_KEY in .env, of draai: ant auth login", flush=True)
     print("panelen: {}".format("Kling" if kling.enabled() else "getekend (geen Kling-sleutels)"), flush=True)
     print("Vera   : {}".format(
         "aangesloten, max {}s per gesprek".format(vera.MAX_DURATION)
