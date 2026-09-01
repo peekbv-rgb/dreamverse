@@ -297,6 +297,13 @@ def write_episode(dream, archive, number, name=None):
     except anthropic.APIConnectionError:
         raise DreamverseError("Geen verbinding met de API. Controleer je internetverbinding.")
     except anthropic.APIStatusError as e:
+        # Deze komt vaak genoeg voor om apart te benoemen: ingelogd zijn en
+        # tegoed hebben zijn twee verschillende dingen.
+        if "credit balance" in str(e).lower():
+            raise DreamverseError(
+                "Er staat geen tegoed op je Anthropic-account. Waardeer op via "
+                "console.anthropic.com onder Plans & Billing; een droom kost "
+                "ongeveer vijf cent.")
         raise DreamverseError("De API gaf een fout ({}). Probeer het later opnieuw.".format(e.status_code))
 
     if response.stop_reason == "refusal":
