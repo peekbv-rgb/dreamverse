@@ -246,6 +246,12 @@
     el("why").textContent = ep.why;
     el("meaning").textContent = ep.meaning;
     el("future").textContent = ep.future;
+    el("love").textContent = ep.love || "";
+    el("love").parentElement.hidden = !ep.love;
+    el("today").textContent = ep.today || "";
+    el("vandaag-blok").hidden = !ep.today;
+    el("seizoen").textContent = ep.season || "";
+    el("seizoen").hidden = !ep.season;
     el("question").textContent = ep.question;
   }
 

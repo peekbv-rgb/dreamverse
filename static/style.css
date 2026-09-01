@@ -680,3 +680,24 @@ footer.end { background: rgba(8,6,17,.5); border-radius: 16px; padding: 1.2rem 1
    samen geeft dat diepte die één laag niet haalt. */
 .golven { opacity: .5; }
 body::before { opacity: .55; }
+
+/* Liefde krijgt zijn eigen veld: het hart. */
+.reading .block.liefde { border-color: rgba(79, 191, 134, .55); background: rgba(16, 40, 30, .55); }
+.reading .block.liefde .lbl { color: var(--heart); }
+
+/* Het voorstel voor vandaag is geen duiding maar een zetje; dus geen kaart maar
+   een regel die eruit springt. */
+.vandaag {
+  display: flex; flex-direction: column; gap: .3rem;
+  border-left: 3px solid var(--solar); padding: .5rem 0 .5rem 1.1rem;
+}
+.vandaag .lbl { font-size: .64rem; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; color: var(--solar); }
+.vandaag p { margin: 0; font-family: var(--display); font-size: 1.25rem; font-weight: 300; color: var(--ink); }
+
+/* De naam van het seizoen waar de dromer in zit. */
+.seizoen {
+  font-family: var(--display); font-style: italic; font-size: 1.05rem;
+  color: var(--crown); background: rgba(8,6,17,.55); backdrop-filter: blur(6px);
+  border-radius: 100px; padding: .3rem 1.1rem; margin: .3rem 0 0;
+}
+.seizoen::before { content: "Je zit in: "; font-style: normal; color: var(--muted); font-size: .8rem; }

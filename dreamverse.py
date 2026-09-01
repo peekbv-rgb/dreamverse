@@ -191,7 +191,7 @@ Toon en taal:
 - Bij geweld, verlies, ziekte of een overledene: erken het eerst eerlijk en buig het
   niet weg. Zoek daarna pas het licht. Opgewekt wegwuiven is erger dan niets zeggen.
 
-De vooruitblik ("future") is vermaak, geen voorspelling. Schrijf hem concreet en
+De vooruitblik ("future") en de liefdesparagraaf ("love") zijn vermaak, geen voorspelling. Schrijf hem concreet en
 uitnodigend over de komende weken. Nooit over gezondheid, ziekte, geld, zwangerschap
 of iemands dood — ook niet als de droom daarover ging.
 
@@ -204,7 +204,8 @@ Antwoord met uitsluitend geldige JSON, zonder tekst eromheen, in deze vorm:
 {{"title": string,
  "panels": [{{"narration": string, "image": string, "palette": string, "motif": string}}],
  "threads": [{{"ref": string, "was": string, "now": string}}],
- "why": string, "meaning": string, "future": string,
+ "why": string, "meaning": string, "future": string, "love": string,
+ "today": string, "season": string,
  "question": string, "motifs": [string], "key_panel": number}}
 
 Regels voor de velden:
@@ -220,6 +221,20 @@ Regels voor de velden:
 - 0 tot 3 threads. "ref" is bijvoorbeeld "Droom 12". "was" is hoe het toen was,
   "now" is wat er nu anders aan is.
 - why, meaning en future elk 2 tot 4 zinnen.
+- love gaat over verbinding: wie de dromer opzoekt, wie hem opzoekt, waar warmte
+  zit of juist afstand. Twee tot drie zinnen, uitnodigend en concreet over de
+  komende weken. HARDE GRENZEN: nooit beweren dat iemand vreemdgaat, weggaat of
+  dat een relatie eindigt; nooit iets beweren over een specifieke derde persoon;
+  nooit over zwangerschap. Gaat de droom nergens over mensen, schrijf dan iets
+  over hoe hij zich tot anderen verhoudt in plaats van een liefdesvoorspelling
+  te verzinnen.
+- today is een enkel klein voorstel voor vandaag dat uit de droom volgt. Iets dat
+  binnen tien minuten kan en niets kost: iemand appen, een raam openzetten, een
+  blokje om voor de koffie. Eén zin, geen lijstje, geen levensles.
+- season is de naam van het hoofdstuk waar de dromer nu in zit, gezien over al
+  zijn dromen samen. Drie tot zes woorden, als de titel van een seizoen van een
+  serie. Verandert alleen als het patroon echt verschuift; anders houd je
+  dezelfde naam aan als de vorige keer.
 - question is een enkele open vraag aan de dromer.
 - motifs is een korte lijst kernwoorden uit deze droom voor het geheugen,
   bijvoorbeeld ["zwembad", "vliegen", "een huilende vriendin"].
@@ -324,6 +339,9 @@ def parse_episode(raw):
         "panels": panels,
         "threads": threads,
         "why": str(data.get("why") or ""),
+        "love": str(data.get("love") or ""),
+        "today": str(data.get("today") or ""),
+        "season": str(data.get("season") or ""),
         "meaning": str(data.get("meaning") or ""),
         "future": str(data.get("future") or ""),
         "question": str(data.get("question") or ""),
