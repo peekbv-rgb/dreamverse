@@ -1,20 +1,23 @@
 services:
   - type: web
-    name: nieuwe-app
+    name: dreamverse
     runtime: python
-    # Free sleeps after fifteen minutes and the next visitor waits thirty to
-    # sixty seconds on an empty page. Fine while building; switch to starter
-    # before anyone outside sees it.
+    # Free slaapt na een kwartier en de eerste bezoeker wacht dan een halve
+    # minuut. Prima om te bouwen; zet op starter zodra je hem laat zien.
     plan: free
     buildCommand: pip install -r requirements.txt
     startCommand: python server.py
     envVars:
-      # Render injects PORT itself. HOST must be the external interface -
-      # loopback answers nothing from outside the container.
+      # Render injecteert PORT zelf. HOST moet de externe interface zijn -
+      # loopback antwoordt niets van buiten de container.
       - key: HOST
         value: 0.0.0.0
-      # Set these in the Render dashboard, not here.
+      # Zet deze in het Render-dashboard, niet hier.
+      - key: ANTHROPIC_API_KEY
+        sync: false
       - key: AUTH_USER
         sync: false
       - key: AUTH_PASSWORD
         sync: false
+    # Let op: het archief staat als bestand op de schijf van de container en
+    # is bij elke deploy weg. Voor iets echts hoort hier een database.

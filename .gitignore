@@ -11,3 +11,6 @@
 __pycache__/
 *.pyc
 run.log
+
+# Het droomarchief: andermans dromen zijn niets voor een repo.
+data/

@@ -1,0 +1,301 @@
+/* Dreamverse — spirituele opmaak.
+   Eén wereld, bewust donker: dit open je om zeven uur 's ochtends in het donker.
+   Het licht komt uit de kleuren zelf. De zeven chakra's zijn geen versiering maar
+   de kleurcode van de app: elk paneel krijgt het veld dat bij het gevoel past. */
+
+:root {
+  --void: #0A0714;
+  --deep: #120C22;
+  --panel: rgba(30, 20, 54, .62);
+  --raised: rgba(48, 33, 82, .55);
+  --ink: #F2EEFB;
+  --muted: #A79ACB;
+  --line: rgba(167, 154, 203, .22);
+  --glow: rgba(255, 255, 255, .9);
+
+  /* De zeven velden */
+  --root: #E2554F;
+  --sacral: #F0873C;
+  --solar: #F2C64C;
+  --heart: #4FBF86;
+  --throat: #4A9FE2;
+  --third-eye: #6E62DA;
+  --crown: #B369DE;
+
+  --display: "Cormorant Garamond", Georgia, serif;
+  --body: "Karla", "Segoe UI", Helvetica, Arial, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  background: var(--void);
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: 16.5px;
+  line-height: 1.65;
+  margin: 0;
+  padding: 0 1.1rem 5rem;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Aurora: twee zachte kleurvelden achter alles, plus heilige geometrie */
+body::before {
+  content: "";
+  position: fixed;
+  inset: -20vh -10vw;
+  z-index: -2;
+  background:
+    radial-gradient(50% 40% at 18% 12%, rgba(179, 105, 222, .28), transparent 70%),
+    radial-gradient(45% 38% at 82% 22%, rgba(74, 159, 226, .22), transparent 70%),
+    radial-gradient(55% 45% at 50% 100%, rgba(226, 85, 79, .16), transparent 70%),
+    linear-gradient(180deg, var(--deep), var(--void) 60%);
+  filter: blur(8px);
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: .16;
+  background-image: url("geometry.svg");
+  background-repeat: no-repeat;
+  background-position: center 6vh;
+  background-size: min(120vw, 60rem) auto;
+}
+
+.wrap { max-width: 54rem; margin: 0 auto; display: flex; flex-direction: column; gap: 2.6rem; }
+
+/* Kop */
+header.top { display: flex; flex-direction: column; gap: .8rem; padding: 4rem 0 0; text-align: center; align-items: center; }
+
+.meta {
+  display: flex; flex-wrap: wrap; gap: .8rem; align-items: baseline; justify-content: center;
+  font-size: .7rem; font-weight: 600; letter-spacing: .3em; text-transform: uppercase;
+  color: var(--crown);
+}
+.meta .dim { color: var(--muted); font-weight: 500; letter-spacing: .18em; }
+
+h1 {
+  font-family: var(--display);
+  font-weight: 300;
+  font-size: clamp(2.6rem, 8vw, 4.4rem);
+  line-height: 1.02;
+  letter-spacing: .01em;
+  margin: 0;
+  background: linear-gradient(96deg, var(--crown), var(--throat) 38%, var(--heart) 62%, var(--solar));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  /* Zonder deze terugval is de titel onzichtbaar waar background-clip faalt. */
+  -webkit-text-fill-color: transparent;
+}
+@supports not ((-webkit-background-clip: text) or (background-clip: text)) {
+  h1 { color: var(--ink); -webkit-text-fill-color: currentColor; background: none; }
+}
+
+.sub { color: var(--muted); margin: 0; max-width: 34rem; font-size: 1.02rem; }
+
+/* De gids */
+.guide {
+  display: flex; gap: 1.2rem; align-items: center;
+  background: var(--panel);
+  backdrop-filter: blur(14px);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 1.1rem 1.3rem;
+}
+
+.chakras { position: relative; width: 3.4rem; height: 5.2rem; flex: none; }
+.chakras .halo {
+  position: absolute; left: 50%; top: 50%; width: 4.6rem; height: 4.6rem;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,.22), transparent 65%);
+  animation: breathe 6s ease-in-out infinite;
+}
+.chakras i {
+  position: absolute; left: 50%; width: .62rem; height: .62rem;
+  margin-left: -.31rem; border-radius: 50%;
+  animation: breathe 4.5s ease-in-out infinite;
+}
+.chakras i:nth-child(2) { top: 3%;  background: var(--crown);     box-shadow: 0 0 12px var(--crown);     animation-delay: 0s; }
+.chakras i:nth-child(3) { top: 18%; background: var(--third-eye); box-shadow: 0 0 12px var(--third-eye); animation-delay: .3s; }
+.chakras i:nth-child(4) { top: 33%; background: var(--throat);    box-shadow: 0 0 12px var(--throat);    animation-delay: .6s; }
+.chakras i:nth-child(5) { top: 48%; background: var(--heart);     box-shadow: 0 0 12px var(--heart);     animation-delay: .9s; }
+.chakras i:nth-child(6) { top: 63%; background: var(--solar);     box-shadow: 0 0 12px var(--solar);     animation-delay: 1.2s; }
+.chakras i:nth-child(7) { top: 78%; background: var(--sacral);    box-shadow: 0 0 12px var(--sacral);    animation-delay: 1.5s; }
+.chakras i:nth-child(8) { top: 93%; background: var(--root);      box-shadow: 0 0 12px var(--root);      animation-delay: 1.8s; }
+@keyframes breathe { 0%, 100% { opacity: .55; transform: scale(.9); } 50% { opacity: 1; transform: scale(1.15); } }
+.chakras .halo { transform-origin: center; }
+.guide.listening .chakras i { animation-duration: 1.3s; }
+
+.guide-name { margin: 0; font-size: .68rem; font-weight: 600; letter-spacing: .28em; text-transform: uppercase; color: var(--crown); }
+.guide-line { margin: 0; font-family: var(--display); font-size: 1.35rem; font-weight: 300; font-style: italic; line-height: 1.4; }
+
+/* Invoer */
+.composer {
+  background: var(--panel);
+  backdrop-filter: blur(14px);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 1.25rem 1.3rem 1.3rem;
+  display: flex; flex-direction: column; gap: .85rem;
+}
+.composer label { font-size: .68rem; font-weight: 600; letter-spacing: .22em; text-transform: uppercase; color: var(--muted); }
+
+textarea {
+  width: 100%; min-height: 7rem; resize: vertical;
+  background: rgba(10, 7, 20, .55); color: var(--ink);
+  border: 1px solid var(--line); border-radius: 14px;
+  padding: .9rem 1rem;
+  font-family: var(--display); font-size: 1.25rem; font-weight: 300; line-height: 1.5;
+}
+textarea::placeholder { color: rgba(167, 154, 203, .55); font-style: italic; }
+textarea:focus-visible { outline: 2px solid var(--crown); outline-offset: 2px; }
+
+.row { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; }
+.spacer { margin-left: auto; }
+
+button {
+  font-family: var(--body); font-size: .84rem; font-weight: 600;
+  background: var(--raised); color: var(--ink);
+  border: 1px solid var(--line); border-radius: 100px;
+  padding: .5rem 1.15rem; cursor: pointer;
+  transition: border-color 200ms ease, color 200ms ease, box-shadow 200ms ease;
+}
+button:hover:not([disabled]) { border-color: var(--crown); box-shadow: 0 0 18px rgba(179, 105, 222, .25); }
+button:focus-visible { outline: 2px solid var(--crown); outline-offset: 3px; }
+button[disabled] { opacity: .4; cursor: default; }
+
+button.primary {
+  background: linear-gradient(100deg, var(--crown), var(--third-eye));
+  color: #fff; border-color: transparent;
+  box-shadow: 0 0 24px rgba(110, 98, 218, .35);
+}
+button.primary:hover:not([disabled]) { filter: brightness(1.12); }
+button.ghost { background: transparent; font-weight: 500; font-size: .78rem; color: var(--muted); }
+button.rec {
+  background: linear-gradient(100deg, var(--root), var(--sacral));
+  color: #fff; border-color: transparent;
+  box-shadow: 0 0 22px rgba(226, 85, 79, .4);
+}
+
+.status { font-size: .86rem; color: var(--muted); min-height: 1.3rem; margin: 0; }
+.status.err { color: #F5A08F; }
+
+/* Speler */
+.player { display: flex; flex-direction: column; }
+.stage {
+  position: relative; width: 100%; aspect-ratio: 16 / 10;
+  background: #06040D;
+  border: 1px solid var(--line); border-bottom: none;
+  border-radius: 20px 20px 0 0; overflow: hidden;
+}
+.stage svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+
+.fade { animation: fade 1100ms ease; }
+@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+.drift { animation: drift 26s ease-in-out infinite alternate; transform-origin: center; }
+@keyframes drift { from { transform: scale(1.03); } to { transform: scale(1.1) translateY(-1.5%); } }
+.shimmer { animation: shimmer 7s ease-in-out infinite alternate; }
+@keyframes shimmer { from { opacity: .4; } to { opacity: 1; } }
+.turn { animation: turn 90s linear infinite; transform-origin: 400px 250px; }
+@keyframes turn { to { transform: rotate(360deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .fade, .drift, .shimmer, .turn, .chakras i, .chakras .halo { animation: none; }
+}
+
+.caption {
+  background: var(--panel);
+  backdrop-filter: blur(14px);
+  border: 1px solid var(--line); border-top: none;
+  border-radius: 0 0 20px 20px; padding: 1.2rem 1.3rem 1.1rem;
+  display: flex; flex-direction: column; gap: 1rem; min-height: 10rem;
+}
+.narration {
+  font-family: var(--display); font-weight: 300;
+  font-size: 1.4rem; line-height: 1.45; margin: 0; flex: 1; text-wrap: pretty;
+}
+.bar { display: flex; gap: .35rem; }
+.bar span { height: 2px; flex: 1; background: var(--line); border-radius: 2px; transition: background 400ms ease, box-shadow 400ms ease; }
+.bar span.done { background: var(--crown); box-shadow: 0 0 8px var(--crown); }
+.counter { font-size: .76rem; color: var(--muted); font-variant-numeric: tabular-nums; letter-spacing: .1em; }
+
+/* Secties */
+section { display: flex; flex-direction: column; gap: 1.1rem; }
+.head-rule {
+  display: flex; flex-direction: column; gap: .25rem; align-items: center; text-align: center;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+}
+h2 { font-family: var(--display); font-weight: 300; font-size: 1.9rem; letter-spacing: .01em; margin: 0; }
+.head-rule p { margin: 0; color: var(--muted); font-size: .92rem; max-width: 34rem; }
+
+.threads { display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); gap: .9rem; }
+.thread {
+  background: var(--panel); backdrop-filter: blur(10px);
+  border: 1px solid var(--line); border-radius: 16px;
+  padding: 1rem 1.1rem; display: flex; flex-direction: column; gap: .4rem;
+}
+.thread .tag { font-size: .64rem; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; color: var(--throat); }
+.thread p { margin: 0; font-size: .9rem; color: var(--muted); }
+.thread p.then { color: var(--ink); }
+
+.reading { display: flex; flex-direction: column; gap: .9rem; }
+.block {
+  background: var(--panel); backdrop-filter: blur(10px);
+  border: 1px solid var(--line); border-radius: 16px;
+  padding: 1.2rem 1.35rem; display: flex; flex-direction: column; gap: .5rem;
+  position: relative; overflow: hidden;
+}
+.block::before {
+  content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 2px;
+}
+.block:nth-of-type(1)::before { background: linear-gradient(var(--sacral), var(--solar)); }
+.block:nth-of-type(2)::before { background: linear-gradient(var(--heart), var(--throat)); }
+.block.future::before { background: linear-gradient(var(--third-eye), var(--crown)); }
+.block .lbl { font-size: .65rem; font-weight: 600; letter-spacing: .22em; text-transform: uppercase; color: var(--muted); }
+.block p { margin: 0; font-family: var(--display); font-weight: 300; font-size: 1.28rem; line-height: 1.5; }
+.block.future { background: rgba(43, 28, 74, .55); }
+.block.future .lbl { color: var(--crown); }
+
+.question {
+  font-family: var(--display); font-weight: 300; font-style: italic;
+  color: var(--solar); font-size: 1.3rem; text-align: center;
+  margin: .4rem 0 0; padding: 0 1rem;
+}
+
+.archive { display: flex; flex-direction: column; gap: .45rem; }
+.entry {
+  display: flex; gap: .9rem; align-items: baseline;
+  padding: .6rem .95rem; background: var(--panel); backdrop-filter: blur(8px);
+  border: 1px solid var(--line); border-radius: 12px; font-size: .9rem;
+}
+.entry .no { color: var(--crown); font-weight: 600; font-variant-numeric: tabular-nums; flex: none; }
+.entry .txt { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Lagen */
+.tiers { display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); gap: .9rem; }
+.tier {
+  background: var(--panel); backdrop-filter: blur(10px);
+  border: 1px solid var(--line); border-radius: 16px;
+  padding: 1.1rem 1.2rem; display: flex; flex-direction: column; gap: .5rem;
+}
+.tier.on {
+  border-color: rgba(179, 105, 222, .5);
+  background: rgba(43, 28, 74, .6);
+  box-shadow: 0 0 32px rgba(179, 105, 222, .18);
+}
+.tier-name { font-size: .66rem; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; color: var(--crown); }
+.tier p { margin: 0; font-size: .9rem; color: var(--muted); }
+.tier button { align-self: flex-start; margin-top: .2rem; }
+
+footer.end {
+  border-top: 1px solid var(--line); padding-top: 1.2rem;
+  color: var(--muted); font-size: .85rem; display: flex; flex-direction: column; gap: .7rem;
+}

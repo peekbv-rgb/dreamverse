@@ -1,26 +1,129 @@
 <!doctype html>
+<html lang="nl">
+<head>
 <meta charset="utf-8">
-<title>Nieuwe app</title>
+<title>Dreamverse</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<style>
-  :root { color-scheme: light dark; }
-  body {
-    font: 16px/1.6 system-ui, sans-serif;
-    max-width: 40rem;
-    margin: 4rem auto;
-    padding: 0 1.5rem;
-  }
-  code { background: color-mix(in srgb, currentColor 10%, transparent); padding: .1em .3em; }
-</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=Karla:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
 
-<h1>Nieuwe app</h1>
-<p>De server draait. <span id="status">verbinden…</span></p>
-<p>Frontend staat in <code>static/</code>, de server in <code>server.py</code>.</p>
+<div class="wrap">
 
-<script>
-  fetch("/api/health")
-    .then(r => r.json())
-    .then(d => document.getElementById("status").textContent =
-      d.ok ? "API antwoordt." : "API antwoordt, maar niet ok.")
-    .catch(() => document.getElementById("status").textContent = "API onbereikbaar.");
-</script>
+  <header class="top">
+    <div class="meta"><span>Dreamverse</span><span class="dim" id="mode">…</span></div>
+    <h1 id="title">Je droom, als aflevering</h1>
+    <p class="sub">Vertel of typ wat je vannacht droomde. Je krijgt een aflevering van vijf panelen,
+      een duiding en een vooruitblik — en alles wat je eerder droomde telt mee.</p>
+  </header>
+
+  <!-- De gids -->
+  <div class="guide">
+    <div class="chakras" aria-hidden="true">
+      <span class="halo"></span>
+      <i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+    </div>
+    <div class="guide-text">
+      <p class="guide-name">Vera</p>
+      <p class="guide-line" id="guide-line">Goedemorgen. Vertel me wat je zag, voordat het wegzakt.</p>
+    </div>
+  </div>
+
+  <div class="composer">
+    <label for="dream">Wat droomde je?</label>
+    <textarea id="dream" placeholder="Ik vloog over de bergen en zag een vriendin huilen aan het zwembad…"></textarea>
+    <div class="row">
+      <button type="button" class="primary" id="go">Maak mijn aflevering</button>
+      <button type="button" id="mic">Inspreken</button>
+      <span class="spacer"></span>
+      <button type="button" class="ghost" id="clear">Archief wissen</button>
+    </div>
+    <p class="status" id="status"></p>
+  </div>
+
+  <!-- Speler -->
+  <div class="player" id="player" hidden>
+    <div class="stage" id="stage"></div>
+    <div class="caption">
+      <div class="bar" id="bar" aria-hidden="true"></div>
+      <p class="narration" id="narration"></p>
+      <div class="row">
+        <button type="button" id="prev">Terug</button>
+        <button type="button" class="primary" id="next">Verder</button>
+        <button type="button" id="voice" aria-pressed="false">Stem aan</button>
+        <span class="spacer"></span>
+        <span class="counter" id="counter"></span>
+      </div>
+    </div>
+  </div>
+
+  <section id="threads-section" hidden>
+    <div class="head-rule">
+      <h2 id="threads-title">Wat terugkwam</h2>
+      <p>Draden uit eerdere dromen die vannacht opnieuw verschenen.</p>
+    </div>
+    <div class="threads" id="threads"></div>
+  </section>
+
+  <section id="reading-section" hidden>
+    <div class="head-rule">
+      <h2>De duiding</h2>
+      <p>Waarom nu, wat het zegt, en wat eraan zit te komen.</p>
+    </div>
+    <div class="reading">
+      <div class="block"><span class="lbl">Waarom je dit droomde</span><p id="why"></p></div>
+      <div class="block"><span class="lbl">Wat de droom zegt</span><p id="meaning"></p></div>
+      <div class="block future"><span class="lbl">Wat eraan zit te komen</span><p id="future"></p></div>
+      <p class="question" id="question"></p>
+    </div>
+  </section>
+
+  <section>
+    <div class="head-rule">
+      <h2>Je droomarchief</h2>
+      <p>Hier bouwt het geheugen zich op. Elke droom telt mee in de volgende duiding.</p>
+    </div>
+    <div class="archive" id="archive"></div>
+  </section>
+
+  <!-- Wat achter de betaalmuur zit -->
+  <section>
+    <div class="head-rule">
+      <h2>Vera als avatar</h2>
+      <p>De betaalde laag: je vertelt je droom niet aan een invulveld maar aan een gezicht.</p>
+    </div>
+    <div class="tiers">
+      <div class="tier">
+        <span class="tier-name">Gratis</span>
+        <p>Typen of inspreken, tekst terug. Drie dromen per maand.</p>
+      </div>
+      <div class="tier">
+        <span class="tier-name">Plus · €8,99</span>
+        <p>Onbeperkt dromen, de volledige duiding, Vera leest je aflevering hardop voor.</p>
+      </div>
+      <div class="tier on">
+        <span class="tier-name">Ultra · €17,99</span>
+        <p>Vera als pratende avatar. Je vertelt haar je droom, zij stelt door, en de aflevering
+          komt uit haar mond. Tien minuten per maand inbegrepen, daarna credits.</p>
+        <button type="button" class="ghost" id="tier-note">Nog niet aangesloten</button>
+      </div>
+    </div>
+  </section>
+
+  <footer class="end">
+    <p><strong>Wat werkt en wat niet.</strong> Tekst, geheugen en duiding zijn echt en worden per droom
+      geschreven. De vijf panelen zijn geprogrammeerde composities die op kleur en motief reageren —
+      in de echte app komen daar beelden uit een beeldmodel. Vera praat nu met de stem van je browser;
+      de avatar met gezicht moet nog worden aangesloten.</p>
+    <p><strong>De vooruitblik is vermaak, geen voorspelling.</strong> Hij gaat nooit over gezondheid,
+      geld of iemands overlijden. Dat staat als regel in de prompt, niet in de hoop.</p>
+  </footer>
+
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

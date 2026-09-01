@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" width="600" height="600">
+  <!-- Bloem des levens: negentien cirkels op een driehoeksraster. Puur decor,
+       daarom aria-hidden in de pagina en alleen als achtergrond geladen. -->
+  <g fill="none" stroke="#C9AEEA" stroke-width="1">
+    <circle cx="300" cy="300" r="60"/>
+    <circle cx="300" cy="196" r="60"/><circle cx="300" cy="404" r="60"/>
+    <circle cx="390" cy="248" r="60"/><circle cx="390" cy="352" r="60"/>
+    <circle cx="210" cy="248" r="60"/><circle cx="210" cy="352" r="60"/>
+    <circle cx="300" cy="92"  r="60"/><circle cx="300" cy="508" r="60"/>
+    <circle cx="390" cy="144" r="60"/><circle cx="390" cy="456" r="60"/>
+    <circle cx="210" cy="144" r="60"/><circle cx="210" cy="456" r="60"/>
+    <circle cx="480" cy="196" r="60"/><circle cx="480" cy="300" r="60"/><circle cx="480" cy="404" r="60"/>
+    <circle cx="120" cy="196" r="60"/><circle cx="120" cy="300" r="60"/><circle cx="120" cy="404" r="60"/>
+    <circle cx="300" cy="300" r="240" stroke-width="1.5"/>
+    <circle cx="300" cy="300" r="252" stroke-width=".6"/>
+  </g>
+</svg>
