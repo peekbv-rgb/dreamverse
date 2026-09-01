@@ -121,6 +121,26 @@ def set_name(name):
     return profile
 
 
+def answer_question(number, answer):
+    """Bewaar wat de dromer op de slotvraag antwoordde.
+
+    Dat antwoord is het waardevolste wat er is: het is het enige stuk tekst dat
+    de dromer schrijft nadat hij zijn droom heeft teruggezien. Het gaat mee in
+    het geheugen en dus in de volgende duiding.
+    """
+    answer = (answer or "").strip()[:1000]
+    if not answer:
+        raise DreamverseError("Er stond niets in je antwoord.")
+    with _lock:
+        archive = load_archive()
+        for d in archive:
+            if d.get("n") == number:
+                d["answer"] = answer
+                save_archive(archive)
+                return d
+    raise DreamverseError("Die droom staat niet in je archief.")
+
+
 def clear_archive():
     with _lock:
         save_archive([])
@@ -184,14 +204,19 @@ def _history(archive):
     if not archive:
         return "Er zijn nog geen eerdere dromen."
     recent = sorted(archive, key=lambda d: d.get("n", 0))[-MAX_ARCHIVE_IN_PROMPT:]
-    return "\n".join(
-        "Droom {}{}: {}".format(
+    regels = []
+    for d in recent:
+        regel = "Droom {}{}: {}".format(
             d.get("n"),
             " (" + d["when"] + ")" if d.get("when") else "",
             d.get("text", ""),
         )
-        for d in recent
-    )
+        if d.get("answer"):
+            # Wat de dromer zelf antwoordde weegt zwaarder dan de droom: dat is
+            # het enige dat hij wakend heeft opgeschreven, nadat hij het terugzag.
+            regel += "\n  Daarop antwoordde hij: " + d["answer"]
+        regels.append(regel)
+    return "\n".join(regels)
 
 
 def build_prompt(dream, archive, number, name=None):

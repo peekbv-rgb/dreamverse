@@ -11,6 +11,7 @@
 </head>
 <body>
 
+<div class="golven" aria-hidden="true"></div>
 <div class="stralen" aria-hidden="true"></div>
 
 <div class="wrap">
@@ -102,6 +103,14 @@
       <div class="block"><span class="lbl">Wat de droom zegt</span><p id="meaning"></p></div>
       <div class="block future"><span class="lbl">Wat eraan zit te komen</span><p id="future"></p></div>
       <p class="question" id="question"></p>
+      <div class="antwoord" id="antwoord-blok" hidden>
+        <label for="antwoord">Je antwoord</label>
+        <textarea id="antwoord" rows="2" placeholder="Schrijf op wat er in je opkomt. Het hoeft niet af te zijn."></textarea>
+        <div class="row">
+          <button type="button" class="primary" id="antwoord-op">Bewaren</button>
+          <span class="antwoord-uitleg" id="antwoord-uitleg">Dit gaat mee in de duiding van je volgende droom.</span>
+        </div>
+      </div>
     </div>
   </section>
 

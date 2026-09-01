@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" width="1200" height="900" preserveAspectRatio="xMidYMid slice">
+  <!-- Energiegolven die vanuit het midden naar buiten waaieren, zoals het licht
+       achter een mediterende figuur. Symmetrisch links en rechts, elk chakra
+       zijn eigen baan. Puur decor: aria-hidden in de pagina. -->
+  <defs>
+    <linearGradient id="g-crown" x1="0.5" y1="0" x2="0.5" y2="1">
+      <stop offset="0%" stop-color="#B369DE" stop-opacity=".85"/>
+      <stop offset="100%" stop-color="#B369DE" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="g-eye" x1="0.5" y1="0" x2="0.5" y2="1">
+      <stop offset="0%" stop-color="#6E62DA" stop-opacity=".8"/>
+      <stop offset="100%" stop-color="#6E62DA" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="g-throat" x1="0.5" y1="0" x2="0.5" y2="1">
+      <stop offset="0%" stop-color="#4A9FE2" stop-opacity=".75"/>
+      <stop offset="100%" stop-color="#4A9FE2" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="g-heart" x1="0.5" y1="0" x2="0.5" y2="1">
+      <stop offset="0%" stop-color="#4FBF86" stop-opacity=".7"/>
+      <stop offset="100%" stop-color="#4FBF86" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="g-solar" x1="0.5" y1="0" x2="0.5" y2="1">
+      <stop offset="0%" stop-color="#F2C64C" stop-opacity=".7"/>
+      <stop offset="100%" stop-color="#F2C64C" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="g-sacral" x1="0.5" y1="0" x2="0.5" y2="1">
+      <stop offset="0%" stop-color="#F0873C" stop-opacity=".7"/>
+      <stop offset="100%" stop-color="#F0873C" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="g-root" x1="0.5" y1="0" x2="0.5" y2="1">
+      <stop offset="0%" stop-color="#E2554F" stop-opacity=".7"/>
+      <stop offset="100%" stop-color="#E2554F" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="zacht" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="26"/>
+    </filter>
+  </defs>
+
+  <g filter="url(#zacht)" opacity=".85">
+    <!-- links -->
+    <path d="M600 120 C 380 200, 210 330, 40 300 L 40 470 C 250 430, 430 300, 600 220 Z" fill="url(#g-crown)"/>
+    <path d="M600 200 C 360 290, 190 430, 20 420 L 20 570 C 240 540, 420 400, 600 300 Z" fill="url(#g-eye)"/>
+    <path d="M600 290 C 340 390, 170 540, 0 545 L 0 690 C 230 660, 410 500, 600 390 Z" fill="url(#g-throat)"/>
+    <path d="M600 390 C 330 500, 150 650, 0 680 L 0 830 C 220 790, 400 610, 600 490 Z" fill="url(#g-heart)"/>
+    <path d="M600 500 C 320 620, 140 760, 0 820 L 0 900 L 600 900 Z" fill="url(#g-solar)"/>
+    <!-- rechts, gespiegeld -->
+    <path d="M600 120 C 820 200, 990 330, 1160 300 L 1160 470 C 950 430, 770 300, 600 220 Z" fill="url(#g-crown)"/>
+    <path d="M600 200 C 840 290, 1010 430, 1180 420 L 1180 570 C 960 540, 780 400, 600 300 Z" fill="url(#g-eye)"/>
+    <path d="M600 290 C 860 390, 1030 540, 1200 545 L 1200 690 C 970 660, 790 500, 600 390 Z" fill="url(#g-throat)"/>
+    <path d="M600 390 C 870 500, 1050 650, 1200 680 L 1200 830 C 980 790, 800 610, 600 490 Z" fill="url(#g-heart)"/>
+    <path d="M600 500 C 880 620, 1060 760, 1200 820 L 1200 900 L 600 900 Z" fill="url(#g-sacral)"/>
+    <!-- onderaan, de aarde -->
+    <ellipse cx="600" cy="880" rx="520" ry="120" fill="url(#g-root)"/>
+  </g>
+
+  <!-- De lichtkern -->
+  <circle cx="600" cy="150" r="120" fill="#FFFFFF" opacity=".18" filter="url(#zacht)"/>
+  <circle cx="600" cy="150" r="46" fill="#FFFFFF" opacity=".22" filter="url(#zacht)"/>
+</svg>

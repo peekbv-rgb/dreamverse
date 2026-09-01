@@ -6,8 +6,8 @@
 :root {
   --void: #0A0714;
   --deep: #120C22;
-  --panel: rgba(30, 20, 54, .62);
-  --raised: rgba(48, 33, 82, .55);
+  --panel: rgba(24, 15, 46, .55);
+  --raised: rgba(52, 34, 92, .55);
   --ink: #F2EEFB;
   --muted: #A79ACB;
   --line: rgba(167, 154, 203, .22);
@@ -80,13 +80,25 @@ body::marker { content: none; }
 }
 @keyframes draaien { to { transform: translateX(-50%) rotate(360deg); } }
 
+/* De energiegolven, het beeld waar je om vroeg. */
+.golven {
+  position: fixed; inset: 0; z-index: -2; pointer-events: none;
+  background: url("golven.svg") center top / cover no-repeat;
+  opacity: .55; mix-blend-mode: screen;
+  animation: wiegen 30s ease-in-out infinite alternate;
+}
+@keyframes wiegen {
+  from { transform: scale(1.02) translateY(0); opacity: .48; }
+  to   { transform: scale(1.1) translateY(-2%); opacity: .62; }
+}
+
 body::after {
   content: "";
   position: fixed;
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  opacity: .3;
+  opacity: .42;
   background-image: url("geometry.svg");
   background-repeat: no-repeat;
   background-position: center 4vh;
@@ -173,8 +185,9 @@ h1 {
 /* Invoer */
 .composer {
   background: var(--panel);
-  backdrop-filter: blur(14px);
-  border: 1px solid var(--line);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(179, 105, 222, .3);
+  box-shadow: 0 0 40px rgba(110, 98, 218, .16), inset 0 1px 0 rgba(255,255,255,.06);
   border-radius: 20px;
   padding: 1.25rem 1.3rem 1.3rem;
   display: flex; flex-direction: column; gap: .85rem;
@@ -206,9 +219,15 @@ button:focus-visible { outline: 2px solid var(--crown); outline-offset: 3px; }
 button[disabled] { opacity: .4; cursor: default; }
 
 button.primary {
-  background: linear-gradient(100deg, var(--crown), var(--third-eye));
+  background: linear-gradient(100deg, var(--crown), var(--third-eye) 45%, var(--throat));
+  background-size: 200% 100%;
   color: #fff; border-color: transparent;
-  box-shadow: 0 0 24px rgba(110, 98, 218, .35);
+  box-shadow: 0 0 30px rgba(110, 98, 218, .5);
+  animation: gloeien 8s ease-in-out infinite alternate;
+}
+@keyframes gloeien {
+  from { background-position: 0% 50%; box-shadow: 0 0 24px rgba(110, 98, 218, .4); }
+  to   { background-position: 100% 50%; box-shadow: 0 0 40px rgba(179, 105, 222, .6); }
 }
 button.primary:hover:not([disabled]) { filter: brightness(1.12); }
 button.ghost { background: transparent; font-weight: 500; font-size: .78rem; color: var(--muted); }
@@ -248,7 +267,8 @@ button.rec {
 @keyframes turn { to { transform: rotate(360deg); } }
 
 @media (prefers-reduced-motion: reduce) {
-  .fade, .drift, .shimmer, .turn, .chakras i, .chakras .halo { animation: none; }
+  .fade, .drift, .shimmer, .turn, .chakras i, .chakras .halo,
+  .golven, button.primary, body::before, .stralen { animation: none; }
 }
 
 .caption {
@@ -271,16 +291,23 @@ button.rec {
 section { display: flex; flex-direction: column; gap: 1.1rem; }
 .head-rule {
   display: flex; flex-direction: column; gap: .25rem; align-items: center; text-align: center;
-  padding-top: 1rem;
-  border-top: 1px solid var(--line);
+  padding-top: 1.4rem; position: relative; border-top: none;
 }
+.head-rule::before {
+  content: ""; position: absolute; top: 0; left: 12%; right: 12%; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--root), var(--sacral), var(--solar),
+              var(--heart), var(--throat), var(--third-eye), var(--crown), transparent);
+  opacity: .65;
+}
+h2 { text-shadow: 0 0 26px rgba(179, 105, 222, .45); }
 h2 { font-family: var(--display); font-weight: 300; font-size: 1.9rem; letter-spacing: .01em; margin: 0; }
 .head-rule p { margin: 0; color: var(--muted); font-size: .92rem; max-width: 34rem; }
 
 .threads { display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); gap: .9rem; }
 .thread {
   background: var(--panel); backdrop-filter: blur(10px);
-  border: 1px solid var(--line); border-radius: 16px;
+  border: 1px solid rgba(74, 159, 226, .28); border-radius: 16px;
+  box-shadow: 0 0 26px rgba(74, 159, 226, .12);
   padding: 1rem 1.1rem; display: flex; flex-direction: column; gap: .4rem;
 }
 .thread .tag { font-size: .64rem; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; color: var(--throat); }
@@ -290,7 +317,8 @@ h2 { font-family: var(--display); font-weight: 300; font-size: 1.9rem; letter-sp
 .reading { display: flex; flex-direction: column; gap: .9rem; }
 .block {
   background: var(--panel); backdrop-filter: blur(10px);
-  border: 1px solid var(--line); border-radius: 16px;
+  border: 1px solid rgba(179, 105, 222, .24); border-radius: 16px;
+  box-shadow: 0 0 30px rgba(110, 98, 218, .12);
   padding: 1.2rem 1.35rem; display: flex; flex-direction: column; gap: .5rem;
   position: relative; overflow: hidden;
 }
@@ -315,8 +343,11 @@ h2 { font-family: var(--display); font-weight: 300; font-size: 1.9rem; letter-sp
 .entry {
   display: flex; gap: .9rem; align-items: baseline;
   padding: .6rem .95rem; background: var(--panel); backdrop-filter: blur(8px);
-  border: 1px solid var(--line); border-radius: 12px; font-size: .9rem;
+  border: 1px solid rgba(179, 105, 222, .18); border-radius: 12px; font-size: .9rem;
+  border-left: 3px solid var(--crown);
+  transition: border-color 250ms ease, transform 250ms ease;
 }
+.entry:hover { border-left-color: var(--solar); transform: translateX(3px); }
 .entry .no { color: var(--crown); font-weight: 600; font-variant-numeric: tabular-nums; flex: none; }
 .entry .txt { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
@@ -324,7 +355,8 @@ h2 { font-family: var(--display); font-weight: 300; font-size: 1.9rem; letter-sp
 .tiers { display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); gap: .9rem; }
 .tier {
   background: var(--panel); backdrop-filter: blur(10px);
-  border: 1px solid var(--line); border-radius: 16px;
+  border: 1px solid rgba(179, 105, 222, .22); border-radius: 16px;
+  box-shadow: 0 0 24px rgba(110, 98, 218, .1);
   padding: 1.1rem 1.2rem; display: flex; flex-direction: column; gap: .5rem;
 }
 .tier.on {
@@ -501,3 +533,16 @@ table.dagen td { font-variant-numeric: tabular-nums; }
   .portret img { width: 4rem; height: 4rem; }
   .portret .chakras { height: 3.4rem; }
 }
+
+/* Het antwoord op de slotvraag */
+.antwoord {
+  display: flex; flex-direction: column; gap: .6rem;
+  background: rgba(43, 28, 74, .5); backdrop-filter: blur(10px);
+  border: 1px solid rgba(242, 198, 76, .3); border-radius: 16px;
+  padding: 1.1rem 1.25rem; box-shadow: 0 0 30px rgba(242, 198, 76, .1);
+}
+.antwoord label { font-size: .64rem; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; color: var(--solar); }
+.antwoord textarea { min-height: 4rem; font-size: 1.1rem; }
+.antwoord-uitleg { font-size: .82rem; color: var(--muted); }
+.antwoord.bewaard { border-color: rgba(79, 191, 134, .45); }
+.antwoord.bewaard .antwoord-uitleg { color: var(--heart); }

@@ -236,6 +236,13 @@
     }
 
     el("reading-section").hidden = false;
+    // De slotvraag krijgt een antwoordveld: zonder dat is het een doodlopende weg.
+    var blok = el("antwoord-blok");
+    blok.hidden = !ep.question;
+    blok.classList.remove("bewaard");
+    el("antwoord").value = "";
+    el("antwoord-uitleg").textContent = "Dit gaat mee in de duiding van je volgende droom.";
+    blok.dataset.dream = ep.number;
     el("why").textContent = ep.why;
     el("meaning").textContent = ep.meaning;
     el("future").textContent = ep.future;
@@ -344,6 +351,24 @@
     if (e.target === input || !episode) { return; }
     if (e.key === "ArrowRight") { el("next").click(); }
     if (e.key === "ArrowLeft" && index > 0) { show(index - 1); }
+  });
+
+  el("antwoord-op").addEventListener("click", function () {
+    var blok = el("antwoord-blok");
+    var tekst = el("antwoord").value.trim();
+    if (!tekst) { el("antwoord").focus(); return; }
+    fetch("/api/answer", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ dream: Number(blok.dataset.dream), answer: tekst })
+    }).then(function (r) { return r.json(); }).then(function (d) {
+      if (d.error) { el("antwoord-uitleg").textContent = d.error; return; }
+      blok.classList.add("bewaard");
+      el("antwoord-uitleg").textContent = "Bewaard. Vera weet dit bij je volgende droom.";
+      loadArchive();
+    }).catch(function () {
+      el("antwoord-uitleg").textContent = "Bewaren lukte niet. Probeer het nog eens.";
+    });
   });
 
   el("clear").addEventListener("click", function () {

@@ -8,6 +8,7 @@ Serveert de speler uit static/ en drie eindpunten:
     GET    /api/account                        -> pakket, saldo en wat er over is
     POST   /api/account                        -> pakket of saldo zetten (tijdelijk)
     POST   /api/profile      {"name": "..."}   -> naam onthouden
+    POST   /api/answer                         -> antwoord op de slotvraag bewaren
     GET    /api/panels/<nr>                    -> de stand van het tekenwerk
     POST   /api/vera/session                   -> WebRTC-gegevens voor een gesprek
     DELETE /api/vera/session/<id>              -> gesprek afsluiten
@@ -158,6 +159,14 @@ class Handler(SimpleHTTPRequestHandler):
             payload = self.read_json() or {}
             return self.send_json(dreamverse.set_name(payload.get("name", "")))
 
+        if self.path == "/api/answer":
+            payload = self.read_json() or {}
+            try:
+                return self.send_json(dreamverse.answer_question(
+                    int(payload.get("dream", 0)), payload.get("answer", "")))
+            except (dreamverse.DreamverseError, ValueError, TypeError) as e:
+                return self.send_json({"error": str(e)}, 400)
+
         if self.path == "/api/account":
             # Zolang er geen betaling is, worden pakket en saldo met de hand
             # gezet. Dit eindpunt moet dicht voordat dit ergens publiek draait.
@@ -204,6 +213,19 @@ class Handler(SimpleHTTPRequestHandler):
             return self.send_json({"error": "Onbekend eindpunt."}, 404)
         dreamverse.clear_archive()
         return self.send_json({"ok": True})
+
+    def end_headers(self):
+        """Pagina, stijl en script moeten na een deploy meteen vernieuwen.
+
+        Zonder dit haalt een browser de nieuwe HTML op maar houdt hij de oude
+        stylesheet, en dan verschijnen er elementen zonder de opmaak die erbij
+        hoort. Afbeeldingen en video mogen wel lang blijven staan: die krijgen
+        bij elke aflevering een nieuwe naam.
+        """
+        pad = self.path.split("?")[0]
+        if pad.endswith((".css", ".js", ".html", "/")):
+            self.send_header("Cache-Control", "no-cache, must-revalidate")
+        super().end_headers()
 
     def log_message(self, fmt, *args):
         print("{} {}".format(self.address_string(), fmt % args), flush=True)
