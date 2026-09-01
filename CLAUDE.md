@@ -39,6 +39,7 @@ Geen framework — dat houdt de deploy op één bestand, net als de andere proje
 | Afleveringen schrijven, archief, prompt | `dreamverse.py` |
 | Panelen als illustraties (optioneel) | `kling.py` |
 | Live gesprek met de avatar | `vera.py` |
+| Verbruik meten (geen limieten) | `usage.py`, `data/usage.jsonl` |
 | Persona en kennisdocumenten | `persona/`, `knowledge/` |
 | Id's van gekoppelde documenten (**niet weggooien**) | `build/document-ids.json` |
 | HTTP en routes | `server.py` |
@@ -115,8 +116,14 @@ iets een fout meldt.
 
 ## Open punten
 
-- Wat kost een minuut pratende avatar werkelijk? Dat getal ontbreekt en bepaalt of
-  de Ultra-laag op €17,99 uitkomt.
+- **Beantwoord:** een avatarminuut kost €0,18 en een gesprek van vijf minuten
+  €0,94. Runway rekent voor `gwm1_avatars` 2 credits vooraf plus 2 per aangebroken
+  zes seconden, met een credit van $0,01. Wie opstart en meteen ophangt kost al
+  €0,018. Daarom kan de avatar nooit in een vast abonnement van €4,99 — die hoort
+  in tokens.
+- Panelen gaan nu via Kling voor ongeveer €0,02 per stuk. Runway's `muse_image`
+  kost 1 credit, dus ongeveer €0,009 — de helft. Waard om te vergelijken op
+  kwaliteit voordat er volume op komt.
 - Het gesprek levert nog geen droomtekst op. De logische volgende stap: wat Vera
   hoort wordt de invoer voor de aflevering, zodat vertellen en krijgen één geheel
   worden in plaats van twee losse dingen.

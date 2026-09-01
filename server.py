@@ -4,6 +4,7 @@ Serveert de speler uit static/ en drie eindpunten:
 
     POST   /api/episode      {"dream": "..."}  -> de aflevering
     GET    /api/profile                        -> wie de dromer is
+    GET    /api/usage                          -> wat het tot nu toe gekost heeft
     POST   /api/profile      {"name": "..."}   -> naam onthouden
     GET    /api/panels/<nr>                    -> de stand van het tekenwerk
     POST   /api/vera/session                   -> WebRTC-gegevens voor een gesprek
@@ -28,6 +29,7 @@ from dotenv import load_dotenv
 import dreamverse
 import kling
 import vera
+import usage
 
 ROOT = Path(__file__).parent
 STATIC = ROOT / "static"
@@ -93,6 +95,8 @@ class Handler(SimpleHTTPRequestHandler):
             return
         if self.path == "/api/profile":
             return self.send_json(dreamverse.load_profile())
+        if self.path == "/api/usage":
+            return self.send_json(usage.summary())
         if self.path == "/api/archive":
             archive = sorted(dreamverse.load_archive(), key=lambda d: d.get("n", 0), reverse=True)
             return self.send_json({"dreams": archive})

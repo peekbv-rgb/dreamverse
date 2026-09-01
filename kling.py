@@ -36,6 +36,8 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
+import usage
+
 ROOT = Path(__file__).parent
 PANELS = ROOT / "data" / "panels"
 
@@ -261,9 +263,11 @@ def _render_all(number, panels):
                 raise KlingError("Duurde te lang; overgeslagen.")
             target = download(url, stem)
             state["images"][str(i)] = "/panels/{}".format(target.name)
+            usage.panel(number, i, ok=True)
         except KlingError as e:
             # Eén mislukt paneel is geen ramp: dat blijft gewoon de tekening.
             state["errors"][str(i)] = str(e)
+            usage.panel(number, i, ok=False)
             print("kling: paneel {} van droom {} mislukt: {}".format(i, number, e), flush=True)
         _write_state(number, state)
 

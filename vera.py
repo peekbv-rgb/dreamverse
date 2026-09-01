@@ -21,6 +21,8 @@ import time
 import httpx
 from runwayml import RunwayML
 
+import usage
+
 RUNWAY_VERSION = "2024-11-06"
 POLL_TIMEOUT = 60
 POLL_INTERVAL = 1.0
@@ -106,6 +108,7 @@ def consume(session_id, session_key):
 
 def end(session_id):
     """Sessie afsluiten zodat de teller stopt. Faalt stil: het is opruimwerk."""
+    usage.session_ended(session_id, MAX_DURATION)
     try:
         client().realtime_sessions.delete(session_id)
         return True
@@ -126,6 +129,7 @@ def start():
     except Exception:
         end(session_id)  # nooit een sessie laten hangen die niemand gebruikt
         raise
+    usage.session_started(session_id)
     return {
         "session_id": session_id,
         # Het veld heet `url` in de consume-respons, niet serverUrl. De rest

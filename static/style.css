@@ -367,3 +367,27 @@ footer.end {
 .who input::placeholder { color: rgba(167, 154, 203, .5); font-style: italic; }
 .who input:focus-visible { outline: 2px solid var(--crown); outline-offset: 2px; }
 .call { margin-left: 0; }
+
+/* Verbruiksmeter */
+.meter { display: flex; flex-direction: column; gap: .9rem; }
+.meter-cijfers { display: grid; grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); gap: .8rem; }
+.meter-cel {
+  background: var(--panel); backdrop-filter: blur(10px);
+  border: 1px solid var(--line); border-radius: 14px;
+  padding: .9rem 1rem; display: flex; flex-direction: column; gap: .15rem;
+}
+.meter-cel b {
+  font-family: var(--display); font-weight: 300; font-size: 1.9rem;
+  line-height: 1; font-variant-numeric: tabular-nums;
+}
+.meter-cel span { font-size: .68rem; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+.meter-cel.onbekend b { color: var(--sacral); font-size: 1.1rem; }
+.meter-cel.uitgelicht { border-color: rgba(179, 105, 222, .5); background: rgba(43, 28, 74, .55); }
+.meter-cel.uitgelicht b { color: var(--crown); }
+.meter-noot { font-size: .85rem; color: var(--muted); margin: 0; }
+.meter-leeg { color: var(--muted); margin: 0; font-size: .9rem; }
+table.dagen { width: 100%; border-collapse: collapse; font-size: .88rem; }
+table.dagen th, table.dagen td { text-align: right; padding: .35rem .5rem; border-bottom: 1px solid var(--line); }
+table.dagen th:first-child, table.dagen td:first-child { text-align: left; }
+table.dagen th { color: var(--muted); font-weight: 500; font-size: .7rem; letter-spacing: .12em; text-transform: uppercase; }
+table.dagen td { font-variant-numeric: tabular-nums; }

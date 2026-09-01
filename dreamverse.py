@@ -18,6 +18,7 @@ from datetime import date
 from pathlib import Path
 
 import kling
+import usage
 
 ROOT = Path(__file__).parent
 DATA = ROOT / "data"
@@ -319,6 +320,10 @@ def create(dream):
             "when": date.today().isoformat(),
         })
         save_archive(archive)
+
+    u = episode.get("usage") or {}
+    usage.episode(number, u.get("input_tokens", 0), u.get("output_tokens", 0),
+                  demo=episode.get("demo"))
 
     # Het tekenwerk loopt op de achtergrond verder; de aflevering is al leesbaar.
     episode["images_pending"] = kling.render_async(number, episode["panels"])

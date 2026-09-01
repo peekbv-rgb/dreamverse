@@ -346,6 +346,7 @@
         render(ep);
         input.value = "";
         loadArchive();
+        laadVerbruik();
         statusEl.textContent = ep.demo
           ? "Voorbeeldaflevering — er staat nog geen ANTHROPIC_API_KEY in .env."
           : "Klaar. Dit was Droom " + ep.number + "; hij telt mee in je volgende duiding.";
@@ -393,7 +394,8 @@
     if (micTrack) { try { micTrack.stop(); } catch (e) { /* al gestopt */ } micTrack = null; }
     if (sessionId) {
       // Afsluiten bij Runway, anders loopt de teller door.
-      fetch("/api/vera/session/" + sessionId, { method: "DELETE" }).catch(function () {});
+      fetch("/api/vera/session/" + sessionId, { method: "DELETE" })
+        .then(laadVerbruik).catch(function () {});
       sessionId = null;
     }
     el("call-panel").hidden = true;
@@ -502,10 +504,57 @@
     })
     .catch(function () {});
 
+  /* ----------------------------------------------------------- wat het kost */
+
+  function euro(n) { return "€" + n.toFixed(2).replace(".", ","); }
+
+  function cel(waarde, label, klasse) {
+    return '<div class="meter-cel ' + (klasse || "") + '"><b>' + waarde +
+           "</b><span>" + label + "</span></div>";
+  }
+
+  function toonVerbruik(u) {
+    var t = u.totals, m = el("meter");
+    if (!t.dreams && !t.sessions && !t.panels) { return; }
+
+    var html = '<div class="meter-cijfers">';
+    html += cel(t.dreams, "dromen");
+    html += cel(t.panels, "panelen");
+    html += cel(t.sessions, "gesprekken");
+    html += cel(Math.round(t.avatar_seconds) + " s", "avatartijd");
+    html += cel(u.cost_per_dream === null ? "—" : euro(u.cost_per_dream),
+                "per droom", "uitgelicht");
+    html += cel(euro(u.avatar_per_5min), "gesprek van 5 min", "uitgelicht");
+    html += "</div>";
+
+    if (u.by_day.length) {
+      html += '<table class="dagen"><thead><tr><th>dag</th><th>dromen</th>' +
+              "<th>panelen</th><th>gesprekken</th><th>avatartijd</th></tr></thead><tbody>";
+      u.by_day.forEach(function (d) {
+        html += "<tr><td>" + d.date + "</td><td>" + d.dreams + "</td><td>" + d.panels +
+                "</td><td>" + d.sessions + "</td><td>" + Math.round(d.avatar_seconds) + " s</td></tr>";
+      });
+      html += "</tbody></table>";
+    }
+
+    html += '<p class="meter-noot">Tekst ' + euro(u.costs.tekst) + ", panelen " +
+            euro(u.costs.panelen);
+    html += ", avatar " + euro(u.costs.avatar) + ". Runway rekent 2 credits bij het " +
+            "starten en 2 per aangebroken zes seconden, dus " + euro(u.avatar_per_minute) +
+            " per gesprekminuut — en ook wie meteen ophangt kost al iets.</p>";
+    m.innerHTML = html;
+  }
+
+  function laadVerbruik() {
+    fetch("/api/usage").then(function (r) { return r.json(); })
+      .then(toonVerbruik).catch(function () {});
+  }
+
   /* --------------------------------------------------------------- starten */
 
   setupMic();
   loadArchive();
+  laadVerbruik();
   fetch("/api/health")
     .then(function (r) { return r.json(); })
     .then(function (d) {
