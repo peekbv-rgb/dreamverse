@@ -182,16 +182,34 @@ def result(task_id):
     return images[0]["url"]
 
 
-def download(url, target):
+def download(url, stem):
+    """Haal de afbeelding op en bewaar hem met de extensie die bij de inhoud past.
+
+    Kling levert PNG waar de URL soms iets anders suggereert, dus we kijken naar
+    de eerste bytes in plaats van naar de naam. Geeft het pad terug.
+    """
     req = urllib.request.Request(url, headers={"User-Agent": "dreamverse/1.0"})
     with urllib.request.urlopen(req, timeout=TIMEOUT) as r:
         blob = r.read()
     if len(blob) < 1024:
         raise KlingError("De afbeelding kwam leeg terug.")
+
+    # Magische bytes in hex, zodat er geen escapes in deze bron hoeven te staan.
+    if blob.startswith(bytes.fromhex("89504e470d0a1a0a")):
+        suffix = ".png"
+    elif blob.startswith(bytes.fromhex("ffd8")):
+        suffix = ".jpg"
+    elif blob[:4] == b"RIFF" and blob[8:12] == b"WEBP":
+        suffix = ".webp"
+    else:
+        raise KlingError("Onbekend beeldformaat; niet opgeslagen.")
+
+    target = stem.with_suffix(suffix)
     target.parent.mkdir(parents=True, exist_ok=True)
-    tmp = target.with_suffix(".part")
+    tmp = stem.with_suffix(".part")
     tmp.write_bytes(blob)
     tmp.replace(target)
+    return target
 
 
 # --------------------------------------------------------------------------- #
@@ -230,7 +248,7 @@ def _render_all(number, panels):
     _write_state(number, state)
 
     for i, panel in enumerate(panels):
-        target = PANELS / "{}-{}.jpg".format(number, i)
+        stem = PANELS / "{}-{}".format(number, i)
         try:
             task_id = submit(panel_prompt(panel))
             url = None
@@ -241,7 +259,7 @@ def _render_all(number, panels):
                     break
             if not url:
                 raise KlingError("Duurde te lang; overgeslagen.")
-            download(url, target)
+            target = download(url, stem)
             state["images"][str(i)] = "/panels/{}".format(target.name)
         except KlingError as e:
             # Eén mislukt paneel is geen ramp: dat blijft gewoon de tekening.
@@ -292,8 +310,7 @@ def check():
             url = result(task_id)
             print("  poging {}: {}".format(attempt + 1, url or "nog bezig"))
             if url:
-                target = PANELS / "check.jpg"
-                download(url, target)
+                target = download(url, PANELS / "check")
                 print("gelukt  :", target)
                 return 0
         print("time-out: de taak werd niet op tijd klaar.")
