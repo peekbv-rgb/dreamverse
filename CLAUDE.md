@@ -142,9 +142,21 @@ boven afgerond per begonnen minuut.
   zes seconden, met een credit van $0,01. Wie opstart en meteen ophangt kost al
   €0,018. Daarom kan de avatar nooit in een vast abonnement van €4,99 — die hoort
   in tokens.
-- Panelen gaan nu via Kling voor ongeveer €0,02 per stuk. Runway's `muse_image`
-  kost 1 credit, dus ongeveer €0,009 — de helft. Waard om te vergelijken op
-  kwaliteit voordat er volume op komt.
+- **Beslist op 1 september 2026: panelen blijven bij Kling.** Runway's
+  `muse_image` is met €0,009 per beeld de helft goedkoper en op één enkel beeld
+  vaak indrukwekkender, maar houdt de stijl niet vast over vijf panelen: het ene
+  paneel komt op wit papier, het volgende in een nachtblauwe wereld, en de
+  opgelegde geometrie wordt een grote gouden bloem in plaats van een fluistering.
+  Kling houdt dezelfde nacht vast, en die samenhang ís het product. Het scheelt
+  €0,32 per abonnee per maand; dat weegt niet op tegen een aflevering die
+  halverwege van wereld verspringt. De vergelijkingsbeelden staan in
+  `data/vergelijk/`.
+  Terugkomen op dit besluit is zinnig zodra `muse_image` met een strakkere
+  stijlregel — donkere ondergrond afdwingen, geometrie eruit — een hele set van
+  vijf consistent krijgt.
+- Twee valkuilen bij Runway-beeldmodellen: `gen4_image_turbo` is beeld-naar-beeld
+  en eist een referentieafbeelding, en `muse_image` accepteert alleen zijn eigen
+  verhoudingen (breedbeeld is `2016:1152`, niet `1280:720`).
 - Het gesprek levert nog geen droomtekst op. De logische volgende stap: wat Vera
   hoort wordt de invoer voor de aflevering, zodat vertellen en krijgen één geheel
   worden in plaats van twee losse dingen.
