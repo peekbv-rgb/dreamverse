@@ -2,8 +2,10 @@ services:
   - type: web
     name: dreamverse
     runtime: python
-    # Free slaapt na een kwartier en de eerste bezoeker wacht dan een halve
-    # minuut. Prima om te bouwen; zet op starter zodra je hem laat zien.
+    # Free slaapt na een kwartier, en de eerste bezoeker daarna wacht een halve
+    # tot een hele minuut op een leeg scherm. Prima om te bouwen. Zodra je dit
+    # aan testpersonen stuurt: starter, anders meet je hun geduld in plaats van
+    # je product.
     plan: free
     buildCommand: pip install -r requirements.txt
     startCommand: python server.py
@@ -12,12 +14,35 @@ services:
       # loopback antwoordt niets van buiten de container.
       - key: HOST
         value: 0.0.0.0
-      # Zet deze in het Render-dashboard, niet hier.
+
+      # Vera's personage-id is geen geheim; het staat ook in CLAUDE.md.
+      - key: RUNWAY_CHARACTER_ID
+        value: 43e6b2b0-29ea-4125-8e2f-3ebed04f65d1
+
+      # Vijf minuten per gesprek.
+      - key: VERA_MAX_DURATION
+        value: "300"
+
+      # Alles hieronder zet je met de hand in het Render-dashboard onder
+      # Environment. Ze staan hier bewust alleen als naam: sync: false betekent
+      # dat Render de waarde bewaart en dat dit bestand hem nooit ziet.
       - key: ANTHROPIC_API_KEY
         sync: false
+      - key: KLING_API_KEY
+        sync: false
+      - key: RUNWAYML_API_SECRET
+        sync: false
+
+      # Zet deze twee. Zonder wachtwoord kan iedereen die het adres kent jouw
+      # tegoed bij Kling en Runway opmaken, en dat adres is openbaar bereikbaar.
       - key: AUTH_USER
         sync: false
       - key: AUTH_PASSWORD
         sync: false
-    # Let op: het archief staat als bestand op de schijf van de container en
-    # is bij elke deploy weg. Voor iets echts hoort hier een database.
+
+    # LET OP: het droomarchief, de getekende panelen en de verbruiksmeter staan
+    # als bestanden in data/ op de schijf van de container. Die schijf is weg bij
+    # elke deploy en bij elke keer dat de free-instantie in slaap valt en opnieuw
+    # opstart. Voor jouw eigen test is dat te doen; voor tien testpersonen niet -
+    # dan verliezen zij hun dromen en meet je niets. Daar hoort een schijf
+    # (betaald) of een database bij voordat je mensen uitnodigt.
