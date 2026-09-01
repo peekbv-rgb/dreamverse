@@ -38,6 +38,9 @@ Geen framework — dat houdt de deploy op één bestand, net als de andere proje
 |---|---|
 | Afleveringen schrijven, archief, prompt | `dreamverse.py` |
 | Panelen als illustraties (optioneel) | `kling.py` |
+| Live gesprek met de avatar | `vera.py` |
+| Persona en kennisdocumenten | `persona/`, `knowledge/` |
+| Id's van gekoppelde documenten (**niet weggooien**) | `build/document-ids.json` |
 | HTTP en routes | `server.py` |
 | Speler, invoer, spraak | `static/` |
 | Persona van de gids | `persona/vera.txt` |
@@ -50,7 +53,9 @@ GET    /api/archive                     -> alle eerdere dromen
 DELETE /api/archive                     -> archief wissen
 GET    /api/panels/<nr>                 -> stand van het tekenwerk
 GET    /panels/<bestand>.jpg            -> een gegenereerd paneel
-GET    /api/health                      -> {"ok": true, "key": bool, "kling": bool}
+POST   /api/vera/session                -> WebRTC-gegevens voor een gesprek
+DELETE /api/vera/session/<id>           -> gesprek afsluiten
+GET    /api/health                      -> {"ok", "key", "kling", "vera"}
 ```
 
 ## Draaien
@@ -88,19 +93,32 @@ en het scheelt direct in de kostprijs per aflevering.
   `python kling.py --check`: die maakt één afbeelding en drukt alles af wat
   terugkomt. Klopt een veldnaam niet, dan zie je precies welke. Zonder sleutels
   blijven de getekende composities staan; dat is geen storing maar het ontwerp.
-- **Vera heeft nog geen gezicht.** Ze praat nu met de stem van de browser
-  (`speechSynthesis`), en inspreken gaat via `SpeechRecognition` — dat werkt in
-  Chrome en Edge, niet in Safari of Firefox. De pratende avatar is de Ultra-laag
-  (€17,99) en vraagt een Runway-personage, een stem en een sessiebudget. De
-  koppeling gaat zoals in `AI/Projects/peek-avatar/app`: de server maakt de
-  realtime sessie en geeft alleen kortlevende WebRTC-gegevens aan de browser.
+- **Het gesprek met Vera is nog niet met een echte microfoon getest.** De keten
+  create → READY → consume → wss-adres + token is geverifieerd, en de pagina laadt
+  LiveKit zonder fouten, maar de WebRTC-handdruk zelf moet een mens doen.
+  Let op: `consume` is eenmalig. Loopt de verbinding daarna stuk, dan is de sessie
+  op en moet er een nieuwe komen.
 - **Het archief is een bestand op schijf** en dus weg bij elke Render-deploy. Voor
   iets echts hoort daar een database.
 - **Geen accounts en geen betaling.** De prijslagen staan alleen als tekst in de UI.
+
+## Vera bij Runway
+
+Avatar-id `43e6b2b0-29ea-4125-8e2f-3ebed04f65d1`, stem **Violet** (Gentle),
+status READY. **Dit is niet Cat (`761a6d44…`) en niet Pia (`75144525…`).**
+`avatars.update(document_ids=...)` vervángt de hele set, dus stuur altijd alle
+id's mee die moeten blijven — ze staan in `build/document-ids.json`.
+
+Gekoppeld: `intuitief-dromen` en `soorten-dromen`. Met de persona erbij zit je op
+11.864 tekens van de 100.000. Boven die grens gaat de avatar zwijgen zonder dat
+iets een fout meldt.
 
 ## Open punten
 
 - Wat kost een minuut pratende avatar werkelijk? Dat getal ontbreekt en bepaalt of
   de Ultra-laag op €17,99 uitkomt.
+- Het gesprek levert nog geen droomtekst op. De logische volgende stap: wat Vera
+  hoort wordt de invoer voor de aflevering, zodat vertellen en krijgen één geheel
+  worden in plaats van twee losse dingen.
 - Voordat er meer gebouwd wordt: tien testpersonen, drie dagen, en kijken wie op
   dag vier uit zichzelf terugkomt. Dat cijfer beslist of dit een bedrijf is.

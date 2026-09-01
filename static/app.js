@@ -369,12 +369,120 @@
       });
   });
 
+
+  /* ------------------------------------------------------- gesprek met Vera */
+
+  var room = null, micTrack = null, sessionId = null, callTimer = null, callEnds = 0;
+
+  function callStatus(text) {
+    el("call-status").textContent = text;
+  }
+
+  function veil(show) {
+    el("call-veil").hidden = !show;
+  }
+
+  function tick() {
+    var left = Math.max(0, Math.round((callEnds - Date.now()) / 1000));
+    var m = Math.floor(left / 60), sec = left % 60;
+    el("call-time").textContent = "nog " + m + ":" + (sec < 10 ? "0" : "") + sec;
+    if (left <= 0) { hangup("De tijd voor dit gesprek zat erop."); }
+  }
+
+  function hangup(reason) {
+    if (callTimer) { clearInterval(callTimer); callTimer = null; }
+    if (room) { try { room.disconnect(); } catch (e) { /* al weg */ } room = null; }
+    if (micTrack) { try { micTrack.stop(); } catch (e) { /* al gestopt */ } micTrack = null; }
+    if (sessionId) {
+      // Afsluiten bij Runway, anders loopt de teller door.
+      fetch("/api/vera/session/" + sessionId, { method: "DELETE" }).catch(function () {});
+      sessionId = null;
+    }
+    el("call-panel").hidden = true;
+    el("call").disabled = false;
+    el("call").textContent = "Praat met Vera";
+    guide.classList.remove("listening");
+    if (reason) { guideLine.textContent = reason; }
+  }
+
+  async function callVera() {
+    var btn = el("call");
+    btn.disabled = true;
+    btn.textContent = "Verbinden…";
+    el("call-panel").hidden = false;
+    veil(true);
+    callStatus("Vera wordt wakker…");
+
+    var stream;
+    try {
+      // Microfoon eerst, binnen de klik: browsers trekken de toestemming
+      // anders in zodra er een await tussen zit.
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    } catch (e) {
+      callStatus("Zonder microfoon kan ze je niet horen.");
+      setTimeout(function () { hangup("Geen toegang tot je microfoon."); }, 2500);
+      return;
+    }
+
+    var creds;
+    try {
+      var r = await fetch("/api/vera/session", { method: "POST" });
+      creds = await r.json();
+      if (!r.ok) { throw new Error(creds.error || "Verbinden mislukte."); }
+    } catch (e) {
+      stream.getTracks().forEach(function (t) { t.stop(); });
+      callStatus(e.message);
+      setTimeout(function () { hangup(e.message); }, 3000);
+      return;
+    }
+
+    sessionId = creds.session_id;
+    callStatus("Ze komt in beeld…");
+
+    room = new LivekitClient.Room({ adaptiveStream: true, dynacast: true });
+
+    room.on(LivekitClient.RoomEvent.TrackSubscribed, function (track) {
+      if (track.kind === "video") { track.attach(el("vera-video")); veil(false); }
+      if (track.kind === "audio") { track.attach(el("vera-audio")); }
+    });
+    room.on(LivekitClient.RoomEvent.Disconnected, function () { hangup(); });
+
+    try {
+      await room.connect(creds.server_url, creds.token);
+      var pub = new LivekitClient.LocalAudioTrack(stream.getAudioTracks()[0], undefined, false);
+      await room.localParticipant.publishTrack(pub, { source: LivekitClient.Track.Source.Microphone });
+      micTrack = pub;
+    } catch (e) {
+      stream.getTracks().forEach(function (t) { t.stop(); });
+      callStatus("De verbinding kwam niet tot stand.");
+      setTimeout(function () { hangup("De verbinding kwam niet tot stand. Probeer het opnieuw."); }, 3000);
+      return;
+    }
+
+    btn.textContent = "In gesprek";
+    guide.classList.add("listening");
+    callEnds = Date.now() + (creds.max_duration || 600) * 1000;
+    tick();
+    callTimer = setInterval(tick, 1000);
+  }
+
+  el("call").addEventListener("click", callVera);
+  el("hangup").addEventListener("click", function () { hangup("Tot morgenochtend."); });
+  // Een dichtgeklapt tabblad mag geen sessie laten doorlopen.
+  window.addEventListener("pagehide", function () { if (sessionId) { hangup(); } });
+
   /* --------------------------------------------------------------- starten */
 
   setupMic();
   loadArchive();
   fetch("/api/health")
     .then(function (r) { return r.json(); })
-    .then(function (d) { el("mode").textContent = d.key ? "verbonden" : "voorbeeldmodus"; })
+    .then(function (d) {
+      el("mode").textContent = d.key ? "verbonden" : "voorbeeldmodus";
+      if (!d.vera) {
+        el("call").disabled = true;
+        el("call").title = "Vera is niet aangesloten";
+      }
+    })
     .catch(function () { el("mode").textContent = "offline"; });
 })();

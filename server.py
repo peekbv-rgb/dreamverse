@@ -4,6 +4,8 @@ Serveert de speler uit static/ en drie eindpunten:
 
     POST   /api/episode      {"dream": "..."}  -> de aflevering
     GET    /api/panels/<nr>                    -> de stand van het tekenwerk
+    POST   /api/vera/session                   -> WebRTC-gegevens voor een gesprek
+    DELETE /api/vera/session/<id>              -> gesprek afsluiten
     GET    /api/archive                        -> alle eerdere dromen
     DELETE /api/archive                        -> archief wissen
 
@@ -23,6 +25,7 @@ from dotenv import load_dotenv
 
 import dreamverse
 import kling
+import vera
 
 ROOT = Path(__file__).parent
 STATIC = ROOT / "static"
@@ -94,6 +97,7 @@ class Handler(SimpleHTTPRequestHandler):
                 "ok": True,
                 "key": bool(os.environ.get("ANTHROPIC_API_KEY")),
                 "kling": kling.enabled(),
+                "vera": vera.enabled(),
             })
         if self.path.startswith("/api/panels/"):
             try:
@@ -124,6 +128,16 @@ class Handler(SimpleHTTPRequestHandler):
     def do_POST(self):
         if not self.guard():
             return
+
+        if self.path == "/api/vera/session":
+            try:
+                return self.send_json(vera.start())
+            except vera.VeraError as e:
+                return self.send_json({"error": str(e)}, 502)
+            except Exception as e:
+                self.log_message("vera-sessie mislukte: %s", e)
+                return self.send_json({"error": "Vera kon niet opstarten."}, 502)
+
         if self.path != "/api/episode":
             return self.send_json({"error": "Onbekend eindpunt."}, 404)
 
@@ -145,6 +159,12 @@ class Handler(SimpleHTTPRequestHandler):
     def do_DELETE(self):
         if not self.guard():
             return
+        if self.path.startswith("/api/vera/session/"):
+            session_id = self.path.rsplit("/", 1)[1]
+            # Alleen de vorm controleren; Runway weigert onbekende ids zelf.
+            if not session_id or len(session_id) > 64:
+                return self.send_json({"error": "Onbekende sessie."}, 400)
+            return self.send_json({"ok": vera.end(session_id)})
         if self.path != "/api/archive":
             return self.send_json({"error": "Onbekend eindpunt."}, 404)
         dreamverse.clear_archive()
@@ -158,5 +178,8 @@ if __name__ == "__main__":
     if not os.environ.get("ANTHROPIC_API_KEY"):
         print("let op: geen ANTHROPIC_API_KEY — elke droom geeft de voorbeeldaflevering", flush=True)
     print("panelen: {}".format("Kling" if kling.enabled() else "getekend (geen Kling-sleutels)"), flush=True)
+    print("Vera   : {}".format(
+        "aangesloten, max {}s per gesprek".format(vera.MAX_DURATION)
+        if vera.enabled() else "niet aangesloten"), flush=True)
     print("dreamverse draait op http://{}:{}".format(HOST, PORT), flush=True)
     ThreadingHTTPServer((HOST, PORT), Handler).serve_forever()

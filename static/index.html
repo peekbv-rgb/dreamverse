@@ -30,6 +30,21 @@
       <p class="guide-name">Vera</p>
       <p class="guide-line" id="guide-line">Goedemorgen. Vertel me wat je zag, voordat het wegzakt.</p>
     </div>
+    <button type="button" id="call" class="call">Praat met Vera</button>
+  </div>
+
+  <!-- Het gesprek met de avatar -->
+  <div class="call-panel" id="call-panel" hidden>
+    <div class="call-stage">
+      <video id="vera-video" playsinline autoplay></video>
+      <audio id="vera-audio" autoplay></audio>
+      <div class="call-veil" id="call-veil"><span></span><p id="call-status">Vera wordt wakker…</p></div>
+    </div>
+    <div class="call-bar">
+      <span class="call-time" id="call-time"></span>
+      <span class="spacer"></span>
+      <button type="button" id="hangup">Gesprek beëindigen</button>
+    </div>
   </div>
 
   <div class="composer">
@@ -124,6 +139,7 @@
 
 </div>
 
+<script src="livekit-client.umd.min.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
