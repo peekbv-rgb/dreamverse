@@ -38,6 +38,7 @@ Geen framework — dat houdt de deploy op één bestand, net als de andere proje
 |---|---|
 | Afleveringen schrijven, archief, prompt | `dreamverse.py` |
 | Panelen als illustraties (optioneel) | `kling.py` |
+| Het bewegende kernmoment | `video.py` |
 | Live gesprek met de avatar | `vera.py` |
 | Verbruik meten | `usage.py`, `data/usage.jsonl` |
 | Pakketten, tokens en grenzen | `plans.py` |

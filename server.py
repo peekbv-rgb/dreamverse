@@ -125,7 +125,8 @@ class Handler(SimpleHTTPRequestHandler):
             # De gegenereerde panelen staan buiten static/, in data/.
             name = os.path.basename(self.path)
             target = kling.PANELS / name
-            types = {".png": "image/png", ".jpg": "image/jpeg", ".webp": "image/webp"}
+            types = {".png": "image/png", ".jpg": "image/jpeg", ".webp": "image/webp",
+                     ".mp4": "video/mp4"}
             if target.suffix.lower() not in types or not target.is_file():
                 return self.send_json({"error": "Niet gevonden."}, 404)
             blob = target.read_bytes()

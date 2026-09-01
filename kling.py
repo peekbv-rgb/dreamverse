@@ -245,7 +245,7 @@ def _write_state(number, state):
     tmp.replace(state_path(number))
 
 
-def _render_all(number, panels):
+def _render_all(number, panels, key_index=None, video_instelling=None):
     state = {"status": "busy", "images": {}, "errors": {}}
     _write_state(number, state)
 
@@ -274,12 +274,18 @@ def _render_all(number, panels):
     state["status"] = "done"
     _write_state(number, state)
 
+    # De panelen staan er; nu mag het kernmoment gaan bewegen.
+    if video_instelling and key_index is not None:
+        import video
+        video.render_async(number, panels, key_index, video_instelling)
 
-def render_async(number, panels):
+
+def render_async(number, panels, key_index=None, video_instelling=None):
     """Start het tekenwerk op de achtergrond. Geeft meteen terug."""
     if not enabled():
         return False
-    threading.Thread(target=_render_all, args=(number, panels), daemon=True).start()
+    threading.Thread(target=_render_all,
+                     args=(number, panels, key_index, video_instelling), daemon=True).start()
     return True
 
 

@@ -40,19 +40,45 @@ body {
   overflow-x: hidden;
 }
 
-/* Aurora: twee zachte kleurvelden achter alles, plus heilige geometrie */
+/* Het spectrum. Zeven velden die vanuit het midden naar buiten waaieren, zoals
+   het licht achter een mediterende figuur: violet bovenin, rood onderaan, en
+   daartussen de rest. Bewust verzadigd - de app mocht mystieker. */
 body::before {
   content: "";
   position: fixed;
-  inset: -20vh -10vw;
-  z-index: -2;
+  inset: -25vh -20vw;
+  z-index: -3;
   background:
-    radial-gradient(50% 40% at 18% 12%, rgba(179, 105, 222, .28), transparent 70%),
-    radial-gradient(45% 38% at 82% 22%, rgba(74, 159, 226, .22), transparent 70%),
-    radial-gradient(55% 45% at 50% 100%, rgba(226, 85, 79, .16), transparent 70%),
-    linear-gradient(180deg, var(--deep), var(--void) 60%);
-  filter: blur(8px);
+    radial-gradient(38% 30% at 50% 2%,  rgba(179, 105, 222, .55), transparent 72%),
+    radial-gradient(42% 34% at 16% 14%, rgba(110, 98, 218, .42), transparent 74%),
+    radial-gradient(42% 34% at 84% 14%, rgba(74, 159, 226, .40), transparent 74%),
+    radial-gradient(46% 36% at 8% 46%,  rgba(79, 191, 134, .30), transparent 76%),
+    radial-gradient(46% 36% at 92% 46%, rgba(242, 198, 76, .28), transparent 76%),
+    radial-gradient(50% 40% at 22% 88%, rgba(240, 135, 60, .30), transparent 78%),
+    radial-gradient(50% 40% at 78% 92%, rgba(226, 85, 79, .30), transparent 78%),
+    linear-gradient(180deg, #170F2C, var(--void) 62%);
+  filter: blur(22px) saturate(1.15);
+  animation: ademen 26s ease-in-out infinite alternate;
 }
+@keyframes ademen {
+  from { transform: scale(1) translateY(0); }
+  to   { transform: scale(1.06) translateY(-1.5%); }
+}
+
+/* Stralenkrans achter de kop: het licht dat uit de figuur komt. */
+body::marker { content: none; }
+.stralen {
+  position: fixed; top: -18vh; left: 50%; width: min(150vw, 74rem); aspect-ratio: 1;
+  transform: translateX(-50%); z-index: -2; pointer-events: none; opacity: .5;
+  background: conic-gradient(from 200deg,
+    rgba(226,85,79,.22), rgba(240,135,60,.22), rgba(242,198,76,.22),
+    rgba(79,191,134,.22), rgba(74,159,226,.22), rgba(110,98,218,.22),
+    rgba(179,105,222,.22), rgba(226,85,79,.22));
+  -webkit-mask-image: radial-gradient(circle, #000 8%, rgba(0,0,0,.55) 34%, transparent 66%);
+  mask-image: radial-gradient(circle, #000 8%, rgba(0,0,0,.55) 34%, transparent 66%);
+  animation: draaien 140s linear infinite;
+}
+@keyframes draaien { to { transform: translateX(-50%) rotate(360deg); } }
 
 body::after {
   content: "";
@@ -60,11 +86,11 @@ body::after {
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  opacity: .16;
+  opacity: .3;
   background-image: url("geometry.svg");
   background-repeat: no-repeat;
-  background-position: center 6vh;
-  background-size: min(120vw, 60rem) auto;
+  background-position: center 4vh;
+  background-size: min(150vw, 76rem) auto;
 }
 
 .wrap { max-width: 54rem; margin: 0 auto; display: flex; flex-direction: column; gap: 2.6rem; }
@@ -82,11 +108,12 @@ header.top { display: flex; flex-direction: column; gap: .8rem; padding: 4rem 0 
 h1 {
   font-family: var(--display);
   font-weight: 300;
-  font-size: clamp(2.6rem, 8vw, 4.4rem);
+  font-size: clamp(2.8rem, 9vw, 5rem);
   line-height: 1.02;
   letter-spacing: .01em;
   margin: 0;
-  background: linear-gradient(96deg, var(--crown), var(--throat) 38%, var(--heart) 62%, var(--solar));
+  background: linear-gradient(96deg, var(--root), var(--sacral) 14%, var(--solar) 30%,
+              var(--heart) 48%, var(--throat) 66%, var(--third-eye) 82%, var(--crown));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -104,9 +131,16 @@ h1 {
   display: flex; gap: 1.2rem; align-items: center;
   background: var(--panel);
   backdrop-filter: blur(14px);
-  border: 1px solid var(--line);
+  border: 1px solid transparent;
   border-radius: 20px;
   padding: 1.1rem 1.3rem;
+  position: relative;
+  background-image:
+    linear-gradient(var(--panel), var(--panel)),
+    linear-gradient(100deg, var(--crown), var(--throat) 35%, var(--heart) 60%, var(--solar) 85%, var(--sacral));
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+  box-shadow: 0 0 46px rgba(179, 105, 222, .18);
 }
 
 .chakras { position: relative; width: 3.4rem; height: 5.2rem; flex: none; }
@@ -435,4 +469,35 @@ table.dagen td { font-variant-numeric: tabular-nums; }
 
   /* Een tabel met vijf kolommen past niet; laat hem zelf schuiven. */
   table.dagen { display: block; overflow-x: auto; white-space: nowrap; }
+}
+
+/* Vera's gezicht, met de chakra's als lichtkolom ernaast */
+.portret { position: relative; flex: none; display: flex; align-items: center; gap: .6rem; }
+.portret img {
+  width: 5.5rem; height: 5.5rem; border-radius: 50%; object-fit: cover;
+  object-position: 50% 22%;            /* haar ogen, niet haar schouders */
+  border: 1px solid rgba(179, 105, 222, .45);
+  box-shadow: 0 0 28px rgba(179, 105, 222, .28);
+}
+.portret .chakras { width: 1rem; height: 4.6rem; }
+.portret .chakras i { width: .5rem; height: .5rem; margin-left: -.25rem; }
+.portret .chakras .halo { width: 3rem; height: 3rem; }
+.guide.listening .portret img { border-color: var(--water); box-shadow: 0 0 34px rgba(99, 207, 214, .5); }
+
+/* Het bewegende kernmoment */
+.stage .kernmoment {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: cover; display: block; background: #06040D;
+}
+.kern-merk {
+  position: absolute; left: .8rem; bottom: .8rem; z-index: 2;
+  font-size: .62rem; font-weight: 600; letter-spacing: .16em; text-transform: uppercase;
+  color: var(--ink); background: rgba(10, 7, 20, .6); backdrop-filter: blur(6px);
+  border: 1px solid var(--line); border-radius: 100px; padding: .25rem .7rem;
+}
+.kern-merk.bezig { color: var(--muted); }
+
+@media (max-width: 640px) {
+  .portret img { width: 4rem; height: 4rem; }
+  .portret .chakras { height: 3.4rem; }
 }

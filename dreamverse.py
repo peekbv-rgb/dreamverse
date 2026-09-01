@@ -155,7 +155,7 @@ Antwoord met uitsluitend geldige JSON, zonder tekst eromheen, in deze vorm:
  "panels": [{{"narration": string, "image": string, "palette": string, "motif": string}}],
  "threads": [{{"ref": string, "was": string, "now": string}}],
  "why": string, "meaning": string, "future": string,
- "question": string, "motifs": [string]}}
+ "question": string, "motifs": [string], "key_panel": number}}
 
 Regels voor de velden:
 - Precies 5 panelen. "narration" is 1 tot 2 zinnen Nederlands.
@@ -173,6 +173,10 @@ Regels voor de velden:
 - question is een enkele open vraag aan de dromer.
 - motifs is een korte lijst kernwoorden uit deze droom voor het geheugen,
   bijvoorbeeld ["zwembad", "vliegen", "een huilende vriendin"].
+- key_panel is het nummer van het paneel dat het draaipunt van de droom is,
+  geteld vanaf 0. Dat ene paneel wordt echte video, de andere blijven stil.
+  Kies het moment waar de droom kantelt of waar het beeld het sterkst is -
+  niet het openingsbeeld en meestal niet het slot.
 """
 
 
@@ -251,7 +255,16 @@ def parse_episode(raw):
                 "now": str(t.get("now", "")),
             })
 
+    sleutel = data.get("key_panel")
+    try:
+        sleutel = int(sleutel)
+    except (TypeError, ValueError):
+        sleutel = None
+    if sleutel is None or not (0 <= sleutel < len(panels)):
+        sleutel = min(2, len(panels) - 1)   # bij twijfel het midden
+
     return {
+        "key_panel": sleutel,
         "title": str(data.get("title") or "Naamloze droom"),
         "panels": panels,
         "threads": threads,
@@ -380,9 +393,15 @@ def create(dream):
     # Het tekenwerk loopt op de achtergrond verder; de aflevering is al leesbaar.
     # In het gratis pakket blijft het bij de getekende composities.
     if plans.panels_allowed():
-        episode["images_pending"] = kling.render_async(number, episode["panels"])
+        # Het kernmoment volgt op de panelen: dat heeft het getekende beeld nodig
+        # als startframe, anders verspringt de stijl.
+        instelling = plans.video_for_plan()
+        episode["images_pending"] = kling.render_async(
+            number, episode["panels"], episode.get("key_panel"), instelling)
+        episode["video_pending"] = bool(instelling)
     else:
         episode["images_pending"] = False
+        episode["video_pending"] = False
         episode["panels_locked"] = True
 
     return episode

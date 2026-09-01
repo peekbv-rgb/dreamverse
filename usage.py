@@ -106,6 +106,12 @@ def panel(number, index, ok=True):
                     "index": index, "ok": bool(ok)})
 
 
+def hero_video(number, index, instelling):
+    return _append({"kind": "hero_video", "who": _who(), "dream": number, "index": index,
+                    "model": instelling.get("model"), "seconds": instelling.get("seconden"),
+                    "eur": instelling.get("kost")})
+
+
 _sessions = {}
 
 
@@ -151,7 +157,7 @@ def summary():
     records = read()
     dagen = {}
     totaal = {"dreams": 0, "panels": 0, "panels_failed": 0, "sessions": 0,
-              "avatar_seconds": 0, "input_tokens": 0, "output_tokens": 0}
+              "avatar_seconds": 0, "input_tokens": 0, "output_tokens": 0, "videos": 0}
 
     for rec in records:
         dag = (rec.get("at") or "")[:10] or str(date.today())
@@ -166,6 +172,8 @@ def summary():
                 totaal["panels"] += 1; d["panels"] += 1
             else:
                 totaal["panels_failed"] += 1
+        elif kind == "hero_video":
+            totaal["videos"] += 1
         elif kind == "session_start":
             totaal["sessions"] += 1; d["sessions"] += 1
         elif kind == "session_end":
@@ -181,6 +189,8 @@ def summary():
         "tekst": round(totaal["input_tokens"] / 1e6 * r["eur_per_m_input"]
                        + totaal["output_tokens"] / 1e6 * r["eur_per_m_output"], 4),
         "panelen": round(totaal["panels"] * r["eur_per_panel"], 4),
+        "video": round(sum(rec.get("eur") or 0 for rec in records
+                           if rec.get("kind") == "hero_video"), 4),
         "avatar": round(avatar, 4),
     }
     kosten["totaal"] = round(sum(kosten.values()), 4)

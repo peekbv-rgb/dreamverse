@@ -14,6 +14,7 @@
 
   var episode = null, index = 0, voiceOn = false;
   var panelImages = {};   // paneelnummer -> pad naar de illustratie van Kling
+  var kernVideo = null;   // {panel: nummer, src: pad, status: "busy"|"done"|"failed"}
   var pollTimer = null;
 
   /* ---------------------------------------------------------------- velden */
@@ -123,6 +124,37 @@
     index = Math.max(0, Math.min(total - 1, n));
     var panel = episode.panels[index];
     stage.innerHTML = scene(panel);
+    // Het kernmoment: op dit ene paneel staat geen plaatje maar echte video.
+    if (kernVideo && kernVideo.panel === index && kernVideo.src) {
+      var v = document.createElement("video");
+      v.className = "kernmoment";
+      v.src = kernVideo.src;
+      v.playsInline = true;
+      v.loop = true;
+      v.controls = false;
+      stage.appendChild(v);
+      // Met geluid proberen; blokkeert de browser dat, dan gedempt verder.
+      v.play().catch(function () { v.muted = true; v.play().catch(function () {}); });
+      var merk = document.createElement("span");
+      merk.className = "kern-merk";
+      merk.textContent = "kernmoment";
+      stage.appendChild(merk);
+      narration.textContent = panel.narration;
+      counter.textContent = (index + 1) + " / " + total;
+      el("prev").disabled = index === 0;
+      el("next").textContent = index === total - 1 ? "Opnieuw" : "Verder";
+      var pips2 = bar.querySelectorAll("span");
+      for (var q = 0; q < pips2.length; q++) { pips2[q].classList.toggle("done", q <= index); }
+      speak(panel.narration);
+      return;
+    }
+    if (kernVideo && kernVideo.panel === index && kernVideo.status === "busy") {
+      var wacht = document.createElement("span");
+      wacht.className = "kern-merk bezig";
+      wacht.textContent = "kernmoment wordt gemaakt…";
+      stage.appendChild(wacht);
+    }
+
     var drawn = panelImages[index];
     if (drawn) {
       // De tekening blijft eronder staan: valt het beeld weg, dan is er nog iets.
@@ -153,9 +185,15 @@
         Object.keys(state.images || {}).forEach(function (k) {
           if (!panelImages[k]) { panelImages[k] = state.images[k]; fresh = true; }
         });
+        if (state.video_panel !== undefined) {
+          var was = kernVideo && kernVideo.src;
+          kernVideo = { panel: state.video_panel, src: state.video || null,
+                        status: state.video_status || "busy" };
+          if (kernVideo.src && !was) { fresh = true; }
+        }
         // Staat het net binnengekomen paneel in beeld, dan meteen tonen.
         if (fresh && panelImages[index] && !stage.querySelector(".painted")) { show(index); }
-        if (state.status !== "done") {
+        if (state.status !== "done" || (kernVideo && kernVideo.status === "busy")) {
           pollTimer = setTimeout(function () { pollPanels(number, tries - 1); }, 4000);
         }
       })
@@ -165,8 +203,9 @@
   function render(ep) {
     episode = ep;
     panelImages = {};
+    kernVideo = null;
     if (pollTimer) { clearTimeout(pollTimer); pollTimer = null; }
-    if (ep.images_pending) { pollPanels(ep.number, 60); }
+    if (ep.images_pending) { pollPanels(ep.number, 90); }
     el("title").textContent = ep.title;
     player.hidden = false;
 
