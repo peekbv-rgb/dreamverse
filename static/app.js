@@ -228,6 +228,39 @@
     speak(panel.narration);
   }
 
+  // Wat er op dit moment gemaakt wordt, met een zandloper erbij. Zonder dit
+  // gebeurt er minutenlang iets duurs zonder dat er iets te zien is.
+  function toonVoortgang(state) {
+    var balk = el("voortgang");
+    if (!balk) { return; }
+    var regels = [];
+    var totaal = (episode && episode.panels) ? episode.panels.length : 5;
+
+    var klaar = Object.keys(state.images || {}).length;
+    if (state.status === "busy") {
+      regels.push("Panelen tekenen — " + klaar + " van de " + totaal);
+    }
+    if (state.stem_status === "busy") {
+      regels.push("Inspreken — " + Object.keys(state.stem || {}).length + " van de " + totaal);
+    }
+    if (state.video_status === "busy") {
+      regels.push("Kernmoment animeren — dit duurt ongeveer een minuut");
+    }
+    if (state.film_status === "busy") {
+      var f = Object.keys(state.film || {}).length;
+      regels.push("Film maken — " + f + " van de " + totaal + " panelen klaar");
+    }
+
+    if (!regels.length) {
+      balk.hidden = true;
+      balk.innerHTML = "";
+      return;
+    }
+    balk.hidden = false;
+    balk.innerHTML = '<span class="zandloper" aria-hidden="true">⧗</span><span>' +
+                     regels.join(" · ") + "</span>";
+  }
+
   function pollPanels(number, tries) {
     if (pollTimer) { clearTimeout(pollTimer); pollTimer = null; }
     if (tries <= 0) { return; }
@@ -255,7 +288,12 @@
         }
         // Staat het net binnengekomen paneel in beeld, dan meteen tonen.
         if (fresh && panelImages[index] && !stage.querySelector(".painted")) { show(index); }
-        if (state.status !== "done" || (kernVideo && kernVideo.status === "busy")) {
+        toonVoortgang(state);
+        var bezig = state.status !== "done"
+                 || (kernVideo && kernVideo.status === "busy")
+                 || state.film_status === "busy"
+                 || state.stem_status === "busy";
+        if (bezig) {
           pollTimer = setTimeout(function () { pollPanels(number, tries - 1); }, 4000);
         }
       })
@@ -498,8 +536,10 @@
       .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, body: d }; }); })
       .then(function (res) {
         if (!res.ok) { throw new Error(res.body.error || "Dat lukte niet."); }
-        melding.textContent = "Onderweg. Het duurt ongeveer een minuut per paneel; " +
-                              "je ziet het vanzelf verschijnen.";
+        melding.textContent = "Onderweg. Je ziet de voortgang hieronder meelopen.";
+        el("voortgang").hidden = false;
+        el("voortgang").innerHTML = '<span class="zandloper" aria-hidden="true">⧗</span>' +
+                                    "<span>Aanvraag gestart…</span>";
         toonAccount(res.body.account);
         laadVerbruik();
         pollPanels(nummer, 90);

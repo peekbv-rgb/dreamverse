@@ -735,3 +735,22 @@ body::after { opacity: .34; }
   padding: .4rem .9rem; font-family: var(--body); font-size: .85rem;
 }
 .kies-droom .extras-melding { width: 100%; }
+
+/* De zandloper: wat er nu gemaakt wordt. */
+.voortgang {
+  display: flex; align-items: center; gap: .7rem; margin: 0;
+  background: rgba(43, 28, 74, .72); backdrop-filter: blur(10px);
+  border: 1px solid rgba(242, 198, 76, .45); border-radius: 100px;
+  padding: .6rem 1.2rem; font-size: .92rem; color: var(--ink);
+  box-shadow: 0 0 28px rgba(242, 198, 76, .16);
+}
+.voortgang .zandloper {
+  font-size: 1.2rem; color: var(--solar);
+  animation: keren 2s ease-in-out infinite;
+  display: inline-block;
+}
+@keyframes keren {
+  0%, 45% { transform: rotate(0deg); }
+  55%, 100% { transform: rotate(180deg); }
+}
+@media (prefers-reduced-motion: reduce) { .voortgang .zandloper { animation: none; } }
