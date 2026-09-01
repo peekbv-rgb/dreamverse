@@ -310,6 +310,10 @@ footer.end {
 /* Het gesprek met Vera */
 .call { align-self: center; margin-left: auto; flex: none; }
 
+/* Een eigen display-waarde wint van het hidden-attribuut, dus die moet je
+   expliciet terugzetten. Anders staat elk paneel open bij het laden. */
+[hidden] { display: none !important; }
+
 .call-panel {
   display: flex; flex-direction: column;
   border: 1px solid var(--line); border-radius: 20px; overflow: hidden;
@@ -338,3 +342,6 @@ footer.end {
 #hangup { background: linear-gradient(100deg, var(--root), var(--sacral)); color: #fff; border-color: transparent; }
 
 @media (prefers-reduced-motion: reduce) { .call-veil span { animation: none; } }
+
+.tier-live { color: var(--heart) !important; font-weight: 500; }
+.tier-live::before { content: "● "; }

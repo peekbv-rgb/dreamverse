@@ -317,12 +317,6 @@
       });
   });
 
-  el("tier-note").addEventListener("click", function () {
-    guideLine.textContent = "Mijn gezicht moet nog worden aangesloten. Voor nu spreek ik alleen.";
-    statusEl.className = "status";
-    statusEl.textContent = "De pratende avatar vraagt een Runway-personage en een sessiebudget — nog niet gekoppeld.";
-  });
-
   el("go").addEventListener("click", function () {
     var text = input.value.trim();
     if (!text) {
