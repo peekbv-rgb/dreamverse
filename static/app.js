@@ -632,6 +632,7 @@
     html += cel(Math.round(t.avatar_seconds) + " s", "avatartijd");
     html += cel(u.cost_per_dream === null ? "—" : euro(u.cost_per_dream),
                 "per droom", "uitgelicht");
+    html += cel(u.totals.videos, "kernmomenten");
     html += cel(euro(u.avatar_per_5min), "gesprek van 5 min", "uitgelicht");
     html += "</div>";
 
@@ -646,7 +647,7 @@
     }
 
     html += '<p class="meter-noot">Tekst ' + euro(u.costs.tekst) + ", panelen " +
-            euro(u.costs.panelen);
+            euro(u.costs.panelen) + ", video " + euro(u.costs.video || 0);
     html += ", avatar " + euro(u.costs.avatar) + ". Runway rekent 2 credits bij het " +
             "starten en 2 per aangebroken zes seconden, dus " + euro(u.avatar_per_minute) +
             " per gesprekminuut — en ook wie meteen ophangt kost al iets.</p>";
