@@ -552,6 +552,17 @@
                     ". Deze sessie is nu op; druk opnieuw op de knop voor een nieuwe.");
     }
 
+    // Komt haar beeld niet binnen een halve minuut, dan komt het niet meer.
+    // Eeuwig op "ze komt in beeld" blijven staan is geen wachten maar liegen.
+    setTimeout(function () {
+      var v = el("vera-video");
+      if (room && (!v.srcObject || v.videoWidth === 0)) {
+        staken("Er is verbinding, maar Vera verschijnt niet. Haar kant publiceert geen " +
+               "beeld of geluid. Dit ligt niet aan je microfoon of je browser; probeer het " +
+               "zo nog eens.");
+      }
+    }, 30000);
+
     btn.textContent = "In gesprek";
     guide.classList.add("listening");
     callEnds = Date.now() + (creds.max_duration || 600) * 1000;

@@ -546,3 +546,64 @@ table.dagen td { font-variant-numeric: tabular-nums; }
 .antwoord-uitleg { font-size: .82rem; color: var(--muted); }
 .antwoord.bewaard { border-color: rgba(79, 191, 134, .45); }
 .antwoord.bewaard .antwoord-uitleg { color: var(--heart); }
+
+/* ------------------------------------------------------------------------ */
+/* Kleur, verdeeld. Elk blok krijgt zijn eigen chakra in plaats van overal    */
+/* dezelfde violette gloed.                                                   */
+
+.wrap > section:nth-of-type(1) { --tint: var(--throat); }
+.wrap > section:nth-of-type(2) { --tint: var(--heart); }
+.wrap > section:nth-of-type(3) { --tint: var(--solar); }
+.wrap > section:nth-of-type(4) { --tint: var(--sacral); }
+.wrap > section:nth-of-type(5) { --tint: var(--root); }
+.wrap > section:nth-of-type(6) { --tint: var(--third-eye); }
+.wrap > section { --tint: var(--crown); }
+
+section h2 { color: var(--tint); text-shadow: 0 0 30px currentColor; }
+section .tier, section .block, section .thread, section .meter-cel, section .entry {
+  border-color: color-mix(in srgb, var(--tint) 45%, transparent);
+  box-shadow: 0 0 26px color-mix(in srgb, var(--tint) 18%, transparent);
+}
+section .entry { border-left-width: 3px; border-left-color: var(--tint); }
+
+/* Het archief loopt door de zeven velden heen, oud naar nieuw. */
+.archive .entry:nth-child(7n+1) { border-left-color: var(--crown); }
+.archive .entry:nth-child(7n+2) { border-left-color: var(--third-eye); }
+.archive .entry:nth-child(7n+3) { border-left-color: var(--throat); }
+.archive .entry:nth-child(7n+4) { border-left-color: var(--heart); }
+.archive .entry:nth-child(7n+5) { border-left-color: var(--solar); }
+.archive .entry:nth-child(7n+6) { border-left-color: var(--sacral); }
+.archive .entry:nth-child(7n+7) { border-left-color: var(--root); }
+.archive .entry .no { color: inherit; }
+.archive .entry:nth-child(7n+1) .no { color: var(--crown); }
+.archive .entry:nth-child(7n+2) .no { color: var(--third-eye); }
+.archive .entry:nth-child(7n+3) .no { color: var(--throat); }
+.archive .entry:nth-child(7n+4) .no { color: var(--heart); }
+.archive .entry:nth-child(7n+5) .no { color: var(--solar); }
+.archive .entry:nth-child(7n+6) .no { color: var(--sacral); }
+.archive .entry:nth-child(7n+7) .no { color: var(--root); }
+
+/* De meter: elk cijfer zijn eigen kleur, zodat het geen grijze tabel is. */
+.meter-cijfers .meter-cel:nth-child(1) b { color: var(--throat); }
+.meter-cijfers .meter-cel:nth-child(2) b { color: var(--heart); }
+.meter-cijfers .meter-cel:nth-child(3) b { color: var(--solar); }
+.meter-cijfers .meter-cel:nth-child(4) b { color: var(--sacral); }
+.meter-cijfers .meter-cel:nth-child(5) b { color: var(--root); }
+.meter-cijfers .meter-cel:nth-child(6) b { color: var(--crown); }
+
+/* De drie duidingsblokken elk hun eigen licht. */
+.reading .block:nth-of-type(1) { border-color: rgba(240, 135, 60, .45); }
+.reading .block:nth-of-type(1) .lbl { color: var(--sacral); }
+.reading .block:nth-of-type(2) { border-color: rgba(79, 191, 134, .45); }
+.reading .block:nth-of-type(2) .lbl { color: var(--heart); }
+.reading .block.future { border-color: rgba(110, 98, 218, .55); }
+
+/* Knoppen: niet allemaal violet. */
+#mic { border-color: rgba(79, 191, 134, .5); color: var(--heart); }
+#clear { border-color: rgba(226, 85, 79, .35); }
+#voice { border-color: rgba(74, 159, 226, .5); color: var(--throat); }
+.call { border-color: rgba(242, 198, 76, .55); color: var(--solar); }
+.account .schakel button[aria-pressed="true"] { border-color: var(--heart); color: var(--heart); }
+
+/* De grond minder blauwpaars, meer diepe nacht met warmte eronder. */
+:root { --void: #080611; --deep: #150E28; }
