@@ -2,9 +2,10 @@
 
 Serveert de speler uit static/ en drie eindpunten:
 
-    POST   /api/episode   {"dream": "..."}  -> de aflevering
-    GET    /api/archive                     -> alle eerdere dromen
-    DELETE /api/archive                     -> archief wissen
+    POST   /api/episode      {"dream": "..."}  -> de aflevering
+    GET    /api/panels/<nr>                    -> de stand van het tekenwerk
+    GET    /api/archive                        -> alle eerdere dromen
+    DELETE /api/archive                        -> archief wissen
 
 Geen framework: de standaardbibliotheek doet dit prima en het houdt de deploy
 op één bestand. Basic auth gaat aan zodra AUTH_USER en AUTH_PASSWORD allebei
@@ -21,6 +22,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 import dreamverse
+import kling
 
 ROOT = Path(__file__).parent
 STATIC = ROOT / "static"
@@ -88,7 +90,34 @@ class Handler(SimpleHTTPRequestHandler):
             archive = sorted(dreamverse.load_archive(), key=lambda d: d.get("n", 0), reverse=True)
             return self.send_json({"dreams": archive})
         if self.path == "/api/health":
-            return self.send_json({"ok": True, "key": bool(os.environ.get("ANTHROPIC_API_KEY"))})
+            return self.send_json({
+                "ok": True,
+                "key": bool(os.environ.get("ANTHROPIC_API_KEY")),
+                "kling": kling.enabled(),
+            })
+        if self.path.startswith("/api/panels/"):
+            try:
+                number = int(self.path.rsplit("/", 1)[1])
+            except ValueError:
+                return self.send_json({"error": "Onbekende aflevering."}, 400)
+            state = kling.read_state(number)
+            if state is None:
+                return self.send_json({"status": "off", "images": {}})
+            return self.send_json(state)
+        if self.path.startswith("/panels/"):
+            # De gegenereerde panelen staan buiten static/, in data/.
+            name = os.path.basename(self.path)
+            target = kling.PANELS / name
+            if target.suffix.lower() != ".jpg" or not target.is_file():
+                return self.send_json({"error": "Niet gevonden."}, 404)
+            blob = target.read_bytes()
+            self.send_response(200)
+            self.send_header("Content-Type", "image/jpeg")
+            self.send_header("Content-Length", str(len(blob)))
+            self.send_header("Cache-Control", "public, max-age=31536000, immutable")
+            self.end_headers()
+            self.wfile.write(blob)
+            return
         super().do_GET()
 
     def do_POST(self):
@@ -127,5 +156,6 @@ class Handler(SimpleHTTPRequestHandler):
 if __name__ == "__main__":
     if not os.environ.get("ANTHROPIC_API_KEY"):
         print("let op: geen ANTHROPIC_API_KEY — elke droom geeft de voorbeeldaflevering", flush=True)
+    print("panelen: {}".format("Kling" if kling.enabled() else "getekend (geen Kling-sleutels)"), flush=True)
     print("dreamverse draait op http://{}:{}".format(HOST, PORT), flush=True)
     ThreadingHTTPServer((HOST, PORT), Handler).serve_forever()

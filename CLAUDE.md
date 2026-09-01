@@ -37,6 +37,7 @@ Geen framework — dat houdt de deploy op één bestand, net als de andere proje
 | Onderdeel | Waar |
 |---|---|
 | Afleveringen schrijven, archief, prompt | `dreamverse.py` |
+| Panelen als illustraties (optioneel) | `kling.py` |
 | HTTP en routes | `server.py` |
 | Speler, invoer, spraak | `static/` |
 | Persona van de gids | `persona/vera.txt` |
@@ -47,7 +48,9 @@ Geen framework — dat houdt de deploy op één bestand, net als de andere proje
 POST   /api/episode   {"dream": "..."}  -> de aflevering
 GET    /api/archive                     -> alle eerdere dromen
 DELETE /api/archive                     -> archief wissen
-GET    /api/health                      -> {"ok": true, "key": bool}
+GET    /api/panels/<nr>                 -> stand van het tekenwerk
+GET    /panels/<bestand>.jpg            -> een gegenereerd paneel
+GET    /api/health                      -> {"ok": true, "key": bool, "kling": bool}
 ```
 
 ## Draaien
@@ -79,9 +82,12 @@ en het scheelt direct in de kostprijs per aflevering.
 
 ## Wat er nog niet is
 
-- **De panelen zijn geprogrammeerde composities**, geen gegenereerde beelden. Ze
-  reageren op kleurveld en motief. De echte app zet hier een beeldmodel neer, met
-  een vaste stijl per gebruiker.
+- **Kling is aangesloten maar niet getest tegen de echte API** — er was hier geen
+  sleutel. De client in `kling.py` is geschreven op de publieke documentatie.
+  Zet `KLING_ACCESS_KEY` en `KLING_SECRET_KEY` in `.env` en draai eerst
+  `python kling.py --check`: die maakt één afbeelding en drukt alles af wat
+  terugkomt. Klopt een veldnaam niet, dan zie je precies welke. Zonder sleutels
+  blijven de getekende composities staan; dat is geen storing maar het ontwerp.
 - **Vera heeft nog geen gezicht.** Ze praat nu met de stem van de browser
   (`speechSynthesis`), en inspreken gaat via `SpeechRecognition` — dat werkt in
   Chrome en Edge, niet in Safari of Firefox. De pratende avatar is de Ultra-laag

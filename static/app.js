@@ -13,6 +13,8 @@
       guideLine = el("guide-line"), player = el("player");
 
   var episode = null, index = 0, voiceOn = false;
+  var panelImages = {};   // paneelnummer -> pad naar de illustratie van Kling
+  var pollTimer = null;
 
   /* ---------------------------------------------------------------- velden */
 
@@ -121,6 +123,15 @@
     index = Math.max(0, Math.min(total - 1, n));
     var panel = episode.panels[index];
     stage.innerHTML = scene(panel);
+    var drawn = panelImages[index];
+    if (drawn) {
+      // De tekening blijft eronder staan: valt het beeld weg, dan is er nog iets.
+      var img = new Image();
+      img.className = "painted";
+      img.alt = "";
+      img.src = drawn;
+      stage.appendChild(img);
+    }
     narration.textContent = panel.narration;
     counter.textContent = (index + 1) + " / " + total;
     el("prev").disabled = index === 0;
@@ -132,8 +143,30 @@
     speak(panel.narration);
   }
 
+  function pollPanels(number, tries) {
+    if (pollTimer) { clearTimeout(pollTimer); pollTimer = null; }
+    if (tries <= 0) { return; }
+    fetch("/api/panels/" + number)
+      .then(function (r) { return r.json(); })
+      .then(function (state) {
+        var fresh = false;
+        Object.keys(state.images || {}).forEach(function (k) {
+          if (!panelImages[k]) { panelImages[k] = state.images[k]; fresh = true; }
+        });
+        // Staat het net binnengekomen paneel in beeld, dan meteen tonen.
+        if (fresh && panelImages[index] && !stage.querySelector(".painted")) { show(index); }
+        if (state.status !== "done") {
+          pollTimer = setTimeout(function () { pollPanels(number, tries - 1); }, 4000);
+        }
+      })
+      .catch(function () { /* beeld is bijzaak; de aflevering staat er al */ });
+  }
+
   function render(ep) {
     episode = ep;
+    panelImages = {};
+    if (pollTimer) { clearTimeout(pollTimer); pollTimer = null; }
+    if (ep.images_pending) { pollPanels(ep.number, 60); }
     el("title").textContent = ep.title;
     player.hidden = false;
 

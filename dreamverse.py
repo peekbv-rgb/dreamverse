@@ -17,6 +17,8 @@ import threading
 from datetime import date
 from pathlib import Path
 
+import kling
+
 ROOT = Path(__file__).parent
 DATA = ROOT / "data"
 ARCHIVE = DATA / "archive.json"
@@ -101,13 +103,17 @@ staat. Staat er niets bruikbaars in, laat "threads" dan leeg.
 Antwoord met uitsluitend geldige JSON, zonder tekst eromheen, in deze vorm:
 
 {{"title": string,
- "panels": [{{"narration": string, "palette": string, "motif": string}}],
+ "panels": [{{"narration": string, "image": string, "palette": string, "motif": string}}],
  "threads": [{{"ref": string, "was": string, "now": string}}],
  "why": string, "meaning": string, "future": string,
  "question": string, "motifs": [string]}}
 
 Regels voor de velden:
-- Precies 5 panelen, elk 1 tot 2 zinnen.
+- Precies 5 panelen. "narration" is 1 tot 2 zinnen Nederlands.
+- "image" is een korte Engelse beschrijving van wat er te zien is, voor een
+  illustratiemodel: alleen het beeld, geen namen, geen tekst in beeld, geen
+  emoties benoemen. Bijvoorbeeld: "a figure gliding high above dark mountain
+  ridges, a lit rectangular pool far below in the valley".
 - palette is het kleurveld dat bij het gevoel van dat paneel past, een van:
   {", ".join(PALETTES)}. Betekenis: {CHAKRA_HINT}.
   Laat het door de aflevering heen verschuiven; vijf keer hetzelfde veld is bijna nooit waar.
@@ -172,6 +178,7 @@ def parse_episode(raw):
             continue
         panels.append({
             "narration": str(p["narration"]),
+            "image": str(p.get("image") or ""),
             # Een onbekende kleur of motief mag de speler niet laten struikelen.
             "palette": p.get("palette") if p.get("palette") in PALETTES else "crown",
             "motif": p.get("motif") if p.get("motif") in MOTIFS else "expanse",
@@ -279,6 +286,9 @@ def create(dream):
         })
         save_archive(archive)
 
+    # Het tekenwerk loopt op de achtergrond verder; de aflevering is al leesbaar.
+    episode["images_pending"] = kling.render_async(number, episode["panels"])
+
     return episode
 
 
@@ -291,18 +301,23 @@ DEMO_EPISODE = {
     "panels": [
         {"narration": "Je bent al boven de kam voordat je merkt dat je niet loopt. "
                       "De lucht draagt je alsof dat altijd zo geweest is.",
+         "image": "a lone figure gliding high above dark mountain ridges at night, seen from behind and above",
          "palette": "crown", "motif": "flight"},
         {"narration": "Onder je schuiven de bergen weg als lakens. Er is geen angst om te vallen, "
                       "en dat is het vreemdste eraan. Alleen ruimte.",
+         "image": "vast mountain ranges sliding away below, clouds far under the viewer, open sky",
          "palette": "third_eye", "motif": "expanse"},
         {"narration": "Dan, diep in het dal, een rechthoek blauw licht. Water waar geen water "
                       "hoort te zijn. Je gaat er vanzelf naartoe.",
+         "image": "a lit rectangular swimming pool glowing blue deep in a dark valley, seen from high above",
          "palette": "throat", "motif": "structure"},
         {"narration": "Aan de rand zit ze, en je kent haar meteen. Ze huilt, en het geluid draagt "
                       "tot hierboven — het eerste geluid in deze droom.",
+         "image": "a seated figure at the edge of a glowing pool at night, head bowed, water reflecting light",
          "palette": "heart", "motif": "figure"},
         {"narration": "Je landt zonder te landen. Ze kijkt op. Het water beweegt nog, alsof er net "
                       "iemand in gesprongen is.",
+         "image": "close on the surface of water at dawn, wide ripples spreading outward, warm light on the water",
          "palette": "sacral", "motif": "close"},
     ],
     "threads": [
