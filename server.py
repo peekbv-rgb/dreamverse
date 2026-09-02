@@ -35,6 +35,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
+import accounts
 import dreamverse
 import kling
 import vera
@@ -56,6 +57,12 @@ AUTH_PASSWORD = os.environ.get("AUTH_PASSWORD", "")
 # Zonder dit kon iedereen die de app kon bereiken zichzelf Ultra geven met tien
 # avatarminuten erbij, en dat is echt geld.
 ADMIN_TOKEN = os.environ.get("ADMIN_TOKEN", "")
+
+# E-mailverificatie. Uit, tenzij je het aanzet. Het mechanisme staat er - een
+# code per account, een eindpunt om hem in te wisselen - maar versturen vraagt
+# SMTP-gegevens, en een extra stap tussen iemand en zijn eerste droom kost je
+# testpersonen. Zolang dit uit staat wordt de code naar de log geschreven.
+VERIFICATIE_NODIG = os.environ.get("VERIFICATIE_NODIG", "").lower() in ("1", "ja", "true")
 MAX_BODY = 64 * 1024
 
 
@@ -73,26 +80,70 @@ def auth_ok(header):
     return hmac.compare_digest(user, AUTH_USER) and hmac.compare_digest(password, AUTH_PASSWORD)
 
 
+# Wat je mag zien zonder in te loggen: de pagina zelf, de opmaak, Vera's
+# introductiefilmpje, en de twee eindpunten die je nodig hebt om in te loggen.
+# Al het andere hoort bij iemand.
+VRIJ = ("/api/health", "/api/registreren", "/api/inloggen", "/api/uitloggen",
+        "/api/bevestigen")
+
+
 class Handler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
+        self.gebruiker = None
         super().__init__(*args, directory=str(STATIC), **kwargs)
 
     # -- helpers ------------------------------------------------------------ #
 
-    def send_json(self, payload, status=200):
+    def send_json(self, payload, status=200, cookie=None):
         body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
         self.send_response(status)
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Content-Length", str(len(body)))
+        if cookie:
+            self.send_header("Set-Cookie", cookie)
         self.end_headers()
         self.wfile.write(body)
 
+    def sessie_cookie(self, token):
+        """HttpOnly, zodat JavaScript er niet bij kan; SameSite=Lax tegen
+        verzoeken die een andere site namens jou verstuurt. Secure alleen als we
+        via https draaien - anders werkt hij niet op localhost."""
+        veilig = "; Secure" if os.environ.get("RENDER") else ""
+        return ("{}={}; Path=/; Max-Age={}; HttpOnly; SameSite=Lax{}".format(
+            accounts.SESSIE_COOKIE, token, accounts.SESSIE_DAGEN * 86400, veilig))
+
+    def wis_cookie(self):
+        return "{}=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax".format(accounts.SESSIE_COOKIE)
+
+    def sessietoken(self):
+        rauw = self.headers.get("Cookie") or ""
+        for stuk in rauw.split(";"):
+            naam, _, waarde = stuk.strip().partition("=")
+            if naam == accounts.SESSIE_COOKIE:
+                return waarde
+        return ""
+
     def guard(self):
-        if auth_ok(self.headers.get("Authorization")):
+        if not auth_ok(self.headers.get("Authorization")):
+            self.send_response(401)
+            self.send_header("WWW-Authenticate", 'Basic realm="dreamverse"')
+            self.end_headers()
+            return False
+
+        # Wie is er aan de lijn? Dit staat in een thread-lokale plek, want de
+        # server draait één thread per verzoek en de rest van de code zou anders
+        # een gebruikers-id door twintig functies heen moeten doorgeven.
+        self.gebruiker = accounts.uit_sessie(self.sessietoken())
+        accounts.zet_huidige(self.gebruiker)
+
+        # /panels/ hoort er ook bij: dat zijn andermans dromen als plaatje.
+        # Zonder deze regel viel de route erbuiten en klapte hij op een gebruiker
+        # die None was, in plaats van netjes te weigeren.
+        pad = self.path.split("?")[0]
+        beschermd = pad.startswith("/api/") or pad.startswith("/panels/")
+        if self.gebruiker or not beschermd or pad in VRIJ:
             return True
-        self.send_response(401)
-        self.send_header("WWW-Authenticate", 'Basic realm="dreamverse"')
-        self.end_headers()
+        self.send_json({"error": "Log eerst in.", "login": True}, 401)
         return False
 
     def read_json(self):
@@ -145,13 +196,17 @@ class Handler(SimpleHTTPRequestHandler):
                 number = int(self.path.rsplit("/", 1)[1])
             except ValueError:
                 return self.send_json({"error": "Onbekende verbeelding."}, 400)
-            state = kling.read_state(number)
+            state = kling.read_state(dreamverse.sleutel(number))
             if state is None:
                 return self.send_json({"status": "off", "images": {}})
             return self.send_json(state)
         if self.path.startswith("/panels/"):
-            # De gegenereerde panelen staan buiten static/, in data/.
-            name = os.path.basename(self.path)
+            # De gegenereerde panelen staan buiten static/, in data/. De naam
+            # begint met het gebruikersnummer, en dat moet het jouwe zijn -
+            # anders kun je met een gokje in andermans dromen kijken.
+            name = os.path.basename(self.path.split("?")[0])
+            if not name.startswith("{}_".format(self.gebruiker["id"])):
+                return self.send_json({"error": "Niet gevonden."}, 404)
             target = kling.PANELS / name
             types = {".png": "image/png", ".jpg": "image/jpeg", ".webp": "image/webp",
                      ".mp4": "video/mp4", ".mp3": "audio/mpeg"}
@@ -229,6 +284,47 @@ class Handler(SimpleHTTPRequestHandler):
                 self.log_message("vera-sessie mislukte: %s", e)
                 return self.send_json({"error": "Vera kon niet opstarten."}, 502)
 
+        if self.path == "/api/registreren":
+            payload = self.read_json() or {}
+            try:
+                u = accounts.registreer(payload.get("email"), payload.get("wachtwoord"),
+                                        payload.get("naam"))
+            except accounts.AccountError as e:
+                return self.send_json({"error": str(e)}, 400)
+            # Meteen inloggen: een bevestigingsmail mag niet tussen iemand en
+            # zijn eerste droom in staan. Bevestigen kan later.
+            token = accounts.nieuwe_sessie(u["id"])
+            accounts.zet_huidige(accounts.gebruiker(u["id"]))
+            if not VERIFICATIE_NODIG:
+                print("dreamverse: nieuw account {} (bevestigingscode {})".format(
+                    u["email"], u["bevestig_code"]), flush=True)
+            return self.send_json({"ok": True, "profile": dreamverse.public_profile()},
+                                  cookie=self.sessie_cookie(token))
+
+        if self.path == "/api/inloggen":
+            payload = self.read_json() or {}
+            try:
+                token = accounts.inloggen(payload.get("email"), payload.get("wachtwoord"))
+            except accounts.AccountError as e:
+                return self.send_json({"error": str(e)}, 401)
+            accounts.zet_huidige(accounts.uit_sessie(token))
+            return self.send_json({"ok": True, "profile": dreamverse.public_profile()},
+                                  cookie=self.sessie_cookie(token))
+
+        if self.path == "/api/uitloggen":
+            accounts.sessie_weg(self.sessietoken())
+            accounts.zet_huidige(None)
+            return self.send_json({"ok": True}, cookie=self.wis_cookie())
+
+        if self.path == "/api/wachtwoord":
+            payload = self.read_json() or {}
+            try:
+                token = accounts.zet_wachtwoord(self.gebruiker["id"],
+                                                payload.get("oud"), payload.get("nieuw"))
+            except accounts.AccountError as e:
+                return self.send_json({"error": str(e)}, 400)
+            return self.send_json({"ok": True}, cookie=self.sessie_cookie(token))
+
         if self.path == "/api/profile":
             payload = self.read_json() or {}
             return self.send_json(dreamverse.set_profile(payload))
@@ -277,7 +373,8 @@ class Handler(SimpleHTTPRequestHandler):
             # Bewegend beeld heeft een getekend paneel nodig als startframe.
             # Zonder die controle start de achtergrondtaak wel, wordt er
             # afgerekend, en pas daarna blijkt dat er niets te animeren viel.
-            beelden = [b for b in kling.PANELS.glob("{}-[0-9].*".format(nummer))
+            beelden = [b for b in kling.PANELS.glob("{}-[0-9].*".format(
+                           dreamverse.sleutel(nummer)))
                        if b.suffix.lower() in (".png", ".jpg", ".webp")]
             if not beelden:
                 return self.send_json({
@@ -288,12 +385,14 @@ class Handler(SimpleHTTPRequestHandler):
 
             import video
             if soort == "kernmoment_top":
-                gestart = video.render_async(nummer, episode["panels"],
+                gestart = video.render_async(dreamverse.sleutel(nummer), episode["panels"],
                                              episode.get("key_panel"), plans.VIDEO["top"])
             elif soort == "film_snel":
-                gestart = video.film_async(nummer, episode["panels"], plans.VIDEO["snel"])
+                gestart = video.film_async(dreamverse.sleutel(nummer), episode["panels"],
+                                           plans.VIDEO["snel"])
             elif soort == "film_top":
-                gestart = video.film_async(nummer, episode["panels"], plans.VIDEO["top"])
+                gestart = video.film_async(dreamverse.sleutel(nummer), episode["panels"],
+                                           plans.VIDEO["top"])
             else:
                 gestart = False
 

@@ -1156,3 +1156,59 @@ body::after { opacity: .34; }
 .verteld-wanneer {
   margin: .6rem 0 0; font-size: .78rem; color: var(--muted);
 }
+
+/* ------------------------------------------------------------------------ */
+/* De poort: inloggen of een account maken. Zonder dit is er niets te zien. */
+
+.poort {
+  position: fixed; inset: 0; z-index: 90;
+  display: flex; align-items: center; justify-content: center;
+  padding: 1.5rem; overflow-y: auto;
+  background: rgba(6, 4, 13, .82); backdrop-filter: blur(14px);
+}
+.poort-kaart {
+  width: 100%; max-width: 26rem;
+  background: rgba(13, 7, 26, .96);
+  border: 1px solid rgba(179, 105, 222, .35); border-radius: 20px;
+  padding: 2rem 1.9rem 1.9rem;
+  box-shadow: 0 20px 70px rgba(4, 2, 10, .8), 0 0 60px rgba(110, 98, 218, .2);
+}
+.poort-titel {
+  margin: 0; font-family: var(--display); font-weight: 300;
+  font-size: 2.4rem; line-height: 1;
+  background: linear-gradient(96deg, var(--sacral), var(--heart) 45%, var(--crown));
+  -webkit-background-clip: text; background-clip: text;
+  color: transparent; -webkit-text-fill-color: transparent;
+}
+.poort-sub { margin: .7rem 0 1.5rem; color: #D8CDEA; font-size: .92rem; line-height: 1.55; }
+
+.poort-tabs { display: flex; gap: .4rem; margin-bottom: 1.3rem; }
+.poort-tabs button { flex: 1; font-size: .84rem; padding: .5rem .6rem; }
+.poort-tabs button[aria-pressed="true"] {
+  border-color: var(--crown); color: #fff;
+  background: rgba(110, 98, 218, .28);
+}
+
+.poort-velden { display: flex; flex-direction: column; gap: .9rem; }
+.poort-velden .veld { display: flex; flex-direction: column; gap: .3rem; }
+.poort-velden label {
+  font-size: .64rem; font-weight: 600; letter-spacing: .2em;
+  text-transform: uppercase; color: var(--muted);
+}
+.poort-velden input {
+  font-family: var(--body); font-size: 1rem;
+  padding: .6rem .8rem; border-radius: 10px;
+  background: rgba(43, 28, 74, .6); color: var(--ink);
+  border: 1px solid var(--line);
+}
+.poort-velden input:focus-visible { outline: 2px solid var(--crown); outline-offset: 2px; }
+.veld-hint { font-size: .76rem; color: var(--muted); }
+.poort-fout {
+  margin: 0; padding: .6rem .8rem; border-radius: 10px;
+  background: rgba(242, 120, 100, .14); border: 1px solid rgba(245, 160, 143, .45);
+  color: #F5A08F; font-size: .88rem;
+}
+#poort-door { margin-top: .3rem; }
+
+/* Uitloggen staat bij het saldo: daar staat toch al wie je bent. */
+.uitloggen { padding: .3rem .8rem; font-size: .76rem; }

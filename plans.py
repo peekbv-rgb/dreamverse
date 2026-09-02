@@ -150,22 +150,25 @@ def _month():
 
 
 def account():
-    """Pakket, saldo en wat er deze maand al verbruikt is."""
-    import dreamverse
-    profile = dreamverse.load_profile()
-    key = profile.get("plan") if profile.get("plan") in PLANS else DEFAULT_PLAN
-    plan = PLANS[key]
+    """Pakket, saldo en wat er deze maand al verbruikt is, van de ingelogde gebruiker.
 
+    De tellers stonden eerst in usage.jsonl, dat één stroom voor de hele
+    installatie is. Met accounts hoort dat per gebruiker, en dat staat nu in de
+    gebruikerstabel: dromen_op en avatar_sec, die aan het begin van elke maand
+    op nul gaan.
+    """
+    import accounts
+    u = accounts.huidige()
+    accounts.rol_maand_om(u["id"])
+    u = accounts.gebruiker(u["id"])          # opnieuw lezen: de maand kan net omgerold zijn
+    accounts.zet_huidige(u)
+
+    key = u["pakket"] if u["pakket"] in PLANS else DEFAULT_PLAN
+    plan = PLANS[key]
     maand = _month()
-    dromen = 0
-    avatar_seconden = 0
-    for rec in usage.read():
-        if not (rec.get("at") or "").startswith(maand):
-            continue
-        if rec.get("kind") == "episode":
-            dromen += 1
-        elif rec.get("kind") == "session_end":
-            avatar_seconden += rec.get("seconds", 0)
+    dromen = u["dromen_op"]
+    avatar_seconden = u["avatar_sec"]
+    profile = {"tokens": u["tokens"]}
 
     inbegrepen_seconden = plan["avatar_minuten"] * 60
     return {
@@ -196,21 +199,29 @@ def account():
 def set_plan(key):
     if key not in PLANS:
         raise Refused("Onbekend pakket.")
-    import dreamverse
-    with dreamverse._lock:
-        profile = dreamverse.load_profile()
-        profile["plan"] = key
-        dreamverse.save_profile(profile)
+    import accounts
+    accounts.zet_pakket(accounts.huidige()["id"], key)
+    _verversen()
     return account()
 
 
 def add_tokens(aantal):
-    import dreamverse
-    with dreamverse._lock:
-        profile = dreamverse.load_profile()
-        profile["tokens"] = max(0, int(profile.get("tokens", 0)) + int(aantal))
-        dreamverse.save_profile(profile)
+    import accounts
+    accounts.tel_op(accounts.huidige()["id"], tokens=int(aantal))
+    _verversen()
     return account()
+
+
+def _verversen():
+    """De ingelogde gebruiker opnieuw uit de database halen.
+
+    Zonder dit blijft account() het saldo van vóór de wijziging teruggeven, want
+    de gebruiker in deze thread is een momentopname.
+    """
+    import accounts
+    u = accounts.huidige_of_none()
+    if u:
+        accounts.zet_huidige(accounts.gebruiker(u["id"]))
 
 
 # --------------------------------------------------------------------------- #
@@ -319,8 +330,10 @@ def charge_extra(soort):
 
 
 def charge_dream(tokens):
-    if tokens:
-        add_tokens(-tokens)
+    """Een droom afboeken: de maandteller omhoog, en tokens eraf als het er waren."""
+    import accounts
+    accounts.tel_op(accounts.huidige()["id"], dromen=1, tokens=-int(tokens or 0))
+    _verversen()
 
 
 def charge_call(seconds):
@@ -336,8 +349,13 @@ def charge_call(seconds):
     uit_pakket = min(seconds, a["avatar_seconden_over"])
     rest = seconds - uit_pakket
     if rest <= 0:
+        import accounts
+        accounts.tel_op(accounts.huidige()["id"], avatar_sec=seconds)
+        _verversen()
         return 0
     minuten = -(-rest // 60)  # naar boven
     tokens = minuten * TOKENS_PER_AVATAR_MINUTE
-    add_tokens(-tokens)
+    import accounts
+    accounts.tel_op(accounts.huidige()["id"], avatar_sec=seconds, tokens=-tokens)
+    _verversen()
     return tokens

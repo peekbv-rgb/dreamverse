@@ -1465,6 +1465,8 @@
     } else {
       html += "<button type='button' class='ghost' data-beheer='1'>" + t("beheer") + "</button>";
     }
+    html += "<button type='button' class='ghost uitloggen' data-uit='1'>" +
+            t("uitloggen") + "</button>";
     html += "</div>";
     el("account").innerHTML = html;
 
@@ -1476,6 +1478,9 @@
     });
     el("account").querySelectorAll("[data-beheer]").forEach(function (b) {
       b.addEventListener("click", vraagBeheer);
+    });
+    el("account").querySelectorAll("[data-uit]").forEach(function (b) {
+      b.addEventListener("click", uitloggen);
     });
   }
 
@@ -1813,11 +1818,106 @@
 
   /* --------------------------------------------------------------- starten */
 
+  /* ------------------------------------------------------------- inloggen */
+
+  /* De poort.
+   *
+   * Zonder account is er niets te zien: je dromen horen bij jou, en tien mensen
+   * in hetzelfde archief is geen product maar een ongeluk. Registreren logt
+   * meteen in - een bevestigingsmail mag niet tussen iemand en zijn eerste
+   * droom in staan.
+   */
+  var poortModus = "inloggen";
+
+  function zetPoortModus(modus) {
+    poortModus = modus;
+    var nieuw = modus === "nieuw";
+    el("tab-inloggen").setAttribute("aria-pressed", nieuw ? "false" : "true");
+    el("tab-nieuw").setAttribute("aria-pressed", nieuw ? "true" : "false");
+    el("veld-naam").hidden = !nieuw;
+    el("p-hint").hidden = !nieuw;
+    el("p-wachtwoord").setAttribute("autocomplete",
+                                    nieuw ? "new-password" : "current-password");
+    el("poort-door").textContent = nieuw ? t("Account maken") : t("Inloggen");
+    el("poort-fout").hidden = true;
+  }
+
+  el("tab-inloggen").addEventListener("click", function () { zetPoortModus("inloggen"); });
+  el("tab-nieuw").addEventListener("click", function () { zetPoortModus("nieuw"); });
+
+  el("poort-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var knop = el("poort-door");
+    var fout = el("poort-fout");
+    fout.hidden = true;
+    knop.disabled = true;
+    knop.textContent = t("Bezig…");
+
+    var pad = poortModus === "nieuw" ? "/api/registreren" : "/api/inloggen";
+    fetch(pad, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: el("p-email").value.trim(),
+        wachtwoord: el("p-wachtwoord").value,
+        naam: el("p-naam").value.trim()
+      })
+    })
+      .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, body: d }; }); })
+      .then(function (res) {
+        if (!res.ok) { throw new Error(res.body.error || t("Dat lukte niet.")); }
+        el("poort").hidden = true;
+        el("p-wachtwoord").value = "";
+        binnen(res.body.profile || {});
+      })
+      .catch(function (err) {
+        fout.textContent = err.message;
+        fout.hidden = false;
+      })
+      .then(function () {
+        // Alleen de knop terugzetten. zetPoortModus() zou de foutmelding die we
+        // net getoond hebben meteen weer verbergen.
+        knop.disabled = false;
+        knop.textContent = poortModus === "nieuw" ? t("Account maken") : t("Inloggen");
+      });
+  });
+
+  function uitloggen() {
+    fetch("/api/uitloggen", { method: "POST" })
+      .then(function () { location.reload(); })
+      .catch(function () { location.reload(); });
+  }
+
+  // Alles wat pas mag als je binnen bent.
+  function binnen(p) {
+    profiel = p;
+    document.body.classList.add("ingelogd");
+    toonIntro();
+    loadArchive();
+    laadVerbruik();
+    laadAccount();
+  }
+
+  /* --------------------------------------------------------------- starten */
+
   setupMic();
-  toonIntro();
-  loadArchive();
-  laadVerbruik();
-  laadAccount();
+
+  // Wie is er? Bestaat er geen sessie, dan de poort en niets anders.
+  fetch("/api/profile")
+    .then(function (r) {
+      if (r.status === 401) {
+        el("poort").hidden = false;
+        zetPoortModus("inloggen");
+        el("p-email").focus();
+        return null;
+      }
+      return r.json();
+    })
+    .then(function (p) { if (p) { binnen(p); } })
+    .catch(function () {
+      el("poort").hidden = false;
+      zetPoortModus("inloggen");
+    });
   fetch("/api/health")
     .then(function (r) { return r.json(); })
     .then(function (d) {

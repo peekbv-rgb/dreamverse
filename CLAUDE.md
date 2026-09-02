@@ -40,6 +40,8 @@ Geen framework — dat houdt de deploy op één bestand, net als de andere proje
 | Panelen als illustraties (optioneel) | `kling.py` |
 | Het bewegende kernmoment | `video.py` |
 | Live gesprek met de avatar | `vera.py` |
+| Accounts, sessies, dromen per gebruiker | `accounts.py`, `data/dreamverse.db` |
+| Het oude archief overzetten | `migratie.py` |
 | Verbruik meten | `usage.py`, `data/usage.jsonl` |
 | Pakketten, tokens en grenzen | `plans.py` |
 | Prijzen doorrekenen mét btw en betaalkosten | `prijzen.py` |
@@ -55,6 +57,10 @@ Geen framework — dat houdt de deploy op één bestand, net als de andere proje
 | Deploy | `render.yaml` |
 
 ```
+POST   /api/registreren                {"email", "wachtwoord", "naam"}
+POST   /api/inloggen                    {"email", "wachtwoord"}
+POST   /api/uitloggen
+POST   /api/wachtwoord                  {"oud", "nieuw"}
 POST   /api/episode   {"dream": "...", "quality": "duiding|eenvoudig|standaard|supreme"}
 GET    /api/episode/<nr>                -> een eerdere verbeelding terugkijken
 POST   /api/episode/<nr>/herstel        -> duiding opnieuw schrijven bij oude panelen
@@ -172,8 +178,30 @@ maakte van *Praat met Vera* "Praat ontmoette Vera".
   uit de omgeving. Staat die niet gezet, dan kan aanpassen helemaal niet — dat is
   de veilige stand. In de app zie je de knoppen alleen na *beheer* en het invoeren
   van die sleutel; hij blijft daarna in `localStorage` van die ene browser.
-- **Geen accounts.** Eén profiel per installatie. De verbruiksregels dragen al een
-  `who`-veld, zodat de cijfers straks niet opnieuw verzameld hoeven te worden.
+## Accounts
+
+`accounts.py` met SQLite in `data/dreamverse.db`. Per gebruiker gescheiden: de
+dromen, de duidingen, het pakket, het tokensaldo en de maandtellers. Wachtwoorden
+door `hashlib.scrypt` — en `maxmem` moet expliciet ruimer, want 128·n·r komt op
+precies de 32 MB die OpenSSL standaard toestaat.
+
+**De panelen liggen in één map, met het gebruikersnummer in de naam**:
+`1_12-2.png` is paneel 2 van droom 12 van gebruiker 1. Daardoor hoefde er in
+`kling.py`, `stem.py` en `video.py` niets te veranderen — die krijgen
+`dreamverse.sleutel(n)` waar ze eerst een nummer kregen, en zoeken nog steeds op
+`"<sleutel>-*"`. De route `/panels/<bestand>` controleert dat de naam met jouw
+nummer begint; anders kun je met een gokje in andermans dromen kijken.
+
+Wie er aan de lijn is staat in een thread-lokale plek (`accounts.zet_huidige`),
+gezet door `Handler.guard()`. Dat kan omdat de server één thread per verzoek
+draait. Achtergrondthreads raken de gebruikerslaag niet aan: die krijgen hun
+bestandssleutel mee. `accounts.huidige()` **gooit** als er niemand is — liever
+hard stuk dan stil de gegevens van iemand anders aanraken.
+
+**E-mailverificatie is gebouwd maar staat uit.** Er is een code per account en
+een eindpunt om hem in te wisselen; versturen vraagt SMTP-gegevens die er niet
+zijn. Zet `VERIFICATIE_NODIG=1` in de omgeving om het te eisen. Zolang het uit
+staat wordt de code bij het aanmaken naar de log geschreven.
 
 ## Vera bij Runway
 

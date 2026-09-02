@@ -85,11 +85,18 @@ def _append(record):
 
 
 def _who():
-    # Nu één gebruiker. Het veld staat er alvast in, zodat de cijfers straks
-    # niet opnieuw verzameld hoeven te worden als er accounts komen.
+    """Het nummer van de gebruiker, als die bekend is.
+
+    Dit wordt ook aangeroepen uit achtergrondthreads - het tekenwerk, de stem,
+    de video - en daar is niemand ingelogd. Dus nooit klappen, en geen naam maar
+    een nummer: namen veranderen en zijn niet uniek. Is de gebruiker onbekend,
+    dan is hij alsnog te herleiden, want de droomsleutel in dezelfde regel
+    begint met datzelfde nummer.
+    """
     try:
-        import dreamverse
-        return dreamverse.load_profile().get("name") or "onbekend"
+        import accounts
+        u = accounts.huidige_of_none()
+        return u["id"] if u else "onbekend"
     except Exception:
         return "onbekend"
 

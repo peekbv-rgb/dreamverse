@@ -17,6 +17,7 @@ import threading
 from datetime import date
 from pathlib import Path
 
+import accounts
 import kling
 import plans
 import stem
@@ -24,9 +25,6 @@ import usage
 
 ROOT = Path(__file__).parent
 DATA = ROOT / "data"
-ARCHIVE = DATA / "archive.json"
-PROFILE = DATA / "profile.json"
-EPISODES = DATA / "episodes"
 
 MODEL = "claude-opus-5"
 MAX_ARCHIVE_IN_PROMPT = 15  # meer geschiedenis maakt de duiding niet beter, wel duurder
@@ -73,45 +71,39 @@ class DreamverseError(Exception):
 # Archief
 # --------------------------------------------------------------------------- #
 
+def uid():
+    """Het nummer van de ingelogde gebruiker."""
+    return accounts.huidige()["id"]
+
+
+def sleutel(number):
+    """De bestandsnaam-sleutel van een droom: "3_12" voor droom 12 van gebruiker 3.
+
+    De panelen liggen in één map, maar droom 12 van de een is niet droom 12 van
+    de ander. Door het gebruikersnummer in de naam te zetten blijven alle
+    bestaande patronen werken - kling.py, stem.py en video.py krijgen deze
+    sleutel waar ze eerst een nummer kregen, en zoeken nog steeds op
+    "<sleutel>-*". Zo hoefde er in die drie modules niets te veranderen.
+    """
+    return "{}_{}".format(uid(), number)
+
+
 def load_archive():
-    try:
-        with ARCHIVE.open(encoding="utf-8") as f:
-            data = json.load(f)
-        return data if isinstance(data, list) else []
-    except FileNotFoundError:
-        return []
-    except (json.JSONDecodeError, OSError):
-        # Liever een leeg archief dan een app die niet start.
-        return []
+    """De dromen van de ingelogde gebruiker, oud naar nieuw."""
+    return accounts.dromen(uid())
 
 
-def save_archive(archive):
-    DATA.mkdir(exist_ok=True)
-    tmp = ARCHIVE.with_suffix(".tmp")
-    with tmp.open("w", encoding="utf-8") as f:
-        json.dump(archive, f, ensure_ascii=False, indent=2)
-    tmp.replace(ARCHIVE)  # atomisch: nooit een half weggeschreven archief
-
-
-def next_number(archive):
-    return max((d.get("n", 0) for d in archive), default=0) + 1
+def next_number(archive=None):
+    return accounts.volgend_nummer(uid())
 
 
 def load_profile():
-    try:
-        with PROFILE.open(encoding="utf-8") as f:
-            data = json.load(f)
-        return data if isinstance(data, dict) else {}
-    except (FileNotFoundError, json.JSONDecodeError, OSError):
-        return {}
-
-
-def save_profile(profile):
-    DATA.mkdir(exist_ok=True)
-    tmp = PROFILE.with_suffix(".tmp")
-    with tmp.open("w", encoding="utf-8") as f:
-        json.dump(profile, f, ensure_ascii=False, indent=2)
-    tmp.replace(PROFILE)
+    """Voor de code die nog een profiel-woordenboek verwacht."""
+    u = accounts.huidige()
+    return {"name": u["naam"], "birthdate": u["geboortedatum"],
+            "gender": u["geslacht"], "language": u["taal"],
+            "guardian_ok": bool(u["voogd_ok"]),
+            "plan": u["pakket"], "tokens": u["tokens"]}
 
 
 GESLACHTEN = ("man", "vrouw", "beide", "onbekend")
@@ -136,37 +128,25 @@ def set_profile(velden):
     klopt hij volgend jaar nog. Onder de achttien mag er niets gekocht worden
     zonder dat een ouder of voogd het heeft bevestigd.
     """
-    with _lock:
-        profile = load_profile()
-        if "name" in velden:
-            profile["name"] = (velden.get("name") or "").strip()[:60]
-        if "birthdate" in velden:
-            datum = (velden.get("birthdate") or "").strip()[:10]
-            profile["birthdate"] = datum
-        if "gender" in velden:
-            g = velden.get("gender")
-            profile["gender"] = g if g in GESLACHTEN else "onbekend"
-        if "language" in velden:
-            t = velden.get("language")
-            profile["language"] = t if t in TALEN else "nl"
-        if "guardian_ok" in velden:
-            profile["guardian_ok"] = bool(velden.get("guardian_ok"))
-        save_profile(profile)
+    u = accounts.zet_profiel(uid(), velden)
+    accounts.zet_huidige(u)
     return public_profile()
 
 
 def public_profile():
     """Het profiel zoals de app het mag zien, met de leeftijd erbij gerekend."""
-    profile = load_profile()
-    leeftijd = leeftijd_uit(profile.get("birthdate"))
+    u = accounts.huidige()
+    leeftijd = leeftijd_uit(u["geboortedatum"])
     return {
-        "name": profile.get("name", ""),
-        "birthdate": profile.get("birthdate", ""),
+        "email": u["email"],
+        "name": u["naam"],
+        "birthdate": u["geboortedatum"],
         "age": leeftijd,
         "minor": leeftijd is not None and leeftijd < 18,
-        "guardian_ok": bool(profile.get("guardian_ok")),
-        "gender": profile.get("gender", "onbekend"),
-        "language": profile.get("language", "nl"),
+        "guardian_ok": bool(u["voogd_ok"]),
+        "gender": u["geslacht"],
+        "language": u["taal"],
+        "verified": bool(u["bevestigd"]),
     }
 
 
@@ -179,31 +159,24 @@ def save_episode(number, episode):
 
     Zonder dit is een verbeelding weg zodra je de pagina ververst, en zou iemand
     opnieuw moeten betalen voor beelden die al gemaakt zijn. De panelen en de
-    video staan al als bestand in data/panels; hier komt de tekst bij die erbij
+    video staan als bestand in data/panels; hier komt de tekst bij die erbij
     hoort.
     """
-    EPISODES.mkdir(parents=True, exist_ok=True)
-    pad = EPISODES / "{}.json".format(number)
-    tmp = pad.with_suffix(".tmp")
-    with tmp.open("w", encoding="utf-8") as f:
-        json.dump(episode, f, ensure_ascii=False, indent=2)
-    tmp.replace(pad)
+    accounts.zet_verbeelding(uid(), number, episode)
 
 
 def load_episode(number):
     """Een eerder gemaakte verbeelding terughalen. None als hij er niet is."""
-    try:
-        with (EPISODES / "{}.json".format(number)).open(encoding="utf-8") as f:
-            episode = json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError, OSError):
+    episode = accounts.verbeelding(uid(), number)
+    if episode is None:
         # Dromen van voor het bewaren bestaan alleen nog als panelen op schijf.
         # Daar valt genoeg uit af te leiden om er beeld bij te kunnen kopen.
-        panelen = sorted(kling.PANELS.glob("{}-[0-9].*".format(number)))
+        panelen = sorted(kling.PANELS.glob("{}-[0-9].*".format(sleutel(number))))
         beelden = [p for p in panelen if p.suffix.lower() in (".png", ".jpg", ".webp")]
         if not beelden:
             return None
         titel = next((x.get("title") for x in load_archive() if x.get("n") == number), None)
-        return {
+        episode = {
             "number": number,
             "title": titel or "Droom {}".format(number),
             "panels": [{"narration": "", "image": "", "palette": "crown", "motif": "expanse"}
@@ -231,14 +204,9 @@ def latest_together():
     is de reden dat iemand een tweede en een tiende keer terugkomt. Bij elke
     nieuwe droom wordt hij herschreven, dus de nieuwste is de geldige.
     """
-    for d in sorted(load_archive(), key=lambda x: x.get("n", 0), reverse=True):
-        try:
-            with (EPISODES / "{}.json".format(d.get("n"))).open(encoding="utf-8") as f:
-                episode = json.load(f)
-        except (FileNotFoundError, json.JSONDecodeError, OSError):
-            continue
+    for n, episode in accounts.alle_verbeeldingen(uid()):
         if (episode.get("together") or "").strip():
-            return {"number": d.get("n"),
+            return {"number": n,
                     "together": episode["together"],
                     "threads": episode.get("threads") or []}
     return {"number": None, "together": "", "threads": []}
@@ -253,12 +221,9 @@ def spectrum():
     al; er hoefde alleen naar gekeken te worden.
     """
     rijen = []
-    for d in sorted(load_archive(), key=lambda x: x.get("n", 0)):
-        try:
-            with (EPISODES / "{}.json".format(d.get("n"))).open(encoding="utf-8") as f:
-                episode = json.load(f)
-        except (FileNotFoundError, json.JSONDecodeError, OSError):
-            continue
+    titels = {d.get("n"): d for d in load_archive()}
+    for n, episode in sorted(accounts.alle_verbeeldingen(uid())):
+        d = titels.get(n, {"n": n})
         velden = [p.get("palette") for p in (episode.get("panels") or [])
                   if p.get("palette") in PALETTES]
         if not velden:
@@ -292,22 +257,19 @@ def archive_with_media():
     uit = []
     for d in sorted(load_archive(), key=lambda x: x.get("n", 0), reverse=True):
         n = d.get("n")
+        k = sleutel(n)
         rij = dict(d)
-        clip = kling.PANELS / "{}-hero.mp4".format(n)
-        rij["clip"] = "/panels/{}-hero.mp4".format(n) if clip.is_file() else None
+        clip = kling.PANELS / "{}-hero.mp4".format(k)
+        rij["clip"] = "/panels/{}-hero.mp4".format(k) if clip.is_file() else None
 
         # Welk paneel het kernmoment was staat in de bewaarde verbeelding; is die
         # er niet, dan is het middelste beeld de beste gok.
-        sleutel = None
-        try:
-            with (EPISODES / "{}.json".format(n)).open(encoding="utf-8") as f:
-                sleutel = json.load(f).get("key_panel")
-        except (FileNotFoundError, json.JSONDecodeError, OSError):
-            pass
-        beelden = sorted(p for p in kling.PANELS.glob("{}-[0-9].*".format(n))
+        bewaard = accounts.verbeelding(uid(), n) or {}
+        kern = bewaard.get("key_panel")
+        beelden = sorted(p for p in kling.PANELS.glob("{}-[0-9].*".format(k))
                          if p.suffix.lower() in (".png", ".jpg", ".webp"))
         if beelden:
-            i = sleutel if isinstance(sleutel, int) and 0 <= sleutel < len(beelden) else len(beelden) // 2
+            i = kern if isinstance(kern, int) and 0 <= kern < len(beelden) else len(beelden) // 2
             rij["thumb"] = "/panels/" + beelden[i].name
         else:
             rij["thumb"] = None
@@ -338,7 +300,7 @@ def repair_episode(number):
 
     # De panelen die er liggen zijn leidend: de nieuwe verteltekst wordt eroverheen
     # gelegd, zodat tekst en beeld even lang zijn en niets uit de pas loopt.
-    beelden = sorted(p for p in kling.PANELS.glob("{}-[0-9].*".format(number))
+    beelden = sorted(p for p in kling.PANELS.glob("{}-[0-9].*".format(sleutel(number)))
                      if p.suffix.lower() in (".png", ".jpg", ".webp"))
     if beelden:
         panels = episode.get("panels") or []
@@ -373,14 +335,11 @@ def judge_future(number, verdict):
     """
     if verdict not in OORDELEN:
         raise DreamverseError("Dat oordeel bestaat niet.")
-    with _lock:
-        archive = load_archive()
-        for d in archive:
-            if d.get("n") == number:
-                d["future_check"] = verdict
-                save_archive(archive)
-                return d
-    raise DreamverseError("Die droom staat niet in je archief.")
+    try:
+        accounts.zet_veld(uid(), number, "vooruitblik", verdict)
+    except accounts.AccountError as e:
+        raise DreamverseError(str(e))
+    return next(d for d in load_archive() if d.get("n") == number)
 
 
 def answer_question(number, answer):
@@ -393,14 +352,11 @@ def answer_question(number, answer):
     answer = (answer or "").strip()[:1000]
     if not answer:
         raise DreamverseError("Er stond niets in je antwoord.")
-    with _lock:
-        archive = load_archive()
-        for d in archive:
-            if d.get("n") == number:
-                d["answer"] = answer
-                save_archive(archive)
-                return d
-    raise DreamverseError("Die droom staat niet in je archief.")
+    try:
+        accounts.zet_veld(uid(), number, "antwoord", answer)
+    except accounts.AccountError as e:
+        raise DreamverseError(str(e))
+    return next(d for d in load_archive() if d.get("n") == number)
 
 
 def delete_dream(number):
@@ -409,22 +365,17 @@ def delete_dream(number):
     Alles weg betekent hier ook echt alles. Iemand die zijn droom wist verwacht
     niet dat de panelen ervan nog op de schijf staan.
     """
-    with _lock:
-        archive = load_archive()
-        over = [d for d in archive if d.get("n") != number]
-        if len(over) == len(archive):
-            raise DreamverseError("Die droom staat niet in je archief.")
-        save_archive(over)
-
-    _ruim_nummer_op(number)
-    return {"deleted": number, "over": len(over)}
+    _ruim_nummer_op(number)          # eerst de bestanden, dan pas de rij weghalen
+    if not accounts.weg_droom(uid(), number):
+        raise DreamverseError("Die droom staat niet in je archief.")
+    return {"deleted": number, "over": len(load_archive())}
 
 
 def _bestanden_van(number):
-    """Alles wat bij één droomnummer hoort. Zonder check.png en andere losse zaken."""
-    uit = [EPISODES / "{}.json".format(number),
-           kling.PANELS / "{}.json".format(number)]
-    uit.extend(kling.PANELS.glob("{}-*".format(number)))
+    """Alles wat bij één droom van deze gebruiker hoort."""
+    k = sleutel(number)
+    uit = [kling.PANELS / "{}.json".format(k)]
+    uit.extend(kling.PANELS.glob("{}-*".format(k)))
     return uit
 
 
@@ -444,22 +395,18 @@ def clear_archive():
     nog op schijf. Dan zie je in je archief een droom met het beeld van een droom
     die je jaren eerder had.
     """
-    with _lock:
-        nummers = [d.get("n") for d in load_archive() if d.get("n")]
-        save_archive([])
-
+    nummers = accounts.weg_alles(uid())
     for n in nummers:
         _ruim_nummer_op(n)
 
-    # En alles wat er verder nog aan genummerd materiaal ligt, ook van dromen die
-    # al eens los gewist zijn. check.png en andere niet-genummerde bestanden
-    # blijven staan.
-    for map_ in (EPISODES, kling.PANELS):
-        if not map_.is_dir():
-            continue
-        for pad in map_.iterdir():
-            eerste = pad.name.split("-")[0].split(".")[0]
-            if eerste.isdigit():
+    # En alles wat er verder nog van deze gebruiker ligt, ook van dromen die al
+    # eens los gewist zijn terwijl de verteller nog schreef. Bestanden van andere
+    # gebruikers beginnen met een ander nummer en blijven staan; check.png en
+    # ander niet-genummerd materiaal ook.
+    mijn = "{}_".format(uid())
+    if kling.PANELS.is_dir():
+        for pad in kling.PANELS.iterdir():
+            if pad.name.startswith(mijn):
                 try:
                     pad.unlink(missing_ok=True)
                 except OSError:
@@ -789,30 +736,22 @@ def create(dream, kwaliteit=None):
     kosten_tokens = plans.check_dream()
     niveau, kwaliteit_tokens = plans.check_kwaliteit(kwaliteit or plans.DEFAULT_KWALITEIT)
 
-    with _lock:
-        archive = load_archive()
-        number = next_number(archive)
+    archive = load_archive()
+    number = next_number()
 
     profiel = load_profile()
     episode = write_episode(dream, archive, number, profiel.get("name"),
                             profiel.get("language", "nl"))
-    episode["number"] = number
 
-    with _lock:
-        archive = load_archive()  # opnieuw laden: er kan intussen iets bij zijn gekomen
-        number = next_number(archive)
-        episode["number"] = number
-        # Ligt er nog materiaal onder dit nummer van een gewiste droom, dan gaat
-        # dat er nu af. Anders erft deze droom beelden die niet bij hem horen.
-        _ruim_nummer_op(number)
-        archive.append({
-            "n": number,
-            "text": dream,
-            "title": episode["title"],
-            "motifs": episode.get("motifs", []),
-            "when": date.today().isoformat(),
-        })
-        save_archive(archive)
+    # Opnieuw bepalen: het schrijven duurt een minuut, en in die tijd kan deze
+    # gebruiker in een tweede tabblad een droom hebben ingestuurd.
+    number = next_number()
+    episode["number"] = number
+    # Ligt er nog materiaal onder dit nummer van een gewiste droom, dan gaat dat
+    # er nu af. Anders erft deze droom beelden die niet bij hem horen.
+    _ruim_nummer_op(number)
+    accounts.zet_droom(uid(), number, dream, episode["title"],
+                       episode.get("motifs", []), date.today().isoformat())
 
     plans.charge_dream(kosten_tokens + kwaliteit_tokens)
     # De droom zelf hoort bij de verbeelding: de hele duiding verwijst ernaar,
@@ -836,13 +775,13 @@ def create(dream, kwaliteit=None):
         # Het kernmoment volgt op de panelen: dat heeft het getekende beeld nodig
         # als startframe, anders verspringt de stijl.
         episode["images_pending"] = kling.render_async(
-            number, episode["panels"], episode.get("key_panel"), instelling)
+            sleutel(number), episode["panels"], episode.get("key_panel"), instelling)
         episode["video_pending"] = bool(instelling)
     else:
         episode["images_pending"] = False
         episode["video_pending"] = False
     # De stem hoort bij de tekst, niet bij het beeld: die komt er altijd.
-    episode["voice_pending"] = stem.render_async(number, episode["panels"])
+    episode["voice_pending"] = stem.render_async(sleutel(number), episode["panels"])
 
     return episode
 

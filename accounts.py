@@ -257,6 +257,31 @@ def raak_sessie_aan(token):
 # Het profiel
 # --------------------------------------------------------------------------- #
 
+# --------------------------------------------------------------------------- #
+# Wie is er nu bezig?
+# --------------------------------------------------------------------------- #
+
+# De server draait één thread per verzoek, dus de ingelogde gebruiker kan daar
+# gewoon in staan. Dat is veel minder invasief dan een user_id door twintig
+# functies heen doorgeven, en het gaat niet mis in achtergrondthreads: die
+# krijgen hun bestandsnaam mee en raken de gebruikerslaag niet aan.
+def zet_huidige(user):
+    _lokaal.huidige = user
+
+
+def huidige():
+    """De ingelogde gebruiker. Gooit als er niemand is - liever hard stuk dan
+    stil de gegevens van iemand anders aanraken."""
+    u = getattr(_lokaal, "huidige", None)
+    if u is None:
+        raise AccountError("Niet ingelogd.")
+    return u
+
+
+def huidige_of_none():
+    return getattr(_lokaal, "huidige", None)
+
+
 def gebruiker(user_id):
     rij = db().execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
     return dict(rij) if rij else None

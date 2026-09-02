@@ -14,6 +14,40 @@
 
 <canvas id="achtergrond" aria-hidden="true"></canvas>
 
+<!-- Inloggen. Het eerste wat je ziet als je niemand bent. -->
+<div class="poort" id="poort" hidden>
+  <div class="poort-kaart">
+    <h1 class="poort-titel">Dreamverse</h1>
+    <p class="poort-sub">Je vertelt je droom; je krijgt een verbeelding met een
+      duiding en een vooruitblik. Elke eerdere droom telt mee.</p>
+
+    <div class="poort-tabs">
+      <button type="button" id="tab-inloggen" aria-pressed="true">Inloggen</button>
+      <button type="button" id="tab-nieuw" aria-pressed="false">Account maken</button>
+    </div>
+
+    <form class="poort-velden" id="poort-form" autocomplete="on">
+      <div class="veld" id="veld-naam" hidden>
+        <label for="p-naam">Hoe heet je?</label>
+        <input type="text" id="p-naam" maxlength="60" autocomplete="given-name">
+      </div>
+      <div class="veld">
+        <label for="p-email">E-mailadres</label>
+        <input type="email" id="p-email" required autocomplete="email"
+               inputmode="email" maxlength="200">
+      </div>
+      <div class="veld">
+        <label for="p-wachtwoord">Wachtwoord</label>
+        <input type="password" id="p-wachtwoord" required maxlength="200"
+               autocomplete="current-password">
+        <span class="veld-hint" id="p-hint" hidden>Minstens acht tekens.</span>
+      </div>
+      <p class="poort-fout" id="poort-fout" hidden></p>
+      <button type="submit" class="primary" id="poort-door">Inloggen</button>
+    </form>
+  </div>
+</div>
+
 <!-- Vera's introductie: het eerste wat je ziet als je de app opent -->
 <div class="intro" id="intro" hidden>
   <div class="intro-kaart">
