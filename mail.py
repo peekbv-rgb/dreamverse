@@ -15,6 +15,31 @@ Nodig in de omgeving:
 
 Poort 587 met STARTTLS is de gewone route; 465 is TLS vanaf de eerste byte en
 wordt hier ook herkend.
+
+    python mail.py --test jij@voorbeeld.nl
+
+Met Gmail
+---------
+
+    SMTP_HOST=smtp.gmail.com
+    SMTP_PORT=587
+    SMTP_USER=dreamverse@gmail.com
+    SMTP_PASSWORD=<app-wachtwoord van zestien tekens, zonder spaties>
+    SMTP_VAN=Dreamverse <dreamverse@gmail.com>
+
+Drie dingen die bij Gmail fout gaan:
+
+1. **Je gewone wachtwoord werkt niet.** Google eist sinds 2022 een
+   *app-wachtwoord*, en dat kun je alleen maken als tweestapsverificatie
+   aanstaat. Het is zestien tekens; de spaties die Google erin zet mag je
+   weglaten.
+2. **Het afzenderadres moet je Gmail-adres zijn.** Zet je in SMTP_VAN een ander
+   domein, dan weigert Gmail de mail of herschrijft hem. Deze module waarschuwt
+   in de log als die twee niet overeenkomen.
+3. **Een gratis Gmail mag ongeveer 500 berichten per dag**, en herstelmails van
+   een gmail.com-adres komen bij ontvangers vaker in de spam dan mail van een
+   eigen domein. Voor tien testpersonen prima; voor een product hoort daar een
+   eigen verzenddomein met SPF en DKIM bij.
 """
 
 import os
@@ -42,6 +67,21 @@ def _van():
     return formataddr(("Dreamverse", gebruiker)) if gebruiker else "Dreamverse"
 
 
+def _waarschuw_afzender():
+    """Klopt het afzenderadres met het account waarmee we inloggen?
+
+    Dit is de meest voorkomende oorzaak van "Sender address rejected": je logt
+    in als de een en zet de ander als afzender. Providers als Gmail staan dat
+    niet toe.
+    """
+    gebruiker = os.environ.get("SMTP_USER", "").strip()
+    _, afzender = parseaddr(_van())
+    if gebruiker and afzender and gebruiker.lower() != afzender.lower():
+        print("mail: LET OP - je logt in als {} maar verstuurt namens {}. "
+              "Veel providers, waaronder Gmail, weigeren dat.".format(
+                  gebruiker, afzender), flush=True)
+
+
 def verstuur(naar, onderwerp, tekst):
     """Eén bericht versturen. Geeft terug of het gelukt is.
 
@@ -59,6 +99,7 @@ def verstuur(naar, onderwerp, tekst):
     bericht["Subject"] = onderwerp
     bericht.set_content(tekst)
 
+    _waarschuw_afzender()
     poort = int(os.environ.get("SMTP_PORT") or 587)
     gebruiker = os.environ.get("SMTP_USER", "").strip()
     wachtwoord = os.environ.get("SMTP_PASSWORD", "")
@@ -78,6 +119,12 @@ def verstuur(naar, onderwerp, tekst):
                 s.send_message(bericht)
         print("mail: verstuurd aan {} ({})".format(naar, onderwerp), flush=True)
         return True
+    except smtplib.SMTPAuthenticationError as e:
+        print("mail: inloggen bij {} geweigerd. Bij Gmail heb je een "
+              "app-wachtwoord nodig, niet je gewone wachtwoord, en daarvoor moet "
+              "tweestapsverificatie aanstaan. ({})".format(
+                  host(), str(e)[:160]), flush=True)
+        return False
     except Exception as e:
         print("mail: versturen aan {} mislukte: {}".format(naar, str(e)[:200]), flush=True)
         return False
@@ -93,3 +140,52 @@ def herstelbericht(naar, link):
         "De link werkt een uur en daarna niet meer. Heb je dit niet gevraagd, dan\n"
         "hoef je niets te doen: je huidige wachtwoord blijft gewoon werken.\n".format(link),
     )
+
+
+def main():
+    import argparse
+    from dotenv import load_dotenv
+    load_dotenv(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"))
+
+    ap = argparse.ArgumentParser(description="Controleer of e-mail versturen werkt.")
+    ap.add_argument("--test", metavar="ADRES", help="een proefbericht sturen")
+    args = ap.parse_args()
+
+    wachtwoord = os.environ.get("SMTP_PASSWORD", "")
+    print("SMTP_HOST     : %s" % (host() or "ONTBREEKT"))
+    print("SMTP_PORT     : %s" % (os.environ.get("SMTP_PORT") or "587 (standaard)"))
+    print("SMTP_USER     : %s" % (os.environ.get("SMTP_USER") or "ONTBREEKT"))
+    print("SMTP_PASSWORD : %s" % ("staat er (%d tekens)" % len(wachtwoord)
+                                  if wachtwoord else "ONTBREEKT"))
+    print("afzender      : %s" % _van())
+
+    if wachtwoord and len(wachtwoord.replace(" ", "")) == 16 and " " in wachtwoord:
+        print("")
+        print("Let op: er staan spaties in het wachtwoord. Google toont het "
+              "app-wachtwoord met spaties, maar die horen er niet in.")
+
+    if not enabled():
+        print("")
+        print("Zonder SMTP_HOST doet de app niets met mail; herstellinks gaan "
+              "naar de log.")
+        return 1
+
+    _waarschuw_afzender()
+
+    if not args.test:
+        print("")
+        print("Geef --test jij@voorbeeld.nl om echt een bericht te sturen.")
+        return 0
+
+    print("")
+    print("Proefbericht versturen aan %s ..." % args.test)
+    gelukt = verstuur(
+        args.test, "Dreamverse: proefbericht",
+        "Als je dit leest, werkt het versturen van e-mail.\n\n"
+        "Daarmee werkt ook 'wachtwoord vergeten', en kan e-mailverificatie aan.\n")
+    print("gelukt" if gelukt else "mislukt - de reden staat hierboven")
+    return 0 if gelukt else 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
