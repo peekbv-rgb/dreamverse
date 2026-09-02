@@ -141,6 +141,7 @@
     ["Daar hebben we tokens voor nodig.", "We need tokens for that."],
     ["Tokens kopen", "Buy tokens"],
     ["Zet saldo", "Set balance"],
+    ["Beheer uit", "Admin off"],
     ["opwaarderen", "top up"],
     ["Ik schrijf mee", "I am writing it down"],
     ["Dit stond nog van je gesprek met Vera. Ik heb het bewaard.",

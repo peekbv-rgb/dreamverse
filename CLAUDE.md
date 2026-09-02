@@ -229,7 +229,10 @@ maakte van *Praat met Vera* "Praat ontmoette Vera".
   de veilige stand. In de app is er geen zichtbare beheerknop: zet
   `?beheer` achter het adres, vul de sleutel in de kaart in, en de knoppen én de
   kostenmeter verschijnen. De sleutel blijft daarna in `localStorage` van die ene
-  browser staan, dus dat is eenmalig per browser. Daar staat ook een veld
+  browser staan, dus dat is eenmalig per browser, en met de knop **Beheer uit**
+  gaat hij er weer af — anders blijven de kostenmeter, de webhooklog en de
+  pakketknoppen voorgoed in beeld, ook als je de app gewoon als dromer gebruikt
+  of hem aan iemand laat zien. Daar staat ook een veld
   **Tokensaldo**: dat *zet* een vast aantal (`{"saldo": 500}`), waar
   `{"tokens": 10}` optelt. Zetten moest erbij omdat optellen eerst vraagt wat er
   stond, en tussen die twee stappen kan een gesprek met Vera er een paar
@@ -278,6 +281,16 @@ Drie dingen die makkelijk fout gaan:
   betaalpagina: subtotaal € 2,99, btw € 0,52, totaal € 2,99.
 - **Belastingcode `txcd_10105001`** (AI as a Service, particulier gebruik).
   Managed Payments accepteert alleen codes uit een vaste lijst.
+- **Een geweigerde handtekening zegt niet welk van twee dingen fout is.**
+  `SignatureVerificationError` komt zowel van een verkeerd geheim als van een
+  klok die uit de pas loopt, en een verkeerd geheim ziet er precies zo uit als
+  een nagemaakte melding. `python betalen.py --webhooks` laat zien welke
+  endpoints dit account heeft, in welke modus (sandbox of live), of
+  `checkout.session.completed` erbij staat, en of `STRIPE_WEBHOOK_SECRET`
+  überhaupt gezet is. Elke endpoint heeft zijn eigen ondertekengeheim en aan het
+  geheim is niet te zien bij welke het hoort — dus wie een endpoint eerst in het
+  live-account maakte en daarna in de sandbox, heeft het oude geheim nog staan
+  en krijgt elke betaling geweigerd terwijl Stripe meldt dat hij hem afleverde.
 - **De webhook is het gevaarlijkste eindpunt van de app.** Hij komt binnen
   zonder sessie, en de handtekening is het enige bewijs. Zonder
   `STRIPE_WEBHOOK_SECRET` wordt alles geweigerd — dat is de veilige stand.

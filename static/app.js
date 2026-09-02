@@ -1965,6 +1965,25 @@
     veld.addEventListener("keydown", function (e) {
       if (e.key === "Enter") { e.preventDefault(); zet.click(); }
     });
+
+    /* Beheer weer uit.
+     *
+     * Aanzetten kon, uitzetten niet - de sleutel bleef voorgoed in deze browser
+     * staan en daarmee de kostenmeter, de webhooklog en de pakketknoppen. Dat
+     * is precies wat je niet in beeld wilt als je de app als dromer gebruikt,
+     * of als je hem aan iemand laat zien.
+     */
+    var uit = el("beheer-uit");
+    if (uit) {
+      uit.addEventListener("click", function () {
+        try { localStorage.removeItem(BEHEER_SLEUTEL); } catch (e) { /* niets */ }
+        toonMeter();
+        laadWebhooklog();
+        laadAccount();
+        var doos = el("webhooklog");
+        if (doos) { doos.hidden = true; }
+      });
+    }
   }
   knoopBeheerrij();
 
