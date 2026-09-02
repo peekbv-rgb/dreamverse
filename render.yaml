@@ -107,3 +107,20 @@ services:
         sync: false
       - key: AUTH_PASSWORD
         sync: false
+
+      # ----------------------------------------------------------------- #
+      # E-mail. Nodig voor "wachtwoord vergeten", en straks voor
+      # e-mailverificatie. Zonder SMTP_HOST doet de app niets met mail en zegt
+      # dat ook: de herstellink gaat dan naar de log in plaats van naar de
+      # gebruiker. Een knop die stil niets doet is erger dan geen knop.
+      # ----------------------------------------------------------------- #
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        value: "587"
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASSWORD
+        sync: false
+      - key: SMTP_VAN
+        sync: false

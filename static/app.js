@@ -1868,9 +1868,44 @@
     el("p-hint").hidden = !nieuw;
     el("p-wachtwoord").setAttribute("autocomplete",
                                     nieuw ? "new-password" : "current-password");
+    el("p-vergeten").hidden = nieuw;
     el("poort-door").textContent = nieuw ? t("Account maken") : t("Inloggen");
     el("poort-fout").hidden = true;
   }
+
+  // Laten zien wat je typt. Zonder dit is een wachtwoord op een telefoon
+  // intypen de snelste manier om iemand te laten afhaken.
+  el("p-oog").addEventListener("click", function () {
+    var veld = el("p-wachtwoord");
+    var open = veld.type === "text";
+    veld.type = open ? "password" : "text";
+    this.textContent = t(open ? "laat zien" : "verberg");
+    this.setAttribute("aria-label", t(open ? "Wachtwoord laten zien" : "Wachtwoord verbergen"));
+    veld.focus();
+  });
+
+  el("p-vergeten").addEventListener("click", function () {
+    var fout = el("poort-fout");
+    var adres = el("p-email").value.trim();
+    if (!adres) {
+      fout.className = "poort-fout";
+      fout.textContent = t("Vul eerst je e-mailadres in, dan sturen we je een nieuwe link.");
+      fout.hidden = false;
+      el("p-email").focus();
+      return;
+    }
+    fout.className = "poort-fout";
+    fout.textContent = t("Bezig…");
+    fout.hidden = false;
+    fetch("/api/wachtwoord-vergeten", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: adres })
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (d) { fout.textContent = d.melding || t("Verstuurd."); })
+      .catch(function () { fout.textContent = t("Dat lukte niet."); });
+  });
 
   el("tab-inloggen").addEventListener("click", function () { zetPoortModus("inloggen"); });
   el("tab-nieuw").addEventListener("click", function () { zetPoortModus("nieuw"); });

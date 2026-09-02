@@ -42,6 +42,7 @@ Geen framework — dat houdt de deploy op één bestand, net als de andere proje
 | Live gesprek met de avatar | `vera.py` |
 | Accounts, sessies, dromen per gebruiker | `accounts.py`, `data/dreamverse.db` |
 | Afrekenen | `betalen.py` |
+| E-mail versturen | `mail.py` |
 | Het oude archief overzetten | `migratie.py` |
 | Verbruik meten | `usage.py`, `data/usage.jsonl` |
 | Pakketten, tokens en grenzen | `plans.py` |
@@ -257,6 +258,14 @@ gezet door `Handler.guard()`. Dat kan omdat de server één thread per verzoek
 draait. Achtergrondthreads raken de gebruikerslaag niet aan: die krijgen hun
 bestandssleutel mee. `accounts.huidige()` **gooit** als er niemand is — liever
 hard stuk dan stil de gegevens van iemand anders aanraken.
+
+**Wachtwoord vergeten werkt, zodra er SMTP is.** `mail.py` gebruikt `smtplib`
+uit de standaardbibliotheek — geen nieuwe afhankelijkheid. Zonder `SMTP_HOST`
+gaat de herstellink naar de serverlog en zegt de app eerlijk dat versturen
+uitstaat. Twee dingen die daar goed moeten: de melding is **hetzelfde** voor een
+bestaand en een onbekend adres (anders is dat eindpunt een manier om uit te
+zoeken wie een account heeft), en de link staat **nooit** in het antwoord —
+alleen in de mail.
 
 **E-mailverificatie is gebouwd maar staat uit.** Er is een code per account en
 een eindpunt om hem in te wisselen; versturen vraagt SMTP-gegevens die er niet

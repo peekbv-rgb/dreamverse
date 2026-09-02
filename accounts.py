@@ -28,7 +28,7 @@ import re
 import secrets
 import sqlite3
 import threading
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).parent
@@ -157,6 +157,8 @@ def db():
 # bestaande tabel niet aan, dus die moeten er los bij - anders staat een
 # database die al draait ineens een kolom tekort.
 LATERE_KOLOMMEN = (
+    ("users", "herstel_code", "TEXT NOT NULL DEFAULT ''"),
+    ("users", "herstel_tot", "TEXT NOT NULL DEFAULT ''"),
     ("users", "stripe_klant", "TEXT NOT NULL DEFAULT ''"),
     ("users", "stripe_abo", "TEXT NOT NULL DEFAULT ''"),
     ("users", "pakket_tot", "TEXT NOT NULL DEFAULT ''"),
@@ -354,6 +356,54 @@ def zet_wachtwoord(user_id, oud, nieuw):
     # denkt dat iemand anders erbij kan.
     alle_sessies_weg(user_id)
     return nieuwe_sessie(user_id)
+
+
+HERSTEL_GELDIG_UUR = 1
+
+
+def vraag_herstel(email):
+    """Een herstelcode maken. Geeft (gebruiker, code) of (None, None).
+
+    Bestaat het adres niet, dan gebeurt er niets - en de aanroeper hoort dat
+    niet te verklappen. Anders is dit eindpunt een manier om uit te zoeken wie
+    er een account heeft.
+    """
+    rij = db().execute("SELECT * FROM users WHERE email = ?",
+                       ((email or "").strip(),)).fetchone()
+    if rij is None:
+        return None, None
+    code = secrets.token_urlsafe(32)
+    tot = (datetime.now(timezone.utc) + timedelta(hours=HERSTEL_GELDIG_UUR)
+           ).isoformat(timespec="seconds")
+    with _lock:
+        db().execute("UPDATE users SET herstel_code = ?, herstel_tot = ? WHERE id = ?",
+                     (code, tot, rij["id"]))
+    return dict(rij), code
+
+
+def herstel(code, nieuw):
+    """Een nieuw wachtwoord zetten met een herstelcode.
+
+    De code werkt één keer en verloopt na een uur. Daarna gaan alle sessies weg:
+    wie zijn wachtwoord kwijt was, weet niet wie er nog ingelogd stond.
+    """
+    if len(nieuw or "") < 8:
+        raise AccountError("Kies een wachtwoord van minstens acht tekens.")
+    rij = db().execute("SELECT id, herstel_tot FROM users"
+                       " WHERE herstel_code = ? AND herstel_code != ''",
+                       (code or "",)).fetchone()
+    if rij is None:
+        raise AccountError("Deze link is niet geldig of al gebruikt. Vraag een nieuwe aan.")
+    if (rij["herstel_tot"] or "") < nu():
+        with _lock:
+            db().execute("UPDATE users SET herstel_code = '', herstel_tot = ''"
+                         " WHERE id = ?", (rij["id"],))
+        raise AccountError("Deze link is verlopen. Vraag een nieuwe aan.")
+    with _lock:
+        db().execute("UPDATE users SET wachtwoord = ?, herstel_code = '', herstel_tot = ''"
+                     " WHERE id = ?", (hash_wachtwoord(nieuw), rij["id"]))
+    alle_sessies_weg(rij["id"])
+    return nieuwe_sessie(rij["id"])
 
 
 def bevestig(code):

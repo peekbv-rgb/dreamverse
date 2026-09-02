@@ -1293,3 +1293,16 @@ body.tekstpagina::after { opacity: .12; }
 body.tekstpagina .meta a { color: var(--crown); text-decoration: none; }
 body.tekstpagina .block p + p { margin-top: .7rem; }
 body.tekstpagina .end a { color: var(--throat); }
+
+/* Het wachtwoordveld met een oog erin. Typen op een telefoon zonder te kunnen
+   kijken wat je typt is de snelste manier om iemand te laten afhaken. */
+.ww-veld { position: relative; display: flex; }
+.ww-veld input { flex: 1; padding-right: 5.5rem; }
+.ww-oog {
+  position: absolute; right: .35rem; top: 50%; transform: translateY(-50%);
+  padding: .3rem .7rem; font-size: .72rem; font-weight: 600;
+  letter-spacing: .06em; text-transform: uppercase;
+  background: rgba(43, 28, 74, .9); border-color: var(--line); color: var(--muted);
+}
+.ww-oog:hover { color: var(--ink); }
+.ww-vergeten { align-self: flex-start; margin-top: .2rem; font-size: .8rem; }

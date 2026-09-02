@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="nl" translate="no" class="notranslate">
+<head>
+<meta charset="utf-8">
+<meta name="google" content="notranslate">
+<title>Nieuw wachtwoord — Dreamverse</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=Karla:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="tekstpagina">
+
+<div class="poort" id="poort">
+  <div class="poort-kaart">
+    <h1 class="poort-titel">Dreamverse</h1>
+    <p class="poort-belofte">Kies een nieuw wachtwoord.</p>
+    <p class="poort-sub">Daarna ben je meteen ingelogd. Op andere apparaten word je
+      uitgelogd — wie zijn wachtwoord kwijt was, weet niet wie er nog binnen stond.</p>
+
+    <form class="poort-velden" id="form" autocomplete="on">
+      <div class="veld">
+        <label for="nieuw">Nieuw wachtwoord</label>
+        <div class="ww-veld">
+          <input type="password" id="nieuw" name="password" required minlength="8"
+                 maxlength="200" autocomplete="new-password">
+          <button type="button" class="ww-oog" id="oog"
+                  aria-label="Wachtwoord laten zien">laat zien</button>
+        </div>
+        <span class="veld-hint">Minstens acht tekens.</span>
+      </div>
+      <p class="poort-fout" id="fout" hidden></p>
+      <button type="submit" class="primary" id="door">Wachtwoord instellen</button>
+    </form>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var el = function (id) { return document.getElementById(id); };
+  var code = new URLSearchParams(location.search).get("code") || "";
+
+  if (!code) {
+    el("fout").textContent = "Deze link is niet volledig. Vraag een nieuwe aan " +
+      "op de inlogpagina.";
+    el("fout").hidden = false;
+    el("door").disabled = true;
+  }
+
+  el("oog").addEventListener("click", function () {
+    var veld = el("nieuw");
+    var open = veld.type === "text";
+    veld.type = open ? "password" : "text";
+    this.textContent = open ? "laat zien" : "verberg";
+    veld.focus();
+  });
+
+  el("form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var fout = el("fout");
+    fout.hidden = true;
+    el("door").disabled = true;
+    el("door").textContent = "Bezig…";
+
+    fetch("/api/wachtwoord-herstellen", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ code: code, nieuw: el("nieuw").value })
+    })
+      .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, body: d }; }); })
+      .then(function (res) {
+        if (!res.ok) { throw new Error(res.body.error || "Dat lukte niet."); }
+        // Ingelogd; naar de app.
+        location.href = "/";
+      })
+      .catch(function (err) {
+        fout.textContent = err.message;
+        fout.hidden = false;
+        el("door").disabled = false;
+        el("door").textContent = "Wachtwoord instellen";
+      });
+  });
+})();
+</script>
+
+</body>
+</html>

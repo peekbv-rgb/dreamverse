@@ -42,6 +42,7 @@ from dotenv import load_dotenv
 
 import accounts
 import betalen
+import mail
 import dreamverse
 import kling
 import vera
@@ -90,7 +91,8 @@ def auth_ok(header):
 # introductiefilmpje, en de twee eindpunten die je nodig hebt om in te loggen.
 # Al het andere hoort bij iemand.
 VRIJ = ("/api/health", "/api/registreren", "/api/inloggen", "/api/uitloggen",
-        "/api/bevestigen", "/api/stripe/webhook")
+        "/api/bevestigen", "/api/stripe/webhook",
+        "/api/wachtwoord-vergeten", "/api/wachtwoord-herstellen")
 
 # Paden waar basic auth nooit voor mag staan, ook niet als AUTH_USER en
 # AUTH_PASSWORD gevuld zijn.
@@ -101,7 +103,7 @@ VRIJ = ("/api/health", "/api/registreren", "/api/inloggen", "/api/uitloggen",
 #
 # De privacyverklaring: die moet leesbaar zijn zonder account. Een verklaring
 # achter een wachtwoord beschermt niemand.
-ZONDER_BASIC = ("/api/stripe/webhook", "/privacy.html")
+ZONDER_BASIC = ("/api/stripe/webhook", "/privacy.html", "/herstel.html")
 
 
 class Handler(SimpleHTTPRequestHandler):
@@ -221,6 +223,7 @@ class Handler(SimpleHTTPRequestHandler):
                 "kling": kling.enabled(),
                 "vera": vera.enabled(),
                 "betalen": betalen.enabled(),
+                "mail": mail.enabled(),
             })
         if self.path.startswith("/api/episode/"):
             # Terugkijken kost niets: de tekst staat op schijf en de beelden ook.
@@ -339,6 +342,44 @@ class Handler(SimpleHTTPRequestHandler):
             if not VERIFICATIE_NODIG:
                 print("dreamverse: nieuw account {} (bevestigingscode {})".format(
                     u["email"], u["bevestig_code"]), flush=True)
+            return self.send_json({"ok": True, "profile": dreamverse.public_profile()},
+                                  cookie=self.sessie_cookie(token))
+
+        if self.path == "/api/wachtwoord-vergeten":
+            payload = self.read_json() or {}
+            # Staat e-mail niet aan, dan hetzelfde antwoord voor iedereen -
+            # ook voor een adres dat niet bestaat. Anders verschilt de melding
+            # tussen wel en niet bestaand, en is dit alsnog een manier om uit te
+            # zoeken wie er een account heeft.
+            if not mail.enabled():
+                gebruiker, code = accounts.vraag_herstel(payload.get("email"))
+                if gebruiker and code:
+                    # De link gaat naar de log, niet naar het antwoord. Hem hier
+                    # teruggeven zou betekenen dat iedereen met een e-mailadres
+                    # een wachtwoord kan wijzigen.
+                    mail.herstelbericht(gebruiker["email"],
+                                        "{}/herstel.html?code={}".format(
+                                            betalen.basis_url(), code))
+                return self.send_json({"ok": True, "melding":
+                    "Het versturen van e-mail staat nog niet aan. Vraag de "
+                    "beheerder om een nieuwe link."})
+
+            gebruiker, code = accounts.vraag_herstel(payload.get("email"))
+            if gebruiker and code:
+                mail.herstelbericht(gebruiker["email"],
+                                    "{}/herstel.html?code={}".format(
+                                        betalen.basis_url(), code))
+            return self.send_json({"ok": True, "melding":
+                "Als dit adres bij een account hoort, staat er een link in je "
+                "mail. Kijk ook in je spam."})
+
+        if self.path == "/api/wachtwoord-herstellen":
+            payload = self.read_json() or {}
+            try:
+                token = accounts.herstel(payload.get("code"), payload.get("nieuw"))
+            except accounts.AccountError as e:
+                return self.send_json({"error": str(e)}, 400)
+            accounts.zet_huidige(accounts.uit_sessie(token))
             return self.send_json({"ok": True, "profile": dreamverse.public_profile()},
                                   cookie=self.sessie_cookie(token))
 

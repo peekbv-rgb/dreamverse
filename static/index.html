@@ -35,14 +35,22 @@
       </div>
       <div class="veld">
         <label for="p-email">E-mailadres</label>
-        <input type="email" id="p-email" required autocomplete="email"
-               inputmode="email" maxlength="200">
+        <!-- name en autocomplete="username": daar zoeken wachtwoordbeheerders
+             op. Met alleen autocomplete="email" bood geen enkele browser aan
+             het wachtwoord te bewaren. -->
+        <input type="email" id="p-email" name="email" required
+               autocomplete="username" inputmode="email" maxlength="200">
       </div>
       <div class="veld">
         <label for="p-wachtwoord">Wachtwoord</label>
-        <input type="password" id="p-wachtwoord" required maxlength="200"
-               autocomplete="current-password">
+        <div class="ww-veld">
+          <input type="password" id="p-wachtwoord" name="password" required
+                 maxlength="200" autocomplete="current-password">
+          <button type="button" class="ww-oog" id="p-oog"
+                  aria-label="Wachtwoord laten zien">laat zien</button>
+        </div>
         <span class="veld-hint" id="p-hint" hidden>Minstens acht tekens.</span>
+        <button type="button" class="linkje ww-vergeten" id="p-vergeten">Wachtwoord vergeten?</button>
       </div>
       <p class="poort-fout" id="poort-fout" hidden></p>
       <button type="submit" class="primary" id="poort-door">Inloggen</button>
