@@ -6,7 +6,7 @@ Serveert de speler uit static/ en drie eindpunten:
     GET    /api/profile                        -> wie de dromer is
     GET    /api/usage                          -> wat het tot nu toe gekost heeft
     GET    /api/account                        -> pakket, saldo en wat er over is
-    POST   /api/account                        -> pakket of saldo zetten (tijdelijk)
+    POST   /api/account                        -> pakket of saldo zetten (beheer)
     POST   /api/profile      {"name": "..."}   -> naam onthouden
     POST   /api/answer                         -> antwoord op de slotvraag bewaren
     POST   /api/extra                          -> losse aankoop met tokens
@@ -585,6 +585,9 @@ class Handler(SimpleHTTPRequestHandler):
                     plans.set_plan(payload["plan"])
                 if payload.get("tokens") is not None:
                     plans.add_tokens(int(payload["tokens"]))
+                # "saldo" zet een vast aantal, "tokens" telt erbij op.
+                if payload.get("saldo") is not None:
+                    plans.set_tokens(int(payload["saldo"]))
             except (plans.Refused, ValueError, TypeError) as e:
                 return self.send_json({"error": str(e)}, 400)
             return self.send_json(plans.account())

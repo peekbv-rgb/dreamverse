@@ -1352,3 +1352,44 @@ body.tekstpagina .end a { color: var(--throat); }
 .webhooklog-rij .wl-soort { color: #C4AEEE; }
 .webhooklog-rij.mis .wl-uit { color: #F5A08F; }
 @media (max-width: 700px) { .webhooklog-rij { grid-template-columns: 1fr; gap: .1rem; } }
+
+/* De melding hoort naast de knop waar je op klikte, niet onderaan de pagina. */
+.call-hoek { display: flex; flex-direction: column; align-items: flex-end; gap: .5rem; }
+.call-melding {
+  margin: 0; max-width: 20rem; text-align: right;
+  font-size: .84rem; line-height: 1.45; color: #D8CDEA;
+}
+.call-melding.err { color: #F5A08F; }
+.call-koop {
+  margin-top: .4rem; padding: .3rem .8rem; font-size: .78rem;
+  border-color: var(--solar); color: var(--solar);
+  background: rgba(242, 198, 76, .12);
+}
+@media (max-width: 700px) {
+  .call-hoek { align-items: stretch; }
+  .call-melding { text-align: left; max-width: none; }
+}
+
+/* Beheerrij: pakket en saldo met de hand. Alleen zichtbaar met de sleutel. */
+.beheerrij {
+  display: flex; flex-wrap: wrap; gap: 1.1rem 2rem; align-items: flex-end;
+  margin-bottom: 1.1rem; padding: .9rem 1.1rem;
+  background: rgba(12, 8, 24, .55); border: 1px solid rgba(216, 205, 234, .16);
+  border-radius: 10px;
+}
+.beheerrij-blok { display: flex; flex-direction: column; gap: .45rem; }
+.beheerrij-kop {
+  font-size: .7rem; letter-spacing: .1em; text-transform: uppercase;
+  color: rgba(216, 205, 234, .6);
+}
+.beheerrij-knoppen { display: flex; gap: .4rem; align-items: center; }
+.beheerrij-knoppen button { padding: .3rem .7rem; font-size: .78rem; }
+.beheerrij-knoppen input {
+  width: 6rem; padding: .3rem .5rem; font-size: .82rem;
+  background: rgba(255, 255, 255, .06); color: var(--ink);
+  border: 1px solid rgba(216, 205, 234, .28); border-radius: 6px;
+}
+.beheerrij-uitleg {
+  flex: 1 1 100%; margin: 0; font-size: .76rem; line-height: 1.5;
+  color: rgba(216, 205, 234, .55);
+}

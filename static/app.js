@@ -1224,18 +1224,55 @@
     if (reason) { guideLine.textContent = reason; }
   }
 
-  // Afbreken met een melding die blíjft staan. De oude versie liet hem na twee
-  // seconden verdwijnen, waardoor een mislukking eruitzag als "hij doet niets".
-  function staken(bericht) {
+  /* Afbreken met een melding die blíjft staan, náást de knop.
+   *
+   * Twee dingen gingen hier eerder mis. De melding landde onderaan bij de
+   * invoerbalk, terwijl je bovenaan op de knop klikte - dus je zag niets en dan
+   * lijkt het stuk. En Vera zei "ik kon je niet horen", ook als het probleem
+   * geld was en niet geluid. Dat is niet alleen verwarrend maar onwaar.
+   *
+   * `tekort` is het aantal tokens dat ontbreekt, als dát de reden was.
+   */
+  function staken(bericht, tekort) {
     console.warn("vera:", bericht);
     hangup();
-    statusEl.className = "status err";
-    statusEl.textContent = bericht;
-    guideLine.textContent = t("Ik kon je niet horen.");
+
+    var doos = el("call-melding");
+    if (doos) {
+      doos.hidden = false;
+      doos.className = "call-melding err";
+      doos.textContent = bericht;
+      // De vertaalslag zet de brontekst in data-nl en herstelt daaruit bij een
+      // taalwissel. Zonder deze regel staat daar de lege begintekst, en dan
+      // veegt een klik op EN/NL de melding weg.
+      doos.dataset.nl = bericht;
+      if (tekort) {
+        var knop = document.createElement("button");
+        knop.type = "button";
+        knop.className = "call-koop";
+        knop.textContent = t("Tokens kopen");
+        knop.addEventListener("click", function () {
+          var doel = el("tokenpakketten");
+          if (doel && !doel.hidden) {
+            doel.scrollIntoView({ behavior: "smooth", block: "center" });
+          } else {
+            naarStripe({ soort: "tokens", welk: "tokens20" });
+          }
+        });
+        doos.appendChild(document.createElement("br"));
+        doos.appendChild(knop);
+      }
+    }
+
+    // Vera zegt alleen iets over horen als het echt over horen ging.
+    guideLine.textContent = tekort
+      ? t("Daar hebben we tokens voor nodig.")
+      : t("Ik kon je niet horen.");
   }
 
   async function callVera() {
     var btn = el("call");
+    if (el("call-melding")) { el("call-melding").hidden = true; }
     btn.disabled = true;
     btn.textContent = t("Verbinden…");
     el("call-panel").hidden = false;
@@ -1272,10 +1309,14 @@
     try {
       var r = await fetch("/api/vera/session", { method: "POST" });
       creds = await r.json();
-      if (!r.ok) { throw new Error(creds.error || "Verbinden mislukte."); }
+      if (!r.ok) {
+        var op = new Error(creds.error || t("Verbinden mislukte."));
+        op.tekort = creds.need_tokens || 0;
+        throw op;
+      }
     } catch (e) {
       stream.getTracks().forEach(function (t) { t.stop(); });
-      return staken(e.message);
+      return staken(e.message, e.tekort);
     }
 
     sessionId = creds.session_id;
@@ -1629,6 +1670,38 @@
     var sectie = el("meter-section");
     if (sectie) { sectie.hidden = !beheerSleutel(); }
   }
+
+  /* Pakket en saldo met de hand, in het beheerpaneel.
+   *
+   * Zonder dit is "zet mij op vijfhonderd tokens" een shell op de server, en op
+   * Render is er geen shell. De knoppen staan in de sectie die alleen met de
+   * beheersleutel zichtbaar is, dus een bezoeker ziet ze nooit.
+   */
+  function knoopBeheerrij() {
+    document.querySelectorAll("#beheerrij [data-plan]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        zetAccount({ plan: b.dataset.plan });
+      });
+    });
+    var zet = el("beheer-zet");
+    var veld = el("beheer-saldo");
+    if (!zet || !veld) { return; }
+    zet.addEventListener("click", function () {
+      var n = parseInt(veld.value, 10);
+      if (isNaN(n) || n < 0) { veld.focus(); return; }
+      zet.disabled = true;
+      zet.textContent = t("Bezig…");
+      zetAccount({ saldo: n });
+      setTimeout(function () {
+        zet.disabled = false;
+        zet.textContent = t("Zet saldo");
+      }, 900);
+    });
+    veld.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") { e.preventDefault(); zet.click(); }
+    });
+  }
+  knoopBeheerrij();
 
   /* Wat Stripe heeft aangeboden, en wat wij ermee deden.
    *

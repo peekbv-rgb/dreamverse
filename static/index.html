@@ -145,7 +145,10 @@
         <input type="text" id="naam" maxlength="60" autocomplete="given-name" placeholder="je naam">
       </div>
     </div>
-    <button type="button" id="call" class="call">Praat met Vera</button>
+    <div class="call-hoek">
+      <button type="button" id="call" class="call">Praat met Vera</button>
+      <p class="call-melding" id="call-melding" hidden></p>
+    </div>
   </div>
 
   <!-- Het gesprek met de avatar -->
@@ -343,6 +346,27 @@
     <div class="head-rule">
       <h2>Wat dit kost</h2>
       <p>Wat het maken van deze dromen jou gekost heeft. Alleen zichtbaar in beheer.</p>
+    </div>
+    <div class="beheerrij" id="beheerrij">
+      <div class="beheerrij-blok">
+        <span class="beheerrij-kop">Pakket met de hand</span>
+        <div class="beheerrij-knoppen">
+          <button type="button" data-plan="gratis">Gratis</button>
+          <button type="button" data-plan="lite">Lite</button>
+          <button type="button" data-plan="plus">Plus</button>
+          <button type="button" data-plan="ultra">Ultra</button>
+        </div>
+      </div>
+      <div class="beheerrij-blok">
+        <span class="beheerrij-kop">Tokensaldo</span>
+        <div class="beheerrij-knoppen">
+          <input type="number" id="beheer-saldo" min="0" max="10000" step="1"
+                 inputmode="numeric" placeholder="500">
+          <button type="button" id="beheer-zet">Zet saldo</button>
+        </div>
+      </div>
+      <p class="beheerrij-uitleg">Dit gaat om jouw eigen account, en het rekent niets
+        af. Het saldo wordt op dit getal gezet, niet erbij opgeteld.</p>
     </div>
     <div class="webhooklog" id="webhooklog" hidden></div>
     <div class="meter" id="meter">

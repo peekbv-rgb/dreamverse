@@ -212,6 +212,14 @@ def add_tokens(aantal):
     return account()
 
 
+def set_tokens(aantal):
+    """Het saldo op een vast aantal zetten. Beheerdershandeling."""
+    import accounts
+    accounts.zet_tokens(accounts.huidige()["id"], int(aantal))
+    _verversen()
+    return account()
+
+
 def _verversen():
     """De ingelogde gebruiker opnieuw uit de database halen.
 

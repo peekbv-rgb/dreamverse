@@ -446,6 +446,18 @@ def tel_op(user_id, dromen=0, avatar_sec=0, tokens=0):
             (dromen, avatar_sec, tokens, user_id))
 
 
+def zet_tokens(user_id, aantal):
+    """Het saldo op een vast aantal zetten, niet optellen.
+
+    `tel_op` is goed voor kopen en verbruiken, maar niet om te zeggen "jij hebt
+    er vijfhonderd": dan moet je eerst weten hoeveel er stonden, en tussen die
+    twee stappen kan een gesprek met Vera er een paar afhalen.
+    """
+    with _lock:
+        db().execute("UPDATE users SET tokens = ? WHERE id = ?",
+                     (max(0, int(aantal)), user_id))
+
+
 def zet_pakket(user_id, pakket, tot="", abo=None):
     """Het pakket zetten, en waar het vandaan komt.
 
