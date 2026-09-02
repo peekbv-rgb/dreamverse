@@ -1445,7 +1445,26 @@
     melding.textContent = k.uitleg + (k.tokens ? "  Kost je " + k.tokens + " tokens." : "");
   }
 
+  /* Je tegoed, boven de knoppen waar je het uitgeeft.
+   *
+   * Het stond alleen verderop op de pagina, bij de pakketten. Maar je kiest hier
+   * wat je van je droom wilt, en dan hoor je hier te zien wat je hebt - anders
+   * klik je op Supreme en hoor je pas daarna dat je tien tokens tekortkomt.
+   */
+  function toonTegoed(a) {
+    var doos = el("tegoed");
+    if (!doos) { return; }
+    var stukken = [];
+    stukken.push('<b>' + a.plan_naam + "</b>");
+    stukken.push(a.dromen_over + " " + t(a.dromen_over === 1 ? "droom over" : "dromen over"));
+    stukken.push('<b>' + a.tokens + "</b> " + t("tokens"));
+    doos.innerHTML = stukken.join('<i aria-hidden="true">·</i>');
+    doos.hidden = false;
+    doos.classList.toggle("op", a.dromen_over === 0 && a.tokens < a.tokens_per_extra_droom);
+  }
+
   function toonAccount(a) {
+    toonTegoed(a);
     toonKwaliteiten(a);
     var op = a.dromen_over === 0 ? " op" : "";
     var minuten = Math.floor(a.avatar_seconden_over / 60);

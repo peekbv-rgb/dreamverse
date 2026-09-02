@@ -1318,3 +1318,16 @@ body.tekstpagina .end a { color: var(--throat); }
   margin: 0 0 .8rem; font-size: .64rem; font-weight: 600;
   letter-spacing: .2em; text-transform: uppercase; color: var(--muted);
 }
+
+/* Je tegoed, op de plek waar je het uitgeeft. */
+.kwaliteit-balk {
+  display: flex; flex-wrap: wrap; align-items: baseline;
+  gap: .5rem 1rem; justify-content: space-between;
+}
+.tegoed {
+  font-size: .82rem; color: #CFC4E4;
+  display: inline-flex; align-items: baseline; gap: .4rem;
+}
+.tegoed b { color: #fff; font-weight: 600; }
+.tegoed i { color: var(--muted); font-style: normal; opacity: .6; }
+.tegoed.op b { color: var(--solar); }

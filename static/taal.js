@@ -140,6 +140,7 @@
     ["verbonden", "connected"],
     ["ingelogd als", "signed in as"],
     ["dromen over", "dreams left"],
+    ["droom over", "dream left"],
     ["kernmoment wordt gemaakt…", "key moment is being made…"],
     ["Droom %s is weer compleet.", "Dream %s is whole again."],
     ["Droom %s terughalen…", "Fetching dream %s back…"],
