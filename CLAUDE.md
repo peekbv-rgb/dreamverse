@@ -101,6 +101,15 @@ en het scheelt direct in de kostprijs per verbeelding.
 - **De kleurvelden zijn de chakra's** (`root` tot `crown`). Dat is geen sfeer maar
   betekenis: het model kiest per paneel het veld dat bij het gevoel past, en de
   kijker ziet die keuze terug in de kleur van het beeld.
+- **Eén standbestand, drie schrijvers.** `data/panels/<nr>.json` wordt bijgehouden
+  door `kling.py`, `stem.py` én `video.py`. Wie zijn hele woordenboek wegschrijft
+  gooit het werk van de andere twee weg, dus schrijf altijd samenvoegend. En de
+  standaardwaarde bij een ontbrekend bestand is `status: "off"`, nooit `"done"`:
+  met `done` en nul panelen concludeert de pagina dat de verbeelding af is
+  terwijl er nooit iets gemaakt is.
+- **Afrekenen pas als het werk echt kan.** `/api/extra` controleerde alleen het
+  saldo en of de achtergrondtaak *startte*; die taak faalde daarna en de tokens
+  waren weg. Nu weigert hij met 409 als er geen panelen liggen om te animeren.
 - **Nooit `.env` committen.** `.gitignore` blokkeert ook `.env.*` en `data/`.
 - Basic auth gaat aan zodra `AUTH_USER` én `AUTH_PASSWORD` gevuld zijn.
 

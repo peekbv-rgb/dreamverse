@@ -268,6 +268,18 @@ class Handler(SimpleHTTPRequestHandler):
             if not episode:
                 return self.send_json({"error": "Die verbeelding is er niet meer."}, 404)
 
+            # Bewegend beeld heeft een getekend paneel nodig als startframe.
+            # Zonder die controle start de achtergrondtaak wel, wordt er
+            # afgerekend, en pas daarna blijkt dat er niets te animeren viel.
+            beelden = [b for b in kling.PANELS.glob("{}-[0-9].*".format(nummer))
+                       if b.suffix.lower() in (".png", ".jpg", ".webp")]
+            if not beelden:
+                return self.send_json({
+                    "error": "Bij deze droom zijn geen panelen gemaakt, en bewegend beeld "
+                             "heeft een getekend paneel nodig om mee te beginnen. Maak de "
+                             "droom opnieuw met beeld erbij.",
+                }, 409)
+
             import video
             if soort == "kernmoment_top":
                 gestart = video.render_async(nummer, episode["panels"],

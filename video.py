@@ -100,7 +100,11 @@ def _in_state(number, **velden):
         with pad.open(encoding="utf-8") as f:
             state = json.load(f)
     except (FileNotFoundError, json.JSONDecodeError, OSError):
-        state = {"status": "done", "images": {}, "errors": {}}
+        # "off" en niet "done": als er nog geen tekenwerk is geweest, mag deze
+        # stand niet beweren dat het klaar is. De pagina leest hier of er nog
+        # beeld komt, en met "done" plus nul panelen concludeert hij dat je
+        # verbeelding af is terwijl er nooit iets gemaakt is.
+        state = {"status": "off", "images": {}, "errors": {}}
     state.update(velden)
     tmp = pad.with_suffix(".tmp")
     with tmp.open("w", encoding="utf-8") as f:

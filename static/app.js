@@ -228,8 +228,23 @@
     speak(panel.narration);
   }
 
-  // Wat er op dit moment gemaakt wordt, met een zandloper erbij. Zonder dit
-  // gebeurt er minutenlang iets duurs zonder dat er iets te zien is.
+  /* Wat er op dit moment gemaakt wordt, met een zandloper erbij. Zonder dit
+   * gebeurt er minutenlang iets duurs zonder dat er iets te zien is.
+   *
+   * Twee dingen die eerder misgingen. Tussen "aanvraag verstuurd" en de eerste
+   * keer dat de server "busy" meldt zit een gaatje, en in dat gaatje verdween de
+   * balk weer: je klikte, kreeg "onderweg", en zag daarna niets. Vandaar het
+   * uitstel hieronder. En als er iets mislukte werd de balk gewoon verborgen,
+   * zodat je nooit te horen kreeg dat het niet doorging.
+   */
+  var werkGestart = 0;      // wanneer we iets in gang zetten
+  var werkGezien = false;   // heeft de server al eens "busy" gezegd?
+
+  function verwachtWerk() {
+    werkGestart = Date.now();
+    werkGezien = false;
+  }
+
   function toonVoortgang(state) {
     var balk = el("voortgang");
     if (!balk) { return; }
@@ -251,12 +266,39 @@
       regels.push(t("Film maken —") + " " + f + " " + t("van de") + " " + totaal + " " + t("panelen klaar"));
     }
 
+    // Mislukt werk hoort niet stilletjes te verdwijnen.
+    var stuk = [];
+    if (state.video_status === "failed") {
+      stuk.push(t("Het kernmoment lukte niet") +
+                (state.video_error ? " — " + state.video_error : ""));
+    }
+    if (state.film_status === "failed") { stuk.push(t("De film lukte niet")); }
+    if (state.status === "failed") { stuk.push(t("De panelen lukten niet")); }
+
+    if (regels.length) { werkGezien = true; }
+
+    if (!regels.length && stuk.length) {
+      balk.hidden = false;
+      balk.className = "voortgang mis";
+      balk.innerHTML = '<span aria-hidden="true">✕</span><span>' + stuk.join(" · ") + "</span>";
+      return;
+    }
     if (!regels.length) {
+      // Nog niets te melden, maar we hebben net wel iets in gang gezet: dan even
+      // laten staan in plaats van meteen weg.
+      if (!werkGezien && Date.now() - werkGestart < 40000) {
+        balk.hidden = false;
+        balk.className = "voortgang";
+        balk.innerHTML = '<span class="zandloper" aria-hidden="true">⧗</span><span>' +
+                         t("Aanvraag gestart…") + "</span>";
+        return;
+      }
       balk.hidden = true;
       balk.innerHTML = "";
       return;
     }
     balk.hidden = false;
+    balk.className = "voortgang";
     balk.innerHTML = '<span class="zandloper" aria-hidden="true">⧗</span><span>' +
                      regels.join(" · ") + "</span>";
   }
@@ -407,7 +449,7 @@
     filmpjes = {};
     try { speler.pause(); } catch (e) { /* niets aan de hand */ }
     if (pollTimer) { clearTimeout(pollTimer); pollTimer = null; }
-    if (ep.images_pending) { pollPanels(ep.number, 90); }
+    if (ep.images_pending) { verwachtWerk(); pollPanels(ep.number, 90); }
     el("title").textContent = ep.title;
     // De kop draagt nu de titel van de droom, niet meer de slogan: dat is de
     // nieuwe brontekst, anders zet een taalwissel de slogan terug.
@@ -801,7 +843,13 @@
     dreams.forEach(function (d) {
       var o = document.createElement("option");
       o.value = d.n;
-      o.textContent = "Droom " + d.n + " — " + (d.title || d.text || "").slice(0, 40);
+      // Bewegend beeld heeft een getekend paneel nodig als startframe. Zonder
+      // panelen valt er niets te kopen, en dat hoort hier te staan en niet pas
+      // in een foutmelding nadat je geklikt hebt.
+      o.disabled = !d.thumb;
+      o.textContent = t("Droom") + " " + d.n + " — " +
+                      (d.title || d.text || "").slice(0, 40) +
+                      (d.thumb ? "" : "  (" + t("geen beeld") + ")");
       kies.appendChild(o);
     });
     if (!dreams.length) {
@@ -810,6 +858,18 @@
       leeg.value = "";
       kies.appendChild(leeg);
     }
+    // De eerste droom die wel beeld heeft, want een uitgeschakelde optie kan
+    // niet geselecteerd staan.
+    var bruikbaar = dreams.filter(function (d) { return d.thumb; })[0];
+    kies.value = bruikbaar ? String(bruikbaar.n) : "";
+    zetKoopKnoppen(!!bruikbaar);
+  }
+
+  function zetKoopKnoppen(mag) {
+    document.querySelectorAll(".kies-droom .koop").forEach(function (b) {
+      b.disabled = !mag;
+      b.title = mag ? "" : t("Kies een droom waar panelen bij gemaakt zijn.");
+    });
   }
 
   function loadArchive() {
@@ -948,9 +1008,11 @@
       .then(function (res) {
         if (!res.ok) { throw new Error(res.body.error || t("Dat lukte niet.")); }
         melding.textContent = t("Onderweg. De zandloper onderin loopt mee.");
+        verwachtWerk();
         el("voortgang").hidden = false;
-        el("voortgang").innerHTML = '<span class="zandloper" aria-hidden="true">⧗</span>' +
-                                    "<span>Aanvraag gestart…</span>";
+        el("voortgang").className = "voortgang";
+        el("voortgang").innerHTML = '<span class="zandloper" aria-hidden="true">⧗</span><span>' +
+                                    t("Aanvraag gestart…") + "</span>";
         toonAccount(res.body.account);
         laadVerbruik();
         pollPanels(nummer, 90);

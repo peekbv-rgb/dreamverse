@@ -238,11 +238,25 @@ def read_state(number):
 
 
 def _write_state(number, state):
+    """De eigen velden wegschrijven zonder die van de anderen te wissen.
+
+    Drie schrijvers delen dit bestand: het tekenwerk hier, de verteller in
+    stem.py en de video in video.py. Wie zijn hele woordenboek wegschrijft, gooit
+    het werk van de andere twee weg - en dat gebeurde: de stem was klaar en de
+    stand meldde daarna dat er geen stem was.
+    """
     PANELS.mkdir(parents=True, exist_ok=True)
-    tmp = state_path(number).with_suffix(".tmp")
+    pad = state_path(number)
+    try:
+        with pad.open(encoding="utf-8") as f:
+            heel = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError, OSError):
+        heel = {}
+    heel.update(state)
+    tmp = pad.with_suffix(".tmp")
     with tmp.open("w", encoding="utf-8") as f:
-        json.dump(state, f, ensure_ascii=False, indent=2)
-    tmp.replace(state_path(number))
+        json.dump(heel, f, ensure_ascii=False, indent=2)
+    tmp.replace(pad)
 
 
 def _render_all(number, panels, key_index=None, video_instelling=None):
@@ -283,6 +297,14 @@ def _render_all(number, panels, key_index=None, video_instelling=None):
 def render_async(number, panels, key_index=None, video_instelling=None):
     """Start het tekenwerk op de achtergrond. Geeft meteen terug."""
     if not enabled():
+        # Stil weigeren kostte een keer een hele droom: de gebruiker betaalde,
+        # kreeg geen panelen, en nergens stond waarom.
+        print("kling: geen sleutel, dus geen panelen voor droom {}".format(number),
+              flush=True)
+        _write_state(number, {"status": "off", "images": {}, "errors": {}})
+        return False
+    if not panels:
+        print("kling: droom {} heeft geen panelen om te tekenen".format(number), flush=True)
         return False
     threading.Thread(target=_render_all,
                      args=(number, panels, key_index, video_instelling), daemon=True).start()

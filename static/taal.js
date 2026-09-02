@@ -146,6 +146,8 @@
     ["Schrijf de duiding opnieuw", "Write the reading again"],
     ["gratis, de panelen blijven staan.", "free, the panels stay as they are."],
     ["nog geen dromen", "no dreams yet"],
+    ["geen beeld", "no images"],
+    ["Kies een droom waar panelen bij gemaakt zijn.", "Pick a dream that has panels."],
     ["Bezig…", "Working…"],
     ["Verbinden…", "Connecting…"],
     ["In gesprek", "In conversation"],
@@ -233,6 +235,10 @@
     ["Er ging iets mis. Probeer het zo nog eens.", "Something went wrong. Try again in a moment."],
     ["De vijf minuten zaten erop.", "The five minutes are up."],
     ["Kernmoment animeren — dit duurt ongeveer een minuut", "Animating the key moment — this takes about a minute"],
+    ["Aanvraag gestart…", "Request started…"],
+    ["Het kernmoment lukte niet", "The key moment did not work"],
+    ["De film lukte niet", "The film did not work"],
+    ["De panelen lukten niet", "The panels did not work"],
     ["Het hele archief wissen? Je volgende droom wordt Droom 1.", "Clear the whole archive? Your next dream becomes Dream 1."]
   ].forEach(function (paar) { EN[plat(paar[0])] = paar[1]; });
 

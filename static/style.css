@@ -752,6 +752,7 @@ body::after { opacity: .34; }
   padding: .6rem 1.3rem; font-size: .92rem; color: var(--ink);
   box-shadow: 0 8px 34px rgba(4, 2, 10, .8), 0 0 28px rgba(242, 198, 76, .18);
 }
+.voortgang.mis { border-color: rgba(245, 160, 143, .6); color: #F5A08F; }
 .voortgang .zandloper, .status .zandloper {
   font-size: 1.2rem; color: var(--solar);
   animation: keren 2s ease-in-out infinite;
@@ -761,7 +762,8 @@ body::after { opacity: .34; }
   0%, 45% { transform: rotate(0deg); }
   55%, 100% { transform: rotate(180deg); }
 }
-@media (prefers-reduced-motion: reduce) { .voortgang .zandloper, .status .zandloper { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .voortgang.mis { border-color: rgba(245, 160, 143, .6); color: #F5A08F; }
+.voortgang .zandloper, .status .zandloper { animation: none; } }
 
 /* ------------------------------------------------------------------------ */
 /* Vera's introductie: het scherm dat je bij openen ziet.                     */
