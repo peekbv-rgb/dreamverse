@@ -244,7 +244,7 @@
       regels.push("Inspreken — " + Object.keys(state.stem || {}).length + " van de " + totaal);
     }
     if (state.video_status === "busy") {
-      regels.push("Kernmoment animeren — dit duurt ongeveer een minuut");
+      regels.push(t("Kernmoment animeren — dit duurt ongeveer een minuut"));
     }
     if (state.film_status === "busy") {
       var f = Object.keys(state.film || {}).length;
@@ -297,7 +297,7 @@
           pollTimer = setTimeout(function () { pollPanels(number, tries - 1); }, 4000);
         }
       })
-      .catch(function () { /* beeld is bijzaak; de aflevering staat er al */ });
+      .catch(function () { /* beeld is bijzaak; de verbeelding staat er al */ });
   }
 
   function render(ep) {
@@ -310,6 +310,9 @@
     if (pollTimer) { clearTimeout(pollTimer); pollTimer = null; }
     if (ep.images_pending) { pollPanels(ep.number, 90); }
     el("title").textContent = ep.title;
+    // De kop draagt nu de titel van de droom, niet meer de slogan: dat is de
+    // nieuwe brontekst, anders zet een taalwissel de slogan terug.
+    el("title").dataset.nl = ep.title;
     player.hidden = false;
 
     bar.innerHTML = "";
@@ -318,8 +321,12 @@
 
     threadsEl.innerHTML = "";
     el("threads-section").hidden = false;
+    // De lijn door alles heen komt bovenaan; de losse draden eronder.
+    var samen = el("samen");
+    samen.textContent = ep.together || "";
+    samen.hidden = !ep.together;
     if (ep.threads && ep.threads.length) {
-      el("threads-title").textContent = "Wat terugkwam";
+      el("threads-title").textContent = t("Je dromen samen");
       ep.threads.forEach(function (t) {
         var d = document.createElement("div");
         d.className = "thread";
@@ -330,11 +337,11 @@
         d.appendChild(tag); d.appendChild(was); d.appendChild(now);
         threadsEl.appendChild(d);
       });
-    } else {
-      el("threads-title").textContent = "Nog geen draden";
+    } else if (!ep.together) {
+      el("threads-title").textContent = t("Nog geen patroon");
       var d2 = document.createElement("div");
       d2.className = "thread";
-      d2.textContent = "Deze droom staat nog op zichzelf. Vanaf je tweede of derde droom vormt het web zich.";
+      d2.textContent = t("Deze droom staat nog op zichzelf. Vanaf je tweede of derde droom vormt het web zich.");
       threadsEl.appendChild(d2);
     }
 
@@ -349,7 +356,7 @@
     blok.hidden = !ep.question;
     blok.classList.remove("bewaard");
     el("antwoord").value = "";
-    el("antwoord-uitleg").textContent = "Dit gaat mee in de duiding van je volgende droom.";
+    el("antwoord-uitleg").textContent = t("Dit gaat mee in de duiding van je volgende droom.");
     blok.dataset.dream = ep.number;
     el("why").textContent = ep.why;
     el("meaning").textContent = ep.meaning;
@@ -370,19 +377,37 @@
     if (!dreams.length) {
       var empty = document.createElement("div");
       empty.className = "entry";
-      empty.textContent = "Nog leeg. Je eerste droom wordt Droom 1.";
+      empty.textContent = t("Nog leeg. Je eerste droom wordt Droom 1.");
       archiveEl.appendChild(empty);
       return;
     }
     dreams.forEach(function (d) {
       var row = document.createElement("div");
       row.className = "entry";
+      // Het kernmoment ernaast: dat is wat de droom terugbrengt. Bewoog het,
+      // dan speelt de video zachtjes mee; anders staat de tekening er.
+      var mini = document.createElement("div");
+      mini.className = "mini";
+      if (d.clip) {
+        var mv = document.createElement("video");
+        mv.src = d.clip; mv.muted = true; mv.loop = true;
+        mv.playsInline = true; mv.autoplay = true; mv.preload = "metadata";
+        mini.appendChild(mv);
+        mini.classList.add("bewoog");
+      } else if (d.thumb) {
+        var mi = document.createElement("img");
+        mi.src = d.thumb; mi.alt = ""; mi.loading = "lazy";
+        mini.appendChild(mi);
+      } else {
+        mini.classList.add("leeg");
+      }
+
       var no = document.createElement("span"); no.className = "no"; no.textContent = "Droom " + d.n;
       var txt = document.createElement("span"); txt.className = "txt"; txt.textContent = d.title || d.text;
       var weg = document.createElement("button");
       weg.type = "button";
       weg.className = "wis";
-      weg.title = "Deze droom verwijderen";
+      weg.title = t("Deze droom verwijderen");
       weg.setAttribute("aria-label", "Droom " + d.n + " verwijderen");
       weg.textContent = "×";
       weg.addEventListener("click", function (e) {
@@ -394,15 +419,36 @@
           .catch(function () {});
       });
 
-      row.appendChild(no); row.appendChild(txt); row.appendChild(weg);
+      row.appendChild(mini); row.appendChild(no); row.appendChild(txt); row.appendChild(weg);
       row.tabIndex = 0;
-      row.title = "Terugkijken";
+      row.title = t("Terugkijken");
       row.addEventListener("click", function () { herbekijk(d.n); });
       row.addEventListener("keydown", function (e) {
         if (e.key === "Enter" || e.key === " ") { e.preventDefault(); herbekijk(d.n); }
       });
       archiveEl.appendChild(row);
     });
+  }
+
+  // De duiding terugschrijven bij panelen die er al liggen. De droomtekst zelf
+  // staat nog in het archief, dus er hoeft geen beeld opnieuw gemaakt te worden.
+  function herstel(nummer) {
+    statusEl.className = "status";
+    statusEl.innerHTML = '<span class="zandloper" aria-hidden="true">⧗</span> ' +
+                         "De duiding wordt opnieuw geschreven bij je panelen…";
+    fetch("/api/episode/" + nummer + "/herstel", { method: "POST" })
+      .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, body: d }; }); })
+      .then(function (res) {
+        if (!res.ok) { throw new Error(res.body.error || t("Herstellen lukte niet.")); }
+        render(res.body.episode);
+        pollPanels(nummer, 3);
+        statusEl.className = "status";
+        statusEl.textContent = "Droom " + nummer + " is weer compleet.";
+      })
+      .catch(function (e) {
+        statusEl.className = "status err";
+        statusEl.textContent = e.message;
+      })
   }
 
   // Terugkijken kost niets: tekst, panelen en video staan al op de schijf.
@@ -412,17 +458,27 @@
     fetch("/api/episode/" + nummer)
       .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, body: d }; }); })
       .then(function (res) {
-        if (!res.ok) { throw new Error(res.body.error || "Terughalen lukte niet."); }
+        if (!res.ok) { throw new Error(res.body.error || t("Terughalen lukte niet.")); }
         var ep = res.body.episode;
         render(ep);
         if (ep.answer) {
           el("antwoord").value = ep.answer;
           el("antwoord-blok").classList.add("bewaard");
-          el("antwoord-uitleg").textContent = "Dit antwoord telt mee in je volgende duiding.";
+          el("antwoord-uitleg").textContent = t("Dit antwoord telt mee in je volgende duiding.");
         }
         // De beelden en de video die er al zijn ophalen, zonder iets te maken.
         pollPanels(nummer, 3);
-        statusEl.textContent = "Droom " + nummer + " — al eerder gemaakt, kost je niets.";
+        if (ep.onvolledig) {
+          // Van voor het bewaren: wel beeld, geen tekst. Opnieuw schrijven mag,
+          // en kost niets, want het beeld staat er al.
+          statusEl.className = "status";
+          statusEl.innerHTML = "Bij deze droom is alleen het beeld bewaard gebleven. " +
+            "<button type=\"button\" class=\"herstel\" id=\"herstel-" + nummer + "\">" +
+            "Schrijf de duiding opnieuw</button> — gratis, de panelen blijven staan.";
+          el("herstel-" + nummer).addEventListener("click", function () { herstel(nummer); });
+        } else {
+          statusEl.textContent = "Droom " + nummer + " — al eerder gemaakt, kost je niets.";
+        }
         player.scrollIntoView({ behavior: "smooth", block: "start" });
       })
       .catch(function (e) {
@@ -466,7 +522,7 @@
     var mic = el("mic");
     if (!Recognition) {
       mic.disabled = true;
-      mic.title = "Inspreken werkt in Chrome en Edge";
+      mic.title = t("Inspreken werkt in Chrome en Edge");
       return;
     }
     mic.addEventListener("click", function () {
@@ -481,9 +537,9 @@
       recogniser.onstart = function () {
         listening = true;
         mic.classList.add("rec");
-        mic.textContent = "Stop met opnemen";
+        mic.textContent = t("Stop met opnemen");
         guide.classList.add("listening");
-        guideLine.textContent = "Ik luister. Neem de tijd.";
+        guideLine.textContent = t("Ik luister. Neem de tijd.");
       };
       recogniser.onresult = function (e) {
         var live = "";
@@ -496,8 +552,8 @@
       recogniser.onerror = function (e) {
         statusEl.className = "status err";
         statusEl.textContent = e.error === "not-allowed"
-          ? "Geen toegang tot de microfoon. Sta dat toe in je browser."
-          : "Het opnemen stopte onverwacht. Typ anders even.";
+          ? t("Geen toegang tot de microfoon. Sta dat toe in je browser.")
+          : t("Het opnemen stopte onverwacht. Typ anders even.");
       };
       recogniser.onend = function () {
         listening = false;
@@ -505,8 +561,8 @@
         mic.textContent = "Inspreken";
         guide.classList.remove("listening");
         guideLine.textContent = input.value
-          ? "Genoteerd. Zal ik er een aflevering van maken?"
-          : "Ik heb niets opgevangen. Probeer het nog eens.";
+          ? t("Genoteerd. Zal ik je droom verbeelden?")
+          : t("Ik heb niets opgevangen. Probeer het nog eens.");
       };
       recogniser.start();
     });
@@ -541,7 +597,7 @@
     if (!nummer) { return; }
     var melding = el(meldingId);
     melding.className = "extras-melding";
-    melding.textContent = "Bezig met aanvragen…";
+    melding.textContent = t("Bezig met aanvragen…");
     knop.disabled = true;
     fetch("/api/extra", {
       method: "POST",
@@ -550,8 +606,8 @@
     })
       .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, body: d }; }); })
       .then(function (res) {
-        if (!res.ok) { throw new Error(res.body.error || "Dat lukte niet."); }
-        melding.textContent = "Onderweg. Je ziet de voortgang hieronder meelopen.";
+        if (!res.ok) { throw new Error(res.body.error || t("Dat lukte niet.")); }
+        melding.textContent = t("Onderweg. Je ziet de voortgang hieronder meelopen.");
         el("voortgang").hidden = false;
         el("voortgang").innerHTML = '<span class="zandloper" aria-hidden="true">⧗</span>' +
                                     "<span>Aanvraag gestart…</span>";
@@ -584,20 +640,20 @@
     }).then(function (r) { return r.json(); }).then(function (d) {
       if (d.error) { el("antwoord-uitleg").textContent = d.error; return; }
       blok.classList.add("bewaard");
-      el("antwoord-uitleg").textContent = "Bewaard. Vera weet dit bij je volgende droom.";
+      el("antwoord-uitleg").textContent = t("Bewaard. Vera weet dit bij je volgende droom.");
       loadArchive();
     }).catch(function () {
-      el("antwoord-uitleg").textContent = "Bewaren lukte niet. Probeer het nog eens.";
+      el("antwoord-uitleg").textContent = t("Bewaren lukte niet. Probeer het nog eens.");
     });
   });
 
   el("clear").addEventListener("click", function () {
-    if (!window.confirm("Het hele archief wissen? Je volgende droom wordt Droom 1.")) { return; }
+    if (!window.confirm(t("Het hele archief wissen? Je volgende droom wordt Droom 1."))) { return; }
     fetch("/api/archive", { method: "DELETE" })
       .then(function () {
         loadArchive();
         statusEl.className = "status";
-        statusEl.textContent = "Archief gewist.";
+        statusEl.textContent = t("Archief gewist.");
       });
   });
 
@@ -605,7 +661,7 @@
     var text = input.value.trim();
     if (!text) {
       statusEl.className = "status";
-      statusEl.textContent = "Vertel eerst je droom.";
+      statusEl.textContent = t("Vertel eerst je droom.");
       input.focus();
       return;
     }
@@ -615,17 +671,17 @@
     go.disabled = true;
     go.textContent = "Bezig…";
     statusEl.className = "status";
-    statusEl.textContent = "Je aflevering wordt geschreven. Dit duurt een halve tot anderhalve minuut.";
-    guideLine.textContent = "Ik kijk ernaar. Blijf even bij me.";
+    statusEl.textContent = t("Je droom wordt verbeeld. Dit duurt een halve tot anderhalve minuut.");
+    guideLine.textContent = t("Ik kijk ernaar. Blijf even bij me.");
 
     fetch("/api/episode", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ dream: text })
+      body: JSON.stringify({ dream: text, quality: gekozenKwaliteit })
     })
       .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, body: d }; }); })
       .then(function (res) {
-        if (!res.ok) { throw new Error(res.body.error || "Het lukte niet."); }
+        if (!res.ok) { throw new Error(res.body.error || t("Het lukte niet.")); }
         var ep = res.body.episode;
         render(ep);
         input.value = "";
@@ -633,19 +689,19 @@
         laadVerbruik();
         laadAccount();
         statusEl.textContent = ep.demo
-          ? (ep.demo_reason || "Voorbeeldaflevering.")
+          ? (ep.demo_reason || t("Dit is een voorbeeld."))
           : "Klaar. Dit was Droom " + ep.number + "; hij telt mee in je volgende duiding.";
-        guideLine.textContent = "Kijk maar. Ik heb er iets van gemaakt.";
+        guideLine.textContent = t("Kijk maar. Ik heb er iets van gemaakt.");
         player.scrollIntoView({ behavior: "smooth", block: "start" });
       })
       .catch(function (e) {
         statusEl.className = "status err";
         statusEl.textContent = e.message;
-        guideLine.textContent = "Er ging iets mis. Probeer het zo nog eens.";
+        guideLine.textContent = t("Er ging iets mis. Probeer het zo nog eens.");
       })
       .then(function () {
         go.disabled = false;
-        go.textContent = "Maak mijn aflevering";
+        go.textContent = t("Verbeeld mijn droom");
       });
   });
 
@@ -670,7 +726,7 @@
     // Onder de minuut oranje, onder tien seconden rood: je wilt niet dat het
     // gesprek er zonder waarschuwing uit klapt.
     klok.className = "call-time" + (left <= 10 ? " kritiek" : left <= 60 ? " bijna" : "");
-    if (left <= 0) { hangup("De vijf minuten zaten erop."); }
+    if (left <= 0) { hangup(t("De vijf minuten zaten erop.")); }
   }
 
   function hangup(reason) {
@@ -697,7 +753,7 @@
     hangup();
     statusEl.className = "status err";
     statusEl.textContent = bericht;
-    guideLine.textContent = "Ik kon je niet horen.";
+    guideLine.textContent = t("Ik kon je niet horen.");
   }
 
   async function callVera() {
@@ -800,6 +856,18 @@
   var naamVeld = el("naam");
   var naamOpslaan = null;
 
+  // De begroeting met de naam erin. Apart, omdat hij ook opnieuw moet als de
+  // taal wisselt terwijl hij al op het scherm staat.
+  var begroetteNaam = "";
+
+  function begroet(naam) {
+    begroetteNaam = naam || "";
+    if (!begroetteNaam) { return; }
+    guideLine.textContent = window.TAAL === "en"
+      ? "Good morning " + begroetteNaam + ". Did you sleep well?"
+      : "Goedemorgen " + begroetteNaam + ". Heb je lekker geslapen?";
+  }
+
   function bewaarNaam() {
     var naam = naamVeld.value.trim();
     fetch("/api/profile", {
@@ -807,9 +875,36 @@
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name: naam })
     }).then(function () {
-      if (naam) { guideLine.textContent = "Dag " + naam + ". Vertel me wat je zag."; }
+      if (naam) {
+        guideLine.textContent = window.TAAL === "en"
+          ? "Hello " + naam + ". Tell me what you saw."
+          : "Dag " + naam + ". Vertel me wat je zag.";
+        toonNaam(naam);
+      }
     }).catch(function () { /* naam is een extraatje, geen voorwaarde */ });
   }
+
+  // Wie zijn naam al bij de introductie gaf, hoort hem hier terug in plaats van
+  // dezelfde vraag nog een keer te krijgen.
+  function toonNaam(naam) {
+    if (!naam) {
+      el("who-bekend").hidden = true;
+      el("who-vraag").hidden = false;
+      return;
+    }
+    el("who-naam").textContent = naam;
+    el("who-voor").textContent = window.TAAL === "en"
+      ? "Vera calls you " : "Vera spreekt je aan als ";
+    el("who-bekend").hidden = false;
+    el("who-vraag").hidden = true;
+  }
+
+  el("who-anders").addEventListener("click", function () {
+    el("who-bekend").hidden = true;
+    el("who-vraag").hidden = false;
+    naamVeld.focus();
+    naamVeld.select();
+  });
 
   naamVeld.addEventListener("input", function () {
     // Niet bij elke toetsaanslag naar de server; even wachten tot het stil is.
@@ -823,14 +918,57 @@
     .then(function (p) {
       if (p.name) {
         naamVeld.value = p.name;
-        guideLine.textContent = "Goedemorgen " + p.name + ". Heb je lekker geslapen?";
+        begroet(p.name);
       }
     })
     .catch(function () {});
 
   /* ------------------------------------------------------ pakket en saldo */
 
+  var gekozenKwaliteit = "standaard";
+
+  function toonKwaliteiten(a) {
+    var doos = el("kwaliteit-knoppen");
+    if (!doos || !a.kwaliteiten) { return; }
+    doos.innerHTML = "";
+    a.kwaliteiten.forEach(function (k) {
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "kwaliteit" + (k.tokens && !k.betaalbaar ? " tekort" : "");
+      b.dataset.kwaliteit = k.key;
+      b.setAttribute("aria-pressed", k.key === gekozenKwaliteit ? "true" : "false");
+      b.title = k.uitleg;
+      // Wat je krijgt zegt meer dan wat het kost, zolang het in je pakket zit.
+      var regel = k.inbegrepen ? k.bevat : k.tokens + " tokens";
+      b.innerHTML = k.naam + "<small>" + regel + "</small>";
+      if (k.beste) {
+        b.classList.add("beste");
+        b.insertAdjacentHTML("afterbegin", '<span class="vlagje">' + t("in je pakket") + '</span>');
+      }
+      b.addEventListener("click", function () { kiesKwaliteit(k); });
+      doos.appendChild(b);
+    });
+  }
+
+  function kiesKwaliteit(k) {
+    var melding = el("kwaliteit-melding");
+    melding.className = "kwaliteit-melding";
+    if (!k.betaalbaar) {
+      // Wel aanklikbaar, maar met een eerlijk antwoord in plaats van stilte.
+      melding.className = "kwaliteit-melding err";
+      melding.textContent = k.naam + " kost " + k.tokens + " tokens en je hebt er niet genoeg. " +
+                            "Koop tokens bij, of kies een lichtere optie.";
+      return;
+    }
+    gekozenKwaliteit = k.key;
+    document.querySelectorAll(".kwaliteit").forEach(function (b) {
+      b.setAttribute("aria-pressed", b.dataset.kwaliteit === k.key ? "true" : "false");
+    });
+    melding.textContent = k.uitleg + (k.tokens ? "  Kost je " + k.tokens + " tokens." : "");
+  }
+
   function toonAccount(a) {
+    toonKwaliteiten(a);
     var op = a.dromen_over === 0 ? " op" : "";
     var minuten = Math.floor(a.avatar_seconden_over / 60);
     var html = "";
@@ -934,9 +1072,9 @@
   // Elk taalfilmpje is apart ingesproken en gelipsynchroniseerd; de tekst
   // eronder verandert mee.
   var INTRO = {
-    nl: { video: "vera-intro-nl.mp4",
+    nl: { video: "vera-intro-nl.mp4", stil: "vera-idle-nl.mp4",
           tekst: "Hi, ik ben Vera, de digitale droom-annalist. Wil je je droom met mij delen?" },
-    en: { video: "vera-intro-en.mp4",
+    en: { video: "vera-intro-en.mp4", stil: "vera-idle-en.mp4",
           tekst: "Hi, I'm Vera, your digital dream analyst. Would you like to share your dream with me?" }
   };
 
@@ -958,7 +1096,14 @@
     document.querySelectorAll(".vlag").forEach(function (b) {
       b.setAttribute("aria-pressed", b.dataset.taal === taal ? "true" : "false");
     });
+    // De taal eerlijk melden, maar vertalen blijft uit: de knoppen zijn Nederlands
+    // tot de hele interface vertaald is, en een half vertaalde pagina leest slechter
+    // dan een hele in één taal.
     document.documentElement.lang = taal;
+    document.documentElement.setAttribute("translate", "no");
+    if (window.vertaalPagina) { window.vertaalPagina(taal); }
+    begroet(begroetteNaam);
+    toonNaam(begroetteNaam || naamVeld.value.trim());
     zetIntroTaal(taal);
   }
 
@@ -978,7 +1123,8 @@
       profiel = p;
       toonMinderjarig(p);
       zetVlaggen(p.language);
-      if (p.name) { naamVeld.value = p.name; }
+      naamVeld.value = p.name || "";
+      toonNaam(p.name || "");
       return p;
     });
   }
@@ -994,7 +1140,7 @@
     b.addEventListener("click", function () {
       profiel.language = b.dataset.taal;
       zetVlaggen(profiel.language);
-      bewaarProfiel();
+      bewaarProfiel().then(function () { laadAccount(); });
     });
   });
 
@@ -1018,6 +1164,12 @@
   if (geluidKnop) {
     var v = el("intro-video");
     geluidKnop.addEventListener("click", function () {
+      // Terug naar de begroeting: als ze al op de stille lus staat, moet de
+      // pratende clip er eerst weer in.
+      if (v.dataset.staat === "stil") {
+        v.dataset.staat = "";
+        v.src = (INTRO[profiel.language] || INTRO.en).video;
+      }
       v.muted = false;
       // Gedempt mag hij rondjes draaien als sfeer; met geluid speelt hij één
       // keer af en stopt hij netjes.
@@ -1028,6 +1180,22 @@
       }).catch(function () { /* browser wil niet; de knop blijft staan */ });
     });
     v.addEventListener("ended", function () {
+      // Na de begroeting gaat ze over op een stille lus: ademen en knipperen,
+      // mond dicht. Die lus is per taal gemaakt vanaf het laatste beeld van de
+      // clip erboven, dus de overgang is geen montage maar een doorloop.
+      if (v.dataset.staat !== "stil") {
+        v.dataset.staat = "stil";
+        v.muted = true;
+        v.loop = true;
+        v.src = (INTRO[profiel.language] || INTRO.en).stil;
+        // Meteen play() aanroepen wordt afgebroken door het laden zelf; pas als
+        // er beeld is heeft het zin.
+        v.addEventListener("loadeddata", function starten() {
+          v.removeEventListener("loadeddata", starten);
+          v.play().catch(function () { /* de browser wil niet; niet erg */ });
+        });
+        v.load();
+      }
       geluidKnop.hidden = false;
       geluidKnop.innerHTML = '<span aria-hidden="true">🔊</span> Nog een keer';
     });
@@ -1045,7 +1213,8 @@
       el("i-geslacht").value = p.gender || "onbekend";
       zetVlaggen(profiel.language);
       toonMinderjarig(p);
-      if (p.name) { naamVeld.value = p.name; }
+      naamVeld.value = p.name || "";
+      toonNaam(p.name || "");
       el("intro").hidden = false;
     }).catch(function () { el("intro").hidden = false; });
   }
@@ -1060,11 +1229,14 @@
   fetch("/api/health")
     .then(function (r) { return r.json(); })
     .then(function (d) {
-      el("mode").textContent = d.key ? "verbonden" : "voorbeeldmodus";
+      // De brontekst meegeven, anders weet de vertaalslag straks niet meer
+      // welke van de twee toestanden hier stond.
+      el("mode").dataset.nl = d.key ? "verbonden" : "voorbeeldmodus";
+      el("mode").textContent = t(el("mode").dataset.nl);
       if (!d.vera) {
         el("call").disabled = true;
-        el("call").title = "Vera is niet aangesloten";
+        el("call").title = t("Vera is niet aangesloten");
       }
     })
-    .catch(function () { el("mode").textContent = "offline"; });
+    .catch(function () { el("mode").dataset.nl = "offline"; el("mode").textContent = "offline"; });
 })();

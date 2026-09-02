@@ -1,6 +1,6 @@
 # Dreamverse
 
-Je vertelt 's ochtends je droom; je krijgt een aflevering van vijf panelen met een
+Je vertelt 's ochtends je droom; je krijgt een verbeelding van vijf panelen met een
 duiding en een vooruitblik. Elke eerdere droom telt mee, en daar zit het hele idee
 in: terugkerende plaatsen, personen en dieren maken er na een paar maanden één
 wereld van. Na honderd dromen is er *Season One of Your Dreams*.
@@ -18,14 +18,14 @@ consumentenexperiment. Niet te verwarren met de avatars Cat en Pia.
 
 ## Waarom dit idee en niet Parallel You
 
-Het voorstel ernaast — elke dag een aflevering over je parallelle leven — sneuvelt
+Het voorstel ernaast — elke dag een verbeelding over je parallelle leven — sneuvelt
 op de kosten: 45 seconden gegenereerde video maal dertig dagen is €40 tot €160 per
 abonnee per maand, tegen €8,99 omzet. Dreamverse ontsnapt daaraan om vier redenen:
 dromen zijn zelfbeperkend (vijf tot tien per maand), de gebreken van AI-beeld zijn
 bij een droom een kenmerk in plaats van een bug, de invoer komt van de gebruiker,
 en er is geen gezicht van een derde nodig.
 
-Kostprijs per aflevering als motion comic: ongeveer **€0,35**. Bij €8,99 en zes
+Kostprijs per verbeelding als motion comic: ongeveer **€0,35**. Bij €8,99 en zes
 dromen per maand is dat 66% marge. Het rekenmodel staat in de artefacten van de
 sessie van 1 september 2026.
 
@@ -36,7 +36,7 @@ Geen framework — dat houdt de deploy op één bestand, net als de andere proje
 
 | Onderdeel | Waar |
 |---|---|
-| Afleveringen schrijven, archief, prompt | `dreamverse.py` |
+| Verbeeldingen schrijven, archief, prompt | `dreamverse.py` |
 | Panelen als illustraties (optioneel) | `kling.py` |
 | Het bewegende kernmoment | `video.py` |
 | Live gesprek met de avatar | `vera.py` |
@@ -46,12 +46,15 @@ Geen framework — dat houdt de deploy op één bestand, net als de andere proje
 | Id's van gekoppelde documenten (**niet weggooien**) | `build/document-ids.json` |
 | HTTP en routes | `server.py` |
 | Speler, invoer, spraak | `static/` |
+| Tweede taal (Amerikaans Engels) | `static/taal.js` |
 | Persona van de gids | `persona/vera.txt` |
 | Droomarchief (git-ignored) | `data/archive.json` |
 | Deploy | `render.yaml` |
 
 ```
-POST   /api/episode   {"dream": "..."}  -> de aflevering
+POST   /api/episode   {"dream": "...", "quality": "duiding|eenvoudig|standaard|supreme"}
+GET    /api/episode/<nr>                -> een eerdere verbeelding terugkijken
+POST   /api/episode/<nr>/herstel        -> duiding opnieuw schrijven bij oude panelen
 GET    /api/archive                     -> alle eerdere dromen
 DELETE /api/archive                     -> archief wissen
 GET    /api/panels/<nr>                 -> stand van het tekenwerk
@@ -68,11 +71,11 @@ pip install -r requirements.txt && python server.py
 ```
 
 Dan `http://127.0.0.1:8000`. **Zonder `ANTHROPIC_API_KEY` draait alles behalve het
-schrijven**: elke droom geeft dezelfde voorbeeldaflevering terug, met `demo: true`.
+schrijven**: elke droom geeft dezelfde voorbeeldverbeelding terug, met `demo: true`.
 Zo is de app te demonstreren zonder een cent aan tokens.
 
 Model: `claude-opus-5` op effort `medium`. Schrijfwerk heeft geen hoge effort nodig
-en het scheelt direct in de kostprijs per aflevering.
+en het scheelt direct in de kostprijs per verbeelding.
 
 ## Regels die er al in zitten
 
@@ -87,6 +90,21 @@ en het scheelt direct in de kostprijs per aflevering.
   kijker ziet die keuze terug in de kleur van het beeld.
 - **Nooit `.env` committen.** `.gitignore` blokkeert ook `.env.*` en `data/`.
 - Basic auth gaat aan zodra `AUTH_USER` én `AUTH_PASSWORD` gevuld zijn.
+
+## Twee talen
+
+De pagina is in het Nederlands geschreven; `static/taal.js` houdt per zin bij wat er
+in het Engels moet komen, met de Nederlandse zin als sleutel. Er is dus geen
+sleutelregister om bij te houden — je verandert de tekst in `index.html` en zet de
+vertaling erbij. Witruimte telt niet mee bij het opzoeken.
+
+**De duiding wordt niet vertaald maar in de gekozen taal geschreven.** De taal staat
+in het profiel en gaat mee in de prompt; vertaalde duiding leest als vertaalde
+duiding, en dit product staat of valt bij de toon. Het veld `image` blijft altijd
+Engels, want dat gaat naar een beeldmodel.
+
+`<html translate="no">` staat er niet voor niets: Chrome zag de pagina als Engels en
+maakte van *Praat met Vera* "Praat ontmoette Vera".
 
 ## Wat er nog niet is
 
@@ -124,9 +142,9 @@ iets een fout meldt.
 
 | | prijs | dromen/maand | panelen | avatar |
 |---|---|---|---|---|
-| Gratis | € 0 | 3 | nee, alleen de getekende composities | alleen met tokens |
-| Plus | € 4,99 | 10 | ja | alleen met tokens |
-| Ultra | € 17,99 | 30 | ja | 10 minuten inbegrepen |
+| Gratis | € 0 | 3 | ja, vijf getekende panelen | alleen met tokens |
+| Plus | € 7,99 | 6 | ja, plus een bewegend kernmoment | alleen met tokens |
+| Ultra | € 29,99 | 10 | ja, kernmoment op het beste model | 10 minuten inbegrepen |
 
 Eén token is € 0,25. Een avatarminuut kost 2 tokens (kostprijs € 0,18, dus 64%
 marge), een extra droom kost er ook 2. De avatar zit bewust in géén enkel pakket
@@ -162,7 +180,7 @@ ligt klaar.
   paneel komt op wit papier, het volgende in een nachtblauwe wereld, en de
   opgelegde geometrie wordt een grote gouden bloem in plaats van een fluistering.
   Kling houdt dezelfde nacht vast, en die samenhang ís het product. Het scheelt
-  €0,32 per abonnee per maand; dat weegt niet op tegen een aflevering die
+  €0,32 per abonnee per maand; dat weegt niet op tegen een verbeelding die
   halverwege van wereld verspringt. De vergelijkingsbeelden staan in
   `data/vergelijk/`.
   Terugkomen op dit besluit is zinnig zodra `muse_image` met een strakkere
@@ -172,7 +190,7 @@ ligt klaar.
   en eist een referentieafbeelding, en `muse_image` accepteert alleen zijn eigen
   verhoudingen (breedbeeld is `2016:1152`, niet `1280:720`).
 - Het gesprek levert nog geen droomtekst op. De logische volgende stap: wat Vera
-  hoort wordt de invoer voor de aflevering, zodat vertellen en krijgen één geheel
+  hoort wordt de invoer voor de verbeelding, zodat vertellen en krijgen één geheel
   worden in plaats van twee losse dingen.
 - Voordat er meer gebouwd wordt: tien testpersonen, drie dagen, en kijken wie op
   dag vier uit zichzelf terugkomt. Dat cijfer beslist of dit een bedrijf is.

@@ -1,7 +1,8 @@
 <!doctype html>
-<html lang="nl">
+<html lang="nl" translate="no" class="notranslate">
 <head>
 <meta charset="utf-8">
+<meta name="google" content="notranslate">
 <title>Dreamverse</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -61,7 +62,7 @@
     <p class="minderjarig" id="minderjarig" hidden></p>
 
     <div class="row">
-      <button type="button" class="primary" id="intro-start" data-i18n="beginnen">Deel je droom</button>
+      <button type="button" class="primary" id="intro-start" data-i18n="beginnen">Deel hier je droom</button>
       <span class="spacer"></span>
       <button type="button" class="ghost" id="intro-later" data-i18n="overslaan">Later invullen</button>
     </div>
@@ -72,8 +73,8 @@
 
   <header class="top">
     <div class="meta"><span>Dreamverse</span><span class="dim" id="mode">…</span></div>
-    <h1 id="title">Je droom, als aflevering</h1>
-    <p class="sub">Vertel of typ wat je vannacht droomde. Je krijgt een aflevering van vijf panelen,
+    <h1 id="title">Je droom als verbeelding</h1>
+    <p class="sub">Vertel of typ wat je vannacht droomde. Je krijgt een verbeelding in vijf panelen,
       een duiding en een vooruitblik — en alles wat je eerder droomde telt mee.</p>
   </header>
 
@@ -90,9 +91,15 @@
       <p class="guide-name">Vera</p>
       <p class="guide-line" id="guide-line">Goedemorgen. Hier is Vera, heb je lekker geslapen?</p>
     </div>
-    <div class="who">
-      <label for="naam">Hoe heet je?</label>
-      <input type="text" id="naam" maxlength="60" autocomplete="given-name" placeholder="je naam">
+    <div class="who" id="who">
+      <p class="who-bekend" id="who-bekend" hidden>
+        <span id="who-voor">Vera spreekt je aan als </span><b id="who-naam"></b>.
+        <button type="button" class="linkje" id="who-anders">anders</button>
+      </p>
+      <div class="who-vraag" id="who-vraag">
+        <label for="naam">Hoe heet je?</label>
+        <input type="text" id="naam" maxlength="60" autocomplete="given-name" placeholder="je naam">
+      </div>
     </div>
     <button type="button" id="call" class="call">Praat met Vera</button>
   </div>
@@ -116,8 +123,13 @@
   <div class="composer">
     <label for="dream">Wat droomde je?</label>
     <textarea id="dream" placeholder="Ik vloog over de bergen en zag een vriendin huilen aan het zwembad…"></textarea>
+    <div class="kwaliteiten" id="kwaliteiten">
+      <span class="kwaliteit-kop">Wat wil je van deze droom?</span>
+      <div class="kwaliteit-knoppen" id="kwaliteit-knoppen"></div>
+      <p class="kwaliteit-melding" id="kwaliteit-melding"></p>
+    </div>
     <div class="row">
-      <button type="button" class="primary" id="go">Maak mijn aflevering</button>
+      <button type="button" class="primary" id="go">Verbeeld mijn droom</button>
       <button type="button" id="mic">Inspreken</button>
       <span class="spacer"></span>
       <button type="button" class="ghost" id="clear">Archief wissen</button>
@@ -137,7 +149,7 @@
           Kernmoment op het beste model <b>10 tokens</b>
         </button>
         <button type="button" class="koop" data-kind="film_snel">
-          Hele aflevering als film <b>30 tokens</b>
+          Hele verbeelding als film <b>30 tokens</b>
         </button>
         <button type="button" class="koop" data-kind="film_top">
           Als film, beste model <b>60 tokens</b>
@@ -153,14 +165,6 @@
       </div>
     </div>
   </div>
-
-  <section id="threads-section" hidden>
-    <div class="head-rule">
-      <h2 id="threads-title">Wat terugkwam</h2>
-      <p>Draden uit eerdere dromen die vannacht opnieuw verschenen.</p>
-    </div>
-    <div class="threads" id="threads"></div>
-  </section>
 
   <section id="reading-section" hidden>
     <div class="head-rule">
@@ -189,6 +193,16 @@
     </div>
   </section>
 
+
+  <section id="threads-section" hidden>
+    <div class="head-rule">
+      <h2 id="threads-title">Je dromen samen</h2>
+      <p>Eén droom is een anekdote. Alles bij elkaar wordt een portret.</p>
+    </div>
+    <p class="samen" id="samen" hidden></p>
+    <div class="threads" id="threads"></div>
+  </section>
+
   <section>
     <div class="head-rule">
       <h2>Je droomarchief</h2>
@@ -208,10 +222,10 @@
       <div class="tier">
         <span class="tier-name">Gratis · €0</span>
         <p>Drie dromen per maand met de volledige duiding, om te proeven.
-          Stilstaande panelen, geen video, en Vera spreek je alleen met tokens.</p>
+          Vijf getekende panelen, geen video, en Vera spreek je alleen met tokens.</p>
       </div>
       <div class="tier">
-        <span class="tier-name">Plus · €9,99</span>
+        <span class="tier-name">Plus · €7,99</span>
         <p>Zes dromen per maand, elk met een <strong>bewegend kernmoment</strong> van vier
           seconden met geluid. De andere panelen zijn illustraties. Vera spreken gaat op
           tokens: twee per minuut.</p>
@@ -251,7 +265,7 @@
     <div class="tiers">
       <div class="tier">
         <span class="tier-name">30 tokens · €7,50</span>
-        <p>Je hele aflevering als film van twintig seconden, in plaats van één bewegend moment.</p>
+        <p>Je hele verbeelding als film van twintig seconden, in plaats van één bewegend moment.</p>
       </div>
       <div class="tier">
         <span class="tier-name">60 tokens · €15,00</span>
@@ -273,7 +287,7 @@
       panelen komen echt uit een beeldmodel, in een vaste stijl, met het kleurveld per paneel. Vera is
       aangesloten en praat met haar eigen stem; de knop bovenaan opent een gesprek van maximaal vijf
       minuten.</p>
-    <p><strong>Het kernmoment beweegt.</strong> Het model dat je aflevering schrijft wijst zelf aan
+    <p><strong>Het kernmoment beweegt.</strong> Het model dat je verbeelding schrijft wijst zelf aan
       welk paneel het draaipunt is, en dat ene wordt echte video met geluid — vier seconden, op het
       snelle model bij Plus en op het beste bij Ultra. De andere vier blijven stil, want twintig
       seconden video per droom kost meer dan een maandabonnement opbrengt.</p>
@@ -283,6 +297,7 @@
 
 </div>
 
+<script src="taal.js"></script>
 <script src="achtergrond.js"></script>
 <script src="livekit-client.umd.min.js"></script>
 <script src="app.js"></script>

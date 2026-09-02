@@ -3,17 +3,17 @@
 Optioneel. Zonder KLING_ACCESS_KEY en KLING_SECRET_KEY gebeurt hier niets en
 blijft de speler de getekende composities tonen. Dat is geen noodgreep maar het
 ontwerp: beeld is een verrijking, geen voorwaarde, en een storing bij Kling mag
-nooit betekenen dat iemand zijn aflevering niet krijgt.
+nooit betekenen dat iemand zijn verbeelding niet krijgt.
 
 Hoe het loopt:
 
-    aflevering klaar  ->  achtergrondthread  ->  vijf taken bij Kling
+    verbeelding klaar  ->  achtergrondthread  ->  vijf taken bij Kling
                                               ->  afbeeldingen downloaden
                                               ->  data/panels/<nr>-<i>.jpg
     de browser vraagt intussen /api/panels/<nr> en schuift ze in beeld
 
 De afbeeldingen worden bewust gedownload: de URL's van Kling verlopen, en een
-aflevering die je over een maand terugkijkt hoort er nog te zijn.
+verbeelding die je over een maand terugkijkt hoort er nog te zijn.
 
 Geschreven tegen de officiele documentatie op kling.ai/document-api (gelezen op
 1 september 2026), maar niet uitgevoerd tegen de echte API - er was hier geen

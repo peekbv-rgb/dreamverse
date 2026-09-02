@@ -18,8 +18,8 @@ echte factuur:
     avatar, gesprek van vijf minuten         EUR 0,94
 
 Video is duur en dat bepaalt de hele prijslijst. Vier seconden op het beste model
-kost EUR 1,47; een hele aflevering van twintig seconden kost EUR 7,36. Daarom
-krijgt elke aflevering een kernmoment en niet vijf, en daarom is een volledige
+kost EUR 1,47; een hele verbeelding van twintig seconden kost EUR 7,36. Daarom
+krijgt elke verbeelding een kernmoment en niet vijf, en daarom is een volledige
 film iets dat je met tokens koopt in plaats van iets dat in een pakket zit.
 """
 
@@ -36,8 +36,8 @@ TOKENS_PER_EXTRA_DREAM = 3
 # Wat je los kunt kopen. De marges staan erbij omdat ze anders wegzakken zodra
 # iemand een tarief aanpast.
 EXTRAS = {
-    "film_snel": {"naam": "Hele aflevering als film, 20 seconden", "tokens": 30, "kost": 2.76},
-    "film_top": {"naam": "Hele aflevering als film op het beste model", "tokens": 60, "kost": 7.36},
+    "film_snel": {"naam": "Hele verbeelding als film, 20 seconden", "tokens": 30, "kost": 2.76},
+    "film_top": {"naam": "Hele verbeelding als film op het beste model", "tokens": 60, "kost": 7.36},
     "kernmoment_top": {"naam": "Kernmoment op het beste model", "tokens": 10, "kost": 1.47},
 }
 
@@ -54,21 +54,33 @@ VIDEO = {
 # betaal je met tokens.
 KWALITEIT = {
     "duiding": {
+        "naam_en": "Only the reading", "bevat_en": "text only",
+        "uitleg_en": "The words, the memory and the look ahead. No images.",
+        "bevat": "alleen tekst",
         "naam": "Alleen de duiding", "rang": 0, "panelen": False, "video": None,
         "tokens": 0, "kost": 0.04,
         "uitleg": "De tekst, het geheugen en de vooruitblik. Geen beeld.",
     },
     "eenvoudig": {
+        "naam_en": "Simple", "bevat_en": "5 panels",
+        "uitleg_en": "Five drawn panels with your dream.",
+        "bevat": "5 panelen",
         "naam": "Eenvoudig", "rang": 1, "panelen": True, "video": None,
         "tokens": 1, "kost": 0.14,
         "uitleg": "Vijf getekende panelen bij je droom.",
     },
     "standaard": {
+        "naam_en": "Standard", "bevat_en": "5 panels + key moment",
+        "uitleg_en": "Five panels plus a moving key moment of four seconds.",
+        "bevat": "5 panelen + kernmoment",
         "naam": "Standaard", "rang": 2, "panelen": True, "video": "snel",
         "tokens": 4, "kost": 0.69,
         "uitleg": "Vijf panelen plus een bewegend kernmoment van vier seconden.",
     },
     "supreme": {
+        "naam_en": "Supreme", "bevat_en": "5 panels + best video",
+        "uitleg_en": "The same, but the key moment on the best video model.",
+        "bevat": "5 panelen + beste video",
         "naam": "Supreme", "rang": 3, "panelen": True, "video": "top",
         "tokens": 10, "kost": 1.61,
         "uitleg": "Hetzelfde, maar het kernmoment op het beste videomodel.",
@@ -76,24 +88,26 @@ KWALITEIT = {
 }
 DEFAULT_KWALITEIT = "standaard"
 
-# Tot welke rang je pakket je gratis brengt.
-PLAN_RANG = {"gratis": 0, "plus": 2, "ultra": 3}
+# Tot welke rang je pakket je gratis brengt. Gratis reikt tot en met "eenvoudig":
+# wie voor het eerst binnenkomt moet vijf getekende panelen bij zijn droom zien,
+# anders begrijpt hij het product niet. Bewegend beeld begint bij het abonnement.
+PLAN_RANG = {"gratis": 1, "plus": 2, "ultra": 3}
 
 PLANS = {
     "gratis": {
         "naam": "Gratis",
         "prijs": 0.00,
         "dromen": 3,            # per maand
-        "panelen": False,       # alleen de getekende composities
+        "panelen": True,        # EUR 0,14 per droom, dus EUR 0,42 werving per maand
         "video": "geen",
         "avatar_minuten": 0,    # alleen met tokens
     },
     "plus": {
         "naam": "Plus",
-        "prijs": 9.99,
+        "prijs": 7.99,          # starttarief
         "dromen": 6,
         "panelen": True,
-        "video": "snel",        # EUR 4,04 aan kosten, 60% marge
+        "video": "snel",        # EUR 4,14 aan kosten, 48% marge
         "avatar_minuten": 0,
     },
     "ultra": {
@@ -189,9 +203,10 @@ def add_tokens(aantal):
 # De poortjes
 # --------------------------------------------------------------------------- #
 
-def kwaliteiten():
-    """Alle keuzes met wat ze deze gebruiker kosten."""
+def kwaliteiten(taal="nl"):
+    """Alle keuzes met wat ze deze gebruiker kosten, in zijn eigen taal."""
     a = account()
+    eng = taal == "en"
     grens = PLAN_RANG.get(a["plan"], 0)
     saldo = a["tokens"]
     uit = []
@@ -199,8 +214,14 @@ def kwaliteiten():
         inbegrepen = k["rang"] <= grens
         tokens = 0 if inbegrepen else k["tokens"]
         uit.append({
-            "key": sleutel, "naam": k["naam"], "uitleg": k["uitleg"],
+            "key": sleutel,
+            "naam": k["naam_en"] if eng else k["naam"],
+            "uitleg": k["uitleg_en"] if eng else k["uitleg"],
+            "bevat": k["bevat_en"] if eng else k["bevat"],
             "inbegrepen": inbegrepen, "tokens": tokens,
+            # Alles onder je pakket valt er vanzelf ook in, dus "inbegrepen" bij
+            # drie knoppen zegt niets. Alleen de hoogste die je hebt is nieuws.
+            "beste": k["rang"] == grens,
             "betaalbaar": tokens == 0 or saldo >= tokens,
         })
     return uit

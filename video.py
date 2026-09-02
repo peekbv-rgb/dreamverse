@@ -1,12 +1,12 @@
 """Het bewegende kernmoment.
 
-Eén paneel per aflevering wordt echte video. Niet vijf: vier seconden op het
-beste model kost EUR 1,47, dus een hele aflevering van twintig seconden is
+Eén paneel per verbeelding wordt echte video. Niet vijf: vier seconden op het
+beste model kost EUR 1,47, dus een hele verbeelding van twintig seconden is
 EUR 7,36 en dat past in geen enkel maandbedrag. Eén moment wel, en het tilt de
 rest op — de stilstaande panelen eromheen voelen dan als opbouw in plaats van
 als vulling.
 
-Welk paneel het draaipunt is, kiest het model dat de aflevering schrijft; het
+Welk paneel het draaipunt is, kiest het model dat de verbeelding schrijft; het
 geeft dat mee als `key_panel`. Wij animeren precies dat paneel, met het beeld
 dat Kling er al van maakte als startframe. Zo blijft de stijl van de reeks
 overeind: het is letterlijk hetzelfde plaatje, dat gaat bewegen.
@@ -123,7 +123,7 @@ def _werk(number, panels, key_index, instelling):
 
 
 def _werk_alles(number, panels, instelling):
-    """Elk paneel apart animeren: de hele aflevering als film."""
+    """Elk paneel apart animeren: de hele verbeelding als film."""
     _in_state(number, film_status="busy")
     gemaakt = {}
     for i in range(len(panels)):
@@ -143,7 +143,7 @@ def _werk_alles(number, panels, instelling):
 
 
 def film_async(number, panels, instelling):
-    """De hele aflevering als film. Kost tokens, dus alleen op verzoek."""
+    """De hele verbeelding als film. Kost tokens, dus alleen op verzoek."""
     if not instelling:
         return False
     threading.Thread(target=_werk_alles, args=(number, panels, instelling), daemon=True).start()

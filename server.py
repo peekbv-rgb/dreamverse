@@ -2,7 +2,7 @@
 
 Serveert de speler uit static/ en drie eindpunten:
 
-    POST   /api/episode      {"dream": "..."}  -> de aflevering
+    POST   /api/episode      {"dream": "..."}  -> de verbeelding
     GET    /api/profile                        -> wie de dromer is
     GET    /api/usage                          -> wat het tot nu toe gekost heeft
     GET    /api/account                        -> pakket, saldo en wat er over is
@@ -10,7 +10,8 @@ Serveert de speler uit static/ en drie eindpunten:
     POST   /api/profile      {"name": "..."}   -> naam onthouden
     POST   /api/answer                         -> antwoord op de slotvraag bewaren
     POST   /api/extra                          -> losse aankoop met tokens
-    GET    /api/episode/<nr>                   -> een eerdere aflevering terugkijken
+    GET    /api/episode/<nr>                   -> een eerdere verbeelding terugkijken
+    POST   /api/episode/<nr>/herstel           -> de duiding opnieuw schrijven bij oude panelen
     GET    /api/panels/<nr>                    -> de stand van het tekenwerk
     POST   /api/vera/session                   -> WebRTC-gegevens voor een gesprek
     DELETE /api/vera/session/<id>              -> gesprek afsluiten
@@ -106,11 +107,11 @@ class Handler(SimpleHTTPRequestHandler):
             return self.send_json(usage.summary())
         if self.path == "/api/account":
             a = plans.account()
-            a["kwaliteiten"] = plans.kwaliteiten()
+            a["kwaliteiten"] = plans.kwaliteiten(
+                dreamverse.load_profile().get("language", "nl"))
             return self.send_json(a)
         if self.path == "/api/archive":
-            archive = sorted(dreamverse.load_archive(), key=lambda d: d.get("n", 0), reverse=True)
-            return self.send_json({"dreams": archive})
+            return self.send_json({"dreams": dreamverse.archive_with_media()})
         if self.path == "/api/health":
             return self.send_json({
                 "ok": True,
@@ -123,16 +124,16 @@ class Handler(SimpleHTTPRequestHandler):
             try:
                 number = int(self.path.rsplit("/", 1)[1])
             except ValueError:
-                return self.send_json({"error": "Onbekende aflevering."}, 400)
+                return self.send_json({"error": "Onbekende verbeelding."}, 400)
             episode = dreamverse.load_episode(number)
             if episode is None:
-                return self.send_json({"error": "Die aflevering is er niet meer."}, 404)
+                return self.send_json({"error": "Die verbeelding is er niet meer."}, 404)
             return self.send_json({"episode": episode})
         if self.path.startswith("/api/panels/"):
             try:
                 number = int(self.path.rsplit("/", 1)[1])
             except ValueError:
-                return self.send_json({"error": "Onbekende aflevering."}, 400)
+                return self.send_json({"error": "Onbekende verbeelding."}, 400)
             state = kling.read_state(number)
             if state is None:
                 return self.send_json({"status": "off", "images": {}})
@@ -174,9 +175,21 @@ class Handler(SimpleHTTPRequestHandler):
             payload = self.read_json() or {}
             return self.send_json(dreamverse.set_profile(payload))
 
+        if self.path.startswith("/api/episode/") and self.path.endswith("/herstel"):
+            # Dromen van voor het bewaren hebben wel beeld maar geen tekst meer.
+            # Opnieuw schrijven kost geen beeld, dus ook geen tokens.
+            try:
+                number = int(self.path.split("/")[3])
+            except (ValueError, IndexError):
+                return self.send_json({"error": "Onbekende verbeelding."}, 400)
+            try:
+                return self.send_json({"episode": dreamverse.repair_episode(number)})
+            except dreamverse.DreamverseError as e:
+                return self.send_json({"error": str(e)}, 400)
+
         if self.path == "/api/extra":
             # Losse aankopen: het kernmoment op het beste model, of de hele
-            # aflevering als film. Eerst het saldo, dan pas het werk starten.
+            # verbeelding als film. Eerst het saldo, dan pas het werk starten.
             payload = self.read_json() or {}
             soort = payload.get("kind", "")
             try:
@@ -189,7 +202,7 @@ class Handler(SimpleHTTPRequestHandler):
 
             episode = dreamverse.load_episode(nummer)
             if not episode:
-                return self.send_json({"error": "Die aflevering is er niet meer."}, 404)
+                return self.send_json({"error": "Die verbeelding is er niet meer."}, 404)
 
             import video
             if soort == "kernmoment_top":
@@ -278,7 +291,7 @@ class Handler(SimpleHTTPRequestHandler):
         Zonder dit haalt een browser de nieuwe HTML op maar houdt hij de oude
         stylesheet, en dan verschijnen er elementen zonder de opmaak die erbij
         hoort. Afbeeldingen en video mogen wel lang blijven staan: die krijgen
-        bij elke aflevering een nieuwe naam.
+        bij elke verbeelding een nieuwe naam.
         """
         pad = self.path.split("?")[0]
         if pad.endswith((".css", ".js", ".html", "/")):
@@ -317,7 +330,7 @@ if __name__ == "__main__":
             "    Where-Object { $_.CommandLine -like '*server.py*' } | Stop-Process -Force",
         ]))
     if not dreamverse.credentials_available():
-        print("let op: geen inloggegevens — elke droom geeft de voorbeeldaflevering.", flush=True)
+        print("let op: geen inloggegevens — elke droom geeft het voorbeeld.", flush=True)
         print("        zet ANTHROPIC_API_KEY in .env, of draai: ant auth login", flush=True)
     print("panelen: {}".format("Kling" if kling.enabled() else "getekend (geen Kling-sleutels)"), flush=True)
     print("Vera   : {}".format(

@@ -1,12 +1,12 @@
-"""Dreamverse — een droom erin, een aflevering eruit.
+"""Dreamverse — een droom erin, een verbeelding eruit.
 
-Eén droom wordt een aflevering van vijf panelen met een duiding in drie delen:
+Eén droom wordt een verbeelding in vijf panelen met een duiding in drie delen:
 waarom je dit droomde, wat het zegt, en wat eraan zit te komen. Elke eerdere
 droom telt mee, want daar zit het hele idee in: terugkerende plaatsen, personen
 en dieren maken er na een paar maanden één wereld van.
 
 Zonder ANTHROPIC_API_KEY draait alles behalve het schrijven: dan komt er een
-vaste voorbeeldaflevering terug met demo=True. Zo is de app te starten en te
+vast voorbeeld terug met demo=True. Zo is de app te starten en te
 demonstreren voordat er een cent aan tokens is uitgegeven.
 """
 
@@ -175,9 +175,9 @@ def set_name(name):
 
 
 def save_episode(number, episode):
-    """Bewaar de hele aflevering, zodat hij terug te kijken is.
+    """Bewaar de hele verbeelding, zodat hij terug te kijken is.
 
-    Zonder dit is een aflevering weg zodra je de pagina ververst, en zou iemand
+    Zonder dit is een verbeelding weg zodra je de pagina ververst, en zou iemand
     opnieuw moeten betalen voor beelden die al gemaakt zijn. De panelen en de
     video staan al als bestand in data/panels; hier komt de tekst bij die erbij
     hoort.
@@ -191,7 +191,7 @@ def save_episode(number, episode):
 
 
 def load_episode(number):
-    """Een eerder gemaakte aflevering terughalen. None als hij er niet is."""
+    """Een eerder gemaakte verbeelding terughalen. None als hij er niet is."""
     try:
         with (EPISODES / "{}.json".format(number)).open(encoding="utf-8") as f:
             episode = json.load(f)
@@ -210,11 +210,89 @@ def load_episode(number):
                        for _ in beelden],
             "key_panel": min(2, len(beelden) - 1),
             "threads": [], "why": "", "meaning": "", "future": "", "question": "",
+            "together": "",
             "onvolledig": True,
         }
     for d in load_archive():
         if d.get("n") == number and d.get("answer"):
             episode["answer"] = d["answer"]
+    return episode
+
+
+def archive_with_media():
+    """Het archief met bij elke droom het kernmoment erbij.
+
+    Een lijst titels zegt weinig; het beeld van het kernmoment zegt meteen welke
+    nacht dit was. Bewoog dat moment, dan is er een video en die wint -- dat is
+    het duurste en het mooiste wat er van die droom bestaat.
+    """
+    uit = []
+    for d in sorted(load_archive(), key=lambda x: x.get("n", 0), reverse=True):
+        n = d.get("n")
+        rij = dict(d)
+        clip = kling.PANELS / "{}-hero.mp4".format(n)
+        rij["clip"] = "/panels/{}-hero.mp4".format(n) if clip.is_file() else None
+
+        # Welk paneel het kernmoment was staat in de bewaarde verbeelding; is die
+        # er niet, dan is het middelste beeld de beste gok.
+        sleutel = None
+        try:
+            with (EPISODES / "{}.json".format(n)).open(encoding="utf-8") as f:
+                sleutel = json.load(f).get("key_panel")
+        except (FileNotFoundError, json.JSONDecodeError, OSError):
+            pass
+        beelden = sorted(p for p in kling.PANELS.glob("{}-[0-9].*".format(n))
+                         if p.suffix.lower() in (".png", ".jpg", ".webp"))
+        if beelden:
+            i = sleutel if isinstance(sleutel, int) and 0 <= sleutel < len(beelden) else len(beelden) // 2
+            rij["thumb"] = "/panels/" + beelden[i].name
+        else:
+            rij["thumb"] = None
+        uit.append(rij)
+    return uit
+
+
+def repair_episode(number):
+    """Schrijf de duiding opnieuw bij panelen die er al liggen.
+
+    Dromen van voor het bewaren bestaan alleen nog als beeld op schijf: de
+    verteltekst en de duiding zijn nooit weggeschreven. De oorspronkelijke
+    droomtekst staat wel in het archief, dus de verbeelding is terug te schrijven.
+    Dit kost geen beeld en geen tokens -- daar is al voor betaald.
+    """
+    archive = load_archive()
+    bron = next((d for d in archive if d.get("n") == number), None)
+    if not bron or not (bron.get("text") or "").strip():
+        raise DreamverseError("De oorspronkelijke droomtekst is niet meer te vinden.")
+
+    eerder = [d for d in archive if d.get("n", 0) < number]
+    profiel = load_profile()
+    episode = write_episode(bron["text"], eerder, number, profiel.get("name"),
+                            profiel.get("language", "nl"))
+    episode["number"] = number
+    episode["hersteld"] = True
+
+    # De panelen die er liggen zijn leidend: de nieuwe verteltekst wordt eroverheen
+    # gelegd, zodat tekst en beeld even lang zijn en niets uit de pas loopt.
+    beelden = sorted(p for p in kling.PANELS.glob("{}-[0-9].*".format(number))
+                     if p.suffix.lower() in (".png", ".jpg", ".webp"))
+    if beelden:
+        panels = episode.get("panels") or []
+        while len(panels) < len(beelden):
+            panels.append({"narration": "", "image": "", "palette": "crown", "motif": "expanse"})
+        episode["panels"] = panels[:len(beelden)]
+        episode["key_panel"] = min(episode.get("key_panel", 2), len(beelden) - 1)
+
+    # De titel uit het archief blijft staan: daaronder kent de dromer hem al.
+    if bron.get("title"):
+        episode["title"] = bron["title"]
+    if bron.get("answer"):
+        episode["answer"] = bron["answer"]
+
+    u = episode.get("usage") or {}
+    usage.episode(number, u.get("input_tokens", 0), u.get("output_tokens", 0),
+                  demo=episode.get("demo"))
+    save_episode(number, episode)
     return episode
 
 
@@ -239,7 +317,7 @@ def answer_question(number, answer):
 
 
 def delete_dream(number):
-    """Een droom weghalen: uit het archief, de bewaarde aflevering en de beelden.
+    """Een droom weghalen: uit het archief, de bewaarde verbeelding en de beelden.
 
     Alles weg betekent hier ook echt alles. Iemand die zijn droom wist verwacht
     niet dat de panelen ervan nog op de schijf staan.
@@ -267,12 +345,13 @@ def clear_archive():
 # De prompt
 # --------------------------------------------------------------------------- #
 
-RULES = f"""Je schrijft een aflevering voor Dreamverse: de droom van de gebruiker als korte,
+RULES = f"""Je schrijft een verbeelding voor Dreamverse: de droom van de gebruiker als korte,
 literaire film in vijf panelen.
 
 Toon en taal:
-- Alles in het Nederlands, in de je-vorm, tegenwoordige tijd. Beeldend, maar zonder
-  bloemrijke overdaad. Kort is beter dan mooi.
+- Alles in {{TAAL}}, in de je-vorm (in het Engels: "you"), tegenwoordige tijd. Beeldend,
+  maar zonder bloemrijke overdaad. Kort is beter dan mooi. Het veld "image" blijft
+  altijd Engels, want dat gaat naar een beeldmodel.
 - Altijd hoopvol en welwillend. Ook een akelige droom krijgt een duiding die de
   dromer iets geeft.
 - Bij geweld, verlies, ziekte of een overledene: erken het eerst eerlijk en buig het
@@ -286,13 +365,20 @@ Gebruik de eerdere dromen: benoem terugkerende plaatsen, personen, dieren of gev
 en wat er sindsdien veranderd is. Verzin nooit een eerdere droom die niet in de lijst
 staat. Staat er niets bruikbaars in, laat "threads" dan leeg.
 
+"together" is iets anders dan "threads". Draden zijn losse echo's; "together" is de
+lijn door alles heen: wat al deze dromen bij elkaar over de dromer zeggen, welke
+richting erin zit en wat er sinds de eerste droom veranderd is. Twee tot vier zinnen,
+en spreek de dromer aan. Dit is de reden dat iemand blijft dromen bij ons: één droom
+is een anekdote, tien dromen zijn een portret. Is dit de eerste of tweede droom, laat
+"together" dan leeg -- doen alsof er al een patroon is, is niet eerlijk.
+
 Antwoord met uitsluitend geldige JSON, zonder tekst eromheen, in deze vorm:
 
 {{"title": string,
  "panels": [{{"narration": string, "image": string, "palette": string, "motif": string}}],
  "threads": [{{"ref": string, "was": string, "now": string}}],
  "why": string, "meaning": string, "future": string, "love": string,
- "today": string, "season": string,
+ "today": string, "season": string, "together": string,
  "question": string, "motifs": [string], "key_panel": number}}
 
 Regels voor de velden:
@@ -303,7 +389,7 @@ Regels voor de velden:
   ridges, a lit rectangular pool far below in the valley".
 - palette is het kleurveld dat bij het gevoel van dat paneel past, een van:
   {", ".join(PALETTES)}. Betekenis: {CHAKRA_HINT}.
-  Laat het door de aflevering heen verschuiven; vijf keer hetzelfde veld is bijna nooit waar.
+  Laat het door de verbeelding heen verschuiven; vijf keer hetzelfde veld is bijna nooit waar.
 - motif is een van: {", ".join(MOTIFS)}.
 - 0 tot 3 threads. "ref" is bijvoorbeeld "Droom 12". "was" is hoe het toen was,
   "now" is wat er nu anders aan is.
@@ -351,15 +437,18 @@ def _history(archive):
     return "\n".join(regels)
 
 
-def build_prompt(dream, archive, number, name=None):
+TALEN = {"nl": "het Nederlands", "en": "American English"}
+
+
+def build_prompt(dream, archive, number, name=None, language="nl"):
     wie = ""
     if name:
         # Spaarzaam gebruiken: een duiding die elke zin je naam noemt klinkt als
         # een verkooptelefoontje, niet als iemand die naar je luistert.
         wie = ("\n\nDe dromer heet {}. Gebruik die naam hooguit een of twee keer "
-               "in de hele aflevering, op een moment dat het iets doet.").format(name)
+               "in de hele verbeelding, op een moment dat het iets doet.").format(name)
     return (
-        RULES
+        RULES.replace("{TAAL}", TALEN.get(language, TALEN["nl"]))
         + wie
         + "\n\n--- eerdere dromen ---\n"
         + _history(archive)
@@ -429,6 +518,7 @@ def parse_episode(raw):
         "love": str(data.get("love") or ""),
         "today": str(data.get("today") or ""),
         "season": str(data.get("season") or ""),
+        "together": str(data.get("together") or ""),
         "meaning": str(data.get("meaning") or ""),
         "future": str(data.get("future") or ""),
         "question": str(data.get("question") or ""),
@@ -440,7 +530,7 @@ def parse_episode(raw):
 # Schrijven
 # --------------------------------------------------------------------------- #
 
-def voorbeeldaflevering(reden):
+def voorbeeld(reden):
     """Wat we tonen als er niet geschreven kan worden.
 
     Ligt er een met de hand geschreven exemplaar in data/handmade.json, dan die —
@@ -457,10 +547,10 @@ def voorbeeldaflevering(reden):
     return episode
 
 
-def write_episode(dream, archive, number, name=None):
-    """Vraag Claude om de aflevering. Zonder sleutel: de voorbeeldaflevering."""
+def write_episode(dream, archive, number, name=None, language="nl"):
+    """Vraag Claude om de verbeelding. Zonder sleutel: het voorbeeld."""
     if not credentials_available():
-        return voorbeeldaflevering("Er zijn geen inloggegevens; dit is een voorbeeldaflevering.")
+        return voorbeeld("Er zijn geen inloggegevens; dit is een voorbeeld.")
 
     try:
         import anthropic
@@ -473,9 +563,10 @@ def write_episode(dream, archive, number, name=None):
             model=MODEL,
             max_tokens=8000,
             # Middelhoge effort: dit is schrijfwerk, geen redeneerpuzzel, en het
-            # scheelt direct in de kostprijs per aflevering.
+            # scheelt direct in de kostprijs per verbeelding.
             output_config={"effort": "medium"},
-            messages=[{"role": "user", "content": build_prompt(dream, archive, number, name)}],
+            messages=[{"role": "user",
+                       "content": build_prompt(dream, archive, number, name, language)}],
         )
     except anthropic.RateLimitError:
         raise DreamverseError("Te veel aanvragen achter elkaar. Wacht even en probeer opnieuw.")
@@ -488,10 +579,10 @@ def write_episode(dream, archive, number, name=None):
         # Deze komt vaak genoeg voor om apart te benoemen: ingelogd zijn en
         # tegoed hebben zijn twee verschillende dingen.
         if "credit balance" in str(e).lower():
-            # Wel ingelogd, geen tegoed. De aflevering kan dan niet geschreven
-            # worden; we tonen de voorbeeldaflevering en zeggen erbij waarom.
-            return voorbeeldaflevering(
-                "Geen tegoed op je Anthropic-account, dus dit is een voorbeeldaflevering. "
+            # Wel ingelogd, geen tegoed. De verbeelding kan dan niet geschreven
+            # worden; we tonen de voorbeeldverbeelding en zeggen erbij waarom.
+            return voorbeeld(
+                "Geen tegoed op je Anthropic-account, dus dit is een voorbeeld. "
                 "Waardeer op via console.anthropic.com onder Plans & Billing; "
                 "een droom kost ongeveer vijf cent.")
         raise DreamverseError("De API gaf een fout ({}). Probeer het later opnieuw.".format(e.status_code))
@@ -529,7 +620,9 @@ def create(dream, kwaliteit=None):
         archive = load_archive()
         number = next_number(archive)
 
-    episode = write_episode(dream, archive, number, load_profile().get("name"))
+    profiel = load_profile()
+    episode = write_episode(dream, archive, number, profiel.get("name"),
+                            profiel.get("language", "nl"))
     episode["number"] = number
 
     with _lock:
@@ -555,7 +648,7 @@ def create(dream, kwaliteit=None):
 
     save_episode(number, episode)
 
-    # Het tekenwerk loopt op de achtergrond verder; de aflevering is al leesbaar.
+    # Het tekenwerk loopt op de achtergrond verder; de verbeelding is al leesbaar.
     # In het gratis pakket blijft het bij de getekende composities.
     # Wat er gemaakt wordt hangt van de gekozen kwaliteit af, niet van het pakket:
     # wie alleen de duiding wil, betaalt ook niet voor beeld.
@@ -576,7 +669,7 @@ def create(dream, kwaliteit=None):
 
 
 # --------------------------------------------------------------------------- #
-# Voorbeeldaflevering — draait zonder API-sleutel
+# Het voorbeeld — draait zonder API-sleutel
 # --------------------------------------------------------------------------- #
 
 DEMO_EPISODE = {

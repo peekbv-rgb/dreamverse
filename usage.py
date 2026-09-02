@@ -1,6 +1,6 @@
 """Wat een gebruiker werkelijk kost — meten, niet schatten.
 
-Elke dure handeling schrijft hier één regel weg: een aflevering, een getekend
+Elke dure handeling schrijft hier één regel weg: een verbeelding, een getekend
 paneel, een gesprek met Vera. Geen betaling, geen limieten, alleen tellen. Pas
 als hier twee weken echte cijfers in staan, is er iets zinnigs te zeggen over
 €4,99 per maand of over wat een token waard is.

@@ -1,4 +1,4 @@
-"""De verteller: de aflevering ingesproken door een echte stem.
+"""De verteller: de verbeelding ingesproken door een echte stem.
 
 Waarom niet de stem van de browser: die is een loterij. Op deze machine staat
 precies één Nederlandse stem, Microsoft Frank, en dat is een man. Op het ene
@@ -11,7 +11,7 @@ voorlezen.
 
 Dus: één meertalige stem die Nederlands spreekt, gelijk voor elke bezoeker.
 `eleven_multilingual_v2` rekent 1 credit per 50 tekens, dus vijf panelen van
-samen ongeveer 450 tekens kosten 9 credits — rond de acht cent per aflevering.
+samen ongeveer 450 tekens kosten 9 credits — rond de acht cent per verbeelding.
 
 Mislukt het, dan valt de speler terug op de stem van de browser. Geluid is een
 verrijking, geen voorwaarde.
