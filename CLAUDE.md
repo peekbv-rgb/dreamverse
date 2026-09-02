@@ -125,7 +125,13 @@ en het scheelt direct in de kostprijs per verbeelding.
   ruimt het nummer op dat hij gaat gebruiken. Wat niet met een cijfer begint,
   zoals `check.png`, blijft staan.
 - **Nooit `.env` committen.** `.gitignore` blokkeert ook `.env.*` en `data/`.
-- Basic auth gaat aan zodra `AUTH_USER` én `AUTH_PASSWORD` gevuld zijn.
+- Basic auth gaat aan zodra `AUTH_USER` én `AUTH_PASSWORD` gevuld zijn. **Twee
+  paden staan er altijd buiten**: `/api/stripe/webhook`, want Stripe stuurt geen
+  wachtwoord mee en dan slaat er stil nooit een pakket om terwijl de klant wél
+  betaald heeft; en `/privacy.html`, want een privacyverklaring achter een
+  wachtwoord beschermt niemand. Sinds er accounts zijn heb je basic auth
+  overigens niet meer nodig: zonder inloggen komt niemand bij `/api` of
+  `/panels`.
 
 ## De chakrapilaar
 

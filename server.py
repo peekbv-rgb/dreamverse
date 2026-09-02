@@ -92,6 +92,17 @@ def auth_ok(header):
 VRIJ = ("/api/health", "/api/registreren", "/api/inloggen", "/api/uitloggen",
         "/api/bevestigen", "/api/stripe/webhook")
 
+# Paden waar basic auth nooit voor mag staan, ook niet als AUTH_USER en
+# AUTH_PASSWORD gevuld zijn.
+#
+# De webhook: Stripe stuurt geen wachtwoord mee en kan dat ook niet. Staat basic
+# auth ervoor, dan krijgt elke betaalmelding een 401 en slaat er nooit een pakket
+# om - stil, want de klant heeft wél betaald.
+#
+# De privacyverklaring: die moet leesbaar zijn zonder account. Een verklaring
+# achter een wachtwoord beschermt niemand.
+ZONDER_BASIC = ("/api/stripe/webhook", "/privacy.html")
+
 
 class Handler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
@@ -130,7 +141,8 @@ class Handler(SimpleHTTPRequestHandler):
         return ""
 
     def guard(self):
-        if not auth_ok(self.headers.get("Authorization")):
+        kaal = self.path.split("?")[0]
+        if kaal not in ZONDER_BASIC and not auth_ok(self.headers.get("Authorization")):
             self.send_response(401)
             self.send_header("WWW-Authenticate", 'Basic realm="dreamverse"')
             self.end_headers()
