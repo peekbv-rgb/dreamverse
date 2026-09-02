@@ -934,20 +934,22 @@
   // Elk taalfilmpje is apart ingesproken en gelipsynchroniseerd; de tekst
   // eronder verandert mee.
   var INTRO = {
-    nl: { audio: "vera-intro-nl.mp3",
+    nl: { video: "vera-intro-nl.mp4",
           tekst: "Hi, ik ben Vera, de digitale droom-annalist. Wil je je droom met mij delen?" },
-    en: { audio: "vera-intro-en.mp3",
+    en: { video: "vera-intro-en.mp4",
           tekst: "Hi, I'm Vera, your digital dream analyst. Would you like to share your dream with me?" }
   };
 
   function zetIntroTaal(taal) {
     var i = INTRO[taal] || INTRO.nl;
-    var au = el("intro-audio");
-    if (au && au.getAttribute("src") !== i.audio) {
-      au.pause();
-      au.src = i.audio;
-      el("geluid-aan").hidden = false;
-      el("intro-portret").classList.remove("spreekt");
+    var v = el("intro-video");
+    if (v && v.getAttribute("src") !== i.video) {
+      var hoorbaar = !v.muted;
+      v.src = i.video;
+      v.muted = !hoorbaar;
+      v.currentTime = 0;
+      v.play().catch(function () { /* wacht dan op de knop */ });
+      if (!hoorbaar) { el("geluid-aan").hidden = false; }
     }
     el("intro-tekst").textContent = i.tekst;
   }
@@ -1014,19 +1016,23 @@
   // browser de rest van de sessie ook geluid van ons afspelen.
   var geluidKnop = el("geluid-aan");
   if (geluidKnop) {
-    var portret = el("intro-portret");
-    var au = el("intro-audio");
+    var v = el("intro-video");
     geluidKnop.addEventListener("click", function () {
-      au.currentTime = 0;
-      au.play().then(function () {
+      v.muted = false;
+      // Gedempt mag hij rondjes draaien als sfeer; met geluid speelt hij één
+      // keer af en stopt hij netjes.
+      v.loop = false;
+      v.currentTime = 0;
+      v.play().then(function () {
         geluidKnop.hidden = true;
-        portret.classList.add("spreekt");
       }).catch(function () { /* browser wil niet; de knop blijft staan */ });
     });
-    au.addEventListener("ended", function () {
-      portret.classList.remove("spreekt");
+    v.addEventListener("ended", function () {
       geluidKnop.hidden = false;
       geluidKnop.innerHTML = '<span aria-hidden="true">🔊</span> Nog een keer';
+    });
+    v.addEventListener("volumechange", function () {
+      if (!v.muted) { geluidKnop.hidden = true; }
     });
   }
 

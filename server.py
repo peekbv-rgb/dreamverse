@@ -105,7 +105,9 @@ class Handler(SimpleHTTPRequestHandler):
         if self.path == "/api/usage":
             return self.send_json(usage.summary())
         if self.path == "/api/account":
-            return self.send_json(plans.account())
+            a = plans.account()
+            a["kwaliteiten"] = plans.kwaliteiten()
+            return self.send_json(a)
         if self.path == "/api/archive":
             archive = sorted(dreamverse.load_archive(), key=lambda d: d.get("n", 0), reverse=True)
             return self.send_json({"dreams": archive})
@@ -234,7 +236,7 @@ class Handler(SimpleHTTPRequestHandler):
             return self.send_json({"error": "Ongeldige aanvraag."}, 400)
 
         try:
-            episode = dreamverse.create(payload.get("dream", ""))
+            episode = dreamverse.create(payload.get("dream", ""), payload.get("quality"))
         except plans.Refused as e:
             return self.send_json({"error": str(e), "need_tokens": e.need_tokens}, 402)
         except dreamverse.DreamverseError as e:

@@ -49,6 +49,36 @@ VIDEO = {
     "top": {"model": "veo3.1", "audio": True, "seconden": 4, "kost": 1.47},
 }
 
+# Wat je van een droom wilt. Alleen de duiding is bijna gratis; elke stap
+# daarboven kost beeld en dus geld. Wat je pakket al dekt is inbegrepen, de rest
+# betaal je met tokens.
+KWALITEIT = {
+    "duiding": {
+        "naam": "Alleen de duiding", "rang": 0, "panelen": False, "video": None,
+        "tokens": 0, "kost": 0.04,
+        "uitleg": "De tekst, het geheugen en de vooruitblik. Geen beeld.",
+    },
+    "eenvoudig": {
+        "naam": "Eenvoudig", "rang": 1, "panelen": True, "video": None,
+        "tokens": 1, "kost": 0.14,
+        "uitleg": "Vijf getekende panelen bij je droom.",
+    },
+    "standaard": {
+        "naam": "Standaard", "rang": 2, "panelen": True, "video": "snel",
+        "tokens": 4, "kost": 0.69,
+        "uitleg": "Vijf panelen plus een bewegend kernmoment van vier seconden.",
+    },
+    "supreme": {
+        "naam": "Supreme", "rang": 3, "panelen": True, "video": "top",
+        "tokens": 10, "kost": 1.61,
+        "uitleg": "Hetzelfde, maar het kernmoment op het beste videomodel.",
+    },
+}
+DEFAULT_KWALITEIT = "standaard"
+
+# Tot welke rang je pakket je gratis brengt.
+PLAN_RANG = {"gratis": 0, "plus": 2, "ultra": 3}
+
 PLANS = {
     "gratis": {
         "naam": "Gratis",
@@ -158,6 +188,39 @@ def add_tokens(aantal):
 # --------------------------------------------------------------------------- #
 # De poortjes
 # --------------------------------------------------------------------------- #
+
+def kwaliteiten():
+    """Alle keuzes met wat ze deze gebruiker kosten."""
+    a = account()
+    grens = PLAN_RANG.get(a["plan"], 0)
+    saldo = a["tokens"]
+    uit = []
+    for sleutel, k in sorted(KWALITEIT.items(), key=lambda kv: kv[1]["rang"]):
+        inbegrepen = k["rang"] <= grens
+        tokens = 0 if inbegrepen else k["tokens"]
+        uit.append({
+            "key": sleutel, "naam": k["naam"], "uitleg": k["uitleg"],
+            "inbegrepen": inbegrepen, "tokens": tokens,
+            "betaalbaar": tokens == 0 or saldo >= tokens,
+        })
+    return uit
+
+
+def check_kwaliteit(sleutel):
+    """Mag deze kwaliteit? Geeft (instelling, tokens) terug."""
+    if sleutel not in KWALITEIT:
+        raise Refused("Die kwaliteit bestaat niet.")
+    k = KWALITEIT[sleutel]
+    a = account()
+    if k["rang"] <= PLAN_RANG.get(a["plan"], 0):
+        return k, 0
+    if a["tokens"] >= k["tokens"]:
+        return k, k["tokens"]
+    raise Refused(
+        "{} kost {} tokens en je hebt er {}. In je pakket {} zit {} inbegrepen.".format(
+            k["naam"], k["tokens"], a["tokens"], a["plan_naam"], a["video_omschrijving"]),
+        need_tokens=k["tokens"] - a["tokens"])
+
 
 def check_dream():
     """Mag deze droom? Geeft terug hoeveel tokens het kost (0 als inbegrepen)."""

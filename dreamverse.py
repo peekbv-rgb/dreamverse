@@ -512,7 +512,7 @@ def write_episode(dream, archive, number, name=None):
     return episode
 
 
-def create(dream):
+def create(dream, kwaliteit=None):
     """De hele stap: schrijven, opslaan, teruggeven."""
     dream = (dream or "").strip()
     if not dream:
@@ -520,8 +520,10 @@ def create(dream):
     if len(dream) > 4000:
         raise DreamverseError("Dat is een lange droom. Vat hem samen in maximaal 4000 tekens.")
 
-    # Poortje vóór het geld uitgeven, niet erna.
+    # Twee poortjes vóór het geld uitgeven: mag er een droom bij, en mag deze
+    # kwaliteit. Allebei kunnen tokens kosten.
     kosten_tokens = plans.check_dream()
+    niveau, kwaliteit_tokens = plans.check_kwaliteit(kwaliteit or plans.DEFAULT_KWALITEIT)
 
     with _lock:
         archive = load_archive()
@@ -543,8 +545,9 @@ def create(dream):
         })
         save_archive(archive)
 
-    plans.charge_dream(kosten_tokens)
-    episode["tokens_charged"] = kosten_tokens
+    plans.charge_dream(kosten_tokens + kwaliteit_tokens)
+    episode["tokens_charged"] = kosten_tokens + kwaliteit_tokens
+    episode["quality"] = kwaliteit or plans.DEFAULT_KWALITEIT
 
     u = episode.get("usage") or {}
     usage.episode(number, u.get("input_tokens", 0), u.get("output_tokens", 0),
@@ -554,19 +557,20 @@ def create(dream):
 
     # Het tekenwerk loopt op de achtergrond verder; de aflevering is al leesbaar.
     # In het gratis pakket blijft het bij de getekende composities.
-    if plans.panels_allowed():
+    # Wat er gemaakt wordt hangt van de gekozen kwaliteit af, niet van het pakket:
+    # wie alleen de duiding wil, betaalt ook niet voor beeld.
+    instelling = plans.VIDEO.get(niveau["video"]) if niveau["video"] else None
+    if niveau["panelen"]:
         # Het kernmoment volgt op de panelen: dat heeft het getekende beeld nodig
         # als startframe, anders verspringt de stijl.
-        instelling = plans.video_for_plan()
         episode["images_pending"] = kling.render_async(
             number, episode["panels"], episode.get("key_panel"), instelling)
         episode["video_pending"] = bool(instelling)
-        # Inspreken heeft de beelden niet nodig en loopt er dus naast.
-        episode["voice_pending"] = stem.render_async(number, episode["panels"])
     else:
         episode["images_pending"] = False
         episode["video_pending"] = False
-        episode["panels_locked"] = True
+    # De stem hoort bij de tekst, niet bij het beeld: die komt er altijd.
+    episode["voice_pending"] = stem.render_async(number, episode["panels"])
 
     return episode
 

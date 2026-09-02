@@ -885,3 +885,13 @@ body::after { opacity: .34; }
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.05); }
 }
+
+/* Vera praat weer. De lipsync is niet volmaakt, maar een bewegend gezicht doet
+   meer dan een stilstaand portret - dat is een keuze, geen vergissing. */
+.intro-kaart video {
+  width: 100%; border-radius: 16px; display: block; background: #06040D;
+  aspect-ratio: 16 / 9; object-fit: cover;
+  border: 1px solid rgba(179, 105, 222, .4);
+  box-shadow: 0 0 44px rgba(179, 105, 222, .25);
+}
+.intro-portret { display: none; }
