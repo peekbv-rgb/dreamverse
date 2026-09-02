@@ -154,11 +154,15 @@ maakte van *Praat met Vera* "Praat ontmoette Vera".
   `python kling.py --check`: die maakt één afbeelding en drukt alles af wat
   terugkomt. Klopt een veldnaam niet, dan zie je precies welke. Zonder sleutels
   blijven de getekende composities staan; dat is geen storing maar het ontwerp.
-- **Het gesprek met Vera is nog niet met een echte microfoon getest.** De keten
-  create → READY → consume → wss-adres + token is geverifieerd, en de pagina laadt
-  LiveKit zonder fouten, maar de WebRTC-handdruk zelf moet een mens doen.
+- **Het gesprek met Vera werkt.** Ruud heeft er meermalen over zijn dromen mee
+  gesproken, en op 2 september 2026 is de hele keten ook gemeten: de worker komt
+  als `worker:<sessie-id>` de kamer binnen en publiceert **audio én video**.
   Let op: `consume` is eenmalig. Loopt de verbinding daarna stuk, dan is de sessie
   op en moet er een nieuwe komen.
+  `realtime_sessions.create` heeft ook een veld `integration` (elevenlabs of
+  livekit) om de avatar op een eigen stemagent te zetten. Dat is **niet** nodig:
+  zonder dat veld doet Runway het gesprek zelf, met `personality` en
+  `start_script`. Laat je erdoor niet op een dwaalspoor zetten.
 - **Het archief is een bestand op schijf** en dus weg bij elke Render-deploy. Voor
   iets echts hoort daar een database.
 - **Geen betaling.** Pakket en tokensaldo staan in `data/profile.json` en worden
