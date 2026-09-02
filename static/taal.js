@@ -164,6 +164,9 @@
     ["plus", "plus"],
     ["ultra", "ultra"],
     ["+10 tokens", "+10 tokens"],
+    ["beheer", "admin"],
+    ["Beheerderssleutel (ADMIN_TOKEN uit .env)", "Admin key (ADMIN_TOKEN from .env)"],
+    ["Die sleutel wordt niet geaccepteerd.", "That key is not accepted."],
     ["voorbeeldmodus", "example mode"],
     ["Vera is niet aangesloten", "Vera is not connected"],
 

@@ -1456,11 +1456,16 @@
             "</b><span>" + t("minuten vera") + "</span></div>";
     html += "<div><b>" + a.plan_naam + "</b><span>" + t("pakket") + "</span></div>";
     html += "<div class='schakel'>";
-    ["gratis", "plus", "ultra"].forEach(function (p) {
-      html += "<button type='button' data-plan='" + p + "' aria-pressed='" +
-              (a.plan === p ? "true" : "false") + "'>" + t(p) + "</button>";
-    });
-    html += "<button type='button' data-tokens='10'>" + t("+10 tokens") + "</button></div>";
+    if (beheerSleutel()) {
+      ["gratis", "plus", "ultra"].forEach(function (p) {
+        html += "<button type='button' data-plan='" + p + "' aria-pressed='" +
+                (a.plan === p ? "true" : "false") + "'>" + t(p) + "</button>";
+      });
+      html += "<button type='button' data-tokens='10'>" + t("+10 tokens") + "</button>";
+    } else {
+      html += "<button type='button' class='ghost' data-beheer='1'>" + t("beheer") + "</button>";
+    }
+    html += "</div>";
     el("account").innerHTML = html;
 
     el("account").querySelectorAll("[data-plan]").forEach(function (b) {
@@ -1469,14 +1474,54 @@
     el("account").querySelectorAll("[data-tokens]").forEach(function (b) {
       b.addEventListener("click", function () { zetAccount({ tokens: 10 }); });
     });
+    el("account").querySelectorAll("[data-beheer]").forEach(function (b) {
+      b.addEventListener("click", vraagBeheer);
+    });
+  }
+
+  /* Pakket en saldo met de hand zetten.
+   *
+   * Dat is een beheerdershandeling: het is gratis Ultra met tien avatarminuten.
+   * De server vraagt sindsdien om ADMIN_TOKEN, en die sleutel woont alleen in
+   * deze browser. Wie hem niet heeft ziet de knoppen niet eens.
+   */
+  var BEHEER_SLEUTEL = "dreamverse_admin";
+
+  function beheerSleutel() {
+    try { return localStorage.getItem(BEHEER_SLEUTEL) || ""; } catch (e) { return ""; }
   }
 
   function zetAccount(body) {
+    var sleutel = beheerSleutel();
+    if (!sleutel) { return; }
     fetch("/api/account", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", "X-Admin-Token": sleutel },
       body: JSON.stringify(body)
-    }).then(function (r) { return r.json(); }).then(toonAccount).catch(function () {});
+    })
+      .then(function (r) {
+        if (r.status === 403) {
+          try { localStorage.removeItem(BEHEER_SLEUTEL); } catch (e) { /* niets */ }
+          throw new Error("sleutel afgekeurd");
+        }
+        return r.json();
+      })
+      .then(toonAccount)
+      .catch(function () { laadAccount(); });
+  }
+
+  function vraagBeheer() {
+    var sleutel = (window.prompt(t("Beheerderssleutel (ADMIN_TOKEN uit .env)")) || "").trim();
+    if (!sleutel) { return; }
+    fetch("/api/account", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Admin-Token": sleutel },
+      body: JSON.stringify({})
+    }).then(function (r) {
+      if (!r.ok) { window.alert(t("Die sleutel wordt niet geaccepteerd.")); return; }
+      try { localStorage.setItem(BEHEER_SLEUTEL, sleutel); } catch (e) { /* niets */ }
+      laadAccount();
+    }).catch(function () { window.alert(t("Die sleutel wordt niet geaccepteerd.")); });
   }
 
   function laadAccount() {

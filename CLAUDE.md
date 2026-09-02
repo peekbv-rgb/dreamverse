@@ -156,8 +156,11 @@ maakte van *Praat met Vera* "Praat ontmoette Vera".
 - **Het archief is een bestand op schijf** en dus weg bij elke Render-deploy. Voor
   iets echts hoort daar een database.
 - **Geen betaling.** Pakket en tokensaldo staan in `data/profile.json` en worden
-  met de hand gezet via `POST /api/account`. **Dat eindpunt moet dicht voordat dit
-  ergens publiek draait** — nu kan iedereen zichzelf Ultra geven.
+  met de hand gezet via `POST /api/account`. Dat eindpunt vraagt sinds
+  2 september 2026 om de header `X-Admin-Token`, die moet kloppen met `ADMIN_TOKEN`
+  uit de omgeving. Staat die niet gezet, dan kan aanpassen helemaal niet — dat is
+  de veilige stand. In de app zie je de knoppen alleen na *beheer* en het invoeren
+  van die sleutel; hij blijft daarna in `localStorage` van die ene browser.
 - **Geen accounts.** Eén profiel per installatie. De verbruiksregels dragen al een
   `who`-veld, zodat de cijfers straks niet opnieuw verzameld hoeven te worden.
 

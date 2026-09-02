@@ -50,6 +50,12 @@ HOST = os.environ.get("HOST", "127.0.0.1")
 PORT = int(os.environ.get("PORT", "8000"))
 AUTH_USER = os.environ.get("AUTH_USER", "")
 AUTH_PASSWORD = os.environ.get("AUTH_PASSWORD", "")
+
+# Pakket en tokensaldo met de hand zetten kan alleen met deze sleutel. Staat hij
+# niet in de omgeving, dan kan het helemaal niet - dat is de veilige stand.
+# Zonder dit kon iedereen die de app kon bereiken zichzelf Ultra geven met tien
+# avatarminuten erbij, en dat is echt geld.
+ADMIN_TOKEN = os.environ.get("ADMIN_TOKEN", "")
 MAX_BODY = 64 * 1024
 
 
@@ -306,7 +312,16 @@ class Handler(SimpleHTTPRequestHandler):
 
         if self.path == "/api/account":
             # Zolang er geen betaling is, worden pakket en saldo met de hand
-            # gezet. Dit eindpunt moet dicht voordat dit ergens publiek draait.
+            # gezet - maar alleen door wie de beheerderssleutel heeft.
+            if not ADMIN_TOKEN:
+                return self.send_json({
+                    "error": "Pakket en saldo aanpassen staat uit. Zet ADMIN_TOKEN in "
+                             "de omgeving als je dit wilt kunnen.",
+                }, 403)
+            gegeven = (self.headers.get("X-Admin-Token") or "").strip()
+            if not hmac.compare_digest(gegeven, ADMIN_TOKEN):
+                self.log_message("account-aanpassing geweigerd: verkeerde sleutel")
+                return self.send_json({"error": "Geen toegang."}, 403)
             payload = self.read_json() or {}
             try:
                 if payload.get("plan"):
