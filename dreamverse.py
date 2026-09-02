@@ -219,6 +219,26 @@ def load_episode(number):
     return episode
 
 
+def latest_together():
+    """De nieuwste lijn door alle dromen heen, plus de draden erbij.
+
+    Dit blok staat altijd op de pagina, ook als er geen verbeelding open is: het
+    is de reden dat iemand een tweede en een tiende keer terugkomt. Bij elke
+    nieuwe droom wordt hij herschreven, dus de nieuwste is de geldige.
+    """
+    for d in sorted(load_archive(), key=lambda x: x.get("n", 0), reverse=True):
+        try:
+            with (EPISODES / "{}.json".format(d.get("n"))).open(encoding="utf-8") as f:
+                episode = json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError, OSError):
+            continue
+        if (episode.get("together") or "").strip():
+            return {"number": d.get("n"),
+                    "together": episode["together"],
+                    "threads": episode.get("threads") or []}
+    return {"number": None, "together": "", "threads": []}
+
+
 def archive_with_media():
     """Het archief met bij elke droom het kernmoment erbij.
 

@@ -111,7 +111,8 @@ class Handler(SimpleHTTPRequestHandler):
                 dreamverse.load_profile().get("language", "nl"))
             return self.send_json(a)
         if self.path == "/api/archive":
-            return self.send_json({"dreams": dreamverse.archive_with_media()})
+            return self.send_json({"dreams": dreamverse.archive_with_media(),
+                                   "samen": dreamverse.latest_together()})
         if self.path == "/api/health":
             return self.send_json({
                 "ok": True,

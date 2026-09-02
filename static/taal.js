@@ -16,6 +16,13 @@
 
   var EN = {};
 
+  // De pagina staat ingesprongen in de HTML, dus dezelfde zin komt met andere
+  // witruimte binnen dan hij hierboven staat. Voor het opzoeken telt de tekst,
+  // en de sleutels hieronder gaan door dezelfde molen.
+  function plat(tekst) {
+    return String(tekst).replace(/\s+/g, " ").trim();
+  }
+
   // Per regel: Nederlands, dan Engels. Eén lange lijst leest hier prettiger dan
   // een object vol aanhalingstekens over meerdere regels.
   [
@@ -83,6 +90,8 @@
     // -- alle dromen samen -------------------------------------------------
     ["Je dromen samen", "Your dreams together"],
     ["Nog geen patroon", "No pattern yet"],
+    ["Toen:", "Then:"],
+    ["Nu:", "Now:"],
     ["Eén droom is een anekdote. Alles bij elkaar wordt een portret.", "One dream is an anecdote. All of them together become a portrait."],
     ["Deze droom staat nog op zichzelf. Vanaf je tweede of derde droom vormt het web zich.", "This dream still stands alone. From your second or third dream the web starts to form."],
 
@@ -106,11 +115,11 @@
     ["Bezig…", "Working…"],
     ["Verbinden…", "Connecting…"],
     ["In gesprek", "In conversation"],
-    ["Panelen tekenen — ", "Drawing panels — "],
-    ["Inspreken — ", "Recording narration — "],
-    ["Film maken — ", "Making the film — "],
-    [" van de ", " of "],
-    [" panelen klaar", " panels done"],
+    ["Panelen tekenen —", "Drawing panels —"],
+    ["Inspreken —", "Recording narration —"],
+    ["Film maken —", "Making the film —"],
+    ["van de", "of"],
+    ["panelen klaar", "panels done"],
     ["tokens", "tokens"],
     ["minuten vera", "minutes of vera"],
     ["pakket", "plan"],
@@ -191,7 +200,7 @@
     ["De vijf minuten zaten erop.", "The five minutes are up."],
     ["Kernmoment animeren — dit duurt ongeveer een minuut", "Animating the key moment — this takes about a minute"],
     ["Het hele archief wissen? Je volgende droom wordt Droom 1.", "Clear the whole archive? Your next dream becomes Dream 1."]
-  ].forEach(function (paar) { EN[paar[0]] = paar[1]; });
+  ].forEach(function (paar) { EN[plat(paar[0])] = paar[1]; });
 
   // Wat het model of de server teruggeeft blijft staan: dat is al in de goede
   // taal geschreven en hoort niet door een woordenlijst heen.
@@ -204,12 +213,6 @@
 
   var TE_VERTALEN = "h1,h2,p,label,span.lbl,span.label,span.tier-name,span.extras-kop," +
                     "span.kwaliteit-kop,span.antwoord-uitleg,button,option,#mode";
-
-  // De pagina staat ingesprongen in de HTML, dus dezelfde zin komt met andere
-  // witruimte binnen dan hij hierboven staat. Voor het opzoeken telt de tekst.
-  function plat(tekst) {
-    return String(tekst).replace(/\s+/g, " ").trim();
-  }
 
   function vertaal(taal) {
     document.querySelectorAll(TE_VERTALEN).forEach(function (e) {

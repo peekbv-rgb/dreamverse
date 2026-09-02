@@ -238,17 +238,17 @@
 
     var klaar = Object.keys(state.images || {}).length;
     if (state.status === "busy") {
-      regels.push(t("Panelen tekenen — ") + klaar + t(" van de ") + totaal);
+      regels.push(t("Panelen tekenen —") + " " + klaar + " " + t("van de") + " " + totaal);
     }
     if (state.stem_status === "busy") {
-      regels.push(t("Inspreken — ") + Object.keys(state.stem || {}).length + t(" van de ") + totaal);
+      regels.push(t("Inspreken —") + " " + Object.keys(state.stem || {}).length + " " + t("van de") + " " + totaal);
     }
     if (state.video_status === "busy") {
       regels.push(t("Kernmoment animeren — dit duurt ongeveer een minuut"));
     }
     if (state.film_status === "busy") {
       var f = Object.keys(state.film || {}).length;
-      regels.push(t("Film maken — ") + f + t(" van de ") + totaal + t(" panelen klaar"));
+      regels.push(t("Film maken —") + " " + f + " " + t("van de") + " " + totaal + " " + t("panelen klaar"));
     }
 
     if (!regels.length) {
@@ -300,6 +300,56 @@
       .catch(function () { /* beeld is bijzaak; de verbeelding staat er al */ });
   }
 
+  /* De lijn door alle dromen heen.
+   *
+   * Dit blok staat altijd op de pagina, ook zonder open verbeelding: het is de
+   * reden dat iemand terugkomt. Eén droom is een anekdote, tien dromen zijn een
+   * portret, en dat portret hoort niet te verdwijnen zodra je de pagina ververst.
+   *
+   * Bij elke nieuwe droom wordt hij herschreven. Een oude droom terugkijken mag
+   * hem niet terugzetten naar een eerdere versie, dus alleen een nieuwer nummer
+   * mag overschrijven.
+   */
+  var samenVan = 0;
+
+  function toonSamen(nummer, tekst, draden) {
+    nummer = nummer || 0;
+    if (nummer && nummer < samenVan) { return; }
+    samenVan = nummer || samenVan;
+
+    var samen = el("samen");
+    samen.textContent = tekst || "";
+    samen.hidden = !tekst;
+    threadsEl.innerHTML = "";
+    el("threads-section").hidden = false;
+
+    if (draden && draden.length) {
+      el("threads-title").textContent = t("Je dromen samen");
+      draden.forEach(function (draad) {
+        var d = document.createElement("div");
+        d.className = "thread";
+        var tag = document.createElement("span");
+        tag.className = "tag";
+        tag.textContent = draad.ref;
+        var toen = document.createElement("p");
+        toen.textContent = t("Toen:") + " " + draad.was;
+        var nu = document.createElement("p");
+        nu.className = "then";
+        nu.textContent = t("Nu:") + " " + draad.now;
+        d.appendChild(tag); d.appendChild(toen); d.appendChild(nu);
+        threadsEl.appendChild(d);
+      });
+    } else if (!tekst) {
+      el("threads-title").textContent = t("Nog geen patroon");
+      var leeg = document.createElement("div");
+      leeg.className = "thread";
+      leeg.textContent = t("Deze droom staat nog op zichzelf. Vanaf je tweede of derde droom vormt het web zich.");
+      threadsEl.appendChild(leeg);
+    } else {
+      el("threads-title").textContent = t("Je dromen samen");
+    }
+  }
+
   function render(ep) {
     episode = ep;
     panelImages = {};
@@ -334,31 +384,7 @@
     ep.panels.forEach(function () { bar.appendChild(document.createElement("span")); });
     show(0);
 
-    threadsEl.innerHTML = "";
-    el("threads-section").hidden = false;
-    // De lijn door alles heen komt bovenaan; de losse draden eronder.
-    var samen = el("samen");
-    samen.textContent = ep.together || "";
-    samen.hidden = !ep.together;
-    if (ep.threads && ep.threads.length) {
-      el("threads-title").textContent = t("Je dromen samen");
-      ep.threads.forEach(function (t) {
-        var d = document.createElement("div");
-        d.className = "thread";
-        d.innerHTML = "";
-        var tag = document.createElement("span"); tag.className = "tag"; tag.textContent = t.ref;
-        var was = document.createElement("p"); was.textContent = "Toen: " + t.was;
-        var now = document.createElement("p"); now.className = "then"; now.textContent = "Nu: " + t.now;
-        d.appendChild(tag); d.appendChild(was); d.appendChild(now);
-        threadsEl.appendChild(d);
-      });
-    } else if (!ep.together) {
-      el("threads-title").textContent = t("Nog geen patroon");
-      var d2 = document.createElement("div");
-      d2.className = "thread";
-      d2.textContent = t("Deze droom staat nog op zichzelf. Vanaf je tweede of derde droom vormt het web zich.");
-      threadsEl.appendChild(d2);
-    }
+    toonSamen(ep.number, ep.together, ep.threads);
 
     el("extras").hidden = !ep.number;
     el("extras").dataset.dream = ep.number || "";
@@ -524,7 +550,12 @@
   function loadArchive() {
     fetch("/api/archive")
       .then(function (r) { return r.json(); })
-      .then(function (d) { renderArchive(d.dreams || []); vulKeuzelijst(d.dreams || []); })
+      .then(function (d) {
+        renderArchive(d.dreams || []);
+        vulKeuzelijst(d.dreams || []);
+        var samen = d.samen || {};
+        toonSamen(samen.number, samen.together, samen.threads);
+      })
       .catch(function () { /* archief is bijzaak; de app werkt zonder */ });
   }
 
