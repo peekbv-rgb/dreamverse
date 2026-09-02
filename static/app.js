@@ -1119,7 +1119,7 @@
   });
 
   el("clear").addEventListener("click", function () {
-    if (!window.confirm(t("Het hele archief wissen? Je volgende droom wordt Droom 1."))) { return; }
+    if (!window.confirm(t("Het hele archief wissen? De panelen, de video's en de ingesproken tekst gaan mee. Je volgende droom wordt Droom 1."))) { return; }
     fetch("/api/archive", { method: "DELETE" })
       .then(function () {
         loadArchive();

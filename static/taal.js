@@ -246,7 +246,7 @@
     ["Het kernmoment lukte niet", "The key moment did not work"],
     ["De film lukte niet", "The film did not work"],
     ["De panelen lukten niet", "The panels did not work"],
-    ["Het hele archief wissen? Je volgende droom wordt Droom 1.", "Clear the whole archive? Your next dream becomes Dream 1."]
+    ["Het hele archief wissen? De panelen, de video's en de ingesproken tekst gaan mee. Je volgende droom wordt Droom 1.", "Clear the whole archive? The panels, the videos and the narration go with it. Your next dream becomes Dream 1."]
   ].forEach(function (paar) { EN[plat(paar[0])] = paar[1]; });
 
   // Wat het model of de server teruggeeft blijft staan: dat is al in de goede

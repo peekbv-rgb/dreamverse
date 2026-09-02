@@ -416,16 +416,54 @@ def delete_dream(number):
             raise DreamverseError("Die droom staat niet in je archief.")
         save_archive(over)
 
-    (EPISODES / "{}.json".format(number)).unlink(missing_ok=True)
-    for pad in kling.PANELS.glob("{}-*".format(number)):
-        pad.unlink(missing_ok=True)
-    (kling.PANELS / "{}.json".format(number)).unlink(missing_ok=True)
+    _ruim_nummer_op(number)
     return {"deleted": number, "over": len(over)}
 
 
+def _bestanden_van(number):
+    """Alles wat bij één droomnummer hoort. Zonder check.png en andere losse zaken."""
+    uit = [EPISODES / "{}.json".format(number),
+           kling.PANELS / "{}.json".format(number)]
+    uit.extend(kling.PANELS.glob("{}-*".format(number)))
+    return uit
+
+
+def _ruim_nummer_op(number):
+    for pad in _bestanden_van(number):
+        try:
+            pad.unlink(missing_ok=True)
+        except OSError:
+            pass
+
+
 def clear_archive():
+    """Het archief wissen: ook de beelden, de video, de stem en de duiding.
+
+    Alleen archive.json legen was fout en op een nare manier: de nummering begint
+    daarna weer bij 1, en de nieuwe Droom 1 vond de panelen van de oude Droom 1
+    nog op schijf. Dan zie je in je archief een droom met het beeld van een droom
+    die je jaren eerder had.
+    """
     with _lock:
+        nummers = [d.get("n") for d in load_archive() if d.get("n")]
         save_archive([])
+
+    for n in nummers:
+        _ruim_nummer_op(n)
+
+    # En alles wat er verder nog aan genummerd materiaal ligt, ook van dromen die
+    # al eens los gewist zijn. check.png en andere niet-genummerde bestanden
+    # blijven staan.
+    for map_ in (EPISODES, kling.PANELS):
+        if not map_.is_dir():
+            continue
+        for pad in map_.iterdir():
+            eerste = pad.name.split("-")[0].split(".")[0]
+            if eerste.isdigit():
+                try:
+                    pad.unlink(missing_ok=True)
+                except OSError:
+                    pass
 
 
 # --------------------------------------------------------------------------- #
@@ -764,6 +802,9 @@ def create(dream, kwaliteit=None):
         archive = load_archive()  # opnieuw laden: er kan intussen iets bij zijn gekomen
         number = next_number(archive)
         episode["number"] = number
+        # Ligt er nog materiaal onder dit nummer van een gewiste droom, dan gaat
+        # dat er nu af. Anders erft deze droom beelden die niet bij hem horen.
+        _ruim_nummer_op(number)
         archive.append({
             "n": number,
             "text": dream,

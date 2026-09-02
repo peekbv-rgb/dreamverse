@@ -110,6 +110,12 @@ en het scheelt direct in de kostprijs per verbeelding.
 - **Afrekenen pas als het werk echt kan.** `/api/extra` controleerde alleen het
   saldo en of de achtergrondtaak *startte*; die taak faalde daarna en de tokens
   waren weg. Nu weigert hij met 409 als er geen panelen liggen om te animeren.
+- **Wissen ruimt ook de bestanden op.** De nummering begint na het wissen weer bij
+  1, dus als de panelen van de oude Droom 1 blijven staan, erft de nieuwe Droom 1
+  ze — en dan zie je in je archief een droom met het beeld van een andere. Zowel
+  `clear_archive()` als `delete_dream()` gaan langs `_ruim_nummer_op()`, en `create()`
+  ruimt het nummer op dat hij gaat gebruiken. Wat niet met een cijfer begint,
+  zoals `check.png`, blijft staan.
 - **Nooit `.env` committen.** `.gitignore` blokkeert ook `.env.*` en `data/`.
 - Basic auth gaat aan zodra `AUTH_USER` én `AUTH_PASSWORD` gevuld zijn.
 
