@@ -204,7 +204,7 @@
     if (kernVideo && kernVideo.panel === index && kernVideo.status === "busy") {
       var wacht = document.createElement("span");
       wacht.className = "kern-merk bezig";
-      wacht.textContent = "kernmoment wordt gemaakt…";
+      wacht.textContent = t("kernmoment wordt gemaakt…");
       stage.appendChild(wacht);
     }
 
@@ -238,17 +238,17 @@
 
     var klaar = Object.keys(state.images || {}).length;
     if (state.status === "busy") {
-      regels.push("Panelen tekenen — " + klaar + " van de " + totaal);
+      regels.push(t("Panelen tekenen — ") + klaar + t(" van de ") + totaal);
     }
     if (state.stem_status === "busy") {
-      regels.push("Inspreken — " + Object.keys(state.stem || {}).length + " van de " + totaal);
+      regels.push(t("Inspreken — ") + Object.keys(state.stem || {}).length + t(" van de ") + totaal);
     }
     if (state.video_status === "busy") {
       regels.push(t("Kernmoment animeren — dit duurt ongeveer een minuut"));
     }
     if (state.film_status === "busy") {
       var f = Object.keys(state.film || {}).length;
-      regels.push("Film maken — " + f + " van de " + totaal + " panelen klaar");
+      regels.push(t("Film maken — ") + f + t(" van de ") + totaal + t(" panelen klaar"));
     }
 
     if (!regels.length) {
@@ -443,7 +443,7 @@
         render(res.body.episode);
         pollPanels(nummer, 3);
         statusEl.className = "status";
-        statusEl.textContent = "Droom " + nummer + " is weer compleet.";
+        statusEl.textContent = t("Droom %s is weer compleet.").replace("%s", nummer);
       })
       .catch(function (e) {
         statusEl.className = "status err";
@@ -454,7 +454,7 @@
   // Terugkijken kost niets: tekst, panelen en video staan al op de schijf.
   function herbekijk(nummer) {
     statusEl.className = "status";
-    statusEl.textContent = "Droom " + nummer + " terughalen…";
+    statusEl.textContent = t("Droom %s terughalen…").replace("%s", nummer);
     fetch("/api/episode/" + nummer)
       .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, body: d }; }); })
       .then(function (res) {
@@ -472,12 +472,12 @@
           // Van voor het bewaren: wel beeld, geen tekst. Opnieuw schrijven mag,
           // en kost niets, want het beeld staat er al.
           statusEl.className = "status";
-          statusEl.innerHTML = "Bij deze droom is alleen het beeld bewaard gebleven. " +
+          statusEl.innerHTML = t("Bij deze droom is alleen het beeld bewaard gebleven.") + " " +
             "<button type=\"button\" class=\"herstel\" id=\"herstel-" + nummer + "\">" +
-            "Schrijf de duiding opnieuw</button> — gratis, de panelen blijven staan.";
+            t("Schrijf de duiding opnieuw") + "</button> — " + t("gratis, de panelen blijven staan.");
           el("herstel-" + nummer).addEventListener("click", function () { herstel(nummer); });
         } else {
-          statusEl.textContent = "Droom " + nummer + " — al eerder gemaakt, kost je niets.";
+          statusEl.textContent = t("Droom %s — al eerder gemaakt, kost je niets.").replace("%s", nummer);
         }
         player.scrollIntoView({ behavior: "smooth", block: "start" });
       })
@@ -500,7 +500,7 @@
     });
     if (!dreams.length) {
       var leeg = document.createElement("option");
-      leeg.textContent = "nog geen dromen";
+      leeg.textContent = t("nog geen dromen");
       leeg.value = "";
       kies.appendChild(leeg);
     }
@@ -558,7 +558,7 @@
       recogniser.onend = function () {
         listening = false;
         mic.classList.remove("rec");
-        mic.textContent = "Inspreken";
+        mic.textContent = t("Inspreken");
         guide.classList.remove("listening");
         guideLine.textContent = input.value
           ? t("Genoteerd. Zal ik je droom verbeelden?")
@@ -669,7 +669,7 @@
 
     var go = this;
     go.disabled = true;
-    go.textContent = "Bezig…";
+    go.textContent = t("Bezig…");
     statusEl.className = "status";
     statusEl.textContent = t("Je droom wordt verbeeld. Dit duurt een halve tot anderhalve minuut.");
     guideLine.textContent = t("Ik kijk ernaar. Blijf even bij me.");
@@ -741,7 +741,7 @@
     }
     el("call-panel").hidden = true;
     el("call").disabled = false;
-    el("call").textContent = "Praat met Vera";
+    el("call").textContent = t("Praat met Vera");
     guide.classList.remove("listening");
     if (reason) { guideLine.textContent = reason; }
   }
@@ -759,7 +759,7 @@
   async function callVera() {
     var btn = el("call");
     btn.disabled = true;
-    btn.textContent = "Verbinden…";
+    btn.textContent = t("Verbinden…");
     el("call-panel").hidden = false;
     veil(true);
     callStatus("Vera wordt wakker…");
@@ -839,7 +839,7 @@
       }
     }, 30000);
 
-    btn.textContent = "In gesprek";
+    btn.textContent = t("In gesprek");
     guide.classList.add("listening");
     callEnds = Date.now() + (creds.max_duration || 600) * 1000;
     tick();
@@ -972,17 +972,17 @@
     var op = a.dromen_over === 0 ? " op" : "";
     var minuten = Math.floor(a.avatar_seconden_over / 60);
     var html = "";
-    html += "<div class='" + op + "'><b>" + a.dromen_over + "</b><span>dromen over</span></div>";
-    html += "<div><b>" + a.tokens + "</b><span>tokens</span></div>";
+    html += "<div class='" + op + "'><b>" + a.dromen_over + "</b><span>" + t("dromen over") + "</span></div>";
+    html += "<div><b>" + a.tokens + "</b><span>" + t("tokens") + "</span></div>";
     html += "<div><b>" + (minuten + Math.floor(a.tokens / a.tokens_per_minuut)) +
-            "</b><span>minuten vera</span></div>";
-    html += "<div><b>" + a.plan_naam + "</b><span>pakket</span></div>";
+            "</b><span>" + t("minuten vera") + "</span></div>";
+    html += "<div><b>" + a.plan_naam + "</b><span>" + t("pakket") + "</span></div>";
     html += "<div class='schakel'>";
     ["gratis", "plus", "ultra"].forEach(function (p) {
       html += "<button type='button' data-plan='" + p + "' aria-pressed='" +
-              (a.plan === p ? "true" : "false") + "'>" + p + "</button>";
+              (a.plan === p ? "true" : "false") + "'>" + t(p) + "</button>";
     });
-    html += "<button type='button' data-tokens='10'>+10 tokens</button></div>";
+    html += "<button type='button' data-tokens='10'>" + t("+10 tokens") + "</button></div>";
     el("account").innerHTML = html;
 
     el("account").querySelectorAll("[data-plan]").forEach(function (b) {
@@ -1197,7 +1197,7 @@
         v.load();
       }
       geluidKnop.hidden = false;
-      geluidKnop.innerHTML = '<span aria-hidden="true">🔊</span> Nog een keer';
+      geluidKnop.innerHTML = '<span aria-hidden="true">🔊</span> ' + t("Nog een keer");
     });
     v.addEventListener("volumechange", function () {
       if (!v.muted) { geluidKnop.hidden = true; }

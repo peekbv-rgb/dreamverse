@@ -48,6 +48,7 @@ Geen framework — dat houdt de deploy op één bestand, net als de andere proje
 | Speler, invoer, spraak | `static/` |
 | Tweede taal (Amerikaans Engels) | `static/taal.js` |
 | Persona van de gids | `persona/vera.txt` |
+| Vera's welkomstfilmpjes, ongeknipt | `bronnen/vera/` (met `LEESMIJ.md`) |
 | Droomarchief (git-ignored) | `data/archive.json` |
 | Deploy | `render.yaml` |
 
