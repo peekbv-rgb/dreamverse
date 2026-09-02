@@ -146,9 +146,18 @@ status READY. **Dit is niet Cat (`761a6d44…`) en niet Pia (`75144525…`).**
 `avatars.update(document_ids=...)` vervángt de hele set, dus stuur altijd alle
 id's mee die moeten blijven — ze staan in `build/document-ids.json`.
 
-Gekoppeld: `intuitief-dromen` en `soorten-dromen`. Met de persona erbij zit je op
-11.864 tekens van de 100.000. Boven die grens gaat de avatar zwijgen zonder dat
-iets een fout meldt.
+Gekoppeld: `intuitief-dromen`, `soorten-dromen` en `chakras`. Met de persona erbij
+zit je op ruim 18.000 tekens van de 100.000. Boven die grens gaat de avatar
+zwijgen zonder dat iets een fout meldt.
+
+Een document erbij zetten of vervangen:
+
+```bash
+python build/add_document.py knowledge/chakras.txt
+```
+
+Dat stuurt alle bestaande id's mee, ruimt de vorige versie op en werkt
+`build/document-ids.json` bij.
 
 ## Wat er in de pakketten zit
 
