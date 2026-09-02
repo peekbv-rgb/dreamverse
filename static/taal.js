@@ -27,6 +27,8 @@
   // een object vol aanhalingstekens over meerdere regels.
   [
     // -- de introductie ----------------------------------------------------
+    ["Wij bouwen samen aan jouw persoonlijk universum van dromen",
+     "Together we are building your own personal universe of dreams"],
     ["Hoor Vera", "Hear Vera"],
     ["Nog een keer", "Once more"],
     ["Geluid uit", "Sound off"],

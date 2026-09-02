@@ -1397,7 +1397,7 @@ body.tekstpagina .end a { color: var(--throat); }
 /* Opwaarderen: de knop hoort naast het getal dat nul is. */
 .opwaardeer {
   margin-left: .7rem; padding: .12rem .55rem;
-  font-family: var(--zin); font-size: .72rem; letter-spacing: .04em;
+  font-family: var(--display); font-size: .72rem; letter-spacing: .04em;
   color: var(--solar); background: rgba(242, 198, 76, .12);
   border: 1px solid rgba(242, 198, 76, .45); border-radius: 999px;
   cursor: pointer;
@@ -1470,4 +1470,25 @@ body.tekstpagina .end a { color: var(--throat); }
 }
 @media (max-width: 640px) {
   .call-meeschrijf { margin-left: .5rem; font-size: .72rem; }
+}
+
+/* De belofte onder de kop.
+   Geen uitleg maar een toezegging, dus in de schrijfletter. En met dezelfde
+   donkere band als .sub: alleen een schaduw is niet genoeg, want de
+   achtergrond loopt hier langs lichtblauw en lavendel en dan valt gele tekst
+   gewoon weg. Dat is drie keer eerder de klacht geweest. */
+.belofte {
+  display: inline-block;
+  margin: .5rem 0 0; max-width: 34rem;
+  font-family: var(--display);
+  font-size: 1.3rem; font-style: italic; font-weight: 600; line-height: 1.4;
+  color: #FFDE8A;
+  background: rgba(8, 6, 17, .62);
+  backdrop-filter: blur(6px);
+  border-radius: 12px;
+  padding: .45rem 1rem;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, .95), 0 2px 14px rgba(0, 0, 0, .8);
+}
+@media (max-width: 640px) {
+  .belofte { font-size: 1.14rem; }
 }
