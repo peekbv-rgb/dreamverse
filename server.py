@@ -580,6 +580,19 @@ class Handler(SimpleHTTPRequestHandler):
                 self.log_message("account-aanpassing geweigerd: verkeerde sleutel")
                 return self.send_json({"error": "Geen toegang."}, 403)
             payload = self.read_json() or {}
+
+            # "wie" laat de beheerder het pakket of saldo van een ander account
+            # zetten. Dat is nodig zodra er testpersonen zijn: anders zou je als
+            # die persoon moeten inloggen om hem tokens te geven, en dan heb je
+            # zijn wachtwoord nodig. Alleen zetten, nooit lezen - er komt geen
+            # droom en geen duiding van iemand anders langs deze weg.
+            doel = (payload.get("wie") or "").strip()
+            eigen = accounts.huidige_of_none()
+            if doel:
+                ander = accounts.op_email(doel)
+                if ander is None:
+                    return self.send_json({"error": "Geen account met dat adres."}, 404)
+                accounts.zet_huidige(ander)
             try:
                 if payload.get("plan"):
                     plans.set_plan(payload["plan"])
@@ -588,9 +601,16 @@ class Handler(SimpleHTTPRequestHandler):
                 # "saldo" zet een vast aantal, "tokens" telt erbij op.
                 if payload.get("saldo") is not None:
                     plans.set_tokens(int(payload["saldo"]))
+                antwoord = plans.account()
+                antwoord["wie"] = accounts.huidige()["email"]
             except (plans.Refused, ValueError, TypeError) as e:
                 return self.send_json({"error": str(e)}, 400)
-            return self.send_json(plans.account())
+            finally:
+                # Altijd terug naar wie er echt aan de lijn is, ook na een fout.
+                # Anders praat de rest van dit verzoek namens een ander.
+                if doel and eigen:
+                    accounts.zet_huidige(eigen)
+            return self.send_json(antwoord)
 
         if self.path != "/api/episode":
             return self.send_json({"error": "Onbekend eindpunt."}, 404)

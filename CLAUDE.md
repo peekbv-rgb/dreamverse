@@ -268,7 +268,11 @@ maakte van *Praat met Vera* "Praat ontmoette Vera".
   `{"tokens": 10}` optelt. Zetten moest erbij omdat optellen eerst vraagt wat er
   stond, en tussen die twee stappen kan een gesprek met Vera er een paar
   afhalen. Op Render is geen shell, dus zonder dat veld is "zet mij op 500
-  tokens" niet te doen.
+  tokens" niet te doen. Met **Voor wie** vul je het adres van een testpersoon in
+  en zet je diens pakket of saldo zonder als hem in te loggen — anders had je
+  zijn wachtwoord nodig. Dat pad zet alleen; er komt geen droom en geen duiding
+  van een ander langs, en na afloop gaat de gebruikerslaag in een `finally`
+  terug naar wie er echt aan de lijn is.
 ## Wat de AVG hier betekent
 
 Dromen zijn geen gewone gegevens: mensen vertellen erin over hun angsten, hun

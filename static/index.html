@@ -386,6 +386,13 @@
     </div>
     <div class="beheerrij" id="beheerrij">
       <div class="beheerrij-blok">
+        <span class="beheerrij-kop">Voor wie</span>
+        <div class="beheerrij-knoppen">
+          <input type="email" id="beheer-wie" autocomplete="off" spellcheck="false"
+                 placeholder="leeg = jijzelf">
+        </div>
+      </div>
+      <div class="beheerrij-blok">
         <span class="beheerrij-kop">Pakket met de hand</span>
         <div class="beheerrij-knoppen">
           <button type="button" data-plan="gratis">Gratis</button>
@@ -408,9 +415,12 @@
           <button type="button" id="beheer-uit" class="ghost">Beheer uit</button>
         </div>
       </div>
-      <p class="beheerrij-uitleg">Dit gaat om jouw eigen account, en het rekent niets
-        af. Het saldo wordt op dit getal gezet, niet erbij opgeteld. <em>Beheer uit</em>
-        haalt de sleutel uit deze browser; met <code>?beheer</code> zet je hem weer aan.</p>
+      <p class="beheerrij-melding" id="beheerrij-melding" hidden></p>
+      <p class="beheerrij-uitleg">Rekent niets af. Het saldo wordt op dit getal
+        <em>gezet</em>, niet erbij opgeteld. Laat <em>Voor wie</em> leeg voor je eigen
+        account, of vul het adres van een testpersoon in — dan hoef je niet als
+        hem in te loggen. <em>Beheer uit</em> haalt beheer weg voor dit bezoek;
+        met <code>?beheer</code> zet je het weer aan.</p>
     </div>
     <div class="webhooklog" id="webhooklog" hidden></div>
     <div class="meter" id="meter">

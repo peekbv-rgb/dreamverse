@@ -1585,3 +1585,9 @@ body.tekstpagina .end a { color: var(--throat); }
   border: 1px solid rgba(242, 198, 76, .45);
 }
 .wachtend-kop { margin: .45rem 0 .35rem; color: var(--ink); }
+
+.beheerrij-melding {
+  flex: 1 1 100%; margin: 0; font-size: .82rem; color: var(--heart);
+}
+.beheerrij-melding.mis { color: #F5A08F; }
+.beheerrij-knoppen input[type="email"] { width: 14rem; }

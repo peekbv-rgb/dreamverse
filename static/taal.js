@@ -142,6 +142,9 @@
     ["Tokens kopen", "Buy tokens"],
     ["Zet saldo", "Set balance"],
     ["Beheer uit", "Admin off"],
+    ["Voor wie", "For whom"],
+    ["leeg = jijzelf", "empty = yourself"],
+    ["Gezet voor", "Set for"],
     // Deze twee sleutels zijn innerHTML en bevatten dus dubbele
     // aanhalingstekens. Daarom enkele aanhalingstekens eromheen - met dubbele
     // breekt dit bestand, en dan bestaat t() niet meer en staat de hele app stil.

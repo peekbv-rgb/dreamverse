@@ -1926,6 +1926,9 @@
   function zetAccount(body) {
     var sleutel = beheerSleutel();
     if (!sleutel) { return; }
+    // Voor wie? Leeg is jezelf; een adres is een testpersoon.
+    var wie = el("beheer-wie");
+    if (wie && wie.value.trim()) { body.wie = wie.value.trim(); }
     fetch("/api/account", {
       method: "POST",
       headers: { "Content-Type": "application/json", "X-Admin-Token": sleutel },
@@ -1938,7 +1941,17 @@
         }
         return r.json();
       })
-      .then(toonAccount)
+      .then(function (a) {
+        // Ging het over iemand anders, dan is dit niet jouw kaart. Melden en
+        // je eigen gegevens opnieuw ophalen, anders zie je zijn saldo staan.
+        if (a && a.wie && (!profiel || a.wie !== profiel.email)) {
+          beheerMelding(t("Gezet voor") + " " + a.wie + ": " +
+                        (a.plan_naam || a.plan) + ", " + a.tokens + " " + t("tokens"));
+          laadAccount();
+          return;
+        }
+        toonAccount(a);
+      })
       .catch(function () { laadAccount(); });
   }
 
@@ -1975,6 +1988,14 @@
     el("beheerpoort-sleutel").value = "";
     poort.hidden = false;
     setTimeout(function () { el("beheerpoort-sleutel").focus(); }, 60);
+  }
+
+  function beheerMelding(tekst, mis) {
+    var doos = el("beheerrij-melding");
+    if (!doos) { return; }
+    doos.hidden = false;
+    doos.className = "beheerrij-melding" + (mis ? " mis" : "");
+    doos.textContent = tekst;
   }
 
   function beheerpoortSluiten() {

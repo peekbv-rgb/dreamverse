@@ -240,6 +240,19 @@ def registreer(email, wachtwoord, naam=""):
     return dict(rij)
 
 
+def op_email(email):
+    """De gebruiker bij dit adres, of None.
+
+    Alleen voor beheer: hiermee kan de eigenaar een testpersoon tokens geven
+    zonder als die persoon in te loggen. Nergens anders gebruiken - bij inloggen
+    en bij wachtwoord vergeten mag nooit blijken of een adres bestaat, en deze
+    functie zegt dat wel.
+    """
+    rij = db().execute("SELECT * FROM users WHERE email = ?",
+                       ((email or "").strip().lower(),)).fetchone()
+    return dict(rij) if rij else None
+
+
 def inloggen(email, wachtwoord):
     email = (email or "").strip()
     rij = db().execute("SELECT * FROM users WHERE email = ?", (email,)).fetchone()
