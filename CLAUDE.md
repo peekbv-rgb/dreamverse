@@ -42,6 +42,7 @@ Geen framework — dat houdt de deploy op één bestand, net als de andere proje
 | Live gesprek met de avatar | `vera.py` |
 | Verbruik meten | `usage.py`, `data/usage.jsonl` |
 | Pakketten, tokens en grenzen | `plans.py` |
+| Prijzen doorrekenen mét btw en betaalkosten | `prijzen.py` |
 | Persona en kennisdocumenten | `persona/`, `knowledge/` |
 | Id's van gekoppelde documenten (**niet weggooien**) | `build/document-ids.json` |
 | HTTP en routes | `server.py` |
@@ -202,9 +203,28 @@ Dat stuurt alle bestaande id's mee, ruimt de vorige versie op en werkt
 | Plus | € 7,99 | 6 | ja, plus een bewegend kernmoment | alleen met tokens |
 | Ultra | € 29,99 | 10 | ja, kernmoment op het beste model | 10 minuten inbegrepen |
 
-Eén token is € 0,25. Een avatarminuut kost 2 tokens (kostprijs € 0,18, dus 64%
-marge), een extra droom kost er ook 2. De avatar zit bewust in géén enkel pakket
-onbeperkt: bij € 4,99 is één gesprek van vijf minuten al een vijfde van de omzet.
+Eén token is € 0,25. Een avatarminuut kost 2 tokens (kostprijs € 0,18), een extra
+droom kost er 3. De avatar zit bewust in géén enkel pakket onbeperkt: bij € 4,99
+is één gesprek van vijf minuten al een vijfde van de omzet.
+
+**Deze marges zijn te optimistisch en dat is doorgerekend op 2 september 2026.**
+Draai `python prijzen.py --scan`. Er gaan twee dingen af die niet in `plans.py`
+zitten: 21% btw (een consumentenprijs is inclusief) en 5% + $0,50 betaalkosten
+bij een merchant of record. Daarmee zakt Plus van 48% naar **20%** en Ultra van
+46% naar **16%** — Ultra is slechter dan Plus, doordat tien dromen op *supreme*
+€ 16,10 kosten.
+
+Drie conclusies uit die doorrekening:
+
+- **Het bewegende kernmoment eet de marge op.** € 0,14 per droom zonder, € 0,69
+  met. Bij zes dromen voor € 7,99 is de netto opbrengst per droom € 0,96. Zelfde
+  besluit als bij de avatar: het kernmoment hoort op tokens, niet onbeperkt in
+  een pakket. Met *eenvoudig* in Plus gaat de marge naar **61%**, en Ultra met
+  *standaard* naar **47%**.
+- **Supreme kan in geen enkel pakket.** Tot € 14,99 per maand is de marge
+  negatief. Alleen op tokens.
+- **Tokens moeten in pakketten van twintig of meer.** De vaste $0,50 per
+  transactie maakt een aankoop van twee tokens (€ 0,50) verlieslatend.
 
 De server weigert met **402** en zegt erbij hoeveel tokens er tekortkomen.
 Afrekenen van een gesprek gebeurt ná afloop op werkelijk gesproken tijd, naar
