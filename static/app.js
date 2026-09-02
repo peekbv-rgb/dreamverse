@@ -1630,8 +1630,43 @@
     if (sectie) { sectie.hidden = !beheerSleutel(); }
   }
 
+  /* Wat Stripe heeft aangeboden, en wat wij ermee deden.
+   *
+   * Zonder dit kijkglas is een webhook die niet aankomt onzichtbaar: de klant
+   * heeft betaald, Stripe zegt dat hij het heeft afgeleverd, en wij weten van
+   * niets. Dat kostte een middag zoeken.
+   */
+  function laadWebhooklog() {
+    var doos = el("webhooklog");
+    if (!doos) { return; }
+    if (!beheerSleutel()) { doos.hidden = true; return; }
+    fetch("/api/webhooklog", { headers: { "X-Admin-Token": beheerSleutel() } })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        var log = d.log || [];
+        doos.hidden = false;
+        if (!log.length) {
+          doos.innerHTML = '<p class="webhooklog-leeg">' +
+            t("Stripe heeft nog niets aangeboden.") + "</p>";
+          return;
+        }
+        var html = '<p class="webhooklog-kop">' + t("Wat Stripe aanbood") + "</p>";
+        log.forEach(function (r) {
+          var mis = /geweigerd|MISLUKT|geen gebruiker/.test(r.soort + r.uitkomst);
+          html += '<div class="webhooklog-rij' + (mis ? " mis" : "") + '">' +
+                  '<span class="wl-tijd">' + (r.wanneer || "").slice(0, 19).replace("T", " ") +
+                  "</span>" +
+                  '<span class="wl-soort">' + r.soort + "</span>" +
+                  '<span class="wl-uit">' + r.uitkomst + "</span></div>";
+        });
+        doos.innerHTML = html;
+      })
+      .catch(function () { doos.hidden = true; });
+  }
+
   function laadVerbruik() {
     toonMeter();
+    laadWebhooklog();
     if (!beheerSleutel()) { return; }
     fetch("/api/usage").then(function (r) { return r.json(); })
       .then(toonVerbruik).catch(function () {});

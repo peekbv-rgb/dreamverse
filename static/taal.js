@@ -229,6 +229,8 @@
      "Ten dreams a month with the key moment on the <strong>best video model</strong>, and ten minutes with Vera included. After that you continue on tokens."],
 
     // -- verbruik ----------------------------------------------------------
+    ["Wat Stripe aanbood", "What Stripe delivered"],
+    ["Stripe heeft nog niets aangeboden.", "Stripe has not delivered anything yet."],
     ["Wat dit kost", "What this costs"],
     ["Wat het maken van deze dromen jou gekost heeft. Alleen zichtbaar in beheer.",
      "What making these dreams cost you. Only visible in admin mode."],

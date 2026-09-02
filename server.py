@@ -22,6 +22,7 @@ Serveert de speler uit static/ en drie eindpunten:
     GET    /api/archive                        -> alle eerdere dromen
     GET    /api/spectrum                       -> welk kleurveld elke droom koos
     GET    /api/mijn-gegevens                  -> alles wat we bewaren, als zip
+    GET    /api/webhooklog                     -> wat Stripe aanbood (beheer)
     POST   /api/account-verwijderen            -> alles weg, onomkeerbaar
     DELETE /api/dream/<nr>                     -> een droom en al zijn beelden wissen
     DELETE /api/archive                        -> archief wissen
@@ -203,6 +204,14 @@ class Handler(SimpleHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(blob)
             return
+
+        if self.path == "/api/webhooklog":
+            # Achter de beheerssleutel: hier staat in wat Stripe heeft
+            # aangeboden en wat wij ermee deden. Het kijkglas dat ontbrak.
+            gegeven = (self.headers.get("X-Admin-Token") or "").strip()
+            if not ADMIN_TOKEN or not hmac.compare_digest(gegeven, ADMIN_TOKEN):
+                return self.send_json({"error": "Geen toegang."}, 403)
+            return self.send_json({"log": accounts.webhooklog()})
 
         if self.path == "/api/spectrum":
             return self.send_json(dreamverse.spectrum())
@@ -418,6 +427,7 @@ class Handler(SimpleHTTPRequestHandler):
                     self.read_raw(), self.headers.get("Stripe-Signature") or "")
             except betalen.BetaalError as e:
                 self.log_message("webhook geweigerd: %s", e)
+                accounts.log_webhook("(geweigerd)", str(e))
                 return self.send_json({"error": str(e)}, 400)
             try:
                 wat = betalen.verwerk(gebeurtenis)
@@ -425,8 +435,11 @@ class Handler(SimpleHTTPRequestHandler):
                 # Een 500 laat Stripe het opnieuw proberen, en dat is wat je wilt
                 # als het aan onze kant misging.
                 self.log_message("webhook %s mislukte: %s", gebeurtenis.get("type"), e)
+                accounts.log_webhook(gebeurtenis.get("type") or "?",
+                                     "MISLUKT: {}".format(e))
                 return self.send_json({"error": "niet verwerkt"}, 500)
             self.log_message("webhook %s: %s", gebeurtenis.get("type"), wat)
+            accounts.log_webhook(gebeurtenis.get("type") or "?", wat)
             return self.send_json({"ok": True, "wat": wat})
 
         if self.path == "/api/kopen":

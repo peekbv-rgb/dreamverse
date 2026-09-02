@@ -95,6 +95,13 @@ CREATE TABLE IF NOT EXISTS users (
     gemaakt       TEXT NOT NULL DEFAULT ''
 );
 
+CREATE TABLE IF NOT EXISTS webhooklog (
+    id       INTEGER PRIMARY KEY AUTOINCREMENT,
+    wanneer  TEXT NOT NULL DEFAULT '',
+    soort    TEXT NOT NULL DEFAULT '',
+    uitkomst TEXT NOT NULL DEFAULT ''
+);
+
 CREATE TABLE IF NOT EXISTS betalingen (
     id       TEXT PRIMARY KEY,          -- het gebeurtenis-id van Stripe
     user_id  INTEGER,
@@ -525,6 +532,26 @@ def alles_van(user_id):
         "duidingen": verbeeldingen,
         "betalingen": betalingen,
     }
+
+
+def log_webhook(soort, uitkomst):
+    """Elke aanbieding van Stripe vastleggen, ook de mislukte.
+
+    Zonder dit is een webhook die niet aankomt onzichtbaar: de klant heeft
+    betaald, Stripe zegt dat hij het heeft afgeleverd, en wij weten van niets.
+    Dat kostte een middag zoeken. Nu staat het gewoon in de app.
+    """
+    with _lock:
+        db().execute("INSERT INTO webhooklog (wanneer, soort, uitkomst)"
+                     " VALUES (?, ?, ?)", (nu(), soort[:80], str(uitkomst)[:400]))
+        # Alleen de laatste vijftig; dit is een kijkglas, geen archief.
+        db().execute("DELETE FROM webhooklog WHERE id NOT IN"
+                     " (SELECT id FROM webhooklog ORDER BY id DESC LIMIT 50)")
+
+
+def webhooklog():
+    return [dict(r) for r in db().execute(
+        "SELECT wanneer, soort, uitkomst FROM webhooklog ORDER BY id DESC LIMIT 50")]
 
 
 def aantal_gebruikers():

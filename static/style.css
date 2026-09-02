@@ -1331,3 +1331,24 @@ body.tekstpagina .end a { color: var(--throat); }
 .tegoed b { color: #fff; font-weight: 600; }
 .tegoed i { color: var(--muted); font-style: normal; opacity: .6; }
 .tegoed.op b { color: var(--solar); }
+
+/* Het kijkglas op de webhook. Alleen in beheer. */
+.webhooklog {
+  margin: 0 0 1.2rem; padding: 1rem 1.2rem; border-radius: 14px;
+  background: rgba(13, 7, 26, .92); border: 1px solid rgba(179, 105, 222, .22);
+  font-size: .82rem;
+}
+.webhooklog-kop, .webhooklog-leeg {
+  margin: 0 0 .6rem; font-size: .62rem; font-weight: 600;
+  letter-spacing: .2em; text-transform: uppercase; color: var(--muted);
+}
+.webhooklog-leeg { margin: 0; }
+.webhooklog-rij {
+  display: grid; grid-template-columns: 10.5rem 14rem 1fr; gap: .7rem;
+  padding: .32rem 0; border-top: 1px solid rgba(179, 105, 222, .12);
+  color: #D8CDEA;
+}
+.webhooklog-rij .wl-tijd { color: var(--muted); font-variant-numeric: tabular-nums; }
+.webhooklog-rij .wl-soort { color: #C4AEEE; }
+.webhooklog-rij.mis .wl-uit { color: #F5A08F; }
+@media (max-width: 700px) { .webhooklog-rij { grid-template-columns: 1fr; gap: .1rem; } }
