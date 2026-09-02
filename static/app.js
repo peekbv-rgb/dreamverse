@@ -588,7 +588,7 @@
       var rij = document.createElement("div");
       rij.className = "legenda-rij" + (n ? "" : " stil");
       rij.innerHTML =
-        '<i class="legenda-stip" style="background:' + v.kleur + '"></i>' +
+        '<i class="legenda-stip" style="background:' + v.kleur + ';color:' + v.kleur + '"></i>' +
         '<span class="legenda-naam">' + t(v.naam) + '</span>' +
         '<span class="legenda-sans">' + v.sans + '</span>' +
         '<span class="legenda-thema">' + t(v.thema) + '</span>' +

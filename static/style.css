@@ -1048,24 +1048,39 @@ body::after { opacity: .34; }
 }
 
 .pilaar-wie {
-  margin: 0 0 1rem; font-family: var(--display); font-size: 1.3rem;
-  line-height: 1.3; color: var(--ink);
+  margin: 0 0 .9rem; font-family: var(--display); font-size: 1.45rem;
+  line-height: 1.3; color: #fff;
+  text-shadow: 0 2px 14px rgba(5, 3, 11, .9);
 }
 
+/* De legenda staat op de bewegende achtergrond, en dun grijs op paars leest
+   niet. Dus een eigen paneel eronder en overal een slag zwaarder. */
+.spectrum-legenda {
+  background: rgba(20, 12, 38, .72); backdrop-filter: blur(10px);
+  border: 1px solid rgba(179, 105, 222, .22); border-radius: 14px;
+  padding: .3rem 1.1rem;
+}
 .legenda-rij {
-  display: grid; grid-template-columns: 12px 5.5rem 6.5rem 1fr 3rem;
-  gap: .6rem; align-items: baseline;
-  padding: .45rem 0; border-bottom: 1px solid rgba(179, 105, 222, .12);
-  font-size: .85rem;
+  display: grid; grid-template-columns: 14px 5.8rem 7rem 1fr 3.2rem;
+  gap: .7rem; align-items: baseline;
+  padding: .55rem 0; border-bottom: 1px solid rgba(179, 105, 222, .14);
+  font-size: .92rem;
 }
 .legenda-rij:last-child { border-bottom: 0; }
-.legenda-rij.stil { opacity: .35; }
-.legenda-stip { width: 12px; height: 12px; border-radius: 50%; align-self: center; }
-.legenda-naam { font-weight: 600; color: var(--ink); }
-.legenda-sans { font-family: var(--display); font-style: italic; color: var(--muted); }
-.legenda-thema { color: var(--muted); font-size: .82rem; }
+.legenda-rij.stil { opacity: .45; }
+.legenda-stip {
+  width: 14px; height: 14px; border-radius: 50%; align-self: center;
+  box-shadow: 0 0 10px currentColor;
+}
+.legenda-naam { font-weight: 700; color: #fff; }
+.legenda-sans {
+  font-family: var(--display); font-style: italic; font-size: 1.02rem;
+  color: #CBB8F0;
+}
+.legenda-thema { color: #D8CDEA; font-size: .88rem; line-height: 1.45; }
 .legenda-deel {
-  text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--ink);
+  text-align: right; font-weight: 700; font-size: 1rem;
+  font-variant-numeric: tabular-nums; color: #fff;
 }
 @media (max-width: 620px) {
   .legenda-rij { grid-template-columns: 12px 1fr 3rem; }
