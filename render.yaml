@@ -2,13 +2,25 @@ services:
   - type: web
     name: dreamverse
     runtime: python
-    # Free slaapt na een kwartier, en de eerste bezoeker daarna wacht een halve
-    # tot een hele minuut op een leeg scherm. Prima om te bouwen. Zodra je dit
-    # aan testpersonen stuurt: starter, anders meet je hun geduld in plaats van
-    # je product.
-    plan: free
+    # Starter en niet free: free slaapt na een kwartier, en de eerste bezoeker
+    # daarna wacht een halve tot een hele minuut op een leeg scherm. Met
+    # testpersonen meet je dan hun geduld in plaats van je product.
+    plan: starter
     buildCommand: pip install -r requirements.txt
     startCommand: python server.py
+
+    # DE SCHIJF STAAT BEWUST NIET IN DIT BESTAND.
+    #
+    # Hij is met de hand in het dashboard aangemaakt en gekoppeld op
+    # /opt/render/project/src/data. Zou hier een schijf met een andere naam
+    # staan, dan kan Render bij het synchroniseren besluiten de bestaande te
+    # vervangen - en daar staan de database, de dromen, de panelen en de video's
+    # op. Dat risico is het niet waard.
+    #
+    # Zonder die schijf is alles weg bij elke deploy, inclusief de accounts van
+    # je testpersonen. Haal hem dus nooit weg, en controleer na een verhuizing
+    # of hij er nog hangt.
+
     envVars:
       # Render injecteert PORT zelf. HOST moet de externe interface zijn -
       # loopback antwoordt niets van buiten de container.
@@ -23,9 +35,18 @@ services:
       - key: VERA_MAX_DURATION
         value: "300"
 
+      # E-mailverificatie eisen bij het aanmaken van een account. Uit zolang er
+      # geen SMTP is: een bevestigingsmail die niet aankomt houdt iedereen buiten.
+      - key: VERIFICATIE_NODIG
+        value: "0"
+
+      # ----------------------------------------------------------------- #
       # Alles hieronder zet je met de hand in het Render-dashboard onder
       # Environment. Ze staan hier bewust alleen als naam: sync: false betekent
       # dat Render de waarde bewaart en dat dit bestand hem nooit ziet.
+      # ----------------------------------------------------------------- #
+
+      # Het schrijven, het beeld en de avatar.
       - key: ANTHROPIC_API_KEY
         sync: false
       - key: KLING_API_KEY
@@ -33,16 +54,56 @@ services:
       - key: RUNWAYML_API_SECRET
         sync: false
 
-      # Zet deze twee. Zonder wachtwoord kan iedereen die het adres kent jouw
-      # tegoed bij Kling en Runway opmaken, en dat adres is openbaar bereikbaar.
+      # Pakket en tokensaldo met de hand kunnen zetten. Leeg laten betekent: kan
+      # helemaal niet, en dat is de veilige stand.
+      - key: ADMIN_TOKEN
+        sync: false
+
+      # ----------------------------------------------------------------- #
+      # Afrekenen via Stripe Managed Payments.
+      # ----------------------------------------------------------------- #
+
+      # De geheime sleutel. Sandbox begint met sk_test_, live met sk_live_.
+      - key: STRIPE_SECRET_KEY
+        sync: false
+
+      # Het geheim van de webhook, uit het Stripe-dashboard bij Webhooks. Zonder
+      # dit weigert de server elke melding - je kunt dan wel betalen, maar je
+      # pakket slaat niet om. Dat is de veilige stand: de handtekening is het
+      # enige bewijs dat een betaling echt van Stripe komt.
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+
+      # Waar Stripe de klant naartoe terugstuurt. De https-url van deze service,
+      # zonder schuine streep aan het eind.
+      - key: PUBLIEKE_URL
+        sync: false
+
+      # De prijzen, uit: python betalen.py --setup. Sandbox en live hebben
+      # verschillende id's, dus die van je sandbox werken hier niet als je
+      # overstapt.
+      - key: STRIPE_PRICE_LITE
+        sync: false
+      - key: STRIPE_PRICE_PLUS
+        sync: false
+      - key: STRIPE_PRICE_ULTRA
+        sync: false
+      - key: STRIPE_PRICE_TOKENS20
+        sync: false
+      - key: STRIPE_PRICE_TOKENS40
+        sync: false
+      - key: STRIPE_PRICE_TOKENS100
+        sync: false
+
+      # ----------------------------------------------------------------- #
+      # Basic auth over de hele app. Sinds er accounts zijn hoeft dit niet meer
+      # om je tegoed te beschermen - zonder inloggen komt niemand bij /api of
+      # /panels. Laat ze leeg als je testpersonen uitnodigt: een extra
+      # wachtwoordvenster vóór de inlogpagina kost je mensen.
+      #
+      # Vul ze wél als je de app nog even helemaal dicht wilt houden.
+      # ----------------------------------------------------------------- #
       - key: AUTH_USER
         sync: false
       - key: AUTH_PASSWORD
         sync: false
-
-    # LET OP: het droomarchief, de getekende panelen en de verbruiksmeter staan
-    # als bestanden in data/ op de schijf van de container. Die schijf is weg bij
-    # elke deploy en bij elke keer dat de free-instantie in slaap valt en opnieuw
-    # opstart. Voor jouw eigen test is dat te doen; voor tien testpersonen niet -
-    # dan verliezen zij hun dromen en meet je niets. Daar hoort een schijf
-    # (betaald) of een database bij voordat je mensen uitnodigt.
