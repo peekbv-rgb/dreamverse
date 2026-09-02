@@ -932,7 +932,12 @@ body::after { opacity: .34; }
   font-size: .62rem; font-weight: 600; letter-spacing: .18em;
   text-transform: uppercase; color: var(--muted);
 }
-.kwaliteit-knoppen { display: flex; flex-wrap: wrap; gap: .5rem; }
+/* Rijafstand ruimer dan kolomafstand.
+   Het "in je pakket"-vlaggetje hangt met top: -.55rem boven zijn knop uit. Zolang
+   alles op een regel past valt dat in de marge, maar zodra de rij afbreekt - bij
+   Ultra staan er vijf knoppen - botst het vlaggetje van de tweede regel tegen de
+   knoppen van de eerste. */
+.kwaliteit-knoppen { display: flex; flex-wrap: wrap; gap: 1.1rem .5rem; }
 .kwaliteit {
   display: flex; flex-direction: column; align-items: flex-start; gap: .1rem;
   text-align: left; padding: .55rem .95rem; border-radius: 14px;
