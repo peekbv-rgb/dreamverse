@@ -769,9 +769,23 @@
     var sectie = el("spectrum-section");
     var dromen = sp.dreams || [];
     toonBrilspectrum(sp);
-    // Onder de drie dromen is er niets te zien, alleen ruis.
-    if (dromen.length < 3) { sectie.hidden = true; return; }
+    /* Vanaf de eerste droom.
+     *
+     * Hier stond een drempel van drie, met het argument dat minder alleen ruis
+     * geeft. Dat klopte voor de tijdlijn maar niet voor de pilaar: één droom is
+     * al vijf panelen met vijf gekozen velden, en dat is een echte verdeling.
+     * En de kosten van verbergen zijn hoger dan gedacht - wie hem niet ziet weet
+     * niet dat hij bestaat, en dit is precies het deel waar mensen voor
+     * terugkomen. Een nieuwe tester zag hem de eerste drie ochtenden dus nooit.
+     */
+    if (!dromen.length) { sectie.hidden = true; return; }
     sectie.hidden = false;
+    // Wel eerlijk zijn dat het pas een patroon wordt als er meer nachten zijn.
+    var noot = el("spectrum-noot");
+    if (noot) {
+      noot.hidden = dromen.length >= 3;
+      noot.textContent = t("Nog vroeg: met een paar nachten erbij gaat dit ergens op lijken.");
+    }
 
     var doos = el("spectrum");
     doos.innerHTML = "";

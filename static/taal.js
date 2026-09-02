@@ -158,6 +158,8 @@
     ["Symbolisch", "Symbolic"],
     ["Spiritueel", "Spiritual"],
     ["Door welke bril", "Through which lens"],
+    ["Nog vroeg: met een paar nachten erbij gaat dit ergens op lijken.",
+     "Still early: a few more nights and this starts to mean something."],
     ["zo is deze droom gelezen", "this is how the dream was read"],
     ["zoals je vroeg", "as you asked"],
     ["Ik kies de bril die bij deze droom past, en zeg achteraf welke het werd.",
@@ -373,7 +375,8 @@
                   "#antwoord-uitleg", "#who-voor",
                   // In JavaScript gemaakt en daar al vertaald; een tweede slag
                   // erover zet de brontekst terug.
-                  "#bril-knoppen", "#bril-uitslag", "#brilspectrum"].join(",");
+                  "#bril-knoppen", "#bril-uitslag", "#brilspectrum",
+                  "#spectrum-noot"].join(",");
 
   var TE_VERTALEN = "h1,h2,p,label,span.lbl,span.label,span.tier-name,span.extras-kop," +
                     "span.kwaliteit-kop,span.antwoord-uitleg,button,option,#mode";

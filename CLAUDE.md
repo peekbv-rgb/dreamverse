@@ -194,6 +194,15 @@ en het scheelt direct in de kostprijs per verbeelding.
 
 ## De chakrapilaar
 
+Hij staat op de pagina tussen *Je dromen samen* en *Je droomarchief*, en
+verschijnt **vanaf de eerste droom**. Daar stond eerst een drempel van drie, met
+het argument dat minder alleen ruis geeft. Dat klopte voor de tijdlijn maar niet
+voor de pilaar: één droom is al vijf panelen met vijf gekozen velden, en dat is
+een echte verdeling. De kosten van verbergen bleken hoger — wie hem niet ziet
+weet niet dat hij bestaat, en dit is precies het deel waar mensen voor
+terugkomen. Onder de drie nachten staat er een regel bij dat het nog vroeg is.
+
+
 `static/chakra-pilaar.jpg` is een gegenereerde plaat: zeven lotussen in een
 sterrenveld met de lichtbundel erdoorheen. Zelf zeven lotussen tekenen in SVG
 kwam niet in de buurt, dus is de plaat vast en gaan de gegevens er als laagje
