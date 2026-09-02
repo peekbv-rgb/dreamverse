@@ -53,6 +53,20 @@ def host():
     return os.environ.get("SMTP_HOST", "").strip()
 
 
+def wachtwoord():
+    """Het wachtwoord, met de spaties eruit als het een app-wachtwoord is.
+
+    Google toont een app-wachtwoord in vier groepjes van vier, en iedereen
+    kopieert die spaties mee. Gmail zelf trekt zich er niets van aan, maar andere
+    providers wel - dus hier weghalen, en alleen als het er ook echt een is:
+    zestien tekens na het weghalen. Een wachtwoord met opzettelijke spaties
+    erin blijft heel.
+    """
+    rauw = os.environ.get("SMTP_PASSWORD", "").strip()
+    zonder = rauw.replace(" ", "")
+    return zonder if len(zonder) == 16 and " " in rauw else rauw
+
+
 def enabled():
     """Kan er echt verstuurd worden?
 
@@ -66,7 +80,7 @@ def enabled():
     if not host():
         return False
     if os.environ.get("SMTP_USER", "").strip():
-        return bool(os.environ.get("SMTP_PASSWORD", ""))
+        return bool(wachtwoord())
     return True
 
 
@@ -115,20 +129,20 @@ def verstuur(naar, onderwerp, tekst):
     _waarschuw_afzender()
     poort = int(os.environ.get("SMTP_PORT") or 587)
     gebruiker = os.environ.get("SMTP_USER", "").strip()
-    wachtwoord = os.environ.get("SMTP_PASSWORD", "")
+    geheim = wachtwoord()
     context = ssl.create_default_context()
 
     try:
         if poort == 465:
             with smtplib.SMTP_SSL(host(), poort, timeout=20, context=context) as s:
                 if gebruiker:
-                    s.login(gebruiker, wachtwoord)
+                    s.login(gebruiker, geheim)
                 s.send_message(bericht)
         else:
             with smtplib.SMTP(host(), poort, timeout=20) as s:
                 s.starttls(context=context)
                 if gebruiker:
-                    s.login(gebruiker, wachtwoord)
+                    s.login(gebruiker, geheim)
                 s.send_message(bericht)
         print("mail: verstuurd aan {} ({})".format(naar, onderwerp), flush=True)
         return True
@@ -183,18 +197,13 @@ def main():
     ap.add_argument("--test", metavar="ADRES", help="een proefbericht sturen")
     args = ap.parse_args()
 
-    wachtwoord = os.environ.get("SMTP_PASSWORD", "")
+    geheim = wachtwoord()
     print("SMTP_HOST     : %s" % (host() or "ONTBREEKT"))
     print("SMTP_PORT     : %s" % (os.environ.get("SMTP_PORT") or "587 (standaard)"))
     print("SMTP_USER     : %s" % (os.environ.get("SMTP_USER") or "ONTBREEKT"))
-    print("SMTP_PASSWORD : %s" % ("staat er (%d tekens)" % len(wachtwoord)
-                                  if wachtwoord else "ONTBREEKT"))
+    print("SMTP_PASSWORD : %s" % ("staat er (%d tekens)" % len(geheim)
+                                  if geheim else "ONTBREEKT"))
     print("afzender      : %s" % _van())
-
-    if wachtwoord and len(wachtwoord.replace(" ", "")) == 16 and " " in wachtwoord:
-        print("")
-        print("Let op: er staan spaties in het wachtwoord. Google toont het "
-              "app-wachtwoord met spaties, maar die horen er niet in.")
 
     if not enabled():
         print("")

@@ -259,7 +259,17 @@ draait. Achtergrondthreads raken de gebruikerslaag niet aan: die krijgen hun
 bestandssleutel mee. `accounts.huidige()` **gooit** als er niemand is — liever
 hard stuk dan stil de gegevens van iemand anders aanraken.
 
-**Wachtwoord vergeten werkt, zodra er SMTP is.** `mail.py` gebruikt `smtplib`
+**Wachtwoord vergeten werkt.** Verstuurd via het Gmail-account
+`vera.dreamverse@gmail.com`, met een app-wachtwoord van zestien tekens — je
+gewone Google-wachtwoord wordt geweigerd met `535 Username and Password not
+accepted`, en app-wachtwoorden bestaan alleen als tweestapsverificatie aanstaat.
+De spaties waarmee Google het toont worden in `mail.py` weggehaald.
+
+Een gratis Gmail mag ongeveer 500 berichten per dag en levert slechter af dan
+een eigen domein. Voor tien testpersonen prima; wordt dit een product, dan hoort
+daar een verzenddomein met SPF en DKIM bij — dat is één regel in `.env`.
+
+**Hoe het gebouwd is.** `mail.py` gebruikt `smtplib`
 uit de standaardbibliotheek — geen nieuwe afhankelijkheid. Zonder `SMTP_HOST`
 gaat de herstellink naar de serverlog en zegt de app eerlijk dat versturen
 uitstaat. Twee dingen die daar goed moeten: de melding is **hetzelfde** voor een
