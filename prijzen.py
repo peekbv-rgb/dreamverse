@@ -180,6 +180,44 @@ def tokens(btw=BTW):
     print("Verkoop tokens dus per twintig of meer, nooit per stuk.")
 
 
+def lite(btw=BTW):
+    """Een instappakket tussen gratis en Plus.
+
+    Bij een klein maandbedrag is de vaste $0,50 per transactie het probleem, niet
+    het percentage: op EUR 1,99 is dat 23% van de prijs, elke maand opnieuw. Een
+    jaarbedrag betaalt die vaste kosten één keer in plaats van twaalf keer, en
+    dat is het verschil tussen een dun en een gezond pakket.
+    """
+    print("")
+    print("LITE - een instappakket, per maand tegenover per jaar")
+    print("-" * 78)
+    print("%-30s %8s %8s %9s %8s %7s" %
+          ("", "prijs", "netto", "kostprs", "winst", "marge"))
+    print("-" * 78)
+
+    for prijs in (1.99, 2.99, 3.99):
+        for dromen, rang, naam in ((1, 1, "1x eenvoudig"), (2, 1, "2x eenvoudig"),
+                                   (3, 1, "3x eenvoudig"), (3, 0, "3x duiding")):
+            r = regel("Lite EUR %.2f p/mnd, %s" % (prijs, naam), prijs, dromen, rang, 0, btw)
+            print("%-30s %8.2f %8.2f %9.2f %8.2f %6.0f%%" %
+                  (r["naam"], r["prijs"], r["over"], -r["kost"], r["winst"], r["marge"]))
+        print()
+
+    print("Hetzelfde, maar per jaar afgerekend (vaste kosten één keer):")
+    print("-" * 78)
+    for jaar in (19.99, 24.99, 29.99):
+        for dromen, rang, naam in ((12, 1, "12 dromen eenvoudig"),
+                                   (24, 1, "24 dromen eenvoudig")):
+            r = regel("Lite EUR %.2f p/jaar, %s" % (jaar, naam), jaar, dromen, rang, 0, btw)
+            print("%-30s %8.2f %8.2f %9.2f %8.2f %6.0f%%" %
+                  (r["naam"], r["prijs"], r["over"], -r["kost"], r["winst"], r["marge"]))
+    print("")
+    print("En wat een gratis gebruiker kost bij een kleinere gratis laag:")
+    for dromen, rang, naam in ((3, 1, "3x eenvoudig (nu)"), (1, 1, "1x eenvoudig"),
+                               (1, 2, "1x standaard")):
+        print("  %-22s EUR %.2f per maand" % (naam, kostprijs(dromen, rang)))
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--scan", action="store_true", help="andere prijzen doorrekenen")
@@ -194,6 +232,7 @@ def main():
         scan(btw)
         voorstel(btw)
         tokens(btw)
+        lite(btw)
     return 0
 
 

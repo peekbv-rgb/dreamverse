@@ -91,16 +91,30 @@ DEFAULT_KWALITEIT = "standaard"
 # Tot welke rang je pakket je gratis brengt. Gratis reikt tot en met "eenvoudig":
 # wie voor het eerst binnenkomt moet vijf getekende panelen bij zijn droom zien,
 # anders begrijpt hij het product niet. Bewegend beeld begint bij het abonnement.
-PLAN_RANG = {"gratis": 1, "plus": 2, "ultra": 3}
+PLAN_RANG = {"gratis": 1, "lite": 1, "plus": 2, "ultra": 3}
 
 PLANS = {
     "gratis": {
         "naam": "Gratis",
         "prijs": 0.00,
-        "dromen": 3,            # per maand
-        "panelen": True,        # EUR 0,14 per droom, dus EUR 0,42 werving per maand
+        # Eén droom, niet drie. Gratis is een proefje en geen abonnement: bij drie
+        # dromen kostte een gratis gebruiker EUR 0,42 per maand, en vier van hen
+        # aten één betalende op. Nu EUR 0,14.
+        "dromen": 1,            # per maand
+        "panelen": True,
         "video": "geen",
         "avatar_minuten": 0,    # alleen met tokens
+    },
+    "lite": {
+        "naam": "Lite",
+        # De instap. Bij een klein maandbedrag is de vaste $0,50 transactiekosten
+        # het probleem en niet het percentage: op EUR 1,99 is dat 23% van de
+        # prijs. Op EUR 2,99 met drie dromen blijft er 48% over.
+        "prijs": 2.99,
+        "dromen": 3,
+        "panelen": True,
+        "video": "geen",        # het kernmoment gaat op tokens
+        "avatar_minuten": 0,
     },
     "plus": {
         "naam": "Plus",

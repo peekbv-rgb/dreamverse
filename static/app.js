@@ -1457,7 +1457,7 @@
     html += "<div><b>" + a.plan_naam + "</b><span>" + t("pakket") + "</span></div>";
     html += "<div class='schakel'>";
     if (beheerSleutel()) {
-      ["gratis", "plus", "ultra"].forEach(function (p) {
+      ["gratis", "lite", "plus", "ultra"].forEach(function (p) {
         html += "<button type='button' data-plan='" + p + "' aria-pressed='" +
                 (a.plan === p ? "true" : "false") + "'>" + t(p) + "</button>";
       });

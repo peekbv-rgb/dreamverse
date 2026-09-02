@@ -199,9 +199,16 @@ Dat stuurt alle bestaande id's mee, ruimt de vorige versie op en werkt
 
 | | prijs | dromen/maand | panelen | avatar |
 |---|---|---|---|---|
-| Gratis | € 0 | 3 | ja, vijf getekende panelen | alleen met tokens |
+| Gratis | € 0 | **1** | ja, vijf getekende panelen | alleen met tokens |
+| **Lite** | **€ 2,99** | **3** | ja, vijf getekende panelen | alleen met tokens |
 | Plus | € 7,99 | 6 | ja, plus een bewegend kernmoment | alleen met tokens |
 | Ultra | € 29,99 | 10 | ja, kernmoment op het beste model | 10 minuten inbegrepen |
+
+Gratis geeft **één** droom en geen drie. Bij drie kostte een gratis gebruiker
+€ 0,42 per maand, en vier van hen aten één betalende op; nu is dat € 0,14. Lite
+kost € 2,99 en niet € 1,99, want bij een klein maandbedrag is de vaste $0,50
+transactiekosten het probleem en niet het percentage — op € 1,99 is dat 23% van
+de prijs. Drie dromen bij € 2,99 houdt 48% marge; bij € 1,99 was dat 33%.
 
 Eén token is € 0,25. Een avatarminuut kost 2 tokens (kostprijs € 0,18), een extra
 droom kost er 3. De avatar zit bewust in géén enkel pakket onbeperkt: bij € 4,99
