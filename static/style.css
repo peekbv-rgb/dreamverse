@@ -1556,3 +1556,18 @@ body.tekstpagina .end a { color: var(--throat); }
   .brilstaaf { grid-template-columns: 6.5rem 1fr 1.8rem; gap: .5rem; }
   .brilstaaf-naam { font-size: .78rem; }
 }
+
+/* De wachtstand van "Je dromen samen".
+   Dit is geen lege plek maar een belofte: wie bij een of twee dromen niet weet
+   wat er aankomt, komt op dag vier niet terug. Dus staat er wat er straks komt
+   en hoe ver je bent. */
+.thread.wachtend { border-color: rgba(242, 198, 76, .3); }
+.thread.wachtend .tag {
+  /* .thread is een flexkolom, dus een kind rekt over de hele breedte tenzij je
+     het losmaakt. Dit is een merkje, geen balk. */
+  align-self: flex-start;
+  padding: .18rem .55rem; border-radius: 999px;
+  background: rgba(242, 198, 76, .16); color: var(--solar);
+  border: 1px solid rgba(242, 198, 76, .45);
+}
+.wachtend-kop { margin: .45rem 0 .35rem; color: var(--ink); }

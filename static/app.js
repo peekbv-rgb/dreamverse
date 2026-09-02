@@ -430,10 +430,41 @@
         threadsEl.appendChild(d);
       });
     } else if (!tekst) {
-      el("threads-title").textContent = t("Nog geen patroon");
+      /* Zeggen hoe ver je bent, niet dat er niets is.
+       *
+       * Hier stond "vanaf je tweede of derde droom vormt het web zich" - waar
+       * dan niet uit blijkt wat je zelf moet doen om er te komen. Drie is de
+       * grens: onder de drie is er geen patroon om over te schrijven, en dan
+       * doen alsof er al een lijn is, is niet eerlijk. Dus staat het getal er,
+       * en hoeveel er nog bij moeten.
+       */
+      var over = Math.max(0, 3 - aantalDromen);
+      el("threads-title").textContent = over
+        ? (t("Nog") + " " + over + " " + t(over === 1 ? "nacht tot je Dreamverse" : "nachten tot je Dreamverse"))
+        : t("Nog geen patroon");
       var leeg = document.createElement("div");
-      leeg.className = "thread";
-      leeg.textContent = t("Deze droom staat nog op zichzelf. Vanaf je tweede of derde droom vormt het web zich.");
+      leeg.className = "thread wachtend";
+      if (over) {
+        var kop = document.createElement("p");
+        kop.className = "wachtend-kop";
+        kop.textContent = t("Vanaf drie nachten schrijft Vera de lijn door al je dromen heen:")
+          + " " + t("welke plaatsen, personen en dieren terugkomen, en wat er sindsdien veranderd is.");
+        var teller = document.createElement("span");
+        teller.className = "tag";
+        teller.textContent = aantalDromen + " / 3";
+        leeg.appendChild(teller);
+        leeg.appendChild(kop);
+        // Alleen naar de pilaar wijzen als die er ook staat. Bij nul dromen is
+        // hij verborgen, en wijzen naar iets wat er niet is is erger dan zwijgen.
+        if (aantalDromen) {
+          var nu = document.createElement("p");
+          nu.className = "then";
+          nu.textContent = t("Je chakrapilaar vult zich ondertussen al — die staat hieronder.");
+          leeg.appendChild(nu);
+        }
+      } else {
+        leeg.textContent = t("Deze droom staat nog op zichzelf. Bij de volgende gaan de lijnen zich aftekenen.");
+      }
       threadsEl.appendChild(leeg);
     } else {
       el("threads-title").textContent = t("Je dromen samen");
@@ -993,6 +1024,7 @@
     fetch("/api/archive")
       .then(function (r) { return r.json(); })
       .then(function (d) {
+        aantalDromen = (d.dreams || []).length;
         renderArchive(d.dreams || []);
         vulKeuzelijst(d.dreams || []);
         laadSpectrum();
@@ -1871,6 +1903,10 @@
   // Staat afrekenen aan? Komt uit /api/health. Zonder dit weten de kaarten niet
   // of er een opwaardeerknop bij mag.
   var betalenAan = false;
+
+  // Hoeveel dromen er in het archief staan. De lege stand van "Je dromen samen"
+  // vertelt daarmee hoe ver je bent in plaats van alleen dat er niets is.
+  var aantalDromen = 0;
 
   /* Zit je nú in beheer?
    *
