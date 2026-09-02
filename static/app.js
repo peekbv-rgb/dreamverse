@@ -972,7 +972,9 @@
     mic.addEventListener("click", function () {
       if (listening) { recogniser.stop(); return; }
       recogniser = new Recognition();
-      recogniser.lang = "nl-NL";
+      // Volgde de taal niet: een Engelse gebruiker sprak in en kreeg
+      // Nederlands teruggeschreven, wat als onzin op je scherm belandt.
+      recogniser.lang = taalcode();
       recogniser.continuous = true;
       recogniser.interimResults = true;
 
@@ -1011,6 +1013,154 @@
       recogniser.start();
     });
   }
+
+  /* ------------------------------------------- meeschrijven met het gesprek */
+
+  /* Wat je Vera vertelt, wordt de invoer voor je verbeelding.
+   *
+   * Tot nu toe was een gesprek een doodlopende weg: je vertelde je droom, Vera
+   * duidde hem, en daarna was er niets - geen tekst, geen panelen, geen chakra,
+   * en hij telde ook niet mee in de duiding van alle dromen samen. Precies het
+   * deel waar dit product om gaat.
+   *
+   * Dus schrijft de browser mee terwijl je praat. De herkenning loopt náást de
+   * verbinding met Runway; die stuurt geen tekst terug, dus dit is de enige
+   * plek waar de woorden bestaan.
+   *
+   * Wat er níet gebeurt: hier automatisch een verbeelding van maken. Dat kost
+   * geld en soms tokens, en een verbeelding van een tekst die je nog niet hebt
+   * gezien is een verbeelding die je niet gevraagd hebt. De tekst gaat in de
+   * invoer, jij kijkt hem na, jij klikt.
+   */
+  var gesprekTekst = "";
+  var gesprekLuisteraar = null;
+
+  function taalcode() {
+    return ((profiel && profiel.language) || "nl") === "en" ? "en-US" : "nl-NL";
+  }
+
+  function meeschrijvenStarten() {
+    if (!Recognition) {
+      // Firefox en Safari kunnen dit niet. Dat eerlijk zeggen is beter dan een
+      // gesprek dat stil verdwijnt.
+      meeschrijfMelding(t("Meeschrijven kan alleen in Chrome en Edge."), true);
+      return;
+    }
+    if (listening && recogniser) { try { recogniser.stop(); } catch (e) { /* al gestopt */ } }
+
+    gesprekTekst = "";
+    var r = new Recognition();
+    r.lang = taalcode();
+    r.continuous = true;
+    r.interimResults = false;
+
+    r.onresult = function (e) {
+      for (var i = e.resultIndex; i < e.results.length; i++) {
+        if (e.results[i].isFinal) {
+          gesprekTekst += e.results[i][0].transcript + " ";
+        }
+      }
+      meeschrijfMelding(woordenMelding(gesprekTekst));
+    };
+    r.onerror = function (e) {
+      if (e.error === "no-speech" || e.error === "aborted") { return; }
+      meeschrijfMelding(t("Meeschrijven stopte:") + " " + e.error, true);
+    };
+    r.onend = function () {
+      // De herkenning stopt zichzelf na een stilte. Zolang het gesprek loopt
+      // gaat hij weer aan, anders mis je de tweede helft van je droom.
+      if (gesprekLuisteraar === r && room) {
+        try { r.start(); } catch (e) { /* mag mislukken */ }
+      }
+    };
+
+    gesprekLuisteraar = r;
+    try {
+      r.start();
+      meeschrijfMelding(t("Ik schrijf mee"));
+    } catch (e) {
+      meeschrijfMelding(t("Meeschrijven kwam niet op gang."), true);
+    }
+  }
+
+  function meeschrijvenStoppen() {
+    var r = gesprekLuisteraar;
+    gesprekLuisteraar = null;
+    if (r) { try { r.stop(); } catch (e) { /* al gestopt */ } }
+    var doos = el("call-meeschrijf");
+    if (doos) { doos.hidden = true; }
+  }
+
+  function woordenMelding(tekst) {
+    var n = tekst.trim() ? tekst.trim().split(/\s+/).length : 0;
+    return t("Ik schrijf mee") + " · " + n + " " + t(n === 1 ? "woord" : "woorden");
+  }
+
+  function meeschrijfMelding(tekst, mis) {
+    var doos = el("call-meeschrijf");
+    if (!doos) { return; }
+    doos.hidden = false;
+    doos.className = "call-meeschrijf" + (mis ? " mis" : "");
+    doos.textContent = tekst;
+  }
+
+  /* Na het gesprek: de woorden in de invoer, en zeggen wat er nu kan.
+   *
+   * Niet overschrijven wat er al stond - daar kan een droom in staan die je
+   * net had getypt. Dan komt het eronder.
+   */
+  function gesprekOogsten() {
+    var tekst = gesprekTekst.replace(/\s+/g, " ").trim();
+    gesprekTekst = "";
+    if (tekst.split(/\s+/).length < 4) {
+      // Te weinig om een droom van te maken. Niets in de invoer duwen.
+      return false;
+    }
+    input.value = input.value.trim() ? input.value.trim() + " " + tekst : tekst;
+    gesprekBewaren(input.value);
+    statusEl.className = "status";
+    statusEl.textContent = t("Dit heb ik uit je gesprek opgeschreven. Lees het na — "
+      + "haal eruit wat Vera zei en wat er niet bij hoort. Daarna verbeeldt hij "
+      + "hem, en telt hij mee in je chakra's en in de duiding van alle dromen.");
+    guideLine.textContent = t("Ik heb het opgeschreven. Kijk het na.");
+    input.focus();
+    input.scrollIntoView({ behavior: "smooth", block: "center" });
+    return true;
+  }
+
+  /* Een ingesproken droom overleeft een verse pagina.
+   *
+   * De tekst bestaat alleen in dat ene tekstvak. Een verdwaalde verversing na
+   * een gesprek van vijf minuten kost dan een droom die je net verteld hebt en
+   * niet meer terug kunt halen - en de minuten met Vera waren al afgerekend.
+   * Een uur is de grens: daarna is het geen "net ingesproken" meer.
+   */
+  var GESPREK_OPSLAG = "dreamverse_gesprek";
+
+  function gesprekBewaren(tekst) {
+    try {
+      localStorage.setItem(GESPREK_OPSLAG,
+        JSON.stringify({ tekst: tekst, wanneer: Date.now() }));
+    } catch (e) { /* opslag kan geweigerd zijn; dan is het jammer */ }
+  }
+
+  function gesprekTerughalen() {
+    var rauw = null;
+    try { rauw = localStorage.getItem(GESPREK_OPSLAG); } catch (e) { return; }
+    if (!rauw) { return; }
+    var d = null;
+    try { d = JSON.parse(rauw); } catch (e) { return; }
+    // Eenmalig: hierna staat hij in de invoer en hoort hij daar thuis.
+    try { localStorage.removeItem(GESPREK_OPSLAG); } catch (e) { /* niets */ }
+    if (!d || !d.tekst) { return; }
+    if (Date.now() - (d.wanneer || 0) > 3600000) { return; }
+    if (input.value.trim()) { return; }
+    input.value = d.tekst;
+    statusEl.className = "status";
+    statusEl.textContent = t("Dit stond nog van je gesprek met Vera. Ik heb het bewaard.");
+  }
+
+  gesprekTerughalen();
 
   /* --------------------------------------------------------------- knoppen */
 
@@ -1208,6 +1358,8 @@
   }
 
   function hangup(reason) {
+    // Eerst de woorden veiligstellen: hierna gaat het paneel dicht.
+    meeschrijvenStoppen();
     if (callTimer) { clearInterval(callTimer); callTimer = null; }
     if (room) { try { room.disconnect(); } catch (e) { /* al weg */ } room = null; }
     if (micTrack) { try { micTrack.stop(); } catch (e) { /* al gestopt */ } micTrack = null; }
@@ -1222,6 +1374,9 @@
     el("call").textContent = t("Praat met Vera");
     guide.classList.remove("listening");
     if (reason) { guideLine.textContent = reason; }
+    // Wat je verteld hebt, in de invoer. Dit overschrijft de regel hierboven
+    // alleen als er echt iets te oogsten valt.
+    gesprekOogsten();
   }
 
   /* Afbreken met een melding die blíjft staan, náást de knop.
@@ -1355,6 +1510,8 @@
 
     btn.textContent = t("In gesprek");
     guide.classList.add("listening");
+    // Vanaf hier praat je echt, dus vanaf hier schrijven we mee.
+    meeschrijvenStarten();
     callEnds = Date.now() + (creds.max_duration || 600) * 1000;
     tick();
     callTimer = setInterval(tick, 1000);

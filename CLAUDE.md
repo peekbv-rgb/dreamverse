@@ -151,6 +151,22 @@ en het scheelt direct in de kostprijs per verbeelding.
   nul tokens heeft staat bovenaan en gaat niet zoeken. Dan bestaat opwaarderen
   niet, ook al is het gebouwd. Vandaar `opwaarderen` in de tegoedbalk, *Tokens
   kopen* in de accountkaart, en dezelfde weg vanuit de weigering bij Vera.
+- **Van een gesprek wordt nooit automatisch een verbeelding gemaakt.** De tekst
+  gaat in de invoer en daar stopt het: verbeelden kost geld en soms tokens, en
+  een verbeelding van een tekst die de dromer nog niet gezien heeft is een
+  verbeelding die hij niet gevraagd heeft. Hij leest na, hij kiest de kwaliteit,
+  hij klikt. Daarna loopt de gewone molen: duiding, panelen, chakraveld, en mee
+  in de duiding van alle dromen samen.
+- **Een ingesproken droom overleeft een verse pagina.** De tekst uit een gesprek
+  bestaat alleen in dat ene tekstvak; een verdwaalde verversing kost dan een
+  droom die net verteld is, terwijl de minuten met Vera al zijn afgerekend.
+  Daarom gaat hij ook in `localStorage` (`dreamverse_gesprek`), met een grens van
+  een uur — daarna is het geen "net ingesproken" meer en zou hij een oude tekst
+  in een nieuwe sessie duwen.
+- **Spraakherkenning volgt de taal uit het profiel.** `recogniser.lang` stond
+  hard op `nl-NL`, dus een Engelse gebruiker sprak in en kreeg Nederlandse
+  brij terug. Eén functie `taalcode()` bedient nu het inspreken én het
+  meeschrijven.
 - **Nooit `.env` committen.** `.gitignore` blokkeert ook `.env.*` en `data/`.
 - Basic auth gaat aan zodra `AUTH_USER` én `AUTH_PASSWORD` gevuld zijn. **Twee
   paden staan er altijd buiten**: `/api/stripe/webhook`, want Stripe stuurt geen
@@ -410,8 +426,13 @@ ligt klaar.
 - Twee valkuilen bij Runway-beeldmodellen: `gen4_image_turbo` is beeld-naar-beeld
   en eist een referentieafbeelding, en `muse_image` accepteert alleen zijn eigen
   verhoudingen (breedbeeld is `2016:1152`, niet `1280:720`).
-- Het gesprek levert nog geen droomtekst op. De logische volgende stap: wat Vera
-  hoort wordt de invoer voor de verbeelding, zodat vertellen en krijgen één geheel
-  worden in plaats van twee losse dingen.
+- **Het gesprek levert nu wél droomtekst op**, maar hoe goed is niet gemeten.
+  De browser schrijft mee met `SpeechRecognition` terwijl je met Vera praat, en
+  bij het ophangen gaat die tekst in de invoer. Runway stuurt zelf geen tekst
+  terug, dus dit is de enige plek waar de woorden bestaan. Twee dingen om in de
+  gaten te houden: **Vera's eigen stem kan meekomen** via de speakers (de
+  echo-onderdrukking van de browser vangt het meeste, een koptelefoon vangt de
+  rest), en Firefox en Safari kunnen dit niet — daar zegt de app dat eerlijk.
+  Hoe schoon een gesprek van vijf minuten eruit komt, moet uit gebruik blijken.
 - Voordat er meer gebouwd wordt: tien testpersonen, drie dagen, en kijken wie op
   dag vier uit zichzelf terugkomt. Dat cijfer beslist of dit een bedrijf is.

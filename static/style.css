@@ -1452,3 +1452,22 @@ body.tekstpagina .end a { color: var(--throat); }
 }
 .beheerpoort-knoppen { display: flex; gap: .6rem; align-items: center; }
 .beheerrij.wijs { animation: wijzen 2.4s ease-out 1; }
+
+/* Meeschrijven: te zien dat het gebeurt, zonder het gesprek te storen. */
+.call-meeschrijf {
+  margin-left: .9rem; font-size: .78rem; letter-spacing: .03em;
+  color: rgba(216, 205, 234, .72);
+}
+.call-meeschrijf::before {
+  content: "●"; margin-right: .4rem; color: #F5A08F;
+  animation: meeschrijfpuls 1.8s ease-in-out infinite;
+}
+.call-meeschrijf.mis { color: #F5A08F; }
+.call-meeschrijf.mis::before { animation: none; }
+@keyframes meeschrijfpuls { 0%, 100% { opacity: 1; } 50% { opacity: .25; } }
+@media (prefers-reduced-motion: reduce) {
+  .call-meeschrijf::before { animation: none; }
+}
+@media (max-width: 640px) {
+  .call-meeschrijf { margin-left: .5rem; font-size: .72rem; }
+}
