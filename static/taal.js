@@ -76,6 +76,7 @@
     // -- de duiding --------------------------------------------------------
     ["De duiding", "The reading"],
     ["Waarom nu, wat het zegt, wat eraan zit te komen — en wat je er vandaag mee kunt.", "Why now, what it says, what is coming — and what you can do with it today."],
+    ["Wat je vertelde", "What you told me"],
     ["Waarom je dit droomde", "Why you dreamt this"],
     ["Wat de droom zegt", "What the dream says"],
     ["Wat eraan zit te komen", "What is coming"],

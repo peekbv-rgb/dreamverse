@@ -1120,3 +1120,17 @@ body::after { opacity: .34; }
 .kolom[aria-pressed="true"] .kolom-nr { color: var(--solar); }
 .kolom-nr { font-size: .58rem; color: var(--muted); font-variant-numeric: tabular-nums; }
 .veld { display: block; }
+
+/* De droom zoals hij verteld is, boven de duiding. */
+.verteld {
+  margin-bottom: .4rem; padding: 1.1rem 1.4rem;
+  border-radius: 14px; background: rgba(43, 28, 74, .45);
+  border-left: 3px solid var(--sacral);
+}
+.verteld blockquote {
+  margin: .35rem 0 0; font-family: var(--display); font-size: 1.18rem;
+  line-height: 1.6; color: var(--ink); font-style: italic;
+}
+.verteld-wanneer {
+  margin: .6rem 0 0; font-size: .78rem; color: var(--muted);
+}

@@ -217,6 +217,8 @@ def load_episode(number):
         if d.get("n") == number:
             if d.get("answer"):
                 episode["answer"] = d["answer"]
+            if not episode.get("dream"):
+                episode["dream"] = d.get("text", "")
             episode["when"] = d.get("when", "")
             episode["future_check"] = d.get("future_check", "")
     return episode
@@ -332,6 +334,7 @@ def repair_episode(number):
                             profiel.get("language", "nl"))
     episode["number"] = number
     episode["hersteld"] = True
+    episode["dream"] = bron["text"]
 
     # De panelen die er liggen zijn leidend: de nieuwe verteltekst wordt eroverheen
     # gelegd, zodat tekst en beeld even lang zijn en niets uit de pas loopt.
@@ -771,6 +774,9 @@ def create(dream, kwaliteit=None):
         save_archive(archive)
 
     plans.charge_dream(kosten_tokens + kwaliteit_tokens)
+    # De droom zelf hoort bij de verbeelding: de hele duiding verwijst ernaar,
+    # en zonder die tekst is het bij het terugkijken raden waar het over ging.
+    episode["dream"] = dream
     episode["tokens_charged"] = kosten_tokens + kwaliteit_tokens
     episode["quality"] = kwaliteit or plans.DEFAULT_KWALITEIT
 

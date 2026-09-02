@@ -441,6 +441,22 @@
     });
   });
 
+  var MAANDEN = {
+    nl: ["januari", "februari", "maart", "april", "mei", "juni", "juli",
+         "augustus", "september", "oktober", "november", "december"],
+    en: ["January", "February", "March", "April", "May", "June", "July",
+         "August", "September", "October", "November", "December"]
+  };
+
+  function datumInWoorden(iso) {
+    var d = new Date(iso);
+    if (isNaN(d.getTime())) { return ""; }
+    var m = (MAANDEN[window.TAAL] || MAANDEN.nl)[d.getMonth()];
+    return window.TAAL === "en"
+      ? m + " " + d.getDate() + ", " + d.getFullYear()
+      : d.getDate() + " " + m + " " + d.getFullYear();
+  }
+
   function render(ep) {
     episode = ep;
     panelImages = {};
@@ -490,6 +506,12 @@
     el("antwoord").value = "";
     el("antwoord-uitleg").textContent = t("Dit gaat mee in de duiding van je volgende droom.");
     blok.dataset.dream = ep.number;
+    // De droom zoals hij verteld is, boven de duiding. Alles eronder verwijst
+    // ernaar, en na een maand weet je zelf niet meer wat je hebt ingetypt.
+    el("verteld").textContent = ep.dream || "";
+    el("verteld-blok").hidden = !ep.dream;
+    el("verteld-wanneer").textContent = ep.when ? datumInWoorden(ep.when) : "";
+
     el("why").textContent = ep.why;
     el("meaning").textContent = ep.meaning;
     el("future").textContent = ep.future;
