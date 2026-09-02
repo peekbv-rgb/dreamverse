@@ -1688,7 +1688,7 @@
       html += "<button type='button' data-opwaarderen='1'>" +
               t("Tokens kopen") + "</button>";
     }
-    if (beheerSleutel()) {
+    if (beheerAan) {
       ["gratis", "lite", "plus", "ultra"].forEach(function (p) {
         html += "<button type='button' data-plan='" + p + "' aria-pressed='" +
                 (a.plan === p ? "true" : "false") + "'>" + t(p) + "</button>";
@@ -1739,6 +1739,17 @@
   // of er een opwaardeerknop bij mag.
   var betalenAan = false;
 
+  /* Zit je nú in beheer?
+   *
+   * De sleutel blijft in deze browser staan zodat je hem niet elke keer hoeft te
+   * plakken, maar dat is iets anders dan in beheer zitten. Op de sleutel alleen
+   * bleef de kostenmeter, de webhooklog en de pakketknoppen voorgoed in beeld,
+   * ook als je de app gewoon als dromer opende. Beheer is een stand van dit
+   * paginabezoek: aan met ?beheer achter het adres, weg zodra je de pagina
+   * ververst zonder.
+   */
+  var beheerAan = false;
+
   function beheerSleutel() {
     try { return localStorage.getItem(BEHEER_SLEUTEL) || ""; } catch (e) { return ""; }
   }
@@ -1770,8 +1781,14 @@
    * spoor: geen fout, geen melding, geen venster. Zoiets is in een editor
    * onzichtbaar; `python build/controle.py` zoekt er nu naar.
    */
-  if (/[?&]beheer/.test(location.search) && !beheerSleutel()) {
-    setTimeout(function () { vraagBeheer(); }, 400);
+  if (/[?&]beheer/.test(location.search)) {
+    if (beheerSleutel()) {
+      // Sleutel al bekend: meteen aan, zonder er weer om te vragen.
+      beheerAan = true;
+      history.replaceState(null, "", location.pathname);
+    } else {
+      setTimeout(function () { vraagBeheer(); }, 400);
+    }
   }
 
   /* De beheersleutel vragen met een veld in de pagina.
@@ -1848,6 +1865,7 @@
           return;
         }
         try { localStorage.setItem(BEHEER_SLEUTEL, sleutel); } catch (e2) { /* niets */ }
+        beheerAan = true;
         beheerpoortSluiten();
         laadAccount();
         laadVerbruik();
@@ -1933,7 +1951,7 @@
    */
   function toonMeter() {
     var sectie = el("meter-section");
-    if (sectie) { sectie.hidden = !beheerSleutel(); }
+    if (sectie) { sectie.hidden = !beheerAan; }
   }
 
   /* Pakket en saldo met de hand, in het beheerpaneel.
@@ -1976,7 +1994,9 @@
     var uit = el("beheer-uit");
     if (uit) {
       uit.addEventListener("click", function () {
-        try { localStorage.removeItem(BEHEER_SLEUTEL); } catch (e) { /* niets */ }
+        // Alleen de stand uit. De sleutel blijft, anders moet je hem de volgende
+        // keer weer opzoeken bij Render - en daar was hij nu net voor bewaard.
+        beheerAan = false;
         toonMeter();
         laadWebhooklog();
         laadAccount();
@@ -1996,7 +2016,7 @@
   function laadWebhooklog() {
     var doos = el("webhooklog");
     if (!doos) { return; }
-    if (!beheerSleutel()) { doos.hidden = true; return; }
+    if (!beheerAan) { doos.hidden = true; return; }
     fetch("/api/webhooklog", { headers: { "X-Admin-Token": beheerSleutel() } })
       .then(function (r) { return r.json(); })
       .then(function (d) {
@@ -2024,7 +2044,7 @@
   function laadVerbruik() {
     toonMeter();
     laadWebhooklog();
-    if (!beheerSleutel()) { return; }
+    if (!beheerAan) { return; }
     fetch("/api/usage").then(function (r) { return r.json(); })
       .then(toonVerbruik).catch(function () {});
   }
