@@ -183,6 +183,12 @@ en het scheelt direct in de kostprijs per verbeelding.
   breekt het bestand — en omdat `t()` daaruit komt, staat daarna de héle app
   stil: geen kwaliteitsknoppen, geen brillen, geen pakket. Eén zin in een
   woordenlijst legt dan alles plat, en de pagina zelf laadt gewoon door.
+- **Groen betekent "zit in je pakket", violet betekent "dit heb ik gekozen".**
+  Ze waren allebei groen, en dan zegt een kleur twee dingen tegelijk: bij Ultra
+  stond Supreme groen omdat het inbegrepen is en Standaard groen omdat hij
+  aanstond. Violet is dezelfde kleur als de gekozen bril eronder, dus een keuze
+  ziet er overal hetzelfde uit. Het vlaggetje blijft groen, ook als die knop
+  tegelijk de gekozene is — die twee dingen zijn allebei waar.
 - **Nooit `.env` committen.** `.gitignore` blokkeert ook `.env.*` en `data/`.
 - Basic auth gaat aan zodra `AUTH_USER` én `AUTH_PASSWORD` gevuld zijn. **Twee
   paden staan er altijd buiten**: `/api/stripe/webhook`, want Stripe stuurt geen

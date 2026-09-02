@@ -948,11 +948,17 @@ body::after { opacity: .34; }
   font-weight: 500; font-size: .68rem; letter-spacing: .06em;
   text-transform: uppercase; color: var(--muted);
 }
+/* Gekozen is violet, inbegrepen is groen.
+   Allebei waren ze groen, en dan betekent een kleur twee dingen tegelijk: bij
+   Ultra stond Supreme groen omdat het in je pakket zit en Standaard groen omdat
+   hij aanstond. Violet is dezelfde kleur als de gekozen bril eronder, dus
+   "dit heb ik aangeklikt" ziet er nu overal hetzelfde uit. */
 .kwaliteit[aria-pressed="true"] {
-  border-color: var(--heart); color: var(--heart);
-  box-shadow: 0 0 22px rgba(79, 191, 134, .28);
+  border-color: var(--third-eye); color: var(--ink);
+  background: rgba(110, 98, 218, .22);
+  box-shadow: 0 0 22px rgba(110, 98, 218, .3);
 }
-.kwaliteit[aria-pressed="true"] small { color: var(--heart); }
+.kwaliteit[aria-pressed="true"] small { color: #CFC7F5; }
 .kwaliteit.tekort { border-color: rgba(242, 198, 76, .45); }
 .kwaliteit.tekort small { color: var(--solar); }
 .kwaliteit-melding { margin: 0; font-size: .85rem; color: var(--muted); min-height: 1.2rem; }
@@ -984,6 +990,9 @@ body::after { opacity: .34; }
   font-size: .56rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
 }
 .kwaliteit.beste { border-color: rgba(79, 191, 134, .5); }
+/* Staat de inbegrepen optie ook aan, dan wint de keuzekleur voor de rand maar
+   blijft het vlaggetje groen: die twee dingen zijn allebei waar. */
+.kwaliteit.beste[aria-pressed="true"] { border-color: var(--third-eye); }
 
 /* Het kernmoment in het archief: een regel tekst zegt niet welke nacht dit was,
    dit beeld wel. */
