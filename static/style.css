@@ -1013,45 +1013,7 @@ body::after { opacity: .34; }
   margin: .2rem 0 0; font-family: var(--display); font-size: 1.3rem; line-height: 1.4;
 }
 
-/* ------------------------------------------------------------------------ */
-/* Het spectrum: elke kolom een droom, van kruin naar aarde.                 */
 
-.spectrum {
-  display: flex; align-items: flex-end; gap: .35rem;
-  overflow-x: auto; padding: .4rem .2rem 0;
-}
-.kolom {
-  flex: 1 0 26px; min-width: 26px; max-width: 64px;
-  display: flex; flex-direction: column; align-items: stretch; gap: .35rem;
-  padding: 0; background: none; border: 0; cursor: pointer;
-}
-.kolom .stapel {
-  display: flex; flex-direction: column; height: 148px;
-  border-radius: 8px; overflow: hidden;
-  box-shadow: 0 0 0 1px rgba(179, 105, 222, .2);
-  transition: box-shadow 200ms ease, transform 200ms ease;
-}
-.kolom:hover .stapel { box-shadow: 0 0 0 1px var(--crown), 0 0 20px rgba(179, 105, 222, .35); }
-.kolom:hover { transform: translateY(-2px); }
-.kolom-nr {
-  font-size: .62rem; color: var(--muted); font-variant-numeric: tabular-nums;
-}
-.veld { display: block; }
-.veld.root      { background: #E2554F; }
-.veld.sacral    { background: #F0873C; }
-.veld.solar     { background: #F2C64C; }
-.veld.heart     { background: #4FBF86; }
-.veld.throat    { background: #4A9FE2; }
-.veld.third_eye { background: #6E62DA; }
-.veld.crown     { background: #B369DE; }
-
-.spectrum-legenda {
-  display: flex; flex-wrap: wrap; gap: .4rem .9rem; margin-top: .9rem;
-  font-size: .78rem; color: var(--muted);
-}
-.legenda-item { display: inline-flex; align-items: center; gap: .35rem; }
-.legenda-item i { width: 10px; height: 10px; border-radius: 3px; }
-.legenda-item b { color: var(--ink); font-weight: 600; }
 
 /* Klopte de vooruitblik? Alleen de dromer oordeelt. */
 .oordeel {
@@ -1064,3 +1026,72 @@ body::after { opacity: .34; }
 .oordeel-knop[aria-pressed="true"] {
   border-color: var(--heart); color: var(--heart); background: rgba(79, 191, 134, .12);
 }
+
+/* ------------------------------------------------------------------------ */
+/* Het spectrum: de pilaar, met per droom de velden die opgloeien of doven.  */
+
+.pilaar-wrap {
+  display: grid; grid-template-columns: 230px 1fr; gap: 1.8rem; align-items: start;
+}
+@media (max-width: 700px) { .pilaar-wrap { grid-template-columns: 170px 1fr; gap: 1rem; } }
+
+.pilaar {
+  border-radius: 14px; overflow: hidden; background: #05030B;
+  border: 1px solid rgba(179, 105, 222, .28);
+  box-shadow: 0 0 40px rgba(110, 98, 218, .2);
+}
+.pilaar svg { display: block; width: 100%; height: auto; }
+.pilaar-cijfer {
+  font-family: var(--body); font-size: 31px; font-weight: 600;
+  text-anchor: end; letter-spacing: -.5px;
+  paint-order: stroke; stroke: #05030B; stroke-width: 4px; stroke-linejoin: round;
+}
+
+.pilaar-wie {
+  margin: 0 0 1rem; font-family: var(--display); font-size: 1.3rem;
+  line-height: 1.3; color: var(--ink);
+}
+
+.legenda-rij {
+  display: grid; grid-template-columns: 12px 5.5rem 6.5rem 1fr 3rem;
+  gap: .6rem; align-items: baseline;
+  padding: .45rem 0; border-bottom: 1px solid rgba(179, 105, 222, .12);
+  font-size: .85rem;
+}
+.legenda-rij:last-child { border-bottom: 0; }
+.legenda-rij.stil { opacity: .35; }
+.legenda-stip { width: 12px; height: 12px; border-radius: 50%; align-self: center; }
+.legenda-naam { font-weight: 600; color: var(--ink); }
+.legenda-sans { font-family: var(--display); font-style: italic; color: var(--muted); }
+.legenda-thema { color: var(--muted); font-size: .82rem; }
+.legenda-deel {
+  text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--ink);
+}
+@media (max-width: 620px) {
+  .legenda-rij { grid-template-columns: 12px 1fr 3rem; }
+  .legenda-sans, .legenda-thema { display: none; }
+}
+
+/* De tijdlijn eronder: elke droom een kolom, klikken kiest hem. */
+.tijdlijn { display: flex; align-items: flex-end; gap: .8rem; margin-top: 1.4rem; }
+.tijd-alles { flex: none; padding: .3rem .85rem; font-size: .76rem; }
+.tijd-alles[aria-pressed="true"] { border-color: var(--crown); color: var(--crown); }
+.spectrum { display: flex; align-items: flex-end; gap: .28rem; overflow-x: auto; padding: .3rem 0 0; }
+.kolom {
+  flex: 1 0 20px; min-width: 20px; max-width: 46px;
+  display: flex; flex-direction: column; gap: .28rem;
+  padding: 0; background: none; border: 0; cursor: pointer;
+}
+.kolom .stapel {
+  display: flex; flex-direction: column; height: 48px;
+  border-radius: 5px; overflow: hidden;
+  box-shadow: 0 0 0 1px rgba(179, 105, 222, .2);
+  transition: box-shadow 200ms ease, transform 200ms ease;
+}
+.kolom:hover .stapel { box-shadow: 0 0 0 1px var(--crown), 0 0 14px rgba(179, 105, 222, .35); }
+.kolom[aria-pressed="true"] .stapel {
+  box-shadow: 0 0 0 2px var(--solar), 0 0 18px rgba(242, 198, 76, .4);
+}
+.kolom[aria-pressed="true"] .kolom-nr { color: var(--solar); }
+.kolom-nr { font-size: .58rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.veld { display: block; }

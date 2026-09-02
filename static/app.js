@@ -504,18 +504,126 @@
 
   /* ------------------------------------------------------------- spectrum */
 
-  /* Welk kleurveld je nachten kozen.
+  /* De pilaar.
    *
-   * Het model kiest per paneel het chakra dat bij het gevoel hoort. Over veertig
-   * dromen wordt dat een beeld van waar iemand zich ophoudt, en dat krijg je
-   * nergens anders over jezelf te zien. De gegevens lagen er al.
+   * De tekening is een vaste plaat: zeven lotussen in een sterrenveld, met de
+   * lichtbundel erdoorheen. Zelf zeven lotussen tekenen in SVG kwam niet in de
+   * buurt van wat het moest worden, dus is de plaat gegenereerd en meten we de
+   * hoogtes van de zeven middelpunten er een keer uit.
+   *
+   * Wat er per droom overheen gaat: de velden die weinig voorkwamen doven weg
+   * in het donker, de velden die overheersten blijven fel en krijgen hun
+   * percentage. Zo is dezelfde tekening elke keer een ander beeld.
    */
-  var VELD_NAAM = {
-    root: "aarde", sacral: "verlangen", solar: "wil", heart: "hart",
-    throat: "stem", third_eye: "inzicht", crown: "licht"
-  };
+  var VELDEN = [
+    { key: "root",      kleur: "#E2554F", naam: "aarde",     sans: "Muladhara",    y: 0.848,
+      thema: "veiligheid, grond onder je voeten" },
+    { key: "sacral",    kleur: "#F0873C", naam: "verlangen", sans: "Swadhisthana", y: 0.700,
+      thema: "levenslust, eigenwaarde, genieten" },
+    { key: "solar",     kleur: "#F2C64C", naam: "wil",       sans: "Manipura",     y: 0.570,
+      thema: "kracht, spanning, wat je voortdrijft" },
+    { key: "heart",     kleur: "#4FBF86", naam: "hart",      sans: "Anahata",      y: 0.455,
+      thema: "liefde, verlies, verbinding" },
+    { key: "throat",    kleur: "#4A9FE2", naam: "stem",      sans: "Vishuddha",    y: 0.345,
+      thema: "spreken, zwijgen, gehoord worden" },
+    { key: "third_eye", kleur: "#6E62DA", naam: "inzicht",   sans: "Ajna",         y: 0.235,
+      thema: "zien, weten, een voorgevoel" },
+    { key: "crown",     kleur: "#B369DE", naam: "licht",     sans: "Sahasrara",    y: 0.112,
+      thema: "overgave, deel van iets groters" }
+  ];
+
+  // De plaat is 576 bij 1008; in die maat wordt alles uitgerekend.
+  var PLAAT_B = 576, PLAAT_H = 1008;
+
+  var spectrumData = null;
+  var spectrumKeuze = 0;
+
+  function tekenPilaar(counts) {
+    var totaal = 0, hoogste = 0;
+    VELDEN.forEach(function (v) {
+      var n = counts[v.key] || 0;
+      totaal += n;
+      if (n > hoogste) { hoogste = n; }
+    });
+
+    var svg = '<svg viewBox="0 0 ' + PLAAT_B + ' ' + PLAAT_H + '" role="img" aria-label="' +
+              t("Je chakrapilaar") + '">';
+    svg += '<defs><radialGradient id="doven">' +
+           '<stop offset="0%" stop-color="#05030B" stop-opacity="1"/>' +
+           '<stop offset="60%" stop-color="#05030B" stop-opacity=".92"/>' +
+           '<stop offset="100%" stop-color="#05030B" stop-opacity="0"/>' +
+           '</radialGradient></defs>';
+    svg += '<image href="chakra-pilaar.jpg" x="0" y="0" width="' + PLAAT_B +
+           '" height="' + PLAAT_H + '"/>';
+
+    VELDEN.forEach(function (v) {
+      var n = counts[v.key] || 0;
+      var kracht = hoogste ? n / hoogste : 0;
+      var cy = v.y * PLAAT_H;
+
+      // Wat weinig voorkwam zakt terug in het donker. Nooit helemaal: de pilaar
+      // hoort heel te blijven, ook als een veld dit keer niet meedeed.
+      if (kracht < 0.98) {
+        svg += '<ellipse cx="' + (PLAAT_B / 2) + '" cy="' + cy.toFixed(0) +
+               '" rx="310" ry="84" fill="url(#doven)" opacity="' +
+               ((1 - kracht) * 0.72).toFixed(2) + '"/>';
+      }
+      if (n) {
+        svg += '<text x="' + (PLAAT_B - 20) + '" y="' + (cy + 11).toFixed(0) +
+               '" class="pilaar-cijfer" fill="' + v.kleur + '">' +
+               Math.round(n / totaal * 100) + '%</text>';
+      }
+    });
+    return svg + "</svg>";
+  }
+
+  function tekenLegenda(counts) {
+    var totaal = 0;
+    VELDEN.forEach(function (v) { totaal += counts[v.key] || 0; });
+    var doos = el("spectrum-legenda");
+    doos.innerHTML = "";
+    // Van boven naar beneden, zoals de pilaar staat: kruin eerst.
+    VELDEN.slice().reverse().forEach(function (v) {
+      var n = counts[v.key] || 0;
+      var rij = document.createElement("div");
+      rij.className = "legenda-rij" + (n ? "" : " stil");
+      rij.innerHTML =
+        '<i class="legenda-stip" style="background:' + v.kleur + '"></i>' +
+        '<span class="legenda-naam">' + t(v.naam) + '</span>' +
+        '<span class="legenda-sans">' + v.sans + '</span>' +
+        '<span class="legenda-thema">' + t(v.thema) + '</span>' +
+        '<span class="legenda-deel">' + (totaal ? Math.round(n / totaal * 100) + "%" : "0%") + '</span>';
+      doos.appendChild(rij);
+    });
+  }
+
+  function kiesSpectrum(nummer) {
+    if (!spectrumData) { return; }
+    spectrumKeuze = nummer || 0;
+    var counts, wie;
+    if (spectrumKeuze) {
+      var gekozen = (spectrumData.dreams || []).filter(function (x) {
+        return x.n === spectrumKeuze;
+      })[0];
+      if (!gekozen) { return; }
+      counts = gekozen.counts || {};
+      wie = t("Droom") + " " + gekozen.n + (gekozen.title ? " — " + gekozen.title : "");
+    } else {
+      counts = spectrumData.total || {};
+      wie = t("Alle dromen samen") + " — " + (spectrumData.dreams || []).length + " " + t("nachten");
+    }
+    el("pilaar-wie").textContent = wie;
+    el("pilaar").innerHTML = tekenPilaar(counts);
+    tekenLegenda(counts);
+    document.querySelectorAll(".kolom").forEach(function (k) {
+      k.setAttribute("aria-pressed",
+        parseInt(k.dataset.dream, 10) === spectrumKeuze ? "true" : "false");
+    });
+    el("tijd-alles").setAttribute("aria-pressed", spectrumKeuze ? "false" : "true");
+  }
 
   function toonSpectrum(sp) {
+    spectrumData = sp;
     var sectie = el("spectrum-section");
     var dromen = sp.dreams || [];
     // Onder de drie dromen is er niets te zien, alleen ruis.
@@ -528,17 +636,18 @@
       var kolom = document.createElement("button");
       kolom.type = "button";
       kolom.className = "kolom";
-      kolom.title = "Droom " + d.n + (d.title ? " — " + d.title : "");
+      kolom.dataset.dream = d.n;
+      kolom.title = t("Droom") + " " + d.n + (d.title ? " — " + d.title : "");
       kolom.setAttribute("aria-label", kolom.title);
 
       var stapel = document.createElement("div");
       stapel.className = "stapel";
-      // Van kruin naar aarde, zodat de kolom als een lichaam leest.
-      (sp.palettes || []).slice().reverse().forEach(function (veld) {
-        var n = (d.counts || {})[veld] || 0;
+      VELDEN.slice().reverse().forEach(function (v) {
+        var n = (d.counts || {})[v.key] || 0;
         if (!n) { return; }
         var blok = document.createElement("span");
-        blok.className = "veld " + veld;
+        blok.className = "veld";
+        blok.style.background = v.kleur;
         blok.style.flexGrow = n;
         stapel.appendChild(blok);
       });
@@ -547,24 +656,17 @@
       nummer.textContent = d.n;
       kolom.appendChild(stapel);
       kolom.appendChild(nummer);
-      kolom.addEventListener("click", function () { herbekijk(d.n); });
+      kolom.addEventListener("click", function () { kiesSpectrum(d.n); });
       doos.appendChild(kolom);
     });
 
-    var legenda = el("spectrum-legenda");
-    legenda.innerHTML = "";
-    var totaal = sp.total || {};
-    var samen = 0;
-    (sp.palettes || []).forEach(function (v) { samen += totaal[v] || 0; });
-    (sp.palettes || []).forEach(function (veld) {
-      var n = totaal[veld] || 0;
-      if (!n) { return; }
-      var merk = document.createElement("span");
-      merk.className = "legenda-item";
-      merk.innerHTML = '<i class="veld ' + veld + '"></i>' + t(VELD_NAAM[veld]) +
-                       " <b>" + Math.round(n / samen * 100) + "%</b>";
-      legenda.appendChild(merk);
-    });
+    // Bij het herladen dezelfde keuze terug, zodat een taalwissel je niet
+    // terugzet naar het totaal.
+    kiesSpectrum(spectrumKeuze);
+  }
+
+  if (el("tijd-alles")) {
+    el("tijd-alles").addEventListener("click", function () { kiesSpectrum(0); });
   }
 
   function laadSpectrum() {

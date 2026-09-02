@@ -46,6 +46,7 @@ Geen framework — dat houdt de deploy op één bestand, net als de andere proje
 | Id's van gekoppelde documenten (**niet weggooien**) | `build/document-ids.json` |
 | HTTP en routes | `server.py` |
 | Speler, invoer, spraak | `static/` |
+| De chakrapilaar, vaste plaat | `static/chakra-pilaar.jpg` |
 | Tweede taal (Amerikaans Engels) | `static/taal.js` |
 | Persona van de gids | `persona/vera.txt` |
 | Vera's welkomstboodschap, bronnen | `bronnen/vera/` (met `LEESMIJ.md`) |
@@ -102,6 +103,18 @@ en het scheelt direct in de kostprijs per verbeelding.
   kijker ziet die keuze terug in de kleur van het beeld.
 - **Nooit `.env` committen.** `.gitignore` blokkeert ook `.env.*` en `data/`.
 - Basic auth gaat aan zodra `AUTH_USER` én `AUTH_PASSWORD` gevuld zijn.
+
+## De chakrapilaar
+
+`static/chakra-pilaar.jpg` is een gegenereerde plaat: zeven lotussen in een
+sterrenveld met de lichtbundel erdoorheen. Zelf zeven lotussen tekenen in SVG
+kwam niet in de buurt, dus is de plaat vast en gaan de gegevens er als laagje
+overheen: velden die weinig voorkwamen doven weg, velden die overheersten
+blijven fel en krijgen hun percentage.
+
+De zeven middelpunten zijn een keer uitgemeten en staan als `y` in `VELDEN` in
+`static/app.js`, als fractie van de hoogte. **Vervang je de plaat, meet ze dan
+opnieuw** — anders vallen de cijfers en de dovers naast de lotussen.
 
 ## Twee talen
 
