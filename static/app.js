@@ -1605,26 +1605,119 @@
       .catch(function () { laadAccount(); });
   }
 
-  // Beheer aanzetten met ?beheer achter het adres. Eén keer, daarna onthoudt
-  // deze browser de sleutel.
-  if (/[?&]beheer/.test(location.search) && !beheerSleutel()) {
+  /* Beheer aanzetten met ?beheer achter het adres.
+   *
+   * Hier stond een letterlijk backspace-teken in de reguliere expressie: een
+   * woordgrens die als stuurteken is weggeschreven in plaats van als tekst.
+   * Daardoor matchte hij nooit en gebeurde er bij ?beheer niets, zonder enig
+   * spoor: geen fout, geen melding, geen venster. Zoiets is in een editor
+   * onzichtbaar; `python build/controle.py` zoekt er nu naar.
+   */
+  if (/[?&]beheer/.test(location.search) && !beheerSleutel()) {
     setTimeout(function () { vraagBeheer(); }, 400);
   }
 
+  /* De beheersleutel vragen met een veld in de pagina.
+   *
+   * Dit was een window.prompt, en die kwam op Render niet. Chrome onderdrukt zo
+   * een dialoog zodra het tabblad de focus niet heeft of de bezoeker ooit "geen
+   * dialoogvensters meer" heeft aangevinkt - en dan is beheer onbereikbaar
+   * zonder dat er iets te zien is. Een kaart in de pagina heeft dat probleem
+   * niet, ligt boven het introvenster, en werkt op een telefoon.
+   */
   function vraagBeheer() {
-    var sleutel = (window.prompt(t("Beheerderssleutel (ADMIN_TOKEN uit .env)")) || "").trim();
-    if (!sleutel) { return; }
-    fetch("/api/account", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "X-Admin-Token": sleutel },
-      body: JSON.stringify({})
-    }).then(function (r) {
-      if (!r.ok) { window.alert(t("Die sleutel wordt niet geaccepteerd.")); return; }
-      try { localStorage.setItem(BEHEER_SLEUTEL, sleutel); } catch (e) { /* niets */ }
-      laadAccount();
-      laadVerbruik();
+    var poort = el("beheerpoort");
+    if (!poort) { return; }
+    el("beheerpoort-fout").hidden = true;
+    el("beheerpoort-sleutel").value = "";
+    poort.hidden = false;
+    setTimeout(function () { el("beheerpoort-sleutel").focus(); }, 60);
+  }
+
+  function beheerpoortSluiten() {
+    if (el("beheerpoort")) { el("beheerpoort").hidden = true; }
+    // Het adres schoon achterlaten, ook als je afhaakt: anders vraagt elke
+    // verversing het opnieuw.
+    if (/[?&]beheer/.test(location.search)) {
       history.replaceState(null, "", location.pathname);
-    }).catch(function () { window.alert(t("Die sleutel wordt niet geaccepteerd.")); });
+    }
+  }
+
+  if (el("beheerpoort")) {
+    el("beheerpoort-weg").addEventListener("click", beheerpoortSluiten);
+    el("beheerpoort-oog").addEventListener("click", function () {
+      var veld = el("beheerpoort-sleutel");
+      var open = veld.type === "text";
+      veld.type = open ? "password" : "text";
+      this.textContent = open ? t("laat zien") : t("verberg");
+      veld.focus();
+    });
+    el("beheerpoort").addEventListener("click", function (e) {
+      if (e.target === this) { beheerpoortSluiten(); }
+    });
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && !el("beheerpoort").hidden) { beheerpoortSluiten(); }
+    });
+    el("beheerpoort-form").addEventListener("submit", function (e) {
+      e.preventDefault();
+      var sleutel = el("beheerpoort-sleutel").value.trim();
+      var fout = el("beheerpoort-fout");
+      var door = el("beheerpoort-door");
+      if (!sleutel) { el("beheerpoort-sleutel").focus(); return; }
+      fout.hidden = true;
+      door.disabled = true;
+      door.textContent = t("Bezig…");
+      fetch("/api/account", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Admin-Token": sleutel },
+        body: JSON.stringify({})
+      }).then(function (r) {
+        door.disabled = false;
+        door.textContent = t("Aanzetten");
+        if (r.status === 403) {
+          // Twee verschillende oorzaken, en het scheelt een middag zoeken om te
+          // weten welke van de twee het is.
+          return r.json().catch(function () { return {}; }).then(function (d) {
+            fout.textContent = /staat uit/.test(d.error || "")
+              ? t("ADMIN_TOKEN staat niet in de omgeving van de server. Zonder die "
+                  + "sleutel kan beheer helemaal niet - dat is de veilige stand.")
+              : t("Die sleutel wordt niet geaccepteerd.");
+            fout.hidden = false;
+          });
+        }
+        if (!r.ok) {
+          fout.textContent = t("Die sleutel wordt niet geaccepteerd.");
+          fout.hidden = false;
+          return;
+        }
+        try { localStorage.setItem(BEHEER_SLEUTEL, sleutel); } catch (e2) { /* niets */ }
+        beheerpoortSluiten();
+        laadAccount();
+        laadVerbruik();
+        naarBeheerrij();
+      }).catch(function () {
+        door.disabled = false;
+        door.textContent = t("Aanzetten");
+        fout.textContent = t("De server antwoordde niet. Probeer het nog eens.");
+        fout.hidden = false;
+      });
+    });
+  }
+
+  /* Na het aanzetten meteen laten zien waar de knoppen staan.
+   *
+   * Zonder dit verschijnt er ergens onderaan de pagina een sectie die je niet
+   * ziet, en lijkt het alsof de sleutel niets deed.
+   */
+  function naarBeheerrij() {
+    setTimeout(function () {
+      var doel = el("beheerrij");
+      var sectie = el("meter-section");
+      if (!doel || !sectie || sectie.hidden) { return; }
+      doel.scrollIntoView({ behavior: "smooth", block: "center" });
+      doel.classList.add("wijs");
+      setTimeout(function () { doel.classList.remove("wijs"); }, 2400);
+    }, 250);
   }
 
   function laadAccount() {
@@ -1923,6 +2016,16 @@
   // anders de taalfunctie aanroept, en valt ze zichzelf in de rede.
   var begroetIn = "";
 
+  /* Welke poging is de jongste?
+   *
+   * Twee aanroepen kort na elkaar vechten om dezelfde videospeler. De oudste
+   * krijgt van de browser een afgebroken play() terug, en die belandde in de
+   * catch hieronder - die zette de speler op stil en zette een nieuwe wachter,
+   * dus midden in de jongere begroeting. Met een rondenummer weet een poging of
+   * hij nog de actuele is.
+   */
+  var begroetingRonde = 0;
+
   function begroetingSpelen(geforceerd) {
     if (!introVideo) { return; }
     // Kom je terug van een aankoop, dan begint ze niet. Anders praat ze door in
@@ -1941,12 +2044,16 @@
     } else {
       introVideo.currentTime = 0;
     }
+    var ronde = ++begroetingRonde;
     var poging = introVideo.play();
     if (!poging || !poging.then) { return; }
     poging.then(function () {
+      if (ronde !== begroetingRonde) { return; }
       introVideo.dataset.gehoord = "ja";
       zetKnop("dempen");
     }).catch(function () {
+      // Achterhaald: er loopt al een nieuwere begroeting. Die niet stilzetten.
+      if (ronde !== begroetingRonde) { return; }
       // De browser wil nog geen geluid voordat je iets hebt aangeklikt; dat is
       // een regel van de browser en daar komt geen enkele app omheen. Dan liever
       // de stille staart dan een pratende Vera die je niet hoort - en zodra je
@@ -1963,7 +2070,17 @@
     if (aanrakingWacht) { return; }
     aanrakingWacht = true;
     var soorten = ["pointerdown", "keydown", "touchstart"];
-    var alsnog = function () {
+    var alsnog = function (e) {
+      // Een klik op een taalvlag of op de geluidsknop niet opeten.
+      //
+      // Zo'n klik was tot nu toe twee dingen tegelijk: deze wachter startte de
+      // begroeting in de taal van daarvoor, en de knop zelf startte hem in de
+      // nieuwe. Dan hoorde je Vera twee keer, in twee talen, op één speler.
+      // Die knoppen regelen hun eigen begroeting; hier alleen doorlaten.
+      var doel = e && e.target && e.target.closest
+        ? e.target.closest(".vlag, .geluid-aan")
+        : null;
+      if (doel) { return; }
       soorten.forEach(function (n) { document.removeEventListener(n, alsnog, true); });
       aanrakingWacht = false;
       // Niet als de introductie al weg is: dan wil je geen stem uit het niets.

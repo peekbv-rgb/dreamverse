@@ -1421,3 +1421,34 @@ body.tekstpagina .end a { color: var(--throat); }
 @media (prefers-reduced-motion: reduce) {
   .tokenpakketten.wijs { animation: none; box-shadow: 0 0 0 3px rgba(242, 198, 76, .55); }
 }
+
+/* De beheerkaart ligt boven alles, ook boven het introvenster van Vera (90).
+   Dat is het hele punt: de prompt die hier stond lag eronder. */
+.beheerpoort {
+  position: fixed; inset: 0; z-index: 140;
+  display: flex; align-items: center; justify-content: center; padding: 1.5rem;
+  background: rgba(6, 4, 14, .78); backdrop-filter: blur(6px);
+}
+.beheerpoort-kaart {
+  width: 100%; max-width: 26rem; padding: 1.6rem 1.7rem;
+  background: rgba(16, 11, 30, .97);
+  border: 1px solid rgba(216, 205, 234, .22); border-radius: 14px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, .6);
+}
+.beheerpoort-kaart h2 {
+  margin: 0 0 .5rem; font-size: 1.3rem; color: var(--ink); text-shadow: none;
+}
+.beheerpoort-kaart p {
+  margin: 0 0 1rem; font-size: .85rem; line-height: 1.55;
+  color: rgba(216, 205, 234, .78);
+}
+.beheerpoort-kaart code {
+  padding: .05rem .3rem; font-size: .82rem;
+  background: rgba(255, 255, 255, .08); border-radius: 4px;
+}
+.beheerpoort-kaart .ww-veld { margin-bottom: .8rem; }
+.beheerpoort-fout {
+  margin: 0 0 .8rem !important; color: #F5A08F !important; font-size: .82rem;
+}
+.beheerpoort-knoppen { display: flex; gap: .6rem; align-items: center; }
+.beheerrij.wijs { animation: wijzen 2.4s ease-out 1; }

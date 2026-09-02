@@ -59,6 +59,31 @@
 </div>
 
 <!-- Vera's introductie: het eerste wat je ziet als je de app opent -->
+<!-- Beheer: één veld in de pagina, geen window.prompt.
+     Een prompt werd door Chrome onderdrukt zodra het tabblad de focus niet had,
+     en lag onder het introvenster van Vera. Onvindbaar, en dan bestaat beheer
+     niet. Dit ligt boven alles en werkt ook op een telefoon. -->
+<div class="beheerpoort" id="beheerpoort" hidden>
+  <div class="beheerpoort-kaart">
+    <h2>Beheer</h2>
+    <p>Vul je <code>ADMIN_TOKEN</code> in. Die staat bij Render onder
+      <em>Environment</em>. Hij blijft daarna in deze browser staan.</p>
+    <form id="beheerpoort-form" autocomplete="off">
+      <div class="ww-veld">
+        <input type="password" id="beheerpoort-sleutel" autocomplete="off"
+               spellcheck="false" placeholder="ADMIN_TOKEN">
+        <button type="button" class="ww-oog" id="beheerpoort-oog"
+                aria-label="Sleutel laten zien">laat zien</button>
+      </div>
+      <p class="beheerpoort-fout" id="beheerpoort-fout" hidden></p>
+      <div class="beheerpoort-knoppen">
+        <button type="submit" class="primary" id="beheerpoort-door">Aanzetten</button>
+        <button type="button" class="ghost" id="beheerpoort-weg">Laat maar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <div class="intro" id="intro" hidden>
   <div class="intro-kaart">
     <div class="intro-speler">
