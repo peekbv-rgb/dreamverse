@@ -218,6 +218,38 @@ def lite(btw=BTW):
         print("  %-22s EUR %.2f per maand" % (naam, kostprijs(dromen, rang)))
 
 
+def vera(btw=BTW):
+    """Wat kost het om een paar minuten met Vera in een pakket te doen?
+
+    Een avatarminuut kost EUR 0,18. Dat lijkt weinig, maar bij Lite is de netto
+    opbrengst EUR 1,86 per maand - dan is elke minuut tien procent van je marge.
+
+    Er is wel een sterk argument om er iets in te doen: niemand koopt tokens voor
+    iets wat hij nooit heeft meegemaakt. Een paar minuten weggeven is geen
+    verlies maar een proefrit.
+    """
+    print("")
+    print("VERA IN HET PAKKET - wat kosten de inbegrepen minuten?")
+    print("-" * 76)
+    print("%-34s %8s %8s %8s %7s" % ("", "netto", "kostprs", "winst", "marge"))
+    print("-" * 76)
+
+    gevallen = [
+        ("Lite 2,99 - 3x eenvoudig", 2.99, 3, 1),
+        ("Plus 7,99 - 6x eenvoudig", 7.99, 6, 1),
+        ("Plus 7,99 - 6x standaard", 7.99, 6, 2),
+        ("Ultra 29,99 - 10x standaard", 29.99, 10, 2),
+    ]
+    for naam, prijs, dromen, rang in gevallen:
+        for minuten in (0, 1, 2, 5, 10):
+            r = regel("%s + %d min" % (naam, minuten), prijs, dromen, rang, minuten, btw)
+            print("%-34s %8.2f %8.2f %8.2f %6.0f%%" %
+                  (r["naam"], r["over"], -r["kost"], r["winst"], r["marge"]))
+        print()
+    print("Een avatarminuut kost EUR 0,18 en levert op tokens EUR 0,34 op.")
+    print("Weggeven kost dus echt geld; het is een wervingsuitgave, geen extraatje.")
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--scan", action="store_true", help="andere prijzen doorrekenen")
@@ -233,6 +265,7 @@ def main():
         voorstel(btw)
         tokens(btw)
         lite(btw)
+        vera(btw)
     return 0
 
 

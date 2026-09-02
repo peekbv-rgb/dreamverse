@@ -198,8 +198,10 @@
     ["Vera is niet aangesloten", "Vera is not connected"],
 
     // -- de pakketten ------------------------------------------------------
-    ["Vera als avatar", "Vera as an avatar"],
-    ["De betaalde laag: je vertelt je droom niet aan een invulveld maar aan een gezicht.", "The paid layer: you tell your dream to a face instead of a text box."],
+    ["Wat je kunt kiezen", "What you can choose"],
+    ["Gratis om te proeven, en drie pakketten die je maandelijks opzegt.",
+     "Free to get a taste, and three plans you can cancel monthly."],
+
     ["Gratis · €0", "Free · €0"],
     ["Eén droom om te proeven, met de volledige duiding en vijf getekende panelen. Geen video, en Vera spreek je alleen met tokens.",
      "One dream to get a taste, with the full reading and five drawn panels. No video, and you speak to Vera only with tokens."],
