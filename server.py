@@ -15,6 +15,7 @@ Serveert de speler uit static/ en drie eindpunten:
     POST   /api/vera/session                   -> WebRTC-gegevens voor een gesprek
     DELETE /api/vera/session/<id>              -> gesprek afsluiten
     GET    /api/archive                        -> alle eerdere dromen
+    DELETE /api/dream/<nr>                     -> een droom en al zijn beelden wissen
     DELETE /api/archive                        -> archief wissen
 
 Geen framework: de standaardbibliotheek doet dit prima en het houdt de deploy
@@ -100,7 +101,7 @@ class Handler(SimpleHTTPRequestHandler):
         if not self.guard():
             return
         if self.path == "/api/profile":
-            return self.send_json(dreamverse.load_profile())
+            return self.send_json(dreamverse.public_profile())
         if self.path == "/api/usage":
             return self.send_json(usage.summary())
         if self.path == "/api/account":
@@ -169,7 +170,7 @@ class Handler(SimpleHTTPRequestHandler):
 
         if self.path == "/api/profile":
             payload = self.read_json() or {}
-            return self.send_json(dreamverse.set_name(payload.get("name", "")))
+            return self.send_json(dreamverse.set_profile(payload))
 
         if self.path == "/api/extra":
             # Losse aankopen: het kernmoment op het beste model, of de hele
@@ -248,6 +249,16 @@ class Handler(SimpleHTTPRequestHandler):
     def do_DELETE(self):
         if not self.guard():
             return
+        if self.path.startswith("/api/dream/"):
+            try:
+                nummer = int(self.path.rsplit("/", 1)[1])
+            except ValueError:
+                return self.send_json({"error": "Onbekende droom."}, 400)
+            try:
+                return self.send_json(dreamverse.delete_dream(nummer))
+            except dreamverse.DreamverseError as e:
+                return self.send_json({"error": str(e)}, 404)
+
         if self.path.startswith("/api/vera/session/"):
             session_id = self.path.rsplit("/", 1)[1]
             # Alleen de vorm controleren; Runway weigert onbekende ids zelf.

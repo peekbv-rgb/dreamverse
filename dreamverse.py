@@ -114,13 +114,64 @@ def save_profile(profile):
     tmp.replace(PROFILE)
 
 
-def set_name(name):
-    name = (name or "").strip()[:60]
+GESLACHTEN = ("man", "vrouw", "beide", "onbekend")
+TALEN = ("nl", "en")
+
+
+def leeftijd_uit(geboortedatum):
+    """Leeftijd in hele jaren, of None als de datum niet klopt."""
+    try:
+        jaar, maand, dag = (int(x) for x in str(geboortedatum).split("-"))
+        vandaag = date.today()
+        jaren = vandaag.year - jaar - ((vandaag.month, vandaag.day) < (maand, dag))
+        return jaren if 0 <= jaren <= 120 else None
+    except (ValueError, AttributeError, TypeError):
+        return None
+
+
+def set_profile(velden):
+    """Naam, geboortedatum, geslacht en taal bewaren.
+
+    De leeftijd wordt afgeleid uit de geboortedatum en niet los opgeslagen: dan
+    klopt hij volgend jaar nog. Onder de achttien mag er niets gekocht worden
+    zonder dat een ouder of voogd het heeft bevestigd.
+    """
     with _lock:
         profile = load_profile()
-        profile["name"] = name
+        if "name" in velden:
+            profile["name"] = (velden.get("name") or "").strip()[:60]
+        if "birthdate" in velden:
+            datum = (velden.get("birthdate") or "").strip()[:10]
+            profile["birthdate"] = datum
+        if "gender" in velden:
+            g = velden.get("gender")
+            profile["gender"] = g if g in GESLACHTEN else "onbekend"
+        if "language" in velden:
+            t = velden.get("language")
+            profile["language"] = t if t in TALEN else "nl"
+        if "guardian_ok" in velden:
+            profile["guardian_ok"] = bool(velden.get("guardian_ok"))
         save_profile(profile)
-    return profile
+    return public_profile()
+
+
+def public_profile():
+    """Het profiel zoals de app het mag zien, met de leeftijd erbij gerekend."""
+    profile = load_profile()
+    leeftijd = leeftijd_uit(profile.get("birthdate"))
+    return {
+        "name": profile.get("name", ""),
+        "birthdate": profile.get("birthdate", ""),
+        "age": leeftijd,
+        "minor": leeftijd is not None and leeftijd < 18,
+        "guardian_ok": bool(profile.get("guardian_ok")),
+        "gender": profile.get("gender", "onbekend"),
+        "language": profile.get("language", "nl"),
+    }
+
+
+def set_name(name):
+    return set_profile({"name": name})
 
 
 def save_episode(number, episode):
@@ -185,6 +236,26 @@ def answer_question(number, answer):
                 save_archive(archive)
                 return d
     raise DreamverseError("Die droom staat niet in je archief.")
+
+
+def delete_dream(number):
+    """Een droom weghalen: uit het archief, de bewaarde aflevering en de beelden.
+
+    Alles weg betekent hier ook echt alles. Iemand die zijn droom wist verwacht
+    niet dat de panelen ervan nog op de schijf staan.
+    """
+    with _lock:
+        archive = load_archive()
+        over = [d for d in archive if d.get("n") != number]
+        if len(over) == len(archive):
+            raise DreamverseError("Die droom staat niet in je archief.")
+        save_archive(over)
+
+    (EPISODES / "{}.json".format(number)).unlink(missing_ok=True)
+    for pad in kling.PANELS.glob("{}-*".format(number)):
+        pad.unlink(missing_ok=True)
+    (kling.PANELS / "{}.json".format(number)).unlink(missing_ok=True)
+    return {"deleted": number, "over": len(over)}
 
 
 def clear_archive():

@@ -13,6 +13,55 @@
 
 <canvas id="achtergrond" aria-hidden="true"></canvas>
 
+<!-- Vera's introductie: het eerste wat je ziet als je de app opent -->
+<div class="intro" id="intro" hidden>
+  <div class="intro-kaart">
+    <video id="intro-video" src="vera-intro.mp4" playsinline autoplay controls></video>
+    <p class="intro-tekst" id="intro-tekst">
+      Hi, ik ben Vera, de digitale droom-annalist. Wil je je droom met mij delen?
+    </p>
+
+    <div class="intro-velden" id="intro-velden">
+      <div class="veld">
+        <label for="i-naam" data-i18n="naam">Hoe heet je?</label>
+        <input type="text" id="i-naam" maxlength="60" autocomplete="given-name">
+      </div>
+      <div class="veld">
+        <label for="i-geboorte" data-i18n="geboorte">Geboortedatum</label>
+        <input type="date" id="i-geboorte" max="2026-09-02">
+      </div>
+      <div class="veld">
+        <label for="i-geslacht" data-i18n="geslacht">Geslacht</label>
+        <select id="i-geslacht">
+          <option value="man">man</option>
+          <option value="vrouw">vrouw</option>
+          <option value="beide">beide</option>
+          <option value="onbekend" selected>zeg ik liever niet</option>
+        </select>
+      </div>
+      <div class="veld">
+        <span class="label" data-i18n="taal">Taal</span>
+        <div class="vlaggen">
+          <button type="button" class="vlag" data-taal="nl" aria-pressed="false">
+            <span aria-hidden="true">🇳🇱</span> Nederlands
+          </button>
+          <button type="button" class="vlag" data-taal="en" aria-pressed="false">
+            <span aria-hidden="true">🇺🇸</span> English
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <p class="minderjarig" id="minderjarig" hidden></p>
+
+    <div class="row">
+      <button type="button" class="primary" id="intro-start" data-i18n="beginnen">Deel je droom</button>
+      <span class="spacer"></span>
+      <button type="button" class="ghost" id="intro-later" data-i18n="overslaan">Later invullen</button>
+    </div>
+  </div>
+</div>
+
 <div class="wrap">
 
   <header class="top">

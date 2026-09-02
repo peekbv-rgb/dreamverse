@@ -379,7 +379,22 @@
       row.className = "entry";
       var no = document.createElement("span"); no.className = "no"; no.textContent = "Droom " + d.n;
       var txt = document.createElement("span"); txt.className = "txt"; txt.textContent = d.title || d.text;
-      row.appendChild(no); row.appendChild(txt);
+      var weg = document.createElement("button");
+      weg.type = "button";
+      weg.className = "wis";
+      weg.title = "Deze droom verwijderen";
+      weg.setAttribute("aria-label", "Droom " + d.n + " verwijderen");
+      weg.textContent = "×";
+      weg.addEventListener("click", function (e) {
+        e.stopPropagation();
+        if (!window.confirm("Droom " + d.n + " verwijderen? De panelen en de video gaan mee.")) { return; }
+        fetch("/api/dream/" + d.n, { method: "DELETE" })
+          .then(function (r) { return r.json(); })
+          .then(function () { loadArchive(); laadVerbruik(); laadAccount(); })
+          .catch(function () {});
+      });
+
+      row.appendChild(no); row.appendChild(txt); row.appendChild(weg);
       row.tabIndex = 0;
       row.title = "Terugkijken";
       row.addEventListener("click", function () { herbekijk(d.n); });
@@ -900,9 +915,97 @@
       .then(toonVerbruik).catch(function () {});
   }
 
+  /* ------------------------------------------------- introductie en profiel */
+
+  var profiel = { language: "nl" };
+
+  function toonMinderjarig(p) {
+    var blok = el("minderjarig");
+    if (!p.minor) { blok.hidden = true; return; }
+    blok.hidden = false;
+    blok.innerHTML = p.language === "en"
+      ? "<strong>You are under 18.</strong> You can use Dreamverse, but ask a parent " +
+        "or guardian before buying anything in the app — subscriptions, tokens or video."
+      : "<strong>Je bent onder de achttien.</strong> Je mag Dreamverse gewoon gebruiken, " +
+        "maar vraag eerst toestemming aan je ouder of voogd voordat je iets koopt — " +
+        "een abonnement, tokens of video.";
+  }
+
+  function zetVlaggen(taal) {
+    document.querySelectorAll(".vlag").forEach(function (b) {
+      b.setAttribute("aria-pressed", b.dataset.taal === taal ? "true" : "false");
+    });
+    document.documentElement.lang = taal;
+  }
+
+  function bewaarProfiel(extra) {
+    var body = {
+      name: el("i-naam").value.trim(),
+      birthdate: el("i-geboorte").value,
+      gender: el("i-geslacht").value,
+      language: profiel.language
+    };
+    Object.keys(extra || {}).forEach(function (k) { body[k] = extra[k]; });
+    return fetch("/api/profile", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    }).then(function (r) { return r.json(); }).then(function (p) {
+      profiel = p;
+      toonMinderjarig(p);
+      zetVlaggen(p.language);
+      if (p.name) { naamVeld.value = p.name; }
+      return p;
+    });
+  }
+
+  // Taal raden uit de browser als er nog niets gekozen is. Amerikaans-Engels
+  // is de standaard; Nederlands alleen als de browser dat zegt.
+  function geradenTaal() {
+    var t = (navigator.language || "en").toLowerCase();
+    return t.indexOf("nl") === 0 ? "nl" : "en";
+  }
+
+  document.querySelectorAll(".vlag").forEach(function (b) {
+    b.addEventListener("click", function () {
+      profiel.language = b.dataset.taal;
+      zetVlaggen(profiel.language);
+      bewaarProfiel();
+    });
+  });
+
+  el("i-geboorte").addEventListener("change", function () { bewaarProfiel(); });
+
+  el("intro-start").addEventListener("click", function () {
+    bewaarProfiel().then(function () {
+      el("intro").hidden = true;
+      try { el("intro-video").pause(); } catch (e) { /* al gestopt */ }
+      el("dream").focus();
+    });
+  });
+  el("intro-later").addEventListener("click", function () {
+    el("intro").hidden = true;
+    try { el("intro-video").pause(); } catch (e) { /* al gestopt */ }
+  });
+
+  function toonIntro() {
+    fetch("/api/profile").then(function (r) { return r.json(); }).then(function (p) {
+      profiel = p;
+      if (!p.language) { profiel.language = geradenTaal(); }
+      el("i-naam").value = p.name || "";
+      el("i-geboorte").value = p.birthdate || "";
+      el("i-geslacht").value = p.gender || "onbekend";
+      zetVlaggen(profiel.language);
+      toonMinderjarig(p);
+      if (p.name) { naamVeld.value = p.name; }
+      el("intro").hidden = false;
+    }).catch(function () { el("intro").hidden = false; });
+  }
+
   /* --------------------------------------------------------------- starten */
 
   setupMic();
+  toonIntro();
   loadArchive();
   laadVerbruik();
   laadAccount();

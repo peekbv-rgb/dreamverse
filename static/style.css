@@ -754,3 +754,77 @@ body::after { opacity: .34; }
   55%, 100% { transform: rotate(180deg); }
 }
 @media (prefers-reduced-motion: reduce) { .voortgang .zandloper { animation: none; } }
+
+/* ------------------------------------------------------------------------ */
+/* Vera's introductie: het scherm dat je bij openen ziet.                     */
+
+.intro {
+  position: fixed; inset: 0; z-index: 50;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(6, 4, 13, .82); backdrop-filter: blur(10px);
+  padding: 1.2rem; overflow-y: auto;
+}
+.intro[hidden] { display: none !important; }
+
+.intro-kaart {
+  width: min(38rem, 100%); display: flex; flex-direction: column; gap: 1rem;
+  background: rgba(16, 9, 32, .92); backdrop-filter: blur(18px);
+  border: 1px solid transparent; border-radius: 22px; padding: 1.4rem;
+  background-image:
+    linear-gradient(rgba(16,9,32,.92), rgba(16,9,32,.92)),
+    linear-gradient(100deg, var(--crown), var(--throat) 35%, var(--heart) 60%, var(--solar) 85%, var(--sacral));
+  background-origin: border-box; background-clip: padding-box, border-box;
+  box-shadow: 0 0 70px rgba(179, 105, 222, .3);
+  max-height: 94vh; overflow-y: auto;
+}
+.intro-kaart video {
+  width: 100%; border-radius: 16px; display: block; background: #06040D;
+  aspect-ratio: 16 / 9; object-fit: cover;
+}
+.intro-tekst {
+  margin: 0; font-family: var(--display); font-weight: 300;
+  font-size: 1.45rem; line-height: 1.4; text-align: center; color: var(--ink);
+}
+
+.intro-velden { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; }
+.intro-velden .veld { display: flex; flex-direction: column; gap: .3rem; }
+.intro-velden .veld:last-child { grid-column: 1 / -1; }
+.intro-velden label, .intro-velden .label {
+  font-size: .62rem; font-weight: 600; letter-spacing: .18em;
+  text-transform: uppercase; color: var(--muted);
+}
+.intro-velden input, .intro-velden select {
+  background: rgba(10, 7, 20, .7); color: var(--ink);
+  border: 1px solid var(--line); border-radius: 12px;
+  padding: .5rem .8rem; font-family: var(--body); font-size: .95rem; width: 100%;
+}
+.intro-velden input:focus-visible, .intro-velden select:focus-visible {
+  outline: 2px solid var(--crown); outline-offset: 2px;
+}
+
+.vlaggen { display: flex; gap: .5rem; }
+.vlag { font-size: .9rem; padding: .45rem 1rem; }
+.vlag[aria-pressed="true"] {
+  border-color: var(--heart); color: var(--heart);
+  box-shadow: 0 0 20px rgba(79, 191, 134, .3);
+}
+
+.minderjarig {
+  margin: 0; font-size: .92rem; line-height: 1.5;
+  background: rgba(60, 30, 20, .7); border: 1px solid rgba(255, 146, 60, .55);
+  border-radius: 14px; padding: .85rem 1rem; color: #FFE0C4;
+}
+.minderjarig strong { color: var(--sacral); }
+
+@media (max-width: 640px) {
+  .intro-velden { grid-template-columns: 1fr; }
+  .intro-tekst { font-size: 1.2rem; }
+}
+
+/* Een droom weggooien */
+.archive .entry .wis {
+  margin-left: .4rem; flex: none; padding: .1rem .55rem; font-size: 1rem; line-height: 1;
+  background: transparent; border-color: rgba(226, 85, 79, .35); color: var(--muted);
+}
+.archive .entry .wis:hover { border-color: var(--root); color: var(--root); box-shadow: none; }
+.archive .entry::after { margin-left: auto; }
