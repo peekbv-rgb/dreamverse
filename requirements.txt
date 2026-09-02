@@ -3,3 +3,4 @@
 anthropic>=1.2.0
 python-dotenv>=1.2.3
 runwayml>=5.14.0
+stripe>=15.6.0

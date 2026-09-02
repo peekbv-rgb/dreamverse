@@ -95,6 +95,16 @@ CREATE TABLE IF NOT EXISTS users (
     gemaakt       TEXT NOT NULL DEFAULT ''
 );
 
+CREATE TABLE IF NOT EXISTS betalingen (
+    id       TEXT PRIMARY KEY,          -- het gebeurtenis-id van Stripe
+    user_id  INTEGER,
+    soort    TEXT NOT NULL DEFAULT '',
+    bedrag   INTEGER NOT NULL DEFAULT 0,
+    munt     TEXT NOT NULL DEFAULT 'eur',
+    wanneer  TEXT NOT NULL DEFAULT '',
+    ruw      TEXT NOT NULL DEFAULT ''
+);
+
 CREATE TABLE IF NOT EXISTS sessies (
     token   TEXT PRIMARY KEY,
     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -138,8 +148,27 @@ def db():
     verbinding.execute("PRAGMA foreign_keys=ON")
     verbinding.execute("PRAGMA busy_timeout=20000")
     verbinding.executescript(SCHEMA)
+    _migreer(verbinding)
     _lokaal.db = verbinding
     return verbinding
+
+
+# Kolommen die er later bij kwamen. CREATE TABLE IF NOT EXISTS raakt een
+# bestaande tabel niet aan, dus die moeten er los bij - anders staat een
+# database die al draait ineens een kolom tekort.
+LATERE_KOLOMMEN = (
+    ("users", "stripe_klant", "TEXT NOT NULL DEFAULT ''"),
+    ("users", "stripe_abo", "TEXT NOT NULL DEFAULT ''"),
+    ("users", "pakket_tot", "TEXT NOT NULL DEFAULT ''"),
+)
+
+
+def _migreer(verbinding):
+    for tabel, kolom, soort in LATERE_KOLOMMEN:
+        bestaat = any(r["name"] == kolom for r in
+                      verbinding.execute("PRAGMA table_info({})".format(tabel)))
+        if not bestaat:
+            verbinding.execute("ALTER TABLE {} ADD COLUMN {} {}".format(tabel, kolom, soort))
 
 
 # --------------------------------------------------------------------------- #
@@ -360,9 +389,52 @@ def tel_op(user_id, dromen=0, avatar_sec=0, tokens=0):
             (dromen, avatar_sec, tokens, user_id))
 
 
-def zet_pakket(user_id, pakket):
+def zet_pakket(user_id, pakket, tot="", abo=None):
+    """Het pakket zetten, en waar het vandaan komt.
+
+    `tot` is de datum waarop het afloopt als er niet opnieuw betaald wordt. Leeg
+    betekent: gezet met de hand, loopt niet af.
+    """
     with _lock:
-        db().execute("UPDATE users SET pakket = ? WHERE id = ?", (pakket, user_id))
+        if abo is None:
+            db().execute("UPDATE users SET pakket = ?, pakket_tot = ? WHERE id = ?",
+                         (pakket, tot, user_id))
+        else:
+            db().execute("UPDATE users SET pakket = ?, pakket_tot = ?, stripe_abo = ?"
+                         " WHERE id = ?", (pakket, tot, abo, user_id))
+
+
+def zet_stripe_klant(user_id, klant_id):
+    with _lock:
+        db().execute("UPDATE users SET stripe_klant = ? WHERE id = ?", (klant_id, user_id))
+
+
+def bij_stripe_klant(klant_id):
+    rij = db().execute("SELECT * FROM users WHERE stripe_klant = ?", (klant_id,)).fetchone()
+    return dict(rij) if rij else None
+
+
+def bij_stripe_abo(abo_id):
+    rij = db().execute("SELECT * FROM users WHERE stripe_abo = ?", (abo_id,)).fetchone()
+    return dict(rij) if rij else None
+
+
+def al_verwerkt(gebeurtenis_id):
+    """Is deze gebeurtenis van Stripe al eens langsgekomen?
+
+    Stripe stuurt een webhook opnieuw als hij geen 200 terugkrijgt, en soms
+    twee keer zonder aanleiding. Zonder deze controle krijgt iemand zijn tokens
+    dubbel - of, erger, een terugboeking wordt twee keer verwerkt.
+    """
+    return db().execute("SELECT 1 FROM betalingen WHERE id = ?",
+                        (gebeurtenis_id,)).fetchone() is not None
+
+
+def boek_betaling(gebeurtenis_id, user_id, soort, bedrag, munt, ruw=""):
+    with _lock:
+        db().execute("INSERT OR IGNORE INTO betalingen (id, user_id, soort, bedrag,"
+                     " munt, wanneer, ruw) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                     (gebeurtenis_id, user_id, soort, bedrag, munt, nu(), ruw[:2000]))
 
 
 def aantal_gebruikers():

@@ -14,6 +14,9 @@ Serveert de speler uit static/ en drie eindpunten:
     POST   /api/episode/<nr>/herstel           -> de duiding opnieuw schrijven bij oude panelen
     POST   /api/dream/<nr>/vooruitblik         -> de dromer zegt of de vooruitblik uitkwam
     GET    /api/panels/<nr>                    -> de stand van het tekenwerk
+    POST   /api/kopen        {"soort", "welk"}  -> betaal-url van Stripe
+    POST   /api/portaal                        -> Stripe-pagina om op te zeggen
+    POST   /api/stripe/webhook                 -> Stripe meldt een betaling
     POST   /api/vera/session                   -> WebRTC-gegevens voor een gesprek
     DELETE /api/vera/session/<id>              -> gesprek afsluiten
     GET    /api/archive                        -> alle eerdere dromen
@@ -36,6 +39,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 import accounts
+import betalen
 import dreamverse
 import kling
 import vera
@@ -84,7 +88,7 @@ def auth_ok(header):
 # introductiefilmpje, en de twee eindpunten die je nodig hebt om in te loggen.
 # Al het andere hoort bij iemand.
 VRIJ = ("/api/health", "/api/registreren", "/api/inloggen", "/api/uitloggen",
-        "/api/bevestigen")
+        "/api/bevestigen", "/api/stripe/webhook")
 
 
 class Handler(SimpleHTTPRequestHandler):
@@ -146,6 +150,15 @@ class Handler(SimpleHTTPRequestHandler):
         self.send_json({"error": "Log eerst in.", "login": True}, 401)
         return False
 
+    def read_raw(self):
+        """De onbewerkte body. De webhook van Stripe heeft die letterlijk nodig:
+        de handtekening gaat over precies deze bytes, dus parsen en opnieuw
+        samenstellen maakt hem ongeldig."""
+        length = int(self.headers.get("Content-Length") or 0)
+        if length <= 0 or length > MAX_BODY:
+            return b""
+        return self.rfile.read(length)
+
     def read_json(self):
         length = int(self.headers.get("Content-Length") or 0)
         if length <= 0 or length > MAX_BODY:
@@ -180,6 +193,7 @@ class Handler(SimpleHTTPRequestHandler):
                 "key": dreamverse.credentials_available(),
                 "kling": kling.enabled(),
                 "vera": vera.enabled(),
+                "betalen": betalen.enabled(),
             })
         if self.path.startswith("/api/episode/"):
             # Terugkijken kost niets: de tekst staat op schijf en de beelden ook.
@@ -324,6 +338,53 @@ class Handler(SimpleHTTPRequestHandler):
             except accounts.AccountError as e:
                 return self.send_json({"error": str(e)}, 400)
             return self.send_json({"ok": True}, cookie=self.sessie_cookie(token))
+
+        if self.path == "/api/stripe/webhook":
+            # Geen sessie: Stripe belt aan zonder cookie. De handtekening is hier
+            # het enige bewijs, en zonder die controle kan iedereen die dit adres
+            # kent zichzelf Ultra geven.
+            try:
+                gebeurtenis = betalen.lees_gebeurtenis(
+                    self.read_raw(), self.headers.get("Stripe-Signature") or "")
+            except betalen.BetaalError as e:
+                self.log_message("webhook geweigerd: %s", e)
+                return self.send_json({"error": str(e)}, 400)
+            try:
+                wat = betalen.verwerk(gebeurtenis)
+            except Exception as e:
+                # Een 500 laat Stripe het opnieuw proberen, en dat is wat je wilt
+                # als het aan onze kant misging.
+                self.log_message("webhook %s mislukte: %s", gebeurtenis.get("type"), e)
+                return self.send_json({"error": "niet verwerkt"}, 500)
+            self.log_message("webhook %s: %s", gebeurtenis.get("type"), wat)
+            return self.send_json({"ok": True, "wat": wat})
+
+        if self.path == "/api/kopen":
+            payload = self.read_json() or {}
+            soort = payload.get("soort")
+            welk = payload.get("welk") or ""
+            try:
+                if soort == "pakket":
+                    url = betalen.koop_pakket(self.gebruiker, welk)
+                elif soort == "tokens":
+                    url = betalen.koop_tokens(self.gebruiker, welk)
+                else:
+                    return self.send_json({"error": "Onbekende aankoop."}, 400)
+            except betalen.BetaalError as e:
+                return self.send_json({"error": str(e)}, 400)
+            except Exception as e:
+                self.log_message("afrekenen mislukte: %s", e)
+                return self.send_json({"error": "Afrekenen lukte niet."}, 502)
+            return self.send_json({"url": url})
+
+        if self.path == "/api/portaal":
+            try:
+                return self.send_json({"url": betalen.portaal(self.gebruiker)})
+            except betalen.BetaalError as e:
+                return self.send_json({"error": str(e)}, 400)
+            except Exception as e:
+                self.log_message("portaal mislukte: %s", e)
+                return self.send_json({"error": "Dat lukte niet."}, 502)
 
         if self.path == "/api/profile":
             payload = self.read_json() or {}
