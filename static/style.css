@@ -1180,7 +1180,14 @@ body::after { opacity: .34; }
   -webkit-background-clip: text; background-clip: text;
   color: transparent; -webkit-text-fill-color: transparent;
 }
-.poort-sub { margin: .7rem 0 1.5rem; color: #D8CDEA; font-size: .92rem; line-height: 1.55; }
+/* De belofte staat boven de uitleg: die zegt waaróm je hier bent, en de uitleg
+   pas wat er gebeurt. Andersom gelezen wordt het een handleiding. */
+.poort-belofte {
+  margin: .9rem 0 .8rem;
+  font-family: var(--display); font-size: 1.35rem; line-height: 1.35;
+  color: #fff;
+}
+.poort-sub { margin: 0 0 1.5rem; color: #C9BCDF; font-size: .88rem; line-height: 1.55; }
 
 .poort-tabs { display: flex; gap: .4rem; margin-bottom: 1.3rem; }
 .poort-tabs button { flex: 1; font-size: .84rem; padding: .5rem .6rem; }

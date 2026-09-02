@@ -190,6 +190,8 @@
     ["Wachtwoord", "Password"],
     ["Minstens acht tekens.", "At least eight characters."],
     ["Dreamverse", "Dreamverse"],
+    ["Vannacht is één droom.<br>Na honderd nachten ontstaat jouw Dreamverse.",
+     "Tonight is one dream.<br>After a hundred nights your Dreamverse takes shape."],
     ["Je vertelt je droom; je krijgt een verbeelding met een duiding en een vooruitblik. Elke eerdere droom telt mee.",
      "You tell your dream; you get an imagining with a reading and a look ahead. Every earlier dream counts."],
     ["Beheerderssleutel (ADMIN_TOKEN uit .env)", "Admin key (ADMIN_TOKEN from .env)"],
