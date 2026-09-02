@@ -217,7 +217,8 @@
 
     // -- verbruik ----------------------------------------------------------
     ["Wat dit kost", "What this costs"],
-    ["Meten voordat je prijst. Alles wat geld kost wordt hier geteld — geen limieten, geen betaling.", "Measure before you price. Everything that costs money is counted here — no limits, no payment."],
+    ["Wat het maken van deze dromen jou gekost heeft. Alleen zichtbaar in beheer.",
+     "What making these dreams cost you. Only visible in admin mode."],
     ["Nog niets gemeten.", "Nothing measured yet."],
 
     // -- los te koop -------------------------------------------------------

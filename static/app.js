@@ -1533,6 +1533,7 @@
       if (!r.ok) { window.alert(t("Die sleutel wordt niet geaccepteerd.")); return; }
       try { localStorage.setItem(BEHEER_SLEUTEL, sleutel); } catch (e) { /* niets */ }
       laadAccount();
+      laadVerbruik();
     }).catch(function () { window.alert(t("Die sleutel wordt niet geaccepteerd.")); });
   }
 
@@ -1583,7 +1584,21 @@
     m.innerHTML = html;
   }
 
+  /* De kostenmeter is voor jou, niet voor de bezoeker.
+   *
+   * Daar staat de kostprijs in - wat een droom ons kost aan tekst, beeld en
+   * stem. Dat is precies wat een klant niet hoort te zien. Weggooien is zonde,
+   * want zonder die cijfers weet je niet of je prijs klopt; dus achter dezelfde
+   * beheersleutel als de pakketknoppen.
+   */
+  function toonMeter() {
+    var sectie = el("meter-section");
+    if (sectie) { sectie.hidden = !beheerSleutel(); }
+  }
+
   function laadVerbruik() {
+    toonMeter();
+    if (!beheerSleutel()) { return; }
     fetch("/api/usage").then(function (r) { return r.json(); })
       .then(toonVerbruik).catch(function () {});
   }
