@@ -359,7 +359,8 @@ class Handler(SimpleHTTPRequestHandler):
                     # een wachtwoord kan wijzigen.
                     mail.herstelbericht(gebruiker["email"],
                                         "{}/herstel.html?code={}".format(
-                                            betalen.basis_url(), code))
+                                            betalen.basis_url(), code),
+                                        gebruiker["taal"])
                 return self.send_json({"ok": True, "melding":
                     "Het versturen van e-mail staat nog niet aan. Vraag de "
                     "beheerder om een nieuwe link."})
@@ -368,7 +369,8 @@ class Handler(SimpleHTTPRequestHandler):
             if gebruiker and code:
                 mail.herstelbericht(gebruiker["email"],
                                     "{}/herstel.html?code={}".format(
-                                        betalen.basis_url(), code))
+                                        betalen.basis_url(), code),
+                                    gebruiker["taal"])
             return self.send_json({"ok": True, "melding":
                 "Als dit adres bij een account hoort, staat er een link in je "
                 "mail. Kijk ook in je spam."})

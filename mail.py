@@ -54,7 +54,20 @@ def host():
 
 
 def enabled():
-    return bool(host())
+    """Kan er echt verstuurd worden?
+
+    Niet alleen kijken of er een server staat. Met een host maar zonder
+    wachtwoord mislukt elke poging, en dan zegt de app "kijk in je mail" terwijl
+    er niets is verstuurd. Dat is erger dan eerlijk zeggen dat het uitstaat.
+
+    Een server zonder inloggegevens bestaat wel (een relay in je eigen netwerk),
+    dus alleen als er een gebruiker is ingesteld hoort er ook een wachtwoord bij.
+    """
+    if not host():
+        return False
+    if os.environ.get("SMTP_USER", "").strip():
+        return bool(os.environ.get("SMTP_PASSWORD", ""))
+    return True
 
 
 def _van():
@@ -130,16 +143,35 @@ def verstuur(naar, onderwerp, tekst):
         return False
 
 
-def herstelbericht(naar, link):
-    return verstuur(
-        naar,
+HERSTEL = {
+    "nl": (
         "Een nieuw wachtwoord voor Dreamverse",
         "Je hebt gevraagd om een nieuw wachtwoord voor Dreamverse.\n\n"
         "Open deze link om er een te kiezen:\n\n"
-        "{}\n\n"
-        "De link werkt een uur en daarna niet meer. Heb je dit niet gevraagd, dan\n"
-        "hoef je niets te doen: je huidige wachtwoord blijft gewoon werken.\n".format(link),
-    )
+        "{link}\n\n"
+        "De link werkt een uur en daarna niet meer. Heb je dit niet gevraagd,\n"
+        "dan hoef je niets te doen: je huidige wachtwoord blijft gewoon werken.\n"
+    ),
+    "en": (
+        "A new password for Dreamverse",
+        "You asked for a new password for Dreamverse.\n\n"
+        "Open this link to choose one:\n\n"
+        "{link}\n\n"
+        "The link works for one hour and then stops working. If you did not ask\n"
+        "for this, you can ignore it: your current password keeps working.\n"
+    ),
+}
+
+
+def herstelbericht(naar, link, taal="nl"):
+    """De herstelmail, in de taal die de gebruiker in de app gekozen heeft.
+
+    Iemand die de app in het Engels gebruikt en dan een Nederlandse mail krijgt,
+    vertrouwt die mail niet - en bij een wachtwoordmail is vertrouwen precies
+    waar het om gaat.
+    """
+    onderwerp, tekst = HERSTEL.get(taal, HERSTEL["nl"])
+    return verstuur(naar, onderwerp, tekst.format(link=link))
 
 
 def main():
