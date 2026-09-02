@@ -219,7 +219,7 @@
     ["Ik heb niets opgevangen. Probeer het nog eens.", "I caught nothing. Try again."],
     ["Bezig met aanvragen…", "Requesting…"],
     ["Dat lukte niet.", "That did not work."],
-    ["Onderweg. Je ziet de voortgang hieronder meelopen.", "On its way. You can follow the progress below."],
+    ["Onderweg. De zandloper onderin loopt mee.", "On its way. The hourglass at the bottom keeps you posted."],
     ["Bewaard. Vera weet dit bij je volgende droom.", "Saved. Vera will know this at your next dream."],
     ["Bewaren lukte niet. Probeer het nog eens.", "Saving did not work. Try again."],
     ["Archief gewist.", "Archive cleared."],

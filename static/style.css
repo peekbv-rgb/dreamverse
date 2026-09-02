@@ -739,13 +739,18 @@ body::after { opacity: .34; }
 }
 .kies-droom .extras-melding { width: 100%; }
 
-/* De zandloper: wat er nu gemaakt wordt. */
+/* De zandloper: wat er nu gemaakt wordt.
+   Hij blijft onderin het scherm staan. Eerst stond hij bovenaan de pagina, en
+   dan koop je onderaan iets en zegt de melding dat de voortgang "hieronder"
+   meeloopt terwijl hij twee schermen hoger hangt. */
 .voortgang {
+  position: sticky; bottom: 1rem; z-index: 40;
+  align-self: center; width: fit-content; max-width: 100%;
   display: flex; align-items: center; gap: .7rem; margin: 0;
-  background: rgba(43, 28, 74, .72); backdrop-filter: blur(10px);
-  border: 1px solid rgba(242, 198, 76, .45); border-radius: 100px;
-  padding: .6rem 1.2rem; font-size: .92rem; color: var(--ink);
-  box-shadow: 0 0 28px rgba(242, 198, 76, .16);
+  background: rgba(20, 12, 38, .94);
+  border: 1px solid rgba(242, 198, 76, .5); border-radius: 100px;
+  padding: .6rem 1.3rem; font-size: .92rem; color: var(--ink);
+  box-shadow: 0 8px 34px rgba(4, 2, 10, .8), 0 0 28px rgba(242, 198, 76, .18);
 }
 .voortgang .zandloper, .status .zandloper {
   font-size: 1.2rem; color: var(--solar);
@@ -1048,17 +1053,20 @@ body::after { opacity: .34; }
 }
 
 .pilaar-wie {
-  margin: 0 0 .9rem; font-family: var(--display); font-size: 1.45rem;
-  line-height: 1.3; color: #fff;
-  text-shadow: 0 2px 14px rgba(5, 3, 11, .9);
+  margin: 0 0 .8rem; padding: .5rem .9rem;
+  display: inline-block; border-radius: 10px;
+  background: rgba(9, 5, 18, .9);
+  font-family: var(--display); font-size: 1.4rem; line-height: 1.3; color: #fff;
 }
 
-/* De legenda staat op de bewegende achtergrond, en dun grijs op paars leest
-   niet. Dus een eigen paneel eronder en overal een slag zwaarder. */
+/* De legenda staat op de bewegende achtergrond, en die is op sommige plekken
+   fel cyaan of geel. Half doorzichtig is daar niet genoeg: dan lopen de kringen
+   van geometry.svg dwars door de woorden. Dus vrijwel dicht. */
 .spectrum-legenda {
-  background: rgba(20, 12, 38, .72); backdrop-filter: blur(10px);
-  border: 1px solid rgba(179, 105, 222, .22); border-radius: 14px;
-  padding: .3rem 1.1rem;
+  background: rgba(9, 5, 18, .94);
+  border: 1px solid rgba(179, 105, 222, .3); border-radius: 14px;
+  padding: .3rem 1.2rem;
+  box-shadow: 0 8px 40px rgba(4, 2, 10, .7);
 }
 .legenda-rij {
   display: grid; grid-template-columns: 14px 5.8rem 7rem 1fr 3.2rem;
@@ -1067,7 +1075,7 @@ body::after { opacity: .34; }
   font-size: .92rem;
 }
 .legenda-rij:last-child { border-bottom: 0; }
-.legenda-rij.stil { opacity: .45; }
+.legenda-rij.stil { opacity: .62; }
 .legenda-stip {
   width: 14px; height: 14px; border-radius: 50%; align-self: center;
   box-shadow: 0 0 10px currentColor;
@@ -1075,9 +1083,9 @@ body::after { opacity: .34; }
 .legenda-naam { font-weight: 700; color: #fff; }
 .legenda-sans {
   font-family: var(--display); font-style: italic; font-size: 1.02rem;
-  color: #CBB8F0;
+  color: #C4AEEE;
 }
-.legenda-thema { color: #D8CDEA; font-size: .88rem; line-height: 1.45; }
+.legenda-thema { color: #E4DCF2; font-size: .88rem; line-height: 1.45; }
 .legenda-deel {
   text-align: right; font-weight: 700; font-size: 1rem;
   font-variant-numeric: tabular-nums; color: #fff;

@@ -947,7 +947,7 @@
       .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, body: d }; }); })
       .then(function (res) {
         if (!res.ok) { throw new Error(res.body.error || t("Dat lukte niet.")); }
-        melding.textContent = t("Onderweg. Je ziet de voortgang hieronder meelopen.");
+        melding.textContent = t("Onderweg. De zandloper onderin loopt mee.");
         el("voortgang").hidden = false;
         el("voortgang").innerHTML = '<span class="zandloper" aria-hidden="true">⧗</span>' +
                                     "<span>Aanvraag gestart…</span>";
