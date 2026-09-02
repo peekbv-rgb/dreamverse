@@ -1450,6 +1450,13 @@
     var op = a.dromen_over === 0 ? " op" : "";
     var minuten = Math.floor(a.avatar_seconden_over / 60);
     var html = "";
+    // Wie ben ik hier eigenlijk? Zonder dit zie je je pakket en je saldo, maar
+    // niet met welk account je binnen bent - en op een gedeelde computer weet je
+    // dan niet wiens dromen je zit te lezen.
+    if (profiel && profiel.email) {
+      html += "<div class='wie-ben-ik'><b>" + profiel.email + "</b><span>" +
+              t("ingelogd als") + "</span></div>";
+    }
     html += "<div class='" + op + "'><b>" + a.dromen_over + "</b><span>" + t("dromen over") + "</span></div>";
     html += "<div><b>" + a.tokens + "</b><span>" + t("tokens") + "</span></div>";
     html += "<div><b>" + (minuten + Math.floor(a.tokens / a.tokens_per_minuut)) +

@@ -1306,3 +1306,12 @@ body.tekstpagina .end a { color: var(--throat); }
 }
 .ww-oog:hover { color: var(--ink); }
 .ww-vergeten { align-self: flex-start; margin-top: .2rem; font-size: .8rem; }
+
+/* Met welk account je binnen bent. Het adres is langer dan de cijfers ernaast,
+   dus die krijgt de ruimte en de rest blijft staan waar hij stond. */
+.account .wie-ben-ik { min-width: 0; }
+.account .wie-ben-ik b {
+  font-family: var(--body); font-size: .84rem; font-weight: 600;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  display: block; max-width: 15rem;
+}

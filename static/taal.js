@@ -138,6 +138,7 @@
     ["Ik kon je niet horen.", "I could not hear you."],
     ["Terugkijken", "Look back"],
     ["verbonden", "connected"],
+    ["ingelogd als", "signed in as"],
     ["dromen over", "dreams left"],
     ["kernmoment wordt gemaakt…", "key moment is being made…"],
     ["Droom %s is weer compleet.", "Dream %s is whole again."],
