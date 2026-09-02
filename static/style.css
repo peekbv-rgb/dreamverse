@@ -440,8 +440,6 @@ footer.end {
 
 @media (prefers-reduced-motion: reduce) { .call-veil span { animation: none; } }
 
-.tier-live { color: var(--heart) !important; font-weight: 500; }
-.tier-live::before { content: "● "; }
 
 /* Naam van de dromer */
 .who { display: flex; flex-direction: column; gap: .25rem; margin-left: auto; flex: none; }
@@ -1314,4 +1312,9 @@ body.tekstpagina .end a { color: var(--throat); }
   font-family: var(--body); font-size: .84rem; font-weight: 600;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   display: block; max-width: 15rem;
+}
+
+.waaraan-kop {
+  margin: 0 0 .8rem; font-size: .64rem; font-weight: 600;
+  letter-spacing: .2em; text-transform: uppercase; color: var(--muted);
 }

@@ -1783,6 +1783,9 @@
 
   function begroetingSpelen(geforceerd) {
     if (!introVideo) { return; }
+    // Kom je terug van een aankoop, dan begint ze niet. Anders praat ze door in
+    // een verborgen scherm - je hoort haar wel en ziet haar niet.
+    if (terugVanBetaling && !geforceerd) { return; }
     var taal = (profiel && profiel.language) || "nl";
     if (!geforceerd && begroetIn === taal) { return; }
     begroetIn = taal;
@@ -1849,6 +1852,14 @@
       toonMinderjarig(p);
       naamVeld.value = p.name || "";
       toonNaam(p.name || "");
+      if (terugVanBetaling) {
+        // Overslaan, en zorgen dat Vera niet alsnog begint te praten.
+        el("intro").hidden = true;
+        try { el("intro-video").pause(); } catch (e) { /* al stil */ }
+        var doel = el("account");
+        if (doel) { doel.scrollIntoView({ behavior: "smooth", block: "center" }); }
+        return;
+      }
       el("intro").hidden = false;
     }).catch(function () { el("intro").hidden = false; });
   }
@@ -1865,6 +1876,10 @@
    * droom in staan.
    */
   var poortModus = "inloggen";
+
+  // Kom je terug van een aankoop, dan geen introductiefilmpje: dan wil je zien
+  // wat je gekocht hebt.
+  var terugVanBetaling = false;
 
   function zetPoortModus(modus) {
     poortModus = modus;
@@ -2072,11 +2087,21 @@
     profiel = p;
     document.body.classList.add("ingelogd");
 
-    // Terug van de betaalpagina. De webhook van Stripe komt los binnen en is er
-    // meestal al, maar niet altijd - dus nog een keer kijken na een paar tellen.
-    if (/[?&]betaald=1/.test(location.search)) {
+    // Terug van de betaalpagina.
+    //
+    // Niet bij Vera uitkomen die opnieuw begint te praten: je komt van een
+    // aankoop en wilt zien wat je gekocht hebt. Dus de introductie overslaan en
+    // meteen naar je pakket.
+    //
+    // De webhook van Stripe komt los binnen en is er meestal al, maar niet
+    // altijd - vandaar nog twee keer kijken.
+    var betaald = /[?&]betaald=1/.test(location.search);
+    if (betaald) {
+      terugVanBetaling = true;
       setTimeout(laadAccount, 2500);
       setTimeout(laadAccount, 7000);
+      history.replaceState(null, "", location.pathname);
+    } else if (/[?&]betaald=0/.test(location.search)) {
       history.replaceState(null, "", location.pathname);
     }
     toonIntro();
