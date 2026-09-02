@@ -1760,10 +1760,29 @@
       introVideo.dataset.gehoord = "ja";
       zetKnop("dempen");
     }).catch(function () {
-      // De browser wil nog geen geluid. Dan liever de stille staart dan een
-      // pratende Vera die je niet hoort.
+      // De browser wil nog geen geluid voordat je iets hebt aangeklikt; dat is
+      // een regel van de browser en daar komt geen enkele app omheen. Dan liever
+      // de stille staart dan een pratende Vera die je niet hoort - en zodra je
+      // wat dan ook aanraakt begint ze alsnog. Zo hoef je die knop niet te
+      // zoeken.
       stilZetten();
+      wachtOpAanraking();
     });
+  }
+
+  var aanrakingWacht = false;
+
+  function wachtOpAanraking() {
+    if (aanrakingWacht) { return; }
+    aanrakingWacht = true;
+    var soorten = ["pointerdown", "keydown", "touchstart"];
+    var alsnog = function () {
+      soorten.forEach(function (n) { document.removeEventListener(n, alsnog, true); });
+      aanrakingWacht = false;
+      // Niet als de introductie al weg is: dan wil je geen stem uit het niets.
+      if (el("intro") && !el("intro").hidden) { begroetingSpelen(true); }
+    };
+    soorten.forEach(function (n) { document.addEventListener(n, alsnog, true); });
   }
 
   if (geluidKnop && introVideo) {
