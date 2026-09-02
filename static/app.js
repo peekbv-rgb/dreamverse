@@ -228,17 +228,79 @@
     speak(panel.narration);
   }
 
-  /* Wat er op dit moment gemaakt wordt, met een zandloper erbij. Zonder dit
-   * gebeurt er minutenlang iets duurs zonder dat er iets te zien is.
+  /* De zandloper: het enige bewijs dat er nog iets gebeurt.
+   *
+   * Er zit anderhalve minuut tussen op de knop drukken en de eerste letter, en
+   * in die tijd bewoog er niets. Dan denk je dat het stuk is - en dat is erger
+   * dan wachten, want je gaat opnieuw klikken.
+   *
+   * Daarom loopt er nu een teller mee. Een draaiende zandloper alleen is niet
+   * genoeg: die draait ook door als de verbinding weg is. Een klok die elke
+   * seconde verspringt zegt dat er echt nog iemand thuis is.
+   */
+  var bezigSinds = 0;
+  var bezigTikker = null;
+  var bezigRegel = "";
+  var bezigStuk = "";
+
+  function klok(ms) {
+    var s = Math.floor(ms / 1000);
+    return Math.floor(s / 60) + ":" + (s % 60 < 10 ? "0" : "") + (s % 60);
+  }
+
+  function verfBalk() {
+    var balk = el("voortgang");
+    if (!balk) { return; }
+    if (bezigStuk) {
+      balk.hidden = false;
+      balk.className = "voortgang mis";
+      balk.innerHTML = '<span aria-hidden="true">✕</span><span>' + bezigStuk + "</span>";
+      return;
+    }
+    if (!bezigRegel) {
+      balk.hidden = true;
+      balk.innerHTML = "";
+      return;
+    }
+    balk.hidden = false;
+    balk.className = "voortgang";
+    balk.innerHTML = '<span class="zandloper" aria-hidden="true">⧗</span><span>' +
+                     bezigRegel + '</span><span class="klok">' +
+                     klok(Date.now() - bezigSinds) + "</span>";
+  }
+
+  function startBezig(regel) {
+    bezigRegel = regel;
+    bezigStuk = "";
+    if (!bezigSinds) { bezigSinds = Date.now(); }
+    verfBalk();
+    if (!bezigTikker) { bezigTikker = setInterval(verfBalk, 1000); }
+  }
+
+  function stopBezig() {
+    bezigRegel = "";
+    bezigStuk = "";
+    bezigSinds = 0;
+    if (bezigTikker) { clearInterval(bezigTikker); bezigTikker = null; }
+    verfBalk();
+  }
+
+  function mislukt(regels) {
+    bezigRegel = "";
+    bezigStuk = regels;
+    if (bezigTikker) { clearInterval(bezigTikker); bezigTikker = null; }
+    verfBalk();
+  }
+
+  /* Wat er op dit moment gemaakt wordt.
    *
    * Twee dingen die eerder misgingen. Tussen "aanvraag verstuurd" en de eerste
    * keer dat de server "busy" meldt zit een gaatje, en in dat gaatje verdween de
-   * balk weer: je klikte, kreeg "onderweg", en zag daarna niets. Vandaar het
-   * uitstel hieronder. En als er iets mislukte werd de balk gewoon verborgen,
-   * zodat je nooit te horen kreeg dat het niet doorging.
+   * balk weer. En als er iets mislukte werd de balk gewoon verborgen, zodat je
+   * nooit te horen kreeg dat het niet doorging.
    */
-  var werkGestart = 0;      // wanneer we iets in gang zetten
-  var werkGezien = false;   // heeft de server al eens "busy" gezegd?
+  var werkGestart = 0;
+  var werkGezien = false;
 
   function verwachtWerk() {
     werkGestart = Date.now();
@@ -246,8 +308,6 @@
   }
 
   function toonVoortgang(state) {
-    var balk = el("voortgang");
-    if (!balk) { return; }
     var regels = [];
     var totaal = (episode && episode.panels) ? episode.panels.length : 5;
 
@@ -256,17 +316,18 @@
       regels.push(t("Panelen tekenen —") + " " + klaar + " " + t("van de") + " " + totaal);
     }
     if (state.stem_status === "busy") {
-      regels.push(t("Inspreken —") + " " + Object.keys(state.stem || {}).length + " " + t("van de") + " " + totaal);
+      regels.push(t("Inspreken —") + " " + Object.keys(state.stem || {}).length + " " +
+                  t("van de") + " " + totaal);
     }
     if (state.video_status === "busy") {
       regels.push(t("Kernmoment animeren — dit duurt ongeveer een minuut"));
     }
     if (state.film_status === "busy") {
       var f = Object.keys(state.film || {}).length;
-      regels.push(t("Film maken —") + " " + f + " " + t("van de") + " " + totaal + " " + t("panelen klaar"));
+      regels.push(t("Film maken —") + " " + f + " " + t("van de") + " " + totaal + " " +
+                  t("panelen klaar"));
     }
 
-    // Mislukt werk hoort niet stilletjes te verdwijnen.
     var stuk = [];
     if (state.video_status === "failed") {
       stuk.push(t("Het kernmoment lukte niet") +
@@ -275,32 +336,19 @@
     if (state.film_status === "failed") { stuk.push(t("De film lukte niet")); }
     if (state.status === "failed") { stuk.push(t("De panelen lukten niet")); }
 
-    if (regels.length) { werkGezien = true; }
+    if (regels.length) {
+      werkGezien = true;
+      startBezig(regels.join(" · "));
+      return;
+    }
+    if (stuk.length) { mislukt(stuk.join(" · ")); return; }
 
-    if (!regels.length && stuk.length) {
-      balk.hidden = false;
-      balk.className = "voortgang mis";
-      balk.innerHTML = '<span aria-hidden="true">✕</span><span>' + stuk.join(" · ") + "</span>";
+    // Nog niets te melden, maar er is net wel iets in gang gezet: laten staan.
+    if (!werkGezien && Date.now() - werkGestart < 40000) {
+      startBezig(t("Aanvraag gestart…"));
       return;
     }
-    if (!regels.length) {
-      // Nog niets te melden, maar we hebben net wel iets in gang gezet: dan even
-      // laten staan in plaats van meteen weg.
-      if (!werkGezien && Date.now() - werkGestart < 40000) {
-        balk.hidden = false;
-        balk.className = "voortgang";
-        balk.innerHTML = '<span class="zandloper" aria-hidden="true">⧗</span><span>' +
-                         t("Aanvraag gestart…") + "</span>";
-        return;
-      }
-      balk.hidden = true;
-      balk.innerHTML = "";
-      return;
-    }
-    balk.hidden = false;
-    balk.className = "voortgang";
-    balk.innerHTML = '<span class="zandloper" aria-hidden="true">⧗</span><span>' +
-                     regels.join(" · ") + "</span>";
+    stopBezig();
   }
 
   function pollPanels(number, tries) {
@@ -804,8 +852,9 @@
   // staat nog in het archief, dus er hoeft geen beeld opnieuw gemaakt te worden.
   function herstel(nummer) {
     statusEl.className = "status";
-    statusEl.innerHTML = '<span class="zandloper" aria-hidden="true">⧗</span> ' +
-                         "De duiding wordt opnieuw geschreven bij je panelen…";
+    statusEl.textContent = t("De duiding wordt opnieuw geschreven bij je panelen…");
+    verwachtWerk();
+    startBezig(t("De duiding wordt opnieuw geschreven"));
     fetch("/api/episode/" + nummer + "/herstel", { method: "POST" })
       .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, body: d }; }); })
       .then(function (res) {
@@ -814,6 +863,7 @@
         pollPanels(nummer, 3);
         statusEl.className = "status";
         statusEl.textContent = t("Droom %s is weer compleet.").replace("%s", nummer);
+        stopBezig();
       })
       .catch(function (e) {
         statusEl.className = "status err";
@@ -1031,10 +1081,7 @@
         if (!res.ok) { throw new Error(res.body.error || t("Dat lukte niet.")); }
         melding.textContent = t("Onderweg. De zandloper onderin loopt mee.");
         verwachtWerk();
-        el("voortgang").hidden = false;
-        el("voortgang").className = "voortgang";
-        el("voortgang").innerHTML = '<span class="zandloper" aria-hidden="true">⧗</span><span>' +
-                                    t("Aanvraag gestart…") + "</span>";
+        startBezig(t("Aanvraag gestart…"));
         toonAccount(res.body.account);
         laadVerbruik();
         pollPanels(nummer, 90);
@@ -1099,6 +1146,8 @@
       ? t("Je droom wordt geduid. Dit duurt ongeveer een halve minuut.")
       : t("Je droom wordt verbeeld. Dit duurt een halve tot anderhalve minuut.");
     guideLine.textContent = t("Ik kijk ernaar. Blijf even bij me.");
+    verwachtWerk();
+    startBezig(t("De duiding wordt geschreven"));
 
     fetch("/api/episode", {
       method: "POST",
@@ -1124,10 +1173,13 @@
         statusEl.className = "status err";
         statusEl.textContent = e.message;
         guideLine.textContent = t("Er ging iets mis. Probeer het zo nog eens.");
+        stopBezig();
       })
       .then(function () {
         go.disabled = false;
         go.textContent = t("Verbeeld mijn droom");
+        // Komt er geen tekenwerk, dan hoort de teller ook te stoppen.
+        if (!werkGezien && !(episode && episode.images_pending)) { stopBezig(); }
       });
   });
 

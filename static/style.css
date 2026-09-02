@@ -761,6 +761,13 @@ body::after { opacity: .34; }
   box-shadow: 0 8px 34px rgba(4, 2, 10, .8), 0 0 28px rgba(242, 198, 76, .18);
 }
 .voortgang.mis { border-color: rgba(245, 160, 143, .6); color: #F5A08F; }
+/* De klok: het enige dat elke seconde verspringt, en daarmee het bewijs dat
+   er nog iets loopt. Een draaiende zandloper draait ook door als alles dood is. */
+.voortgang .klok {
+  font-variant-numeric: tabular-nums; font-weight: 600; color: var(--solar);
+  padding-left: .6rem; margin-left: .2rem;
+  border-left: 1px solid rgba(242, 198, 76, .3);
+}
 .voortgang .zandloper, .status .zandloper {
   font-size: 1.2rem; color: var(--solar);
   animation: keren 2s ease-in-out infinite;
@@ -771,6 +778,13 @@ body::after { opacity: .34; }
   55%, 100% { transform: rotate(180deg); }
 }
 @media (prefers-reduced-motion: reduce) { .voortgang.mis { border-color: rgba(245, 160, 143, .6); color: #F5A08F; }
+/* De klok: het enige dat elke seconde verspringt, en daarmee het bewijs dat
+   er nog iets loopt. Een draaiende zandloper draait ook door als alles dood is. */
+.voortgang .klok {
+  font-variant-numeric: tabular-nums; font-weight: 600; color: var(--solar);
+  padding-left: .6rem; margin-left: .2rem;
+  border-left: 1px solid rgba(242, 198, 76, .3);
+}
 .voortgang .zandloper, .status .zandloper { animation: none; } }
 
 /* ------------------------------------------------------------------------ */
