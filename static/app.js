@@ -518,6 +518,7 @@
     // De kop draagt nu de titel van de droom, niet meer de slogan: dat is de
     // nieuwe brontekst, anders zet een taalwissel de slogan terug.
     el("title").dataset.nl = ep.title;
+    toonBril(ep);
     player.hidden = false;
 
     // "Alleen de duiding" betekent ook echt geen beeld: geen panelen, en dus ook
@@ -734,10 +735,40 @@
     el("tijd-alles").setAttribute("aria-pressed", spectrumKeuze ? "false" : "true");
   }
 
+  /* Door welke bril je dromen tot nu toe gelezen zijn.
+   *
+   * Naast de chakrapilaar, want het is dezelfde soort vraag: niet wat één droom
+   * betekende, maar waar je nachten zich ophouden. Chakra's gaan over gevoel,
+   * dit gaat over de manier van kijken - en bij "vanzelf" koos het model, dus
+   * dan zegt deze telling iets over de dromen zelf en niet over jouw voorkeur.
+   */
+  function toonBrilspectrum(sp) {
+    var doos = el("brilspectrum");
+    if (!doos) { return; }
+    var tel = sp.lenses || {};
+    var namen = sp.lens_names || [];
+    var totaal = namen.reduce(function (som, naam) { return som + (tel[naam] || 0); }, 0);
+    if (!totaal) { doos.hidden = true; return; }
+
+    doos.hidden = false;
+    var html = '<span class="brilspectrum-kop">' + t("Door welke bril") + "</span>";
+    namen.forEach(function (naam) {
+      var n = tel[naam] || 0;
+      var deel = Math.round((n / totaal) * 100);
+      html += '<div class="brilstaaf' + (n ? "" : " leeg") + '">' +
+        '<span class="brilstaaf-naam">' + t(hoofdletter(naam)) + "</span>" +
+        '<span class="brilstaaf-baan"><i class="bril-' + naam +
+        '" style="width:' + deel + '%"></i></span>' +
+        '<span class="brilstaaf-getal">' + n + "</span></div>";
+    });
+    doos.innerHTML = html;
+  }
+
   function toonSpectrum(sp) {
     spectrumData = sp;
     var sectie = el("spectrum-section");
     var dromen = sp.dreams || [];
+    toonBrilspectrum(sp);
     // Onder de drie dromen is er niets te zien, alleen ruis.
     if (dromen.length < 3) { sectie.hidden = true; return; }
     sectie.hidden = false;
@@ -1302,7 +1333,7 @@
     fetch("/api/episode", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ dream: text, quality: gekozenKwaliteit })
+      body: JSON.stringify({ dream: text, quality: gekozenKwaliteit, lens: gekozenBril })
     })
       .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, body: d }; }); })
       .then(function (res) {
@@ -1594,6 +1625,85 @@
     })
     .catch(function () {});
 
+  /* -------------------------------------------------------------- de bril */
+
+  /* Door welke bril wil je je droom gelezen hebben?
+   *
+   * Dit is iets anders dan het chakraveld. Een chakraveld is een gevoel dat het
+   * model per paneel kiest en dat je achteraf ziet; een bril is een manier van
+   * kijken die je vooraf kiest. Dezelfde droom over een huis met een dichte deur
+   * geeft bij psychologisch iets over wat je van jezelf afhoudt, bij symbolisch
+   * over wat een deur in jouw eigen dromen steeds betekent, en bij spiritueel
+   * over waar je in je leven voor staat.
+   *
+   * "Vanzelf" staat voorop en is de standaard: dan kiest het model de bril die
+   * bij deze droom past en zegt achteraf welke het werd. Wie er niet over wil
+   * nadenken krijgt de classificatie dus toch.
+   */
+  var BRILLEN = [
+    { key: "vanzelf", naam: "Vanzelf",
+      uitleg: "Ik kies de bril die bij deze droom past, en zeg achteraf welke het werd." },
+    { key: "psychologisch", naam: "Psychologisch",
+      uitleg: "Wat de droom over jou zegt: wat je wegdrukt, waar spanning zit, welk gedrag terugkomt." },
+    { key: "symbolisch", naam: "Symbolisch",
+      uitleg: "Wat de tekens betekenen — en dan wat ze bij jou betekenen, niet wat een droomboek zegt." },
+    { key: "spiritueel", naam: "Spiritueel",
+      uitleg: "Waar je voor staat: wat je loslaat, wat op je afkomt, groter dan de dag zelf." }
+  ];
+
+  var gekozenBril = "vanzelf";
+
+  function toonBrillen() {
+    var doos = el("bril-knoppen");
+    if (!doos) { return; }
+    doos.innerHTML = "";
+    BRILLEN.forEach(function (b) {
+      var knop = document.createElement("button");
+      knop.type = "button";
+      knop.className = "bril";
+      knop.dataset.bril = b.key;
+      knop.setAttribute("aria-pressed", b.key === gekozenBril ? "true" : "false");
+      knop.title = t(b.uitleg);
+      knop.textContent = t(b.naam);
+      knop.addEventListener("click", function () { kiesBril(b); });
+      doos.appendChild(knop);
+    });
+  }
+
+  function kiesBril(b) {
+    gekozenBril = b.key;
+    document.querySelectorAll(".bril").forEach(function (k) {
+      k.setAttribute("aria-pressed", k.dataset.bril === b.key ? "true" : "false");
+    });
+    var melding = el("kwaliteit-melding");
+    if (melding) {
+      melding.className = "kwaliteit-melding";
+      melding.textContent = t(b.uitleg);
+    }
+  }
+
+  toonBrillen();
+
+  /* De bril die het geworden is, bij de duiding.
+   *
+   * Vooral bij "vanzelf" is dit het antwoord op zijn vraag: dan heeft hij niet
+   * gekozen en wil hij weten hoe de droom geclassificeerd is.
+   */
+  function toonBril(ep) {
+    var doos = el("bril-uitslag");
+    if (!doos) { return; }
+    var bril = ep && ep.lens;
+    if (!bril) { doos.hidden = true; return; }
+    var vanzelf = (ep.lens_gekozen || "vanzelf") === "vanzelf";
+    doos.hidden = false;
+    doos.innerHTML = '<span class="bril-merk bril-' + bril + '">' + t(hoofdletter(bril)) + "</span>" +
+      "<span>" + (vanzelf ? t("zo is deze droom gelezen") : t("zoals je vroeg")) + "</span>";
+  }
+
+  function hoofdletter(woord) {
+    return woord.charAt(0).toUpperCase() + woord.slice(1);
+  }
+
   /* ------------------------------------------------------ pakket en saldo */
 
   var gekozenKwaliteit = "standaard";
@@ -1609,8 +1719,17 @@
       b.dataset.kwaliteit = k.key;
       b.setAttribute("aria-pressed", k.key === gekozenKwaliteit ? "true" : "false");
       b.title = k.uitleg;
-      // Wat je krijgt zegt meer dan wat het kost, zolang het in je pakket zit.
-      var regel = k.inbegrepen ? k.bevat : k.tokens + " tokens";
+      /* Wat je krijgt én wat het kost.
+       *
+       * Hier stond alleen wat je kreeg zolang het in je pakket zat. Naast twee
+       * knoppen met "4 tokens" en "10 tokens" leest dat als een prijs die er nog
+       * bij komt maar die je niet ziet - en dan durf je niet te klikken. Nul
+       * hardop zeggen is het hele punt van een pakket.
+       */
+      var kost = k.inbegrepen
+        ? t("0 tokens")
+        : k.tokens + " " + t(k.tokens === 1 ? "token" : "tokens");
+      var regel = k.inbegrepen ? k.bevat + " · " + kost : kost;
       b.innerHTML = k.naam + "<small>" + regel + "</small>";
       if (k.beste) {
         b.classList.add("beste");
@@ -2097,6 +2216,9 @@
     // De legenda van het spectrum wordt in JavaScript gebouwd, dus die moet
     // opnieuw getekend worden; de woordenlijst komt er niet vanzelf langs.
     laadSpectrum();
+    // De brilknoppen worden in JavaScript gemaakt, dus die komen niet langs de
+    // vertaalslag van de pagina.
+    toonBrillen();
     begroet(begroetteNaam);
     toonNaam(begroetteNaam || naamVeld.value.trim());
     zetIntroTaal(taal);

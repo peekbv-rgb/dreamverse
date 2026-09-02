@@ -63,7 +63,7 @@ POST   /api/registreren                {"email", "wachtwoord", "naam"}
 POST   /api/inloggen                    {"email", "wachtwoord"}
 POST   /api/uitloggen
 POST   /api/wachtwoord                  {"oud", "nieuw"}
-POST   /api/episode   {"dream": "...", "quality": "duiding|eenvoudig|standaard|supreme"}
+POST   /api/episode   {"dream", "quality", "lens": "vanzelf|psychologisch|symbolisch|spiritueel"}
 GET    /api/episode/<nr>                -> een eerdere verbeelding terugkijken
 POST   /api/episode/<nr>/herstel        -> duiding opnieuw schrijven bij oude panelen
 GET    /api/archive                     -> alle eerdere dromen + de nieuwste analyse
@@ -167,6 +167,22 @@ en het scheelt direct in de kostprijs per verbeelding.
   hard op `nl-NL`, dus een Engelse gebruiker sprak in en kreeg Nederlandse
   brij terug. Eén functie `taalcode()` bedient nu het inspreken én het
   meeschrijven.
+- **Drie brillen naast de chakra's: psychologisch, symbolisch, spiritueel.**
+  Een chakraveld is een gevoel dat het model per paneel kiest en dat je achteraf
+  ziet; een bril is een manier van kijken die de dromer vooraf kiest. Dezelfde
+  droom over een dichte deur geeft bij psychologisch iets over wat je van jezelf
+  afhoudt, bij symbolisch over wat een deur in jóuw dromen betekent, bij
+  spiritueel over waar je voor staat. **`vanzelf` is de standaard**: dan kiest
+  het model en zegt in het veld `lens` welke het werd — zo krijgt ook iemand die
+  er niet over wil nadenken de classificatie. Alles zit in `LENZEN` en
+  `LENS_UITLEG` in `dreamverse.py`; de verbeelding wordt als woordenboek bewaard,
+  dus er was geen migratie nodig.
+- **Sleutels in `taal.js` met HTML erin moeten enkele aanhalingstekens hebben.**
+  De vertaalslag vervangt `innerHTML`, dus een zin met een link erin heeft die
+  link in de sleutel staan. Zet je daar dubbele aanhalingstekens omheen, dan
+  breekt het bestand — en omdat `t()` daaruit komt, staat daarna de héle app
+  stil: geen kwaliteitsknoppen, geen brillen, geen pakket. Eén zin in een
+  woordenlijst legt dan alles plat, en de pagina zelf laadt gewoon door.
 - **Nooit `.env` committen.** `.gitignore` blokkeert ook `.env.*` en `data/`.
 - Basic auth gaat aan zodra `AUTH_USER` én `AUTH_PASSWORD` gevuld zijn. **Twee
   paden staan er altijd buiten**: `/api/stripe/webhook`, want Stripe stuurt geen

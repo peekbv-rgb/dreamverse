@@ -600,7 +600,8 @@ class Handler(SimpleHTTPRequestHandler):
             return self.send_json({"error": "Ongeldige aanvraag."}, 400)
 
         try:
-            episode = dreamverse.create(payload.get("dream", ""), payload.get("quality"))
+            episode = dreamverse.create(payload.get("dream", ""), payload.get("quality"),
+                                        payload.get("lens"))
         except plans.Refused as e:
             return self.send_json({"error": str(e), "need_tokens": e.need_tokens}, 402)
         except dreamverse.DreamverseError as e:

@@ -33,6 +33,38 @@ MAX_ARCHIVE_IN_PROMPT = 15  # meer geschiedenis maakt de duiding niet beter, wel
 PALETTES = ("root", "sacral", "solar", "heart", "throat", "third_eye", "crown")
 MOTIFS = ("flight", "water", "figure", "structure", "expanse", "close")
 
+# De drie brillen waardoor een droom gelezen kan worden.
+#
+# Dit is iets anders dan de chakra's. Een chakraveld is een gevoel dat het model
+# per paneel kiest; een bril is een manier van kijken naar het geheel, en die
+# mag de dromer zelf kiezen. Dezelfde droom over een huis met een dichte deur
+# levert bij "psychologisch" iets op over wat je van jezelf afhoudt, bij
+# "symbolisch" over wat een deur in jouw eigen dromen steeds betekent, en bij
+# "spiritueel" over waar je in je leven voor staat.
+#
+# "vanzelf" is de standaard: dan kiest het model de bril die bij deze droom
+# past en zegt welke het werd. Zo krijgt iemand die er niet over wil nadenken
+# toch de classificatie, en dat is precies het andere deel van de vraag.
+LENZEN = ("vanzelf", "psychologisch", "symbolisch", "spiritueel")
+
+LENS_UITLEG = {
+    "psychologisch": (
+        "Lees de droom als iets van de dromer zelf: wat hij overdag wegdrukt, "
+        "waar spanning zit, welk gedrag terugkomt. Praat over gevoel en gedrag, "
+        "niet over tekens. Geen diagnose, geen ziektebeelden, geen therapie - je "
+        "bent geen behandelaar en dit is geen behandeling."),
+    "symbolisch": (
+        "Lees de droom als een taal van tekens: wat betekent dit huis, dit water, "
+        "dit dier in de dromen van déze dromer. Leun op wat in zijn eigen eerdere "
+        "dromen terugkwam, niet op een droomwoordenboek - 'water staat voor "
+        "emotie' kan iedereen opzoeken en klopt bij deze dromer misschien niet."),
+    "spiritueel": (
+        "Lees de droom als iets over richting en zin: waar de dromer voor staat, "
+        "wat hij loslaat, wat er op hem afkomt. Groter dan de dag zelf. Blijf weg "
+        "van voorspellingen, van religieuze voorschriften en van beweringen over "
+        "wat er 'echt' gaat gebeuren."),
+}
+
 CHAKRA_HINT = (
     "root = overleven, angst, aarde (rood) · sacral = verlangen, water, schepping (oranje) · "
     "solar = wil, kracht, spanning (geel) · heart = liefde, verlies, verbinding (groen) · "
@@ -237,6 +269,8 @@ def spectrum():
             "when": d.get("when") or "",
             "counts": telling,
             "main": hoofd,
+            "lens": episode.get("lens") or "",
+            "lens_gekozen": episode.get("lens_gekozen") or "",
         })
 
     # En het totaal, zodat je in één blik ziet waar je jaar zich ophield.
@@ -244,7 +278,17 @@ def spectrum():
     for r in rijen:
         for veld, n in r["counts"].items():
             totaal[veld] += n
-    return {"dreams": rijen, "total": totaal, "palettes": list(PALETTES)}
+
+    # De brillen apart geteld. Dit gaat over álle verbeeldingen, ook die zonder
+    # panelen: bij "alleen de duiding" is er geen kleurveld maar wel een bril.
+    brillen = {naam: 0 for naam in LENS_UITLEG}
+    for n, episode in accounts.alle_verbeeldingen(uid()):
+        bril = episode.get("lens") or ""
+        if bril in brillen:
+            brillen[bril] += 1
+
+    return {"dreams": rijen, "total": totaal, "palettes": list(PALETTES),
+            "lenses": brillen, "lens_names": list(LENS_UITLEG)}
 
 
 def archive_with_media():
@@ -540,9 +584,13 @@ Antwoord met uitsluitend geldige JSON, zonder tekst eromheen, in deze vorm:
  "symbols": [{{"sign": string, "meaning": string}}],
  "night": string, "task": string,
  "today": string, "season": string, "together": string,
- "question": string, "motifs": [string], "key_panel": number}}
+ "question": string, "motifs": [string], "key_panel": number,
+ "lens": "psychologisch" | "symbolisch" | "spiritueel"}}
 
 Regels voor de velden:
+- "lens" is de bril waardoor je deze droom gelezen hebt. Staat er hieronder een
+  bril opgedragen, dan zet je die hier neer. Koos je zelf, dan zet je hier neer
+  welke het geworden is. Alleen deze drie woorden, ongeacht de taal van de rest.
 - Precies 5 panelen. "narration" is 1 tot 2 zinnen Nederlands.
 - "image" is een korte Engelse beschrijving van wat er te zien is, voor een
   illustratiemodel: alleen het beeld, geen namen, geen tekst in beeld, geen
@@ -623,16 +671,33 @@ def _history(archive):
 TALEN = {"nl": "het Nederlands", "en": "American English"}
 
 
-def build_prompt(dream, archive, number, name=None, language="nl"):
+def build_prompt(dream, archive, number, name=None, language="nl", lens="vanzelf"):
     wie = ""
     if name:
         # Spaarzaam gebruiken: een duiding die elke zin je naam noemt klinkt als
         # een verkooptelefoontje, niet als iemand die naar je luistert.
         wie = ("\n\nDe dromer heet {}. Gebruik die naam hooguit een of twee keer "
                "in de hele verbeelding, op een moment dat het iets doet.").format(name)
+    # De bril bepaalt hoe why, meaning en today gelezen worden. Niet wat er in de
+    # droom zit - dat blijft dezelfde droom - maar vanaf welke kant je kijkt.
+    kop = "\n\n--- de bril voor deze droom ---\n"
+    if lens in LENS_UITLEG:
+        bril = kop + (
+            "De dromer heeft zelf gekozen: {}. {}\n"
+            'Zet in het veld "lens" precies dat woord.'
+        ).format(lens, LENS_UITLEG[lens])
+    else:
+        bril = kop + (
+            "De dromer heeft geen bril gekozen; kies zelf welke van de drie het "
+            "beste bij deze droom past en schrijf de duiding daarvandaan.\n"
+            + "\n".join(
+                "- {}: {}".format(k, v) for k, v in LENS_UITLEG.items())
+            + '\nZet in het veld "lens" welke het geworden is.'
+        )
     return (
         RULES.replace("{TAAL}", TALEN.get(language, TALEN["nl"]))
         + wie
+        + bril
         + "\n\n--- eerdere dromen ---\n"
         + _history(archive)
         + "\n\n--- de droom van vannacht (dit wordt Droom {}) ---\n".format(number)
@@ -729,6 +794,10 @@ def parse_episode(raw):
         "future": str(data.get("future") or ""),
         "question": str(data.get("question") or ""),
         "motifs": [str(m) for m in (data.get("motifs") or [])][:8],
+        # Alleen een van de drie. Verzint het model iets anders, dan liever leeg
+        # dan een categorie die in geen enkele telling thuishoort.
+        "lens": (str(data.get("lens") or "").strip().lower()
+                 if str(data.get("lens") or "").strip().lower() in LENS_UITLEG else ""),
     }
 
 
@@ -753,7 +822,7 @@ def voorbeeld(reden):
     return episode
 
 
-def write_episode(dream, archive, number, name=None, language="nl"):
+def write_episode(dream, archive, number, name=None, language="nl", lens="vanzelf"):
     """Vraag Claude om de verbeelding. Zonder sleutel: het voorbeeld."""
     if not credentials_available():
         return voorbeeld("Er zijn geen inloggegevens; dit is een voorbeeld.")
@@ -772,7 +841,8 @@ def write_episode(dream, archive, number, name=None, language="nl"):
             # scheelt direct in de kostprijs per verbeelding.
             output_config={"effort": "medium"},
             messages=[{"role": "user",
-                       "content": build_prompt(dream, archive, number, name, language)}],
+                       "content": build_prompt(dream, archive, number, name,
+                                              language, lens)}],
         )
     except anthropic.RateLimitError:
         raise DreamverseError("Te veel aanvragen achter elkaar. Wacht even en probeer opnieuw.")
@@ -809,7 +879,7 @@ def write_episode(dream, archive, number, name=None, language="nl"):
     return episode
 
 
-def create(dream, kwaliteit=None):
+def create(dream, kwaliteit=None, lens=None):
     """De hele stap: schrijven, opslaan, teruggeven."""
     dream = (dream or "").strip()
     if not dream:
@@ -826,8 +896,12 @@ def create(dream, kwaliteit=None):
     number = next_number()
 
     profiel = load_profile()
+    # De bril die de dromer koos. Onbekend of niets: dan kiest het model zelf.
+    gekozen = (lens or "").strip().lower()
+    if gekozen not in LENZEN:
+        gekozen = "vanzelf"
     episode = write_episode(dream, archive, number, profiel.get("name"),
-                            profiel.get("language", "nl"))
+                            profiel.get("language", "nl"), gekozen)
 
     # Opnieuw bepalen: het schrijven duurt een minuut, en in die tijd kan deze
     # gebruiker in een tweede tabblad een droom hebben ingestuurd.
@@ -845,6 +919,11 @@ def create(dream, kwaliteit=None):
     episode["dream"] = dream
     episode["tokens_charged"] = kosten_tokens + kwaliteit_tokens
     episode["quality"] = kwaliteit or plans.DEFAULT_KWALITEIT
+    # Wat de dromer vroeg staat naast wat het geworden is: bij "vanzelf" wil je
+    # later kunnen zien dat de keuze van het model kwam en niet van hem.
+    episode["lens_gekozen"] = gekozen
+    if not episode.get("lens"):
+        episode["lens"] = "" if gekozen == "vanzelf" else gekozen
 
     u = episode.get("usage") or {}
     usage.episode(number, u.get("input_tokens", 0), u.get("output_tokens", 0),

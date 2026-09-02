@@ -1500,3 +1500,59 @@ body.tekstpagina .end a { color: var(--throat); }
   color: rgba(216, 205, 234, .6);
 }
 .poort-privacy a { color: rgba(216, 205, 234, .85); }
+
+/* De bril: hoe wil je je droom gelezen hebben.
+   Rustiger dan de kwaliteitsknoppen - dit kost niets en is geen aankoop, dus
+   het mag niet even hard om aandacht vragen. */
+.brillen { margin-top: .9rem; }
+.bril-knoppen { display: flex; flex-wrap: wrap; gap: .45rem; margin-top: .45rem; }
+.bril {
+  padding: .32rem .8rem; font-size: .82rem;
+  border: 1px solid rgba(216, 205, 234, .26); border-radius: 999px;
+  background: rgba(255, 255, 255, .04); color: rgba(216, 205, 234, .85);
+  cursor: pointer;
+}
+.bril:hover { border-color: rgba(216, 205, 234, .5); color: var(--ink); }
+.bril[aria-pressed="true"] {
+  border-color: var(--third-eye); color: var(--ink);
+  background: rgba(110, 98, 218, .22);
+}
+
+/* Elke bril zijn eigen kleur, zodat de telling en de uitslag herkenbaar zijn. */
+.bril-psychologisch { background: var(--throat); }
+.bril-symbolisch { background: var(--third-eye); }
+.bril-spiritueel { background: var(--crown); }
+
+.bril-uitslag {
+  display: flex; align-items: center; gap: .55rem;
+  margin: 0 0 .9rem; font-size: .82rem; color: rgba(216, 205, 234, .7);
+}
+.bril-merk {
+  padding: .16rem .6rem; border-radius: 999px;
+  font-size: .74rem; letter-spacing: .05em; text-transform: uppercase;
+  color: #0A0714; font-weight: 600;
+}
+
+/* De telling over alle dromen, onder de tijdlijn van het spectrum. */
+.brilspectrum {
+  display: grid; gap: .4rem; margin-top: 1.3rem;
+  padding: .9rem 1.1rem;
+  background: rgba(8, 6, 17, .5); backdrop-filter: blur(6px); border-radius: 12px;
+}
+.brilspectrum-kop {
+  font-size: .7rem; letter-spacing: .12em; text-transform: uppercase;
+  color: rgba(216, 205, 234, .6); margin-bottom: .2rem;
+}
+.brilstaaf { display: grid; grid-template-columns: 8rem 1fr 2rem; align-items: center; gap: .7rem; }
+.brilstaaf-naam { font-size: .84rem; color: rgba(216, 205, 234, .9); }
+.brilstaaf-baan {
+  height: .5rem; border-radius: 999px; overflow: hidden;
+  background: rgba(255, 255, 255, .07);
+}
+.brilstaaf-baan i { display: block; height: 100%; border-radius: 999px; }
+.brilstaaf-getal { font-size: .82rem; text-align: right; color: rgba(216, 205, 234, .75); }
+.brilstaaf.leeg .brilstaaf-naam, .brilstaaf.leeg .brilstaaf-getal { opacity: .45; }
+@media (max-width: 560px) {
+  .brilstaaf { grid-template-columns: 6.5rem 1fr 1.8rem; gap: .5rem; }
+  .brilstaaf-naam { font-size: .78rem; }
+}

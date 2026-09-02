@@ -142,11 +142,32 @@
     ["Tokens kopen", "Buy tokens"],
     ["Zet saldo", "Set balance"],
     ["Beheer uit", "Admin off"],
-    ["Wat we bewaren en wie het verwerkt staat in de <a href="/privacy.html" target="_blank" rel="noopener">privacyverklaring</a>. Je dromen zijn van jou: je kunt ze altijd downloaden of alles laten wissen.",
-     "What we keep and who processes it is in the <a href="/privacy.html" target="_blank" rel="noopener">privacy statement</a>. Your dreams are yours: you can download them or have everything erased at any time."],
-    ["Wat we bewaren en aan wie we het doorgeven staat in de <a href="/privacy.html" target="_blank" rel="noopener">privacyverklaring</a>.",
-     "What we keep and who we pass it to is in the <a href="/privacy.html" target="_blank" rel="noopener">privacy statement</a>."],
+    // Deze twee sleutels zijn innerHTML en bevatten dus dubbele
+    // aanhalingstekens. Daarom enkele aanhalingstekens eromheen - met dubbele
+    // breekt dit bestand, en dan bestaat t() niet meer en staat de hele app stil.
+    ['Wat we bewaren en wie het verwerkt staat in de <a href="/privacy.html" target="_blank" rel="noopener">privacyverklaring</a>. Je dromen zijn van jou: je kunt ze altijd downloaden of alles laten wissen.',
+     'What we keep and who processes it is in the <a href="/privacy.html" target="_blank" rel="noopener">privacy statement</a>. Your dreams are yours: you can download them or have everything erased at any time.'],
+    ['Wat we bewaren en aan wie we het doorgeven staat in de <a href="/privacy.html" target="_blank" rel="noopener">privacyverklaring</a>.',
+     'What we keep and who we pass it to is in the <a href="/privacy.html" target="_blank" rel="noopener">privacy statement</a>.'],
     ["opwaarderen", "top up"],
+    ["Hoe wil je hem gelezen hebben?", "How would you like it read?"],
+    ["Vanzelf", "Let it choose"],
+    ["0 tokens", "0 tokens"],
+    ["token", "token"],
+    ["Psychologisch", "Psychological"],
+    ["Symbolisch", "Symbolic"],
+    ["Spiritueel", "Spiritual"],
+    ["Door welke bril", "Through which lens"],
+    ["zo is deze droom gelezen", "this is how the dream was read"],
+    ["zoals je vroeg", "as you asked"],
+    ["Ik kies de bril die bij deze droom past, en zeg achteraf welke het werd.",
+     "I pick the lens that fits this dream, and tell you afterwards which one it was."],
+    ["Wat de droom over jou zegt: wat je wegdrukt, waar spanning zit, welk gedrag terugkomt.",
+     "What the dream says about you: what you push away, where the tension sits, which behaviour keeps returning."],
+    ["Wat de tekens betekenen — en dan wat ze bij jou betekenen, niet wat een droomboek zegt.",
+     "What the signs mean - and then what they mean for you, not what a dream dictionary says."],
+    ["Waar je voor staat: wat je loslaat, wat op je afkomt, groter dan de dag zelf.",
+     "What you stand at: what you let go of, what is coming toward you, larger than the day itself."],
     ["Ik schrijf mee", "I am writing it down"],
     ["Dit stond nog van je gesprek met Vera. Ik heb het bewaard.",
      "This was left from your conversation with Vera. I kept it for you."],
@@ -247,7 +268,7 @@
 
     // -- de pakketten ------------------------------------------------------
     ["Wat je kunt kiezen", "What you can choose"],
-    ["Gratis om te proeven, en drie pakketten die je maandelijks opzegt.",
+    ["Gratis om te proeven, en drie pakketten die je maandelijks kunt opzeggen.",
      "Free to get a taste, and three plans you can cancel monthly."],
 
     ["Gratis · €0", "Free · €0"],
@@ -349,7 +370,10 @@
                   "#intro-tekst", "#minderjarig", "#kwaliteit-knoppen", "#kwaliteit-melding",
                   "#archive", "#threads", "#account", "#meter", "#extras-melding",
                   "#kies", "#kies-melding", "#voortgang", "#call-time", "#who-naam",
-                  "#antwoord-uitleg", "#who-voor"].join(",");
+                  "#antwoord-uitleg", "#who-voor",
+                  // In JavaScript gemaakt en daar al vertaald; een tweede slag
+                  // erover zet de brontekst terug.
+                  "#bril-knoppen", "#bril-uitslag", "#brilspectrum"].join(",");
 
   var TE_VERTALEN = "h1,h2,p,label,span.lbl,span.label,span.tier-name,span.extras-kop," +
                     "span.kwaliteit-kop,span.antwoord-uitleg,button,option,#mode";
