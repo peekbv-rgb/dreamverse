@@ -97,7 +97,7 @@ def setup():
 
     for naam in ABONNEMENTEN:
         p = plans.PLANS[naam]
-        product = c.products.create({
+        product = c.v1.products.create({
             "name": "Dreamverse {}".format(p["naam"]),
             "description": "{} dromen per maand met de volledige duiding.".format(p["dromen"]),
             "tax_code": BELASTINGCODE,
@@ -113,7 +113,7 @@ def setup():
         print("  %-22s %s  (%s)" % (product.name, product.default_price, product.id))
 
     for naam, pak in TOKENPAKKETTEN.items():
-        product = c.products.create({
+        product = c.v1.products.create({
             "name": "Dreamverse {}".format(pak["naam"]),
             "description": "Tegoed voor een bewegend kernmoment, een gesprek met "
                            "Vera of een extra droom.",
@@ -147,7 +147,7 @@ def _klant_id(user):
     if user.get("stripe_klant"):
         return user["stripe_klant"]
     c = klant()
-    gemaakt = c.customers.create({
+    gemaakt = c.v1.customers.create({
         "email": user["email"],
         "name": user["naam"] or None,
         "metadata": {"dreamverse_user": str(user["id"])},
@@ -162,7 +162,7 @@ def _sessie(user, prijs, modus, soort, waarde):
     if not prijs:
         raise BetaalError("Voor dit product is nog geen prijs ingesteld.")
     c = klant()
-    sessie = c.checkout.sessions.create({
+    sessie = c.v1.checkout.sessions.create({
         "mode": modus,
         "line_items": [{"price": prijs, "quantity": 1}],
         # Stripe wordt de verkoper en draagt de btw af.
@@ -203,7 +203,7 @@ def portaal(user):
     if not user.get("stripe_klant"):
         raise BetaalError("Er is nog niets gekocht met dit account.")
     c = klant()
-    sessie = c.billing_portal.sessions.create({
+    sessie = c.v1.billing_portal.sessions.create({
         "customer": user["stripe_klant"],
         "return_url": basis_url() + "/",
     })

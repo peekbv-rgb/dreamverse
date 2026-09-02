@@ -41,6 +41,7 @@ Geen framework — dat houdt de deploy op één bestand, net als de andere proje
 | Het bewegende kernmoment | `video.py` |
 | Live gesprek met de avatar | `vera.py` |
 | Accounts, sessies, dromen per gebruiker | `accounts.py`, `data/dreamverse.db` |
+| Afrekenen | `betalen.py` |
 | Het oude archief overzetten | `migratie.py` |
 | Verbruik meten | `usage.py`, `data/usage.jsonl` |
 | Pakketten, tokens en grenzen | `plans.py` |
@@ -178,6 +179,33 @@ maakte van *Praat met Vera* "Praat ontmoette Vera".
   uit de omgeving. Staat die niet gezet, dan kan aanpassen helemaal niet — dat is
   de veilige stand. In de app zie je de knoppen alleen na *beheer* en het invoeren
   van die sleutel; hij blijft daarna in `localStorage` van die ene browser.
+## Afrekenen
+
+Stripe **Managed Payments**: Stripe is de verkoper en draagt de btw af in ruim
+tachtig landen. 5% + $0,50 per transactie, tegen ongeveer 1,5% + € 0,25 bij
+gewoon Stripe — dat verschil koop je bewust, want zelf OSS-aangifte doen over
+27 tarieven kost meer.
+
+```bash
+python betalen.py --check     # staat alles klaar?
+python betalen.py --setup     # producten en prijzen aanmaken
+```
+
+Drie dingen die makkelijk fout gaan:
+
+- **`tax_behavior` is `inclusive`.** Anders telt Stripe de btw *boven op* je
+  prijs en rekent een klant bij € 2,99 straks € 3,62 af. Nagemeten op de
+  betaalpagina: subtotaal € 2,99, btw € 0,52, totaal € 2,99.
+- **Belastingcode `txcd_10105001`** (AI as a Service, particulier gebruik).
+  Managed Payments accepteert alleen codes uit een vaste lijst.
+- **De webhook is het gevaarlijkste eindpunt van de app.** Hij komt binnen
+  zonder sessie, en de handtekening is het enige bewijs. Zonder
+  `STRIPE_WEBHOOK_SECRET` wordt alles geweigerd — dat is de veilige stand.
+  Elke gebeurtenis wordt één keer verwerkt; het id gaat in de tabel
+  `betalingen`, want Stripe stuurt opnieuw als hij geen 200 krijgt.
+
+Tokens blijven staan als iemand opzegt: die zijn gekocht, niet gehuurd.
+
 ## Accounts
 
 `accounts.py` met SQLite in `data/dreamverse.db`. Per gebruiker gescheiden: de

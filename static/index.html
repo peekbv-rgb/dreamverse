@@ -305,18 +305,21 @@
       </div>
       <div class="tier">
         <span class="tier-name">Lite · €2,99</span>
+        <button type="button" class="koop-pakket" data-pakket="lite" hidden>Kies dit pakket</button>
         <p>Drie dromen per maand, elk met vijf getekende panelen en de hele
           duiding. Het bewegende kernmoment koop je met tokens, en zo betaal je
           alleen voor de dromen waar je het bij wilt.</p>
       </div>
       <div class="tier">
         <span class="tier-name">Plus · €7,99</span>
+        <button type="button" class="koop-pakket" data-pakket="plus" hidden>Kies dit pakket</button>
         <p>Zes dromen per maand, elk met een <strong>bewegend kernmoment</strong> van vier
           seconden met geluid. De andere panelen zijn illustraties. Vera spreken gaat op
           tokens: twee per minuut.</p>
       </div>
       <div class="tier on">
         <span class="tier-name">Ultra · €29,99</span>
+        <button type="button" class="koop-pakket" data-pakket="ultra" hidden>Kies dit pakket</button>
         <p>Tien dromen per maand met het kernmoment op het <strong>beste videomodel</strong>,
           en tien minuten met Vera inbegrepen. Daarna praat je verder op tokens.</p>
         <p class="tier-live">Aangesloten — knop bovenaan.</p>
@@ -347,6 +350,14 @@
       <button type="button" class="koop" data-kind="film_top">Als film, beste model <b>60</b></button>
       <p class="extras-melding" id="kies-melding"></p>
     </div>
+    <div class="tokenpakketten" id="tokenpakketten" hidden>
+      <span class="extras-kop">Tokens bijkopen</span>
+      <button type="button" class="koop-tokens" data-tokens="tokens20">20 tokens <b>€5,00</b></button>
+      <button type="button" class="koop-tokens" data-tokens="tokens40">40 tokens <b>€10,00</b></button>
+      <button type="button" class="koop-tokens" data-tokens="tokens100">100 tokens <b>€25,00</b></button>
+      <p class="koop-melding" id="koop-melding"></p>
+    </div>
+
     <div class="tiers">
       <div class="tier">
         <span class="tier-name">30 tokens · €7,50</span>

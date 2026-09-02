@@ -1465,6 +1465,10 @@
     } else {
       html += "<button type='button' class='ghost' data-beheer='1'>" + t("beheer") + "</button>";
     }
+    if (a.plan !== "gratis") {
+      html += "<button type='button' class='ghost' data-portaal='1'>" +
+              t("abonnement") + "</button>";
+    }
     html += "<button type='button' class='ghost uitloggen' data-uit='1'>" +
             t("uitloggen") + "</button>";
     html += "</div>";
@@ -1481,6 +1485,9 @@
     });
     el("account").querySelectorAll("[data-uit]").forEach(function (b) {
       b.addEventListener("click", uitloggen);
+    });
+    el("account").querySelectorAll("[data-portaal]").forEach(function (b) {
+      b.addEventListener("click", naarPortaal);
     });
   }
 
@@ -1882,6 +1889,69 @@
       });
   });
 
+  /* ------------------------------------------------------------- afrekenen */
+
+  /* Betalen gebeurt op de pagina van Stripe, niet hier.
+   *
+   * Zij worden de verkoper: zij innen de btw en dragen hem af in ruim tachtig
+   * landen. Er komt daarom geen kaartnummer in deze app - niet in het formulier,
+   * niet in het geheugen, nergens. Wij sturen je erheen en horen achteraf van
+   * Stripe wat er gekocht is.
+   */
+  function naarStripe(body) {
+    var melding = el("koop-melding");
+    if (melding) {
+      melding.className = "koop-melding";
+      melding.textContent = t("Je gaat naar de betaalpagina van Stripe…");
+    }
+    fetch("/api/kopen", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    })
+      .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, body: d }; }); })
+      .then(function (res) {
+        if (!res.ok || !res.body.url) {
+          throw new Error(res.body.error || t("Afrekenen lukte niet."));
+        }
+        window.location.href = res.body.url;
+      })
+      .catch(function (err) {
+        if (melding) {
+          melding.className = "koop-melding err";
+          melding.textContent = err.message;
+        }
+      });
+  }
+
+  document.querySelectorAll(".koop-pakket").forEach(function (b) {
+    b.addEventListener("click", function () {
+      naarStripe({ soort: "pakket", welk: b.dataset.pakket });
+    });
+  });
+  document.querySelectorAll(".koop-tokens").forEach(function (b) {
+    b.addEventListener("click", function () {
+      naarStripe({ soort: "tokens", welk: b.dataset.tokens });
+    });
+  });
+
+  // De knoppen komen pas als afrekenen echt aanstaat. Een knop die "dat kan nog
+  // niet" antwoordt is erger dan geen knop.
+  function toonKoopknoppen(aan) {
+    document.querySelectorAll(".koop-pakket").forEach(function (b) { b.hidden = !aan; });
+    var doos = el("tokenpakketten");
+    if (doos) { doos.hidden = !aan; }
+  }
+
+  function naarPortaal() {
+    fetch("/api/portaal", { method: "POST" })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (d.url) { window.location.href = d.url; }
+      })
+      .catch(function () { /* niets */ });
+  }
+
   function uitloggen() {
     fetch("/api/uitloggen", { method: "POST" })
       .then(function () { location.reload(); })
@@ -1892,6 +1962,14 @@
   function binnen(p) {
     profiel = p;
     document.body.classList.add("ingelogd");
+
+    // Terug van de betaalpagina. De webhook van Stripe komt los binnen en is er
+    // meestal al, maar niet altijd - dus nog een keer kijken na een paar tellen.
+    if (/[?&]betaald=1/.test(location.search)) {
+      setTimeout(laadAccount, 2500);
+      setTimeout(laadAccount, 7000);
+      history.replaceState(null, "", location.pathname);
+    }
     toonIntro();
     loadArchive();
     laadVerbruik();
@@ -1923,6 +2001,7 @@
     .then(function (d) {
       // De brontekst meegeven, anders weet de vertaalslag straks niet meer
       // welke van de twee toestanden hier stond.
+      toonKoopknoppen(!!d.betalen);
       el("mode").dataset.nl = d.key ? "verbonden" : "voorbeeldmodus";
       el("mode").textContent = t(el("mode").dataset.nl);
       if (!d.vera) {
