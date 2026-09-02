@@ -18,9 +18,9 @@
 <div class="intro" id="intro" hidden>
   <div class="intro-kaart">
     <div class="intro-speler">
-      <video id="intro-video" src="vera-intro-nl.mp4" playsinline autoplay muted loop
+      <video id="intro-video" src="vera-intro-nl.mp4" playsinline muted
              preload="auto"></video>
-      <button type="button" class="geluid-aan" id="geluid-aan">
+      <button type="button" class="geluid-aan" id="geluid-aan" hidden>
         <span aria-hidden="true">🔊</span> Hoor Vera
       </button>
     </div>
@@ -139,6 +139,7 @@
 
   <!-- Speler -->
   <div class="player" id="player" hidden>
+    <div class="verhaal" id="verhaal" hidden></div>
     <div class="stage" id="stage"></div>
     <div class="caption">
       <div class="bar" id="bar" aria-hidden="true"></div>

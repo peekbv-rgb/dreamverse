@@ -454,6 +454,13 @@ def build_prompt(dream, archive, number, name=None, language="nl"):
         + _history(archive)
         + "\n\n--- de droom van vannacht (dit wordt Droom {}) ---\n".format(number)
         + dream
+        # De hele prompt staat in het Nederlands; één regel over de taal verdrinkt
+        # daarin. Daarom staat de opdracht hier onderaan nog een keer.
+        + "\n\n--- taal ---\n"
+        + ('Schrijf elk tekstveld in {}. Dat geldt voor "title", "narration", '
+           '"threads", "why", "meaning", "future", "love", "today", "season", '
+           '"together" en "question". Alleen "image" blijft Engels, want dat gaat '
+           'naar een beeldmodel.').format(TALEN.get(language, TALEN["nl"]))
     )
 
 

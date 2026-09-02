@@ -146,15 +146,62 @@ class Handler(SimpleHTTPRequestHandler):
                      ".mp4": "video/mp4", ".mp3": "audio/mpeg"}
             if target.suffix.lower() not in types or not target.is_file():
                 return self.send_json({"error": "Niet gevonden."}, 404)
-            blob = target.read_bytes()
-            self.send_response(200)
-            self.send_header("Content-Type", types[target.suffix.lower()])
-            self.send_header("Content-Length", str(len(blob)))
-            self.send_header("Cache-Control", "public, max-age=31536000, immutable")
-            self.end_headers()
-            self.wfile.write(blob)
-            return
+            return self.send_file(target, types[target.suffix.lower()],
+                                  "public, max-age=31536000, immutable")
+
+        # Video's in static/ gaan ook langs send_file: zonder Range-antwoord kan
+        # de browser niet spoelen, en dan is video.currentTime zetten zinloos.
+        if self.path.split("?")[0].endswith((".mp4", ".mp3")):
+            doel = STATIC / os.path.basename(self.path.split("?")[0])
+            if doel.is_file():
+                soort = "video/mp4" if doel.suffix == ".mp4" else "audio/mpeg"
+                return self.send_file(doel, soort, "no-cache")
+
         super().do_GET()
+
+    def send_file(self, target, content_type, cache):
+        """Een bestand uitserveren, met Range als de browser erom vraagt.
+
+        SimpleHTTPRequestHandler kent geen Range. Zonder dat meldt de browser
+        seekable = [0, 0] en kan hij niet naar een ander punt in de video: geen
+        scrubben, en geen terugspoelen naar de stille staart van Vera's
+        begroeting.
+        """
+        omvang = target.stat().st_size
+        bereik = self.headers.get("Range", "")
+        begin, eind = 0, omvang - 1
+        deel = False
+        if bereik.startswith("bytes="):
+            stukken = bereik[6:].split(",")[0].split("-")
+            try:
+                if stukken[0]:
+                    begin = int(stukken[0])
+                    if stukken[1]:
+                        eind = min(int(stukken[1]), omvang - 1)
+                elif stukken[1]:
+                    begin = max(0, omvang - int(stukken[1]))   # laatste N bytes
+                deel = 0 <= begin <= eind < omvang
+            except ValueError:
+                deel = False
+            if not deel and begin >= omvang:
+                self.send_response(416)
+                self.send_header("Content-Range", "bytes */{}".format(omvang))
+                self.end_headers()
+                return
+
+        with target.open("rb") as f:
+            f.seek(begin)
+            blob = f.read(eind - begin + 1)
+
+        self.send_response(206 if deel else 200)
+        self.send_header("Content-Type", content_type)
+        self.send_header("Accept-Ranges", "bytes")
+        self.send_header("Content-Length", str(len(blob)))
+        if deel:
+            self.send_header("Content-Range", "bytes {}-{}/{}".format(begin, eind, omvang))
+        self.send_header("Cache-Control", cache)
+        self.end_headers()
+        self.wfile.write(blob)
 
     def do_POST(self):
         if not self.guard():

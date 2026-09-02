@@ -22,6 +22,7 @@
     // -- de introductie ----------------------------------------------------
     ["Hoor Vera", "Hear Vera"],
     ["Nog een keer", "Once more"],
+    ["Geluid uit", "Sound off"],
     ["Hoe heet je?", "What is your name?"],
     ["Geboortedatum", "Date of birth"],
     ["Geslacht", "Gender"],
@@ -181,6 +182,7 @@
     ["Archief gewist.", "Archive cleared."],
     ["Vertel eerst je droom.", "Tell me your dream first."],
     ["Je droom wordt verbeeld. Dit duurt een halve tot anderhalve minuut.", "Your dream is being imagined. This takes half a minute to a minute and a half."],
+    ["Je droom wordt geduid. Dit duurt ongeveer een halve minuut.", "Your dream is being read. This takes about half a minute."],
     ["Ik kijk ernaar. Blijf even bij me.", "I am looking at it. Stay with me a moment."],
     ["Het lukte niet.", "It did not work."],
     ["Dit is een voorbeeld.", "This is an example."],

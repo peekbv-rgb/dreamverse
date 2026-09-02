@@ -964,3 +964,22 @@ body::after { opacity: .34; }
 .mini.bewoog { border-color: rgba(242, 198, 76, .5); box-shadow: 0 0 14px rgba(242, 198, 76, .2); }
 .mini.leeg { background: linear-gradient(120deg, rgba(122, 92, 214, .3), rgba(43, 28, 74, .6)); }
 .entry:hover .mini { border-color: var(--crown); }
+
+/* Alleen de duiding: geen beeld, dus ook niet de getekende compositie die
+   anders invalt. Wat overblijft is het verhaal in vijf stukken. */
+.player.alleen-tekst .stage,
+.player.alleen-tekst .bar,
+.player.alleen-tekst #prev,
+.player.alleen-tekst #next,
+.player.alleen-tekst .counter,
+.player.alleen-tekst .narration { display: none; }
+.verhaal {
+  padding: 1.8rem 2rem 1.4rem;
+  font-family: var(--display); font-size: 1.22rem; line-height: 1.7;
+}
+.verhaal p { margin: 0 0 1rem; }
+.verhaal p:last-child { margin-bottom: 0; }
+.verhaal p:first-child::first-letter {
+  float: left; font-size: 3.2rem; line-height: .82;
+  padding: .1rem .5rem 0 0; color: var(--crown);
+}

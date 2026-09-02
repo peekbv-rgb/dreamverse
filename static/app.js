@@ -315,6 +315,21 @@
     el("title").dataset.nl = ep.title;
     player.hidden = false;
 
+    // "Alleen de duiding" betekent ook echt geen beeld: geen panelen, en dus ook
+    // niet de getekende composities die anders als plaatsvervanger dienen. Wat
+    // er wel is, is het verhaal in vijf stukken - dat blijft, als tekst.
+    var tekstAlleen = ep.quality === "duiding";
+    player.classList.toggle("alleen-tekst", tekstAlleen);
+    el("verhaal").hidden = !tekstAlleen;
+    if (tekstAlleen) {
+      el("verhaal").innerHTML = "";
+      ep.panels.forEach(function (paneel) {
+        var alinea = document.createElement("p");
+        alinea.textContent = paneel.narration;
+        el("verhaal").appendChild(alinea);
+      });
+    }
+
     bar.innerHTML = "";
     ep.panels.forEach(function () { bar.appendChild(document.createElement("span")); });
     show(0);
@@ -578,10 +593,38 @@
   el("voice").addEventListener("click", function () {
     voiceOn = !voiceOn;
     this.setAttribute("aria-pressed", voiceOn ? "true" : "false");
-    this.textContent = voiceOn ? "Stem uit" : "Stem aan";
-    if (voiceOn && episode) { speak(episode.panels[index].narration); }
+    this.textContent = voiceOn ? t("Stem uit") : t("Stem aan");
+    if (voiceOn && episode) {
+      // Zonder panelen is er niets om doorheen te klikken, dus loopt het verhaal
+      // in één keer door. Anders leest hij alleen het stuk dat in beeld staat.
+      if (player.classList.contains("alleen-tekst")) { leesAlles(0); }
+      else { speak(episode.panels[index].narration); }
+    }
     else if ("speechSynthesis" in window) { window.speechSynthesis.cancel(); }
   });
+
+  // Het hele verhaal achter elkaar, voor de tekstversie. De opgenomen stem
+  // heeft de voorkeur; is die er niet, dan leest de browser voor.
+  function leesAlles(vanaf) {
+    if (!voiceOn || !episode || vanaf >= episode.panels.length) { return; }
+    var verder = function () { leesAlles(vanaf + 1); };
+    if (stemmen[vanaf]) {
+      try {
+        speler.pause();
+        speler.onended = verder;
+        speler.src = stemmen[vanaf];
+        speler.play().catch(verder);
+        return;
+      } catch (e) { /* val terug op de browserstem */ }
+    }
+    if (!("speechSynthesis" in window)) { return; }
+    var zin = new SpeechSynthesisUtterance(episode.panels[vanaf].narration);
+    if (verteller) { zin.voice = verteller; }
+    zin.lang = window.TAAL === "en" ? "en-US" : "nl-NL";
+    zin.rate = 0.95;
+    zin.onend = verder;
+    window.speechSynthesis.speak(zin);
+  }
 
   document.addEventListener("keydown", function (e) {
     if (e.target === input || !episode) { return; }
@@ -671,7 +714,9 @@
     go.disabled = true;
     go.textContent = t("Bezig…");
     statusEl.className = "status";
-    statusEl.textContent = t("Je droom wordt verbeeld. Dit duurt een halve tot anderhalve minuut.");
+    statusEl.textContent = gekozenKwaliteit === "duiding"
+      ? t("Je droom wordt geduid. Dit duurt ongeveer een halve minuut.")
+      : t("Je droom wordt verbeeld. Dit duurt een halve tot anderhalve minuut.");
     guideLine.textContent = t("Ik kijk ernaar. Blijf even bij me.");
 
     fetch("/api/episode", {
@@ -1071,25 +1116,20 @@
 
   // Elk taalfilmpje is apart ingesproken en gelipsynchroniseerd; de tekst
   // eronder verandert mee.
+  // stilVanaf is het punt waar hij na afloop naartoe terugspoelt: de plek in de
+  // stille staart waarvan het beeld het meest op het slotbeeld lijkt. Daardoor
+  // is de rondgang nauwelijks te zien, en het blijft één opname.
   var INTRO = {
-    nl: { video: "vera-intro-nl.mp4", stil: "vera-idle-nl.mp4",
+    nl: { video: "vera-intro-nl.mp4", stilVanaf: 8.46,
           tekst: "Hi, ik ben Vera, de digitale droom-annalist. Wil je je droom met mij delen?" },
-    en: { video: "vera-intro-en.mp4", stil: "vera-idle-en.mp4",
+    en: { video: "vera-intro-en.mp4", stilVanaf: 5.4,
           tekst: "Hi, I'm Vera, your digital dream analyst. Would you like to share your dream with me?" }
   };
 
   function zetIntroTaal(taal) {
     var i = INTRO[taal] || INTRO.nl;
-    var v = el("intro-video");
-    if (v && v.getAttribute("src") !== i.video) {
-      var hoorbaar = !v.muted;
-      v.src = i.video;
-      v.muted = !hoorbaar;
-      v.currentTime = 0;
-      v.play().catch(function () { /* wacht dan op de knop */ });
-      if (!hoorbaar) { el("geluid-aan").hidden = false; }
-    }
     el("intro-tekst").textContent = i.tekst;
+    if (el("intro-video")) { begroetingSpelen(); }
   }
 
   function zetVlaggen(taal) {
@@ -1102,6 +1142,7 @@
     document.documentElement.lang = taal;
     document.documentElement.setAttribute("translate", "no");
     if (window.vertaalPagina) { window.vertaalPagina(taal); }
+    laadAccount();
     begroet(begroetteNaam);
     toonNaam(begroetteNaam || naamVeld.value.trim());
     zetIntroTaal(taal);
@@ -1160,47 +1201,98 @@
 
   // Eén klik zet het geluid aan en speelt vanaf het begin. Daarna mag de
   // browser de rest van de sessie ook geluid van ons afspelen.
+  /* Vera's welkomstboodschap.
+   *
+   * Ze moet gewoon praten zodra de app opengaat. Wat er niet mag gebeuren is
+   * dat ze haar tekst geluidloos staat te mimen: dat is het eerste wat iemand
+   * van Dreamverse ziet, en het leest als een storing.
+   *
+   * Browsers weigeren geluid voordat je iets hebt aangeklikt. Lukt het niet,
+   * dan komt niet de pratende clip in beeld maar de stille lus - ademen en
+   * knipperen, mond dicht - met een knop ernaast. Zo klopt het beeld altijd bij
+   * wat je hoort.
+   */
   var geluidKnop = el("geluid-aan");
-  if (geluidKnop) {
-    var v = el("intro-video");
+  var introVideo = el("intro-video");
+
+  function introDeel() {
+    return INTRO[(profiel && profiel.language) || "nl"] || INTRO.nl;
+  }
+
+  function zetKnop(soort) {
+    if (!geluidKnop) { return; }
+    geluidKnop.hidden = false;
+    geluidKnop.dataset.doet = soort;
+    if (soort === "dempen") {
+      geluidKnop.innerHTML = '<span aria-hidden="true">🔇</span> ' + t("Geluid uit");
+    } else {
+      geluidKnop.innerHTML = '<span aria-hidden="true">🔊</span> ' +
+                             t(introVideo.dataset.gehoord ? "Nog een keer" : "Hoor Vera");
+    }
+  }
+
+  // Naar de stille staart van dezelfde clip: daar praat ze niet meer maar staat
+  // ze wel te ademen en te kijken. Eén bestand, dus er valt niets te knippen.
+  function stilZetten() {
+    introVideo.dataset.staat = "stil";
+    introVideo.muted = true;
+    introVideo.loop = false;
+    var spoel = function () {
+      introVideo.currentTime = introDeel().stilVanaf;
+      introVideo.play().catch(function () { /* mag mislukken */ });
+    };
+    // Terugspoelen kan pas als de lengte bekend is; anders begint hij bij nul en
+    // staat ze alsnog geluidloos te mimen.
+    if (introVideo.readyState >= 1) {
+      spoel();
+    } else {
+      introVideo.addEventListener("loadedmetadata", function eenmalig() {
+        introVideo.removeEventListener("loadedmetadata", eenmalig);
+        spoel();
+      });
+    }
+    zetKnop("horen");
+  }
+
+  // Welke taal er al begroet heeft. Zonder dit begint Vera opnieuw zodra iets
+  // anders de taalfunctie aanroept, en valt ze zichzelf in de rede.
+  var begroetIn = "";
+
+  function begroetingSpelen(geforceerd) {
+    if (!introVideo) { return; }
+    var taal = (profiel && profiel.language) || "nl";
+    if (!geforceerd && begroetIn === taal) { return; }
+    begroetIn = taal;
+    introVideo.dataset.staat = "praat";
+    introVideo.muted = false;
+    introVideo.loop = false;
+    var bron = introDeel().video;
+    if (introVideo.getAttribute("src") !== bron) {
+      introVideo.setAttribute("src", bron);
+      introVideo.load();
+    } else {
+      introVideo.currentTime = 0;
+    }
+    var poging = introVideo.play();
+    if (!poging || !poging.then) { return; }
+    poging.then(function () {
+      introVideo.dataset.gehoord = "ja";
+      zetKnop("dempen");
+    }).catch(function () {
+      // De browser wil nog geen geluid. Dan liever de stille staart dan een
+      // pratende Vera die je niet hoort.
+      stilZetten();
+    });
+  }
+
+  if (geluidKnop && introVideo) {
     geluidKnop.addEventListener("click", function () {
-      // Terug naar de begroeting: als ze al op de stille lus staat, moet de
-      // pratende clip er eerst weer in.
-      if (v.dataset.staat === "stil") {
-        v.dataset.staat = "";
-        v.src = (INTRO[profiel.language] || INTRO.en).video;
-      }
-      v.muted = false;
-      // Gedempt mag hij rondjes draaien als sfeer; met geluid speelt hij één
-      // keer af en stopt hij netjes.
-      v.loop = false;
-      v.currentTime = 0;
-      v.play().then(function () {
-        geluidKnop.hidden = true;
-      }).catch(function () { /* browser wil niet; de knop blijft staan */ });
+      if (geluidKnop.dataset.doet === "dempen") { stilZetten(); } else { begroetingSpelen(true); }
     });
-    v.addEventListener("ended", function () {
-      // Na de begroeting gaat ze over op een stille lus: ademen en knipperen,
-      // mond dicht. Die lus is per taal gemaakt vanaf het laatste beeld van de
-      // clip erboven, dus de overgang is geen montage maar een doorloop.
-      if (v.dataset.staat !== "stil") {
-        v.dataset.staat = "stil";
-        v.muted = true;
-        v.loop = true;
-        v.src = (INTRO[profiel.language] || INTRO.en).stil;
-        // Meteen play() aanroepen wordt afgebroken door het laden zelf; pas als
-        // er beeld is heeft het zin.
-        v.addEventListener("loadeddata", function starten() {
-          v.removeEventListener("loadeddata", starten);
-          v.play().catch(function () { /* de browser wil niet; niet erg */ });
-        });
-        v.load();
-      }
-      geluidKnop.hidden = false;
-      geluidKnop.innerHTML = '<span aria-hidden="true">🔊</span> ' + t("Nog een keer");
-    });
-    v.addEventListener("volumechange", function () {
-      if (!v.muted) { geluidKnop.hidden = true; }
+    introVideo.addEventListener("ended", function () {
+      // Aan het eind terug naar de staart in plaats van stilstaan op het laatste
+      // beeld. Alles komt uit dezelfde opname, dus ze blijft dezelfde vrouw.
+      stilZetten();
     });
   }
 

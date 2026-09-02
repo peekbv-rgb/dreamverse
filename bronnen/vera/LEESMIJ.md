@@ -3,66 +3,72 @@
 Dit is het eerste wat iemand van Dreamverse ziet. Hier staan de originelen, zodat
 het opnieuw te maken is zonder alles opnieuw te genereren.
 
-## Wat er staat
-
 | Bestand | Wat het is |
 |---|---|
-| `intro-nl-ongeknipt.mp4` | Vera's begroeting in het Nederlands, 5,67 s, zoals Runway hem gaf |
-| `intro-en-ongeknipt.mp4` | Dezelfde in het Engels, 4,80 s, zoals Runway hem gaf |
-| `laatste-frame-nl.jpg` | Het laatste beeld van de geknipte NL-clip (op 5,66 s) |
-| `laatste-frame-en.jpg` | Het laatste beeld van de geknipte EN-clip (op 4,68 s) |
+| `begroeting-met-stilte-nl.mp3` | De gesproken begroeting plus zes seconden stilte |
+| `begroeting-met-stilte-en.mp3` | Dezelfde in het Engels |
+| `intro-nl-ongeknipt.mp4` | De eerste versie, alleen de gesproken tekst (5,67 s) |
+| `intro-en-ongeknipt-lang.mp4` | De Engelse generatie met twaalf seconden stilte (16,6 s), waar de gebruikte clip uit geknipt is |
 
-Wat in `static/` staat is het geknipte resultaat: `vera-intro-nl.mp4`,
-`vera-intro-en.mp4`, en de stille lussen `vera-idle-nl.mp4` en `vera-idle-en.mp4`.
+Wat in `static/` staat is het resultaat: `vera-intro-nl.mp4` (11,5 s) en
+`vera-intro-en.mp4` (8,5 s).
 
-## Waarom er geknipt is
+## Waarom er stilte achter de spraak zit
 
-De Engelse clip eindigt met een knipper: vanaf 4,72 s zijn haar ogen dicht, en het
-laatste beeld bleef daarop staan. Een welkomstboodschap die eindigt met een
-gesloten gezicht leest als een storing. Afkappen op 4,68 s geeft ogen open en een
-glimlach. De Nederlandse clip eindigt uit zichzelf goed en is alleen op 5,66 s
-afgerond; de knipper daarin zit op 5,38 s, dus midden in de zin waar hij hoort.
+Vera moet praten als de app opengaat, en daarna niet bevriezen en ook niet haar
+tekst opnieuw mimen. De eerste opzet was een tweede clip die op het laatste frame
+van de eerste begon. Dat was niet goed genoeg: hoe precies het aansluitframe ook
+gekozen was, twee generaties leveren net andere kleur en scherpte, en die overgang
+zie je.
 
-## Waarom er twee stille lussen zijn
+De oplossing zit in de audio. Runway's avatar accepteert geluid in plaats van
+tekst, dus door zes seconden stilte achter de begroeting te plakken komt alles uit
+één generatie: ze praat, en blijft daarna zes seconden rustig staan, ademen en
+kijken. Er valt niets meer te knippen.
 
-Na de begroeting mag ze niet stilstaan en niet opnieuw praten. De hele clip
-herhalen laat haar de tekst mimen; bevriezen maakt haar levenloos. Daarom een
-aparte lus per taal: ademen, knipperen, haar in de wind, mond dicht.
+Na afloop spoelt de speler terug naar een punt in die stille staart, gekozen op het
+frame dat het meest op het slotbeeld lijkt: 8,46 s voor Nederlands en 5,4 s voor
+Engels. Die waarden staan in `INTRO` in `static/app.js`. Verandert de clip, dan
+moeten ze opnieuw gezocht worden — meet de afwijking tussen het slotframe en elk
+frame in de staart, en houd minstens drie seconden staart over, anders schokt de
+rondgang.
 
-Die lus is gegenereerd **vanaf het laatste frame van de clip erboven** — vandaar
-dat die frames hier bewaard staan. Dat is de hele truc: het eerste beeld van de
-lus is letterlijk het laatste beeld van de begroeting, dus je ziet geen montage
-maar een doorloop. Een lus uit een ander frame geeft een zichtbare knik, hoe goed
-de generatie verder ook is.
+## Waarom de Engelse clip uit twee stukken bestaat
+
+Tijdens de stilte verzint het model soms een mondbeweging. In het Engels gebeurde
+dat tussen 6,8 en 8,4 seconde, en dat leest als een woord dat je niet hoort —
+Ruud zag haar "help" zeggen. Het is deterministisch: dezelfde audio geeft dezelfde
+beweging, dus opnieuw genereren met dezelfde stilte helpt niet.
+
+Wat wel helpt is een langere stilte, zodat er verderop een rustig stuk ontstaat.
+De gebruikte clip is daarom `0 → 6,70` plus `14,80 → 16,55` uit dezelfde generatie
+aan elkaar. Dat is een knip, maar geen tweede generatie: kleur, scherpte en
+belichting zijn identiek. Het aansluitpunt is gekozen op het frame dat het beste
+bij het eind van deel één past.
+
+Meet de mondbeweging door per frame het verschil te nemen in het gebied
+`x 0,35–0,65`, `y 0,55–0,75` van het beeld. Waarden van 1 tot 3 zijn ademen;
+alles boven de 5 is de mond.
 
 ## Opnieuw maken
 
-Knippen (ffmpeg komt uit `imageio_ffmpeg`, staat al in de requirements):
+De audio, met ffmpeg uit `imageio_ffmpeg`. Eerst alleen de spraak, dan stilte erachter:
 
 ```bash
-python -c "import imageio_ffmpeg;print(imageio_ffmpeg.get_ffmpeg_exe())"
+ffmpeg -y -i bronnen/vera/intro-nl-ongeknipt.mp4 -t 5.51 -vn -ac 1 -ar 44100 spraak.wav
+ffmpeg -y -i spraak.wav -af "apad=pad_dur=6" -b:a 128k bronnen/vera/begroeting-met-stilte-nl.mp3
 ```
 
-Daarna, met dat pad als `ffmpeg`:
+Dan de video, met avatar-id `43e6b2b0-29ea-4125-8e2f-3ebed04f65d1`:
 
-```bash
-ffmpeg -y -i bronnen/vera/intro-en-ongeknipt.mp4 -t 4.68 -c:v libx264 -preset slow -crf 20 -pix_fmt yuv420p -c:a aac -b:a 128k static/vera-intro-en.mp4
+```python
+c.avatar_videos.create(
+    model="gwm1_avatars",
+    avatar={"type": "custom", "avatar_id": VERA},
+    speech={"type": "audio", "audio": "data:audio/mpeg;base64," + base64.b64encode(mp3).decode()},
+)
 ```
 
-Het laatste frame eruit halen:
-
-```bash
-ffmpeg -y -sseof -0.05 -i static/vera-intro-en.mp4 -frames:v 1 -q:v 2 bronnen/vera/laatste-frame-en.jpg
-```
-
-De stille lus komt van Runway `image_to_video`, model `gen4_turbo`, 5 seconden,
-`1280:720`, met dat frame als `prompt_image` en deze aanwijzing:
-
-> She has just finished speaking and now stands still, listening. She breathes
-> softly and blinks naturally a few times, keeping the same calm expression. Her
-> lips stay closed and completely still: she is not speaking, her mouth does not
-> move. Loose strands of hair drift in the sea breeze, waves roll gently behind
-> her, warm sunset light. Static camera, no zoom, no cut.
-
-De regel over de lippen moet erin blijven staan. Zonder die zin begint ze te
-glimlachen en te praten, en dan is het weer een pratende clip.
+Let op: de server moet Range-verzoeken aankunnen, anders meldt de browser
+`seekable = [0, 0]` en kan hij niet terugspoelen naar de staart. Dat zit in
+`send_file` in `server.py`.
