@@ -12,5 +12,6 @@ __pycache__/
 *.pyc
 run.log
 
-# Het droomarchief: andermans dromen zijn niets voor een repo.
+# Het droomarchief en de accounts: andermans dromen en wachtwoorden zijn
+# niets voor een repo. data/ dekt ook dreamverse.db en de WAL-bestanden.
 data/
