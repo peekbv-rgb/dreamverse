@@ -1233,3 +1233,56 @@ body::after { opacity: .34; }
 .koop-tokens b { color: var(--solar); }
 .koop-melding { width: 100%; margin: .3rem 0 0; font-size: .85rem; color: var(--muted); }
 .koop-melding.err { color: #F5A08F; }
+
+/* ------------------------------------------------------------------------ */
+/* Je gegevens: meenemen of weghalen.                                        */
+
+.gegevens { display: grid; grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr)); gap: 1rem; }
+.gegevens-blok {
+  background: var(--panel); border: 1px solid rgba(179, 105, 222, .24);
+  border-radius: 16px; padding: 1.2rem 1.35rem;
+  display: flex; flex-direction: column; gap: .6rem; align-items: flex-start;
+}
+.gegevens-blok p { margin: 0; color: #D8CDEA; font-size: .9rem; line-height: 1.55; }
+.gegevens-blok.gevaar { border-color: rgba(245, 160, 143, .35); }
+.gegevens-blok.gevaar .lbl { color: #F5A08F; }
+.knop-als-link {
+  display: inline-block; text-decoration: none;
+  font-family: var(--body); font-size: .84rem; font-weight: 600;
+  background: var(--raised); color: var(--ink);
+  border: 1px solid var(--heart); border-radius: 100px;
+  padding: .5rem 1.15rem;
+}
+.knop-als-link:hover { box-shadow: 0 0 18px rgba(79, 191, 134, .3); }
+.verwijder-vraag { display: flex; flex-direction: column; gap: .5rem; width: 100%; }
+.verwijder-vraag label { font-size: .78rem; color: var(--muted); }
+.verwijder-vraag input {
+  font-family: var(--body); font-size: 1rem; padding: .5rem .7rem;
+  border-radius: 10px; background: rgba(43, 28, 74, .6);
+  color: var(--ink); border: 1px solid var(--line);
+}
+.gevaar-knop {
+  border-color: rgba(245, 160, 143, .6); color: #F5A08F;
+  background: rgba(242, 120, 100, .12);
+}
+.gevaar-knop:hover { box-shadow: 0 0 18px rgba(245, 160, 143, .3); }
+.verwijder-melding { margin: 0; font-size: .85rem; color: var(--muted); }
+.verwijder-melding.err { color: #F5A08F; }
+.gegevens-voet { margin: 1rem 0 0; font-size: .85rem; color: #CFC4E4; }
+.gegevens-voet a { color: var(--throat); }
+
+.afscheid {
+  min-height: 100vh; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; text-align: center;
+  padding: 2rem; gap: .8rem;
+}
+.afscheid h1 { font-family: var(--display); font-weight: 300; font-size: 2.4rem; margin: 0; }
+.afscheid p { color: var(--muted); max-width: 26rem; }
+
+/* De privacyverklaring gebruikt dezelfde blokken, maar zonder de bewegende
+   achtergrond: dat is een tekst om te lezen, niet om naar te kijken. */
+body.tekstpagina #achtergrond { display: none; }
+body.tekstpagina::after { opacity: .12; }
+body.tekstpagina .meta a { color: var(--crown); text-decoration: none; }
+body.tekstpagina .block p + p { margin-top: .7rem; }
+body.tekstpagina .end a { color: var(--throat); }

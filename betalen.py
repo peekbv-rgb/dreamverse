@@ -194,6 +194,18 @@ def koop_tokens(user, welk):
                    TOKENPAKKETTEN[welk]["tokens"])
 
 
+def zeg_op(abo_id):
+    """Een abonnement meteen beëindigen.
+
+    Niet "aan het eind van de periode": wie zijn account verwijdert wil niet
+    volgende maand nog een afschrijving zien van iets wat niet meer bestaat.
+    """
+    if not enabled() or not abo_id:
+        return False
+    klant().v1.subscriptions.cancel(abo_id)
+    return True
+
+
 def portaal(user):
     """De pagina van Stripe waar je je abonnement opzegt of je kaart wijzigt.
 

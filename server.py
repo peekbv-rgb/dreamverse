@@ -21,6 +21,8 @@ Serveert de speler uit static/ en drie eindpunten:
     DELETE /api/vera/session/<id>              -> gesprek afsluiten
     GET    /api/archive                        -> alle eerdere dromen
     GET    /api/spectrum                       -> welk kleurveld elke droom koos
+    GET    /api/mijn-gegevens                  -> alles wat we bewaren, als zip
+    POST   /api/account-verwijderen            -> alles weg, onomkeerbaar
     DELETE /api/dream/<nr>                     -> een droom en al zijn beelden wissen
     DELETE /api/archive                        -> archief wissen
 
@@ -175,6 +177,19 @@ class Handler(SimpleHTTPRequestHandler):
             return
         if self.path == "/api/profile":
             return self.send_json(dreamverse.public_profile())
+        if self.path == "/api/mijn-gegevens":
+            # Het recht op inzage en overdraagbaarheid: alles wat we bewaren,
+            # in één zip, inclusief het beeld.
+            blob = dreamverse.uitvoer()
+            self.send_response(200)
+            self.send_header("Content-Type", "application/zip")
+            self.send_header("Content-Length", str(len(blob)))
+            self.send_header("Content-Disposition",
+                             'attachment; filename="dreamverse-mijn-gegevens.zip"')
+            self.end_headers()
+            self.wfile.write(blob)
+            return
+
         if self.path == "/api/spectrum":
             return self.send_json(dreamverse.spectrum())
         if self.path == "/api/usage":
@@ -385,6 +400,20 @@ class Handler(SimpleHTTPRequestHandler):
             except Exception as e:
                 self.log_message("portaal mislukte: %s", e)
                 return self.send_json({"error": "Dat lukte niet."}, 502)
+
+        if self.path == "/api/account-verwijderen":
+            # Met het wachtwoord erbij. Dit is onomkeerbaar, en een verdwaalde
+            # klik of een openstaand tabblad op een gedeelde computer mag niet
+            # iemands hele archief kosten.
+            payload = self.read_json() or {}
+            if not accounts.klopt_wachtwoord(payload.get("wachtwoord") or "",
+                                             self.gebruiker["wachtwoord"]):
+                return self.send_json({"error": "Je wachtwoord klopt niet."}, 401)
+            try:
+                uit = dreamverse.verwijder_account()
+            except dreamverse.DreamverseError as e:
+                return self.send_json({"error": str(e)}, 409)
+            return self.send_json(uit, cookie=self.wis_cookie())
 
         if self.path == "/api/profile":
             payload = self.read_json() or {}

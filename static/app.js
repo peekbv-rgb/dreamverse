@@ -1952,6 +1952,50 @@
       .catch(function () { /* niets */ });
   }
 
+  /* -------------------------------------------------- je gegevens weghalen */
+
+  /* Verwijderen vraagt om het wachtwoord.
+   *
+   * Dit is onomkeerbaar en het gaat over iemands hele archief. Een verdwaalde
+   * klik, of een openstaand tabblad op een gedeelde computer, mag dat niet
+   * kosten. Het wachtwoord is het enige wat een ander niet heeft.
+   */
+  if (el("verwijder-open")) {
+    el("verwijder-open").addEventListener("click", function () {
+      el("verwijder-vraag").hidden = false;
+      el("verwijder-open").hidden = true;
+      el("verwijder-wachtwoord").focus();
+    });
+    el("verwijder-terug").addEventListener("click", function () {
+      el("verwijder-vraag").hidden = true;
+      el("verwijder-open").hidden = false;
+      el("verwijder-wachtwoord").value = "";
+      el("verwijder-melding").textContent = "";
+    });
+    el("verwijder-echt").addEventListener("click", function () {
+      var melding = el("verwijder-melding");
+      melding.className = "verwijder-melding";
+      melding.textContent = t("Bezig…");
+      fetch("/api/account-verwijderen", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ wachtwoord: el("verwijder-wachtwoord").value })
+      })
+        .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, body: d }; }); })
+        .then(function (res) {
+          if (!res.ok) { throw new Error(res.body.error || t("Dat lukte niet.")); }
+          document.body.innerHTML =
+            '<div class="afscheid"><h1>' + t("Alles is weg.") + "</h1><p>" +
+            t("Je account, je dromen en al het beeld zijn verwijderd. Er is geen kopie.") +
+            "</p></div>";
+        })
+        .catch(function (err) {
+          melding.className = "verwijder-melding err";
+          melding.textContent = err.message;
+        });
+    });
+  }
+
   function uitloggen() {
     fetch("/api/uitloggen", { method: "POST" })
       .then(function () { location.reload(); })

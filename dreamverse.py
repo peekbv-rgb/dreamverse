@@ -387,6 +387,92 @@ def _ruim_nummer_op(number):
             pass
 
 
+def mijn_bestanden():
+    """Alle panelen, video's en ingesproken tekst van de ingelogde gebruiker."""
+    mijn = "{}_".format(uid())
+    if not kling.PANELS.is_dir():
+        return []
+    return sorted(p for p in kling.PANELS.iterdir()
+                  if p.is_file() and p.name.startswith(mijn))
+
+
+def uitvoer():
+    """Alles wat we van iemand bewaren, als zip.
+
+    Het recht op inzage en overdraagbaarheid uit de AVG. Niet alleen de tekst:
+    ook de panelen, de video en de ingesproken stem, want dat is óók van hem -
+    en het is het enige exemplaar dat bestaat.
+    """
+    import io
+    import zipfile
+
+    gegevens = accounts.alles_van(uid())
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as zip_:
+        zip_.writestr("dreamverse.json",
+                      json.dumps(gegevens, ensure_ascii=False, indent=2))
+        zip_.writestr("LEESMIJ.txt", UITVOER_UITLEG)
+        voor = "{}_".format(uid())
+        for pad in mijn_bestanden():
+            # Zonder het gebruikersnummer ervoor: dat is onze administratie,
+            # niet de zijne. "12-2.png" is paneel 2 van droom 12.
+            zip_.write(pad, "beeld/" + pad.name[len(voor):])
+    return buffer.getvalue()
+
+
+UITVOER_UITLEG = """Dit is alles wat Dreamverse van je bewaart.
+
+dreamverse.json
+  je profiel, al je dromen zoals je ze verteld hebt, de duidingen die erbij
+  geschreven zijn, en een overzicht van je betalingen.
+
+beeld/
+  de panelen, de bewegende kernmomenten en de ingesproken vertelling.
+  De naam 12-2.png betekent: paneel 2 van droom 12.
+
+Wat er NIET in zit: je wachtwoord. Dat bewaren we niet - alleen een
+onomkeerbare afdruk ervan, waar het wachtwoord niet uit terug te rekenen is.
+
+Wil je dat we alles weggooien, dan kan dat in de app onder je account. Dat is
+onomkeerbaar en er blijft geen kopie achter.
+"""
+
+
+def verwijder_account():
+    """Alles weg: de dromen, het beeld, de sessies en het account zelf.
+
+    Loopt er een abonnement, dan wordt dat eerst bij Stripe opgezegd. Zonder dat
+    blijft iemand betalen voor een account dat niet meer bestaat, en dat is de
+    ergste fout die je hier kunt maken.
+    """
+    u = accounts.huidige()
+
+    opgezegd = None
+    if u.get("stripe_abo"):
+        try:
+            import betalen
+            if betalen.enabled():
+                betalen.zeg_op(u["stripe_abo"])
+                opgezegd = u["stripe_abo"]
+        except Exception as e:
+            # Niet doorgaan: een account weggooien terwijl de incasso doorloopt
+            # is erger dan een verwijdering die niet lukt.
+            raise DreamverseError(
+                "Je abonnement kon niet worden opgezegd, dus je account is niet "
+                "verwijderd. Zeg het abonnement op via Stripe en probeer het "
+                "daarna opnieuw. ({})".format(str(e)[:120]))
+
+    for pad in mijn_bestanden():
+        try:
+            pad.unlink(missing_ok=True)
+        except OSError:
+            pass
+
+    accounts.weg_gebruiker(u["id"])
+    accounts.zet_huidige(None)
+    return {"verwijderd": True, "abonnement_opgezegd": opgezegd}
+
+
 def clear_archive():
     """Het archief wissen: ook de beelden, de video, de stem en de duiding.
 

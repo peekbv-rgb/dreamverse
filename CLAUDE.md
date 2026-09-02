@@ -179,6 +179,30 @@ maakte van *Praat met Vera* "Praat ontmoette Vera".
   uit de omgeving. Staat die niet gezet, dan kan aanpassen helemaal niet — dat is
   de veilige stand. In de app zie je de knoppen alleen na *beheer* en het invoeren
   van die sleutel; hij blijft daarna in `localStorage` van die ene browser.
+## Wat de AVG hier betekent
+
+Dromen zijn geen gewone gegevens: mensen vertellen erin over hun angsten, hun
+relaties en hun overledenen. Daarom staan deze drie dingen er, en ze horen te
+blijven.
+
+- **`GET /api/mijn-gegevens`** geeft alles als zip: profiel, dromen, duidingen,
+  betalingen, en al het beeld en geluid. Het wachtwoord zit er niet in — dat
+  bewaren we niet, alleen een afdruk.
+- **`POST /api/account-verwijderen`** haalt alles weg, en vraagt om het
+  wachtwoord. Onomkeerbaar, dus een verdwaalde klik of een openstaand tabblad op
+  een gedeelde computer mag het niet doen. **Loopt er een abonnement, dan wordt
+  dat eerst bij Stripe opgezegd** — anders blijft iemand betalen voor een account
+  dat niet meer bestaat. Lukt dat opzeggen niet, dan gaat de verwijdering niet
+  door.
+- **`static/privacy.html`** noemt de verwerkers met naam: Anthropic (de tekst),
+  Kling (de panelen), Runway (beeld, stem en Vera), Stripe (het afrekenen) en
+  Render (waar het draait). Verandert er een leverancier, dan verandert die
+  pagina mee.
+
+De betaalregels blijven na verwijdering staan zonder gebruiker: een bedrag, een
+datum en een gebeurtenis-id. Dat is boekhouding en er staat niets persoonlijks
+in.
+
 ## Afrekenen
 
 Stripe **Managed Payments**: Stripe is de verkoper en draagt de btw af in ruim

@@ -437,6 +437,46 @@ def boek_betaling(gebeurtenis_id, user_id, soort, bedrag, munt, ruw=""):
                      (gebeurtenis_id, user_id, soort, bedrag, munt, nu(), ruw[:2000]))
 
 
+def weg_gebruiker(user_id):
+    """Alles van deze gebruiker uit de database.
+
+    De bestanden op schijf gaan er apart af; die kent deze module niet. De
+    betalingen blijven staan met user_id op NULL: dat is een boekhoudkundige
+    verplichting, en er staat geen persoonsgegeven in - alleen een bedrag, een
+    datum en een gebeurtenis-id van Stripe.
+    """
+    with _lock:
+        db().execute("UPDATE betalingen SET user_id = NULL WHERE user_id = ?", (user_id,))
+        db().execute("DELETE FROM sessies WHERE user_id = ?", (user_id,))
+        db().execute("DELETE FROM dromen WHERE user_id = ?", (user_id,))
+        db().execute("DELETE FROM verbeeldingen WHERE user_id = ?", (user_id,))
+        db().execute("DELETE FROM users WHERE id = ?", (user_id,))
+
+
+def alles_van(user_id):
+    """Alles wat we van iemand bewaren, als gewoon woordenboek.
+
+    Voor het recht op inzage en overdraagbaarheid. Niet het wachtwoord en niet
+    de bevestigingscode: die zijn van het slot, niet van de gegevens.
+    """
+    u = gebruiker(user_id)
+    if not u:
+        return None
+    weg = ("wachtwoord", "bevestig_code")
+    profiel = {k: v for k, v in u.items() if k not in weg}
+    verbeeldingen = {str(n): e for n, e in alle_verbeeldingen(user_id)}
+    betalingen = [dict(r) for r in db().execute(
+        "SELECT soort, bedrag, munt, wanneer FROM betalingen WHERE user_id = ?"
+        " ORDER BY wanneer", (user_id,)).fetchall()]
+    return {
+        "uitgevoerd_op": nu(),
+        "profiel": profiel,
+        "dromen": dromen(user_id),
+        "duidingen": verbeeldingen,
+        "betalingen": betalingen,
+    }
+
+
 def aantal_gebruikers():
     return db().execute("SELECT COUNT(*) AS n FROM users").fetchone()["n"]
 

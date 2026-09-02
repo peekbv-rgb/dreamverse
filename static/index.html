@@ -375,6 +375,45 @@
     </div>
   </section>
 
+  <section id="gegevens-section">
+    <div class="head-rule">
+      <h2>Je gegevens</h2>
+      <p>Je dromen zijn van jou. Je kunt ze meenemen, en je kunt ze weghalen.</p>
+    </div>
+
+    <div class="gegevens">
+      <div class="gegevens-blok">
+        <span class="lbl">Alles meenemen</span>
+        <p>Een zip met je profiel, al je dromen zoals je ze verteld hebt, de
+          duidingen die erbij geschreven zijn, en alle panelen, video's en
+          ingesproken tekst.</p>
+        <a class="knop-als-link" href="/api/mijn-gegevens" download>Download mijn gegevens</a>
+      </div>
+
+      <div class="gegevens-blok gevaar">
+        <span class="lbl">Alles weghalen</span>
+        <p>Je account, je dromen, de duidingen en al het beeld gaan weg, en er
+          blijft geen kopie achter. Loopt er een abonnement, dan wordt dat eerst
+          opgezegd. Dit is niet ongedaan te maken.</p>
+        <button type="button" class="ghost" id="verwijder-open">Mijn account verwijderen</button>
+        <div class="verwijder-vraag" id="verwijder-vraag" hidden>
+          <label for="verwijder-wachtwoord">Typ je wachtwoord om het te bevestigen</label>
+          <input type="password" id="verwijder-wachtwoord" autocomplete="current-password">
+          <div class="row">
+            <button type="button" class="gevaar-knop" id="verwijder-echt">Ja, verwijder alles</button>
+            <button type="button" class="ghost" id="verwijder-terug">Laat maar</button>
+          </div>
+          <p class="verwijder-melding" id="verwijder-melding"></p>
+        </div>
+      </div>
+    </div>
+
+    <p class="gegevens-voet">
+      Wat we bewaren en aan wie we het doorgeven staat in de
+      <a href="/privacy.html" target="_blank" rel="noopener">privacyverklaring</a>.
+    </p>
+  </section>
+
   <footer class="end">
     <p><strong>Betalen bestaat nog niet.</strong> Pakket en tokens zet je hierboven zelf,
       en dat kan iedereen die de app kan bereiken. Dat moet dicht voordat dit ergens
