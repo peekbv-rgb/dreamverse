@@ -1462,9 +1462,10 @@
                 (a.plan === p ? "true" : "false") + "'>" + t(p) + "</button>";
       });
       html += "<button type='button' data-tokens='10'>" + t("+10 tokens") + "</button>";
-    } else {
-      html += "<button type='button' class='ghost' data-beheer='1'>" + t("beheer") + "</button>";
     }
+    // Geen zichtbare beheerknop: dat is het enige knopje dat een bezoeker ziet
+    // en niet snapt. Beheer zet je aan met ?beheer achter het adres; daarna
+    // blijft de sleutel in deze browser staan en verschijnen de knoppen vanzelf.
     if (a.plan !== "gratis") {
       html += "<button type='button' class='ghost' data-portaal='1'>" +
               t("abonnement") + "</button>";
@@ -1522,6 +1523,12 @@
       .catch(function () { laadAccount(); });
   }
 
+  // Beheer aanzetten met ?beheer achter het adres. Eén keer, daarna onthoudt
+  // deze browser de sleutel.
+  if (/[?&]beheer/.test(location.search) && !beheerSleutel()) {
+    setTimeout(function () { vraagBeheer(); }, 400);
+  }
+
   function vraagBeheer() {
     var sleutel = (window.prompt(t("Beheerderssleutel (ADMIN_TOKEN uit .env)")) || "").trim();
     if (!sleutel) { return; }
@@ -1534,6 +1541,7 @@
       try { localStorage.setItem(BEHEER_SLEUTEL, sleutel); } catch (e) { /* niets */ }
       laadAccount();
       laadVerbruik();
+      history.replaceState(null, "", location.pathname);
     }).catch(function () { window.alert(t("Die sleutel wordt niet geaccepteerd.")); });
   }
 

@@ -183,8 +183,10 @@ maakte van *Praat met Vera* "Praat ontmoette Vera".
   met de hand gezet via `POST /api/account`. Dat eindpunt vraagt sinds
   2 september 2026 om de header `X-Admin-Token`, die moet kloppen met `ADMIN_TOKEN`
   uit de omgeving. Staat die niet gezet, dan kan aanpassen helemaal niet — dat is
-  de veilige stand. In de app zie je de knoppen alleen na *beheer* en het invoeren
-  van die sleutel; hij blijft daarna in `localStorage` van die ene browser.
+  de veilige stand. In de app is er geen zichtbare beheerknop: zet
+  `?beheer` achter het adres, vul de sleutel in, en de knoppen én de kostenmeter
+  verschijnen. De sleutel blijft daarna in `localStorage` van die ene browser
+  staan, dus dat is eenmalig per browser.
 ## Wat de AVG hier betekent
 
 Dromen zijn geen gewone gegevens: mensen vertellen erin over hun angsten, hun
