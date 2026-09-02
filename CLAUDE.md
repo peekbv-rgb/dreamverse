@@ -125,6 +125,32 @@ en het scheelt direct in de kostprijs per verbeelding.
   `clear_archive()` als `delete_dream()` gaan langs `_ruim_nummer_op()`, en `create()`
   ruimt het nummer op dat hij gaat gebruiken. Wat niet met een cijfer begint,
   zoals `check.png`, blijft staan.
+- **Stuurtekens in de broncode: `python build/controle.py`.** Er stond een
+  letterlijk backspace-teken (0x08) middenin `/[?&]beheer/` in `static/app.js`,
+  waar een woordgrens bedoeld was. Die test matchte daardoor nooit, het
+  beheerpaneel ging nooit open, en er was geen spoor: geen fout in de console,
+  geen melding, geen venster. In een editor is het onzichtbaar. Dit is drie keer
+  gebeurd doordat een script broncode wegschreef en een reeks onderweg als
+  escape werd uitgelegd. Bij een klacht van het type "die knop doet niets en ik
+  zie niks" is die scan de eerste stap.
+- **Een klik op de taalvlag is geen "begin maar te praten"-aanraking.**
+  Blokkeert Chrome het geluid, dan zet de app een wachter op de eerste
+  aanraking. Een klik op EN/NL was daarmee twee dingen tegelijk: de wachter
+  startte Vera in de oude taal, de vlag in de nieuwe — twee begroetingen op één
+  speler, en de afgebroken `play()` zette de ander halverwege op stil omdat die
+  catch alsnog draaide. Daarom worden `.vlag` en `.geluid-aan` doorgelaten in
+  `wachtOpAanraking`, en weet elke poging aan zijn `begroetingRonde` of hij nog
+  de actuele is.
+- **Beheer vraagt zijn sleutel in de pagina, niet met `window.prompt`.** Chrome
+  onderdrukt zo'n dialoog zodra het tabblad de focus niet heeft, en hij lag
+  onder Vera's introvenster. De kaart `#beheerpoort` ligt op z-index 140, boven
+  alles, en zegt apart of de sleutel is afgekeurd of `ADMIN_TOKEN` helemaal niet
+  in de omgeving staat.
+- **Opwaarderen moet één klik zijn vanaf het getal dat je aankijkt.** De
+  koopknoppen stonden bijna vierduizend pixels onder de invoer; wie ziet dat hij
+  nul tokens heeft staat bovenaan en gaat niet zoeken. Dan bestaat opwaarderen
+  niet, ook al is het gebouwd. Vandaar `opwaarderen` in de tegoedbalk, *Tokens
+  kopen* in de accountkaart, en dezelfde weg vanuit de weigering bij Vera.
 - **Nooit `.env` committen.** `.gitignore` blokkeert ook `.env.*` en `data/`.
 - Basic auth gaat aan zodra `AUTH_USER` én `AUTH_PASSWORD` gevuld zijn. **Twee
   paden staan er altijd buiten**: `/api/stripe/webhook`, want Stripe stuurt geen
@@ -185,9 +211,14 @@ maakte van *Praat met Vera* "Praat ontmoette Vera".
   2 september 2026 om de header `X-Admin-Token`, die moet kloppen met `ADMIN_TOKEN`
   uit de omgeving. Staat die niet gezet, dan kan aanpassen helemaal niet — dat is
   de veilige stand. In de app is er geen zichtbare beheerknop: zet
-  `?beheer` achter het adres, vul de sleutel in, en de knoppen én de kostenmeter
-  verschijnen. De sleutel blijft daarna in `localStorage` van die ene browser
-  staan, dus dat is eenmalig per browser.
+  `?beheer` achter het adres, vul de sleutel in de kaart in, en de knoppen én de
+  kostenmeter verschijnen. De sleutel blijft daarna in `localStorage` van die ene
+  browser staan, dus dat is eenmalig per browser. Daar staat ook een veld
+  **Tokensaldo**: dat *zet* een vast aantal (`{"saldo": 500}`), waar
+  `{"tokens": 10}` optelt. Zetten moest erbij omdat optellen eerst vraagt wat er
+  stond, en tussen die twee stappen kan een gesprek met Vera er een paar
+  afhalen. Op Render is geen shell, dus zonder dat veld is "zet mij op 500
+  tokens" niet te doen.
 ## Wat de AVG hier betekent
 
 Dromen zijn geen gewone gegevens: mensen vertellen erin over hun angsten, hun
