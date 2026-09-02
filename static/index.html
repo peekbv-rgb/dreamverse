@@ -176,8 +176,31 @@
     <div class="reading">
       <div class="block"><span class="lbl">Waarom je dit droomde</span><p id="why"></p></div>
       <div class="block"><span class="lbl">Wat de droom zegt</span><p id="meaning"></p></div>
-      <div class="block future"><span class="lbl">Wat eraan zit te komen</span><p id="future"></p></div>
+      <div class="block future">
+        <span class="lbl">Wat eraan zit te komen</span><p id="future"></p>
+        <div class="oordeel" id="oordeel" hidden>
+          <span class="oordeel-vraag" id="oordeel-vraag"></span>
+          <button type="button" class="oordeel-knop" data-oordeel="raak">Klopte</button>
+          <button type="button" class="oordeel-knop" data-oordeel="deels">Deels</button>
+          <button type="button" class="oordeel-knop" data-oordeel="mis">Niet</button>
+        </div>
+      </div>
       <div class="block liefde"><span class="lbl">In de liefde</span><p id="love"></p></div>
+      <div class="block mensen" id="mensen-blok" hidden>
+        <span class="lbl">Wie er in je droom was</span>
+        <div class="mensen" id="mensen"></div>
+      </div>
+      <div class="block tekens" id="tekens-blok" hidden>
+        <span class="lbl">Je eigen tekens</span>
+        <div class="tekens" id="tekens"></div>
+      </div>
+      <div class="block nacht" id="nacht-blok" hidden>
+        <span class="lbl">Het lichaam en de nacht</span><p id="nacht"></p>
+      </div>
+      <div class="opdracht" id="opdracht-blok" hidden>
+        <span class="lbl">Als deze droom een opdracht was</span>
+        <p id="opdracht"></p>
+      </div>
       <div class="vandaag" id="vandaag-blok">
         <span class="lbl">Klein voorstel voor vandaag</span>
         <p id="today"></p>
@@ -202,6 +225,15 @@
     </div>
     <p class="samen" id="samen" hidden></p>
     <div class="threads" id="threads"></div>
+  </section>
+
+  <section id="spectrum-section" hidden>
+    <div class="head-rule">
+      <h2>Het spectrum van je dromen</h2>
+      <p>Welk kleurveld je nachten kozen. Elke kolom is een droom, van links naar rechts in de tijd.</p>
+    </div>
+    <div class="spectrum" id="spectrum"></div>
+    <div class="spectrum-legenda" id="spectrum-legenda"></div>
   </section>
 
   <section>

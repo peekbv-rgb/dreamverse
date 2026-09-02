@@ -12,10 +12,12 @@ Serveert de speler uit static/ en drie eindpunten:
     POST   /api/extra                          -> losse aankoop met tokens
     GET    /api/episode/<nr>                   -> een eerdere verbeelding terugkijken
     POST   /api/episode/<nr>/herstel           -> de duiding opnieuw schrijven bij oude panelen
+    POST   /api/dream/<nr>/vooruitblik         -> de dromer zegt of de vooruitblik uitkwam
     GET    /api/panels/<nr>                    -> de stand van het tekenwerk
     POST   /api/vera/session                   -> WebRTC-gegevens voor een gesprek
     DELETE /api/vera/session/<id>              -> gesprek afsluiten
     GET    /api/archive                        -> alle eerdere dromen
+    GET    /api/spectrum                       -> welk kleurveld elke droom koos
     DELETE /api/dream/<nr>                     -> een droom en al zijn beelden wissen
     DELETE /api/archive                        -> archief wissen
 
@@ -103,6 +105,8 @@ class Handler(SimpleHTTPRequestHandler):
             return
         if self.path == "/api/profile":
             return self.send_json(dreamverse.public_profile())
+        if self.path == "/api/spectrum":
+            return self.send_json(dreamverse.spectrum())
         if self.path == "/api/usage":
             return self.send_json(usage.summary())
         if self.path == "/api/account":
@@ -222,6 +226,18 @@ class Handler(SimpleHTTPRequestHandler):
         if self.path == "/api/profile":
             payload = self.read_json() or {}
             return self.send_json(dreamverse.set_profile(payload))
+
+        if self.path.startswith("/api/dream/") and self.path.endswith("/vooruitblik"):
+            try:
+                number = int(self.path.split("/")[3])
+            except (ValueError, IndexError):
+                return self.send_json({"error": "Onbekende droom."}, 400)
+            payload = self.read_json() or {}
+            try:
+                return self.send_json({"dream": dreamverse.judge_future(
+                    number, payload.get("verdict"))})
+            except dreamverse.DreamverseError as e:
+                return self.send_json({"error": str(e)}, 400)
 
         if self.path.startswith("/api/episode/") and self.path.endswith("/herstel"):
             # Dromen van voor het bewaren hebben wel beeld maar geen tekst meer.

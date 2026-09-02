@@ -210,12 +210,15 @@ def load_episode(number):
                        for _ in beelden],
             "key_panel": min(2, len(beelden) - 1),
             "threads": [], "why": "", "meaning": "", "future": "", "question": "",
-            "together": "",
+            "together": "", "night": "", "task": "", "people": [], "symbols": [],
             "onvolledig": True,
         }
     for d in load_archive():
-        if d.get("n") == number and d.get("answer"):
-            episode["answer"] = d["answer"]
+        if d.get("n") == number:
+            if d.get("answer"):
+                episode["answer"] = d["answer"]
+            episode["when"] = d.get("when", "")
+            episode["future_check"] = d.get("future_check", "")
     return episode
 
 
@@ -237,6 +240,44 @@ def latest_together():
                     "together": episode["together"],
                     "threads": episode.get("threads") or []}
     return {"number": None, "together": "", "threads": []}
+
+
+def spectrum():
+    """Welk kleurveld elke droom koos, op volgorde van de tijd.
+
+    Het model kiest per paneel het chakra dat bij het gevoel past. Over tientallen
+    dromen wordt dat een grafiek van waar iemands nachten zich ophouden - en dat
+    is iets wat je nergens anders over jezelf te zien krijgt. De gegevens lagen er
+    al; er hoefde alleen naar gekeken te worden.
+    """
+    rijen = []
+    for d in sorted(load_archive(), key=lambda x: x.get("n", 0)):
+        try:
+            with (EPISODES / "{}.json".format(d.get("n"))).open(encoding="utf-8") as f:
+                episode = json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError, OSError):
+            continue
+        velden = [p.get("palette") for p in (episode.get("panels") or [])
+                  if p.get("palette") in PALETTES]
+        if not velden:
+            continue
+        telling = {veld: velden.count(veld) for veld in PALETTES if veld in velden}
+        # Het overheersende veld: dat bepaalt de kleur van de droom als geheel.
+        hoofd = max(telling, key=lambda k: (telling[k], PALETTES.index(k)))
+        rijen.append({
+            "n": d.get("n"),
+            "title": d.get("title") or "",
+            "when": d.get("when") or "",
+            "counts": telling,
+            "main": hoofd,
+        })
+
+    # En het totaal, zodat je in één blik ziet waar je jaar zich ophield.
+    totaal = {veld: 0 for veld in PALETTES}
+    for r in rijen:
+        for veld, n in r["counts"].items():
+            totaal[veld] += n
+    return {"dreams": rijen, "total": totaal, "palettes": list(PALETTES)}
 
 
 def archive_with_media():
@@ -314,6 +355,29 @@ def repair_episode(number):
                   demo=episode.get("demo"))
     save_episode(number, episode)
     return episode
+
+
+OORDELEN = ("raak", "deels", "mis")
+
+
+def judge_future(number, verdict):
+    """De dromer zegt zelf of de vooruitblik uitkwam.
+
+    Bewust alleen de dromer: zodra wij zouden scoren, wordt de vooruitblik een
+    claim, en dan houdt "vermaak, geen voorspelling" geen stand. Het oordeel gaat
+    ook niet mee in de prompt - een model dat weet dat het op raak gescoord wordt,
+    gaat voorzichtiger en vager schrijven, of juist gokken.
+    """
+    if verdict not in OORDELEN:
+        raise DreamverseError("Dat oordeel bestaat niet.")
+    with _lock:
+        archive = load_archive()
+        for d in archive:
+            if d.get("n") == number:
+                d["future_check"] = verdict
+                save_archive(archive)
+                return d
+    raise DreamverseError("Die droom staat niet in je archief.")
 
 
 def answer_question(number, answer):
@@ -398,6 +462,9 @@ Antwoord met uitsluitend geldige JSON, zonder tekst eromheen, in deze vorm:
  "panels": [{{"narration": string, "image": string, "palette": string, "motif": string}}],
  "threads": [{{"ref": string, "was": string, "now": string}}],
  "why": string, "meaning": string, "future": string, "love": string,
+ "people": [{{"who": string, "role": string}}],
+ "symbols": [{{"sign": string, "meaning": string}}],
+ "night": string, "task": string,
  "today": string, "season": string, "together": string,
  "question": string, "motifs": [string], "key_panel": number}}
 
@@ -421,6 +488,28 @@ Regels voor de velden:
   nooit over zwangerschap. Gaat de droom nergens over mensen, schrijf dan iets
   over hoe hij zich tot anderen verhoudt in plaats van een liefdesvoorspelling
   te verzinnen.
+- people is wie er in de droom voorkwam en wat die van de dromer leek te willen.
+  "who" is hoe de dromer die persoon zelf zou noemen ("een vriendin", "mijn broer",
+  "een onbekende man"); "role" is in een of twee zinnen wat die daar deed en wat
+  het bij de dromer losmaakte. Nul tot vier personen; verzin er nooit een bij.
+  Dieren mogen erbij als ze zich als personage gedroegen. Nooit beweren wat een
+  echt bestaand mens denkt of voelt - schrijf over hoe die in de droom verscheen.
+- symbols zijn de terugkerende tekens in DEZE dromer zijn dromen, niet uit een
+  droomwoordenboek. "sign" is het teken ("water", "vliegen"); "meaning" is wat
+  het bij hem betekent, afgeleid uit de eerdere dromen in de lijst hierboven.
+  Kwam een teken maar een keer voor, laat het dan weg. Nul tot drie.
+  Schrijf nooit "water staat voor emotie" - dat kan iedereen opzoeken en het is
+  bij deze dromer misschien niet eens waar.
+- night is een nuchtere observatie over wat voor soort droom dit was en waar in
+  de nacht hij waarschijnlijk viel: een droom met een doorlopend verhaal en
+  wisselende scenes hoort bij de late REM-slaap vlak voor het wakker worden, een
+  kort en statisch beeld eerder in de nacht, en een droom waarin de dromer merkt
+  dat hij droomt zit op de grens. Een tot twee zinnen, feitelijk van toon. Geen
+  duiding, geen advies, en nooit iets over gezondheid of slaapkwaliteit.
+- task is de opdracht die in de droom zit als je hem als opdracht leest. Precies
+  een, gebiedende wijs, concreet, uitvoerbaar deze week. Iets anders dan "today":
+  today is klein en van vandaag, task mag groter zijn en over de week gaan.
+  Nooit iets dat geld kost, gezondheid raakt of een ander mens onder druk zet.
 - today is een enkel klein voorstel voor vandaag dat uit de droom volgt. Iets dat
   binnen tien minuten kan en niets kost: iemand appen, een raam openzetten, een
   blokje om voor de koffie. Eén zin, geen lijstje, geen levensles.
@@ -478,9 +567,10 @@ def build_prompt(dream, archive, number, name=None, language="nl"):
         # daarin. Daarom staat de opdracht hier onderaan nog een keer.
         + "\n\n--- taal ---\n"
         + ('Schrijf elk tekstveld in {}. Dat geldt voor "title", "narration", '
-           '"threads", "why", "meaning", "future", "love", "today", "season", '
-           '"together" en "question". Alleen "image" blijft Engels, want dat gaat '
-           'naar een beeldmodel.').format(TALEN.get(language, TALEN["nl"]))
+           '"threads", "why", "meaning", "future", "love", "people", "symbols", '
+           '"night", "task", "today", "season", "together" en "question". Alleen '
+           '"image" blijft Engels, want dat gaat naar een beeldmodel.'
+           ).format(TALEN.get(language, TALEN["nl"]))
     )
 
 
@@ -536,6 +626,17 @@ def parse_episode(raw):
     if sleutel is None or not (0 <= sleutel < len(panels)):
         sleutel = min(2, len(panels) - 1)   # bij twijfel het midden
 
+    # Personen en tekens: kort houden en alleen wat volledig is ingevuld.
+    mensen = []
+    for m in (data.get("people") or [])[:4]:
+        if isinstance(m, dict) and str(m.get("who") or "").strip():
+            mensen.append({"who": str(m.get("who"))[:60], "role": str(m.get("role") or "")[:400]})
+    tekens = []
+    for k in (data.get("symbols") or [])[:3]:
+        if isinstance(k, dict) and str(k.get("sign") or "").strip():
+            tekens.append({"sign": str(k.get("sign"))[:40],
+                           "meaning": str(k.get("meaning") or "")[:400]})
+
     return {
         "key_panel": sleutel,
         "title": str(data.get("title") or "Naamloze droom"),
@@ -546,6 +647,10 @@ def parse_episode(raw):
         "today": str(data.get("today") or ""),
         "season": str(data.get("season") or ""),
         "together": str(data.get("together") or ""),
+        "night": str(data.get("night") or ""),
+        "task": str(data.get("task") or ""),
+        "people": mensen,
+        "symbols": tekens,
         "meaning": str(data.get("meaning") or ""),
         "future": str(data.get("future") or ""),
         "question": str(data.get("question") or ""),

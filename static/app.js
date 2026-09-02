@@ -350,6 +350,55 @@
     }
   }
 
+  /* Klopte de vooruitblik?
+   *
+   * Alleen de dromer oordeelt. Zodra wij zouden scoren wordt de vooruitblik een
+   * claim, en dan houdt "vermaak, geen voorspelling" geen stand. Het oordeel gaat
+   * ook niet terug de prompt in: een model dat weet dat het op raak beoordeeld
+   * wordt gaat vaag schrijven of gokken.
+   *
+   * De vraag komt pas als er tijd overheen is. Op de dag zelf is er niets te
+   * beoordelen en voelt het als een enquête.
+   */
+  var DAGEN_VOOR_OORDEEL = 7;
+
+  function toonOordeel(ep) {
+    var doos = el("oordeel");
+    if (!ep.future || !ep.number || !ep.when) { doos.hidden = true; return; }
+    var dagen = Math.floor((Date.now() - new Date(ep.when).getTime()) / 86400000);
+    if (isNaN(dagen) || dagen < DAGEN_VOOR_OORDEEL) { doos.hidden = true; return; }
+
+    doos.hidden = false;
+    doos.dataset.dream = ep.number;
+    var gegeven = ep.future_check || "";
+    var gezegd = {raak: "Je zei dat dit klopte.", deels: "Je zei dat dit deels klopte.",
+                  mis: "Je zei dat dit niet uitkwam."};
+    el("oordeel-vraag").textContent = gegeven
+      ? t(gezegd[gegeven])
+      : t("Dit stond hier") + " " + dagen + " " + t("dagen geleden. Klopte het?");
+    doos.querySelectorAll(".oordeel-knop").forEach(function (b) {
+      b.setAttribute("aria-pressed", b.dataset.oordeel === gegeven ? "true" : "false");
+    });
+  }
+
+  document.querySelectorAll(".oordeel-knop").forEach(function (knop) {
+    knop.addEventListener("click", function () {
+      var nummer = parseInt(el("oordeel").dataset.dream, 10);
+      if (!nummer) { return; }
+      fetch("/api/dream/" + nummer + "/vooruitblik", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ verdict: knop.dataset.oordeel })
+      })
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+          if (episode) { episode.future_check = (d.dream || {}).future_check || ""; }
+          toonOordeel(episode || {});
+        })
+        .catch(function () { /* een oordeel is geen voorwaarde */ });
+    });
+  });
+
   function render(ep) {
     episode = ep;
     panelImages = {};
@@ -404,11 +453,125 @@
     el("future").textContent = ep.future;
     el("love").textContent = ep.love || "";
     el("love").parentElement.hidden = !ep.love;
+
+    // Wie erin voorkwam. Dit is op termijn het rijkste stuk geheugen: na honderd
+    // dromen weet je wie de vaste bezetting van iemands nachten is.
+    var mensen = el("mensen");
+    mensen.innerHTML = "";
+    (ep.people || []).forEach(function (m) {
+      var rij = document.createElement("div");
+      rij.className = "mens";
+      var wie = document.createElement("span");
+      wie.className = "wie";
+      wie.textContent = m.who;
+      var rol = document.createElement("p");
+      rol.textContent = m.role;
+      rij.appendChild(wie); rij.appendChild(rol);
+      mensen.appendChild(rij);
+    });
+    el("mensen-blok").hidden = !(ep.people && ep.people.length);
+
+    // Tekens uit zijn eigen dromen, niet uit een droomwoordenboek: water betekent
+    // hier iets doordat hij er zes keer over droomde.
+    var tekens = el("tekens");
+    tekens.innerHTML = "";
+    (ep.symbols || []).forEach(function (k) {
+      var rij = document.createElement("div");
+      rij.className = "teken";
+      var naam = document.createElement("span");
+      naam.className = "tag";
+      naam.textContent = k.sign;
+      var uitleg = document.createElement("p");
+      uitleg.textContent = k.meaning;
+      rij.appendChild(naam); rij.appendChild(uitleg);
+      tekens.appendChild(rij);
+    });
+    el("tekens-blok").hidden = !(ep.symbols && ep.symbols.length);
+
+    el("nacht").textContent = ep.night || "";
+    el("nacht-blok").hidden = !ep.night;
+    el("opdracht").textContent = ep.task || "";
+    el("opdracht-blok").hidden = !ep.task;
+
+    toonOordeel(ep);
+
     el("today").textContent = ep.today || "";
     el("vandaag-blok").hidden = !ep.today;
     el("seizoen").textContent = ep.season || "";
     el("seizoen").hidden = !ep.season;
     el("question").textContent = ep.question;
+  }
+
+  /* ------------------------------------------------------------- spectrum */
+
+  /* Welk kleurveld je nachten kozen.
+   *
+   * Het model kiest per paneel het chakra dat bij het gevoel hoort. Over veertig
+   * dromen wordt dat een beeld van waar iemand zich ophoudt, en dat krijg je
+   * nergens anders over jezelf te zien. De gegevens lagen er al.
+   */
+  var VELD_NAAM = {
+    root: "aarde", sacral: "verlangen", solar: "wil", heart: "hart",
+    throat: "stem", third_eye: "inzicht", crown: "licht"
+  };
+
+  function toonSpectrum(sp) {
+    var sectie = el("spectrum-section");
+    var dromen = sp.dreams || [];
+    // Onder de drie dromen is er niets te zien, alleen ruis.
+    if (dromen.length < 3) { sectie.hidden = true; return; }
+    sectie.hidden = false;
+
+    var doos = el("spectrum");
+    doos.innerHTML = "";
+    dromen.forEach(function (d) {
+      var kolom = document.createElement("button");
+      kolom.type = "button";
+      kolom.className = "kolom";
+      kolom.title = "Droom " + d.n + (d.title ? " — " + d.title : "");
+      kolom.setAttribute("aria-label", kolom.title);
+
+      var stapel = document.createElement("div");
+      stapel.className = "stapel";
+      // Van kruin naar aarde, zodat de kolom als een lichaam leest.
+      (sp.palettes || []).slice().reverse().forEach(function (veld) {
+        var n = (d.counts || {})[veld] || 0;
+        if (!n) { return; }
+        var blok = document.createElement("span");
+        blok.className = "veld " + veld;
+        blok.style.flexGrow = n;
+        stapel.appendChild(blok);
+      });
+      var nummer = document.createElement("span");
+      nummer.className = "kolom-nr";
+      nummer.textContent = d.n;
+      kolom.appendChild(stapel);
+      kolom.appendChild(nummer);
+      kolom.addEventListener("click", function () { herbekijk(d.n); });
+      doos.appendChild(kolom);
+    });
+
+    var legenda = el("spectrum-legenda");
+    legenda.innerHTML = "";
+    var totaal = sp.total || {};
+    var samen = 0;
+    (sp.palettes || []).forEach(function (v) { samen += totaal[v] || 0; });
+    (sp.palettes || []).forEach(function (veld) {
+      var n = totaal[veld] || 0;
+      if (!n) { return; }
+      var merk = document.createElement("span");
+      merk.className = "legenda-item";
+      merk.innerHTML = '<i class="veld ' + veld + '"></i>' + t(VELD_NAAM[veld]) +
+                       " <b>" + Math.round(n / samen * 100) + "%</b>";
+      legenda.appendChild(merk);
+    });
+  }
+
+  function laadSpectrum() {
+    fetch("/api/spectrum")
+      .then(function (r) { return r.json(); })
+      .then(toonSpectrum)
+      .catch(function () { /* het spectrum is een extraatje */ });
   }
 
   /* -------------------------------------------------------------- archief */
@@ -553,6 +716,7 @@
       .then(function (d) {
         renderArchive(d.dreams || []);
         vulKeuzelijst(d.dreams || []);
+        laadSpectrum();
         var samen = d.samen || {};
         toonSamen(samen.number, samen.together, samen.threads);
       })
@@ -1174,6 +1338,9 @@
     document.documentElement.setAttribute("translate", "no");
     if (window.vertaalPagina) { window.vertaalPagina(taal); }
     laadAccount();
+    // De legenda van het spectrum wordt in JavaScript gebouwd, dus die moet
+    // opnieuw getekend worden; de woordenlijst komt er niet vanzelf langs.
+    laadSpectrum();
     begroet(begroetteNaam);
     toonNaam(begroetteNaam || naamVeld.value.trim());
     zetIntroTaal(taal);

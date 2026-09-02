@@ -983,3 +983,84 @@ body::after { opacity: .34; }
   float: left; font-size: 3.2rem; line-height: .82;
   padding: .1rem .5rem 0 0; color: var(--crown);
 }
+
+/* ------------------------------------------------------------------------ */
+/* De nieuwe vakken in de duiding.                                           */
+
+.mensen, .tekens { display: flex; flex-direction: column; gap: .7rem; margin-top: .4rem; }
+.mens, .teken {
+  padding: .6rem .9rem; border-radius: 12px;
+  background: rgba(43, 28, 74, .45); border-left: 2px solid var(--throat);
+}
+.teken { border-left-color: var(--third_eye); }
+.mens .wie {
+  display: block; font-weight: 600; color: var(--throat);
+  font-size: .78rem; letter-spacing: .06em; text-transform: uppercase;
+  margin-bottom: .2rem;
+}
+.mens p, .teken p { margin: 0; }
+.teken .tag { margin-bottom: .25rem; }
+
+.block.nacht p { color: var(--muted); font-style: italic; }
+
+/* De opdracht: één ding, gebiedende wijs. Dat mag eruit springen. */
+.opdracht {
+  margin-top: .4rem; padding: 1.1rem 1.4rem; border-radius: 14px;
+  background: linear-gradient(100deg, rgba(242, 198, 76, .16), rgba(43, 28, 74, 0));
+  border-left: 3px solid var(--solar);
+}
+.opdracht p {
+  margin: .2rem 0 0; font-family: var(--display); font-size: 1.3rem; line-height: 1.4;
+}
+
+/* ------------------------------------------------------------------------ */
+/* Het spectrum: elke kolom een droom, van kruin naar aarde.                 */
+
+.spectrum {
+  display: flex; align-items: flex-end; gap: .35rem;
+  overflow-x: auto; padding: .4rem .2rem 0;
+}
+.kolom {
+  flex: 1 0 26px; min-width: 26px; max-width: 64px;
+  display: flex; flex-direction: column; align-items: stretch; gap: .35rem;
+  padding: 0; background: none; border: 0; cursor: pointer;
+}
+.kolom .stapel {
+  display: flex; flex-direction: column; height: 148px;
+  border-radius: 8px; overflow: hidden;
+  box-shadow: 0 0 0 1px rgba(179, 105, 222, .2);
+  transition: box-shadow 200ms ease, transform 200ms ease;
+}
+.kolom:hover .stapel { box-shadow: 0 0 0 1px var(--crown), 0 0 20px rgba(179, 105, 222, .35); }
+.kolom:hover { transform: translateY(-2px); }
+.kolom-nr {
+  font-size: .62rem; color: var(--muted); font-variant-numeric: tabular-nums;
+}
+.veld { display: block; }
+.veld.root      { background: #E2554F; }
+.veld.sacral    { background: #F0873C; }
+.veld.solar     { background: #F2C64C; }
+.veld.heart     { background: #4FBF86; }
+.veld.throat    { background: #4A9FE2; }
+.veld.third_eye { background: #6E62DA; }
+.veld.crown     { background: #B369DE; }
+
+.spectrum-legenda {
+  display: flex; flex-wrap: wrap; gap: .4rem .9rem; margin-top: .9rem;
+  font-size: .78rem; color: var(--muted);
+}
+.legenda-item { display: inline-flex; align-items: center; gap: .35rem; }
+.legenda-item i { width: 10px; height: 10px; border-radius: 3px; }
+.legenda-item b { color: var(--ink); font-weight: 600; }
+
+/* Klopte de vooruitblik? Alleen de dromer oordeelt. */
+.oordeel {
+  display: flex; flex-wrap: wrap; align-items: center; gap: .45rem;
+  margin-top: .9rem; padding-top: .8rem;
+  border-top: 1px solid rgba(179, 105, 222, .18);
+}
+.oordeel-vraag { font-size: .8rem; color: var(--muted); margin-right: .3rem; }
+.oordeel-knop { padding: .25rem .8rem; font-size: .78rem; border-radius: 100px; }
+.oordeel-knop[aria-pressed="true"] {
+  border-color: var(--heart); color: var(--heart); background: rgba(79, 191, 134, .12);
+}

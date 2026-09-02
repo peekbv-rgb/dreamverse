@@ -56,7 +56,9 @@ Geen framework — dat houdt de deploy op één bestand, net als de andere proje
 POST   /api/episode   {"dream": "...", "quality": "duiding|eenvoudig|standaard|supreme"}
 GET    /api/episode/<nr>                -> een eerdere verbeelding terugkijken
 POST   /api/episode/<nr>/herstel        -> duiding opnieuw schrijven bij oude panelen
-GET    /api/archive                     -> alle eerdere dromen
+GET    /api/archive                     -> alle eerdere dromen + de nieuwste analyse
+GET    /api/spectrum                    -> welk kleurveld elke droom koos
+POST   /api/dream/<nr>/vooruitblik      -> de dromer zegt of de vooruitblik uitkwam
 DELETE /api/archive                     -> archief wissen
 GET    /api/panels/<nr>                 -> stand van het tekenwerk
 GET    /panels/<bestand>.jpg            -> een gegenereerd paneel
@@ -86,6 +88,15 @@ en het scheelt direct in de kostprijs per verbeelding.
   angst en je kunt het niet terugnemen.
 - **Altijd positief duiden, maar niet wegwuiven.** Bij geweld, verlies of een
   overledene eerst erkennen, dan pas het licht zoeken.
+- **De vooruitblik beoordeelt alleen de dromer.** `POST /api/dream/<nr>/vooruitblik`
+  bewaart of het uitkwam, en dat oordeel gaat **niet** terug de prompt in. Zodra
+  wij zouden scoren wordt de vooruitblik een claim en houdt "vermaak, geen
+  voorspelling" geen stand; en een model dat weet dat het op raak beoordeeld wordt
+  gaat vaag schrijven of gokken.
+- **Symbolen komen uit zijn eigen dromen, niet uit een droomwoordenboek.** "Water
+  staat voor emotie" kan iedereen opzoeken en is bij deze dromer misschien niet
+  eens waar. Het veld `symbols` mag alleen tekens noemen die in de meegegeven
+  geschiedenis meer dan een keer voorkwamen.
 - **De kleurvelden zijn de chakra's** (`root` tot `crown`). Dat is geen sfeer maar
   betekenis: het model kiest per paneel het veld dat bij het gevoel past, en de
   kijker ziet die keuze terug in de kleur van het beeld.
