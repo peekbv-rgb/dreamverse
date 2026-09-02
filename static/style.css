@@ -828,3 +828,20 @@ body::after { opacity: .34; }
 }
 .archive .entry .wis:hover { border-color: var(--root); color: var(--root); box-shadow: none; }
 .archive .entry::after { margin-left: auto; }
+
+/* Browsers spelen niets met geluid af tot er geklikt is. Dus: gedempt starten
+   met een knop eroverheen die niet te missen is. */
+.intro-speler { position: relative; }
+.geluid-aan {
+  position: absolute; left: 50%; top: 44%; transform: translate(-50%, -50%);
+  background: linear-gradient(100deg, var(--solar), var(--sacral));
+  color: #1A1206; border-color: transparent; font-size: 1rem; font-weight: 700;
+  padding: .7rem 1.4rem; box-shadow: 0 0 34px rgba(242, 198, 76, .5);
+  animation: kloppen 2.4s ease-in-out infinite;
+}
+.geluid-aan[hidden] { display: none; }
+@keyframes kloppen {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); }
+  50% { transform: translate(-50%, -50%) scale(1.06); }
+}
+@media (prefers-reduced-motion: reduce) { .geluid-aan { animation: none; } }

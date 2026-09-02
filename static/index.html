@@ -16,7 +16,12 @@
 <!-- Vera's introductie: het eerste wat je ziet als je de app opent -->
 <div class="intro" id="intro" hidden>
   <div class="intro-kaart">
-    <video id="intro-video" src="vera-intro.mp4" playsinline autoplay controls></video>
+    <div class="intro-speler">
+      <video id="intro-video" src="vera-intro-nl.mp4" playsinline autoplay muted controls></video>
+      <button type="button" class="geluid-aan" id="geluid-aan">
+        <span aria-hidden="true">🔊</span> Geluid aan
+      </button>
+    </div>
     <p class="intro-tekst" id="intro-tekst">
       Hi, ik ben Vera, de digitale droom-annalist. Wil je je droom met mij delen?
     </p>

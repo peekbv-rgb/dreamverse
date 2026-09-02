@@ -931,11 +931,33 @@
         "een abonnement, tokens of video.";
   }
 
+  // Elk taalfilmpje is apart ingesproken en gelipsynchroniseerd; de tekst
+  // eronder verandert mee.
+  var INTRO = {
+    nl: { video: "vera-intro-nl.mp4",
+          tekst: "Hi, ik ben Vera, de digitale droom-annalist. Wil je je droom met mij delen?" },
+    en: { video: "vera-intro-en.mp4",
+          tekst: "Hi, I'm Vera, your digital dream analyst. Would you like to share your dream with me?" }
+  };
+
+  function zetIntroTaal(taal) {
+    var i = INTRO[taal] || INTRO.nl;
+    var v = el("intro-video");
+    if (v && v.getAttribute("src") !== i.video) {
+      var hoorbaar = !v.muted;
+      v.src = i.video;
+      v.muted = !hoorbaar;
+      v.play().catch(function () { /* wacht dan op de knop */ });
+    }
+    el("intro-tekst").textContent = i.tekst;
+  }
+
   function zetVlaggen(taal) {
     document.querySelectorAll(".vlag").forEach(function (b) {
       b.setAttribute("aria-pressed", b.dataset.taal === taal ? "true" : "false");
     });
     document.documentElement.lang = taal;
+    zetIntroTaal(taal);
   }
 
   function bewaarProfiel(extra) {
@@ -987,6 +1009,22 @@
     el("intro").hidden = true;
     try { el("intro-video").pause(); } catch (e) { /* al gestopt */ }
   });
+
+  // Eén klik zet het geluid aan en speelt vanaf het begin. Daarna mag de
+  // browser de rest van de sessie ook geluid van ons afspelen.
+  var geluidKnop = el("geluid-aan");
+  if (geluidKnop) {
+    geluidKnop.addEventListener("click", function () {
+      var v = el("intro-video");
+      v.muted = false;
+      v.currentTime = 0;
+      v.play().catch(function () { /* dan blijft de spelerbalk over */ });
+      geluidKnop.hidden = true;
+    });
+    el("intro-video").addEventListener("volumechange", function () {
+      if (!el("intro-video").muted) { geluidKnop.hidden = true; }
+    });
+  }
 
   function toonIntro() {
     fetch("/api/profile").then(function (r) { return r.json(); }).then(function (p) {
