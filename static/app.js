@@ -1252,12 +1252,7 @@
         knop.className = "call-koop";
         knop.textContent = t("Tokens kopen");
         knop.addEventListener("click", function () {
-          var doel = el("tokenpakketten");
-          if (doel && !doel.hidden) {
-            doel.scrollIntoView({ behavior: "smooth", block: "center" });
-          } else {
-            naarStripe({ soort: "tokens", welk: "tokens20" });
-          }
+          naarTokens();
         });
         doos.appendChild(document.createElement("br"));
         doos.appendChild(knop);
@@ -1500,6 +1495,15 @@
     stukken.push(a.dromen_over + " " + t(a.dromen_over === 1 ? "droom over" : "dromen over"));
     stukken.push('<b>' + a.tokens + "</b> " + t("tokens"));
     doos.innerHTML = stukken.join('<i aria-hidden="true">·</i>');
+    if (betalenAan) {
+      var knop = document.createElement("button");
+      knop.type = "button";
+      knop.className = "opwaardeer";
+      knop.dataset.nl = "opwaarderen";
+      knop.textContent = t("opwaarderen");
+      knop.addEventListener("click", naarTokens);
+      doos.appendChild(knop);
+    }
     doos.hidden = false;
     doos.classList.toggle("op", a.dromen_over === 0 && a.tokens < a.tokens_per_extra_droom);
   }
@@ -1523,6 +1527,10 @@
             "</b><span>" + t("minuten vera") + "</span></div>";
     html += "<div><b>" + a.plan_naam + "</b><span>" + t("pakket") + "</span></div>";
     html += "<div class='schakel'>";
+    if (betalenAan) {
+      html += "<button type='button' data-opwaarderen='1'>" +
+              t("Tokens kopen") + "</button>";
+    }
     if (beheerSleutel()) {
       ["gratis", "lite", "plus", "ultra"].forEach(function (p) {
         html += "<button type='button' data-plan='" + p + "' aria-pressed='" +
@@ -1542,6 +1550,9 @@
     html += "</div>";
     el("account").innerHTML = html;
 
+    el("account").querySelectorAll("[data-opwaarderen]").forEach(function (b) {
+      b.addEventListener("click", naarTokens);
+    });
     el("account").querySelectorAll("[data-plan]").forEach(function (b) {
       b.addEventListener("click", function () { zetAccount({ plan: b.dataset.plan }); });
     });
@@ -1566,6 +1577,10 @@
    * deze browser. Wie hem niet heeft ziet de knoppen niet eens.
    */
   var BEHEER_SLEUTEL = "dreamverse_admin";
+
+  // Staat afrekenen aan? Komt uit /api/health. Zonder dit weten de kaarten niet
+  // of er een opwaardeerknop bij mag.
+  var betalenAan = false;
 
   function beheerSleutel() {
     try { return localStorage.getItem(BEHEER_SLEUTEL) || ""; } catch (e) { return ""; }
@@ -2105,6 +2120,24 @@
    * niet in het geheugen, nergens. Wij sturen je erheen en horen achteraf van
    * Stripe wat er gekocht is.
    */
+  /* Opwaarderen moet één klik zijn vanaf het getal dat je aankijkt.
+   *
+   * De koopknoppen stonden er al, maar onderaan de pagina onder "Los te koop" -
+   * voorbij de invoer, de panelen, het archief en de pakketten. Wie ziet dat hij
+   * nul tokens heeft, staat bovenaan en gaat niet zoeken. Dus wijst het getal nu
+   * zelf de weg, en licht het doel even op zodat je ziet dat je goed bent.
+   */
+  function naarTokens() {
+    var doel = el("tokenpakketten");
+    if (!doel || doel.hidden) {
+      // Afrekenen staat uit; dan is er niets om naartoe te wijzen.
+      return;
+    }
+    doel.scrollIntoView({ behavior: "smooth", block: "center" });
+    doel.classList.add("wijs");
+    setTimeout(function () { doel.classList.remove("wijs"); }, 2400);
+  }
+
   function naarStripe(body) {
     var melding = el("koop-melding");
     if (melding) {
@@ -2145,9 +2178,13 @@
   // De knoppen komen pas als afrekenen echt aanstaat. Een knop die "dat kan nog
   // niet" antwoordt is erger dan geen knop.
   function toonKoopknoppen(aan) {
+    betalenAan = !!aan;
     document.querySelectorAll(".koop-pakket").forEach(function (b) { b.hidden = !aan; });
     var doos = el("tokenpakketten");
     if (doos) { doos.hidden = !aan; }
+    // De opwaardeerknoppen zitten in kaarten die al getekend kunnen zijn
+    // voordat /api/health antwoord gaf.
+    laadAccount();
   }
 
   function naarPortaal() {

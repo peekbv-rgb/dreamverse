@@ -139,6 +139,7 @@
     ["Daar hebben we tokens voor nodig.", "We need tokens for that."],
     ["Tokens kopen", "Buy tokens"],
     ["Zet saldo", "Set balance"],
+    ["opwaarderen", "top up"],
     ["Pakket met de hand", "Plan by hand"],
     ["Tokensaldo", "Token balance"],
     ["Verbinden mislukte.", "Connecting failed."],
