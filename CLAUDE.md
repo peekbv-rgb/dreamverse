@@ -474,6 +474,36 @@ De server weigert met **402** en zegt erbij hoeveel tokens er tekortkomen.
 Afrekenen van een gesprek gebeurt ná afloop op werkelijk gesproken tijd, naar
 boven afgerond per begonnen minuut.
 
+## Op het beginscherm (PWA)
+
+Geen App Store, geen review, geen commissie: `static/manifest.json`, vier iconen
+en `static/sw.js`. Iemand zet hem vanuit Safari of Chrome op zijn beginscherm en
+het staat er als een app, met het chakra-icoon en zonder adresbalk.
+
+De iconen komen uit `python build/pwa_iconen.py`, dat de chakrapilaar vierkant
+snijdt. Vera's portret werkt niet op 48 pixels; zeven lotussen in een lichtbundel
+wel.
+
+**De service worker is bewust dom.** Alles is network-first, dus een deploy wint
+altijd — een cache die een oude versie serveert terwijl jij net gepusht hebt,
+kost een middag zoeken naar een fout die er niet is. En hij raakt `/api/` en
+`/panels/` nooit aan: dat zijn antwoorden per gebruiker, en een gecachet
+antwoord van iemand anders is het ergste wat een cache hier kan doen.
+
+Aanmelden gebeurt alleen op een beveiligde verbinding en faalt stil: zonder
+service worker werkt de app precies zoals hij nu werkt.
+
+## Domeinen
+
+Geregistreerd op 6 september 2026, op naam van Peek BV: `dreamverse.nl`, plus
+`veradreamverse` en `vera-dreamverse` op .com, .nl, .eu, .be, .store en .online.
+**`dreamverse.com` is niet van ons.** Gekozen hoofddomein: **vera-dreamverse.com**,
+dezelfde naam als het Instagram-account *Veradreamverse*.
+
+Er hoeft geen hostingpakket bij: Render host de app, de registrar levert alleen
+DNS. Een website- of doorstuurdienst van de registrar zit het certificaat van
+Render juist in de weg.
+
 ## Op je telefoon kijken
 
 Start met `HOST=0.0.0.0` en open `http://<het ip van deze pc>:8000` op een

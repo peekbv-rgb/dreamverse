@@ -1370,6 +1370,21 @@
     }
   }
 
+  /* De service worker aanmelden.
+   *
+   * Alleen op een beveiligde verbinding, want anders bestaat hij niet - en op
+   * http://192.168.x.x zou dit een fout in de console geven waar niemand iets
+   * aan heeft. Faalt het, dan werkt de app precies zoals hij nu werkt: dit is
+   * een extraatje voor het beginscherm, geen voorwaarde.
+   */
+  if ("serviceWorker" in navigator && window.isSecureContext) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("/sw.js").catch(function (e) {
+        console.warn("service worker niet aangemeld:", e && e.message);
+      });
+    });
+  }
+
   /* --------------------------------------------------------------- knoppen */
 
   el("next").addEventListener("click", function () {
