@@ -955,7 +955,7 @@
     verwachtWerk();
     startBezig(t("De duiding wordt opnieuw geschreven"));
     fetch("/api/episode/" + nummer + "/herstel", { method: "POST" })
-      .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, body: d }; }); })
+      .then(lees)
       .then(function (res) {
         if (!res.ok) { throw new Error(res.body.error || t("Herstellen lukte niet.")); }
         render(res.body.episode);
@@ -975,7 +975,7 @@
     statusEl.className = "status";
     statusEl.textContent = t("Droom %s terughalen…").replace("%s", nummer);
     fetch("/api/episode/" + nummer)
-      .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, body: d }; }); })
+      .then(lees)
       .then(function (res) {
         if (!res.ok) { throw new Error(res.body.error || t("Terughalen lukte niet.")); }
         var ep = res.body.episode;
@@ -1505,6 +1505,31 @@
     });
   }
 
+  /* Een antwoord uitpakken, ook als het geen JSON is.
+   *
+   * Render stuurt bij een herstart zijn eigen HTML-foutpagina terug, en dan
+   * kreeg de dromer letterlijk `Unexpected token '<'` op zijn scherm te zien.
+   * Dat is de fout van de browser, niet die van hem, en hij kan er niets mee.
+   * Nu staat er wat er aan de hand is: even niet bereikbaar, probeer opnieuw.
+   */
+  function lees(r) {
+    return r.text().then(function (tekst) {
+      try {
+        return { ok: r.ok, body: JSON.parse(tekst) };
+      } catch (e) {
+        return {
+          ok: false,
+          body: {
+            error: r.status === 502 || r.status === 503 || r.status === 504
+              ? t("De server is even niet bereikbaar — hij start opnieuw op. "
+                  + "Probeer het over een minuut nog eens.")
+              : t("De server gaf een onverwacht antwoord.") + " (" + r.status + ")"
+          }
+        };
+      }
+    });
+  }
+
   /* --------------------------------------------------------------- knoppen */
 
   el("next").addEventListener("click", function () {
@@ -1569,7 +1594,7 @@
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ dream: nummer, kind: knop.dataset.kind })
     })
-      .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, body: d }; }); })
+      .then(lees)
       .then(function (res) {
         if (!res.ok) { throw new Error(res.body.error || t("Dat lukte niet.")); }
         melding.textContent = t("Onderweg. De zandloper onderin loopt mee.");
@@ -1647,7 +1672,7 @@
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ dream: text, quality: gekozenKwaliteit, lens: gekozenBril })
     })
-      .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, body: d }; }); })
+      .then(lees)
       .then(function (res) {
         if (!res.ok) { throw new Error(res.body.error || t("Het lukte niet.")); }
         if (res.body.buiten_bereik) {
@@ -2874,7 +2899,7 @@
         naam: el("p-naam").value.trim()
       })
     })
-      .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, body: d }; }); })
+      .then(lees)
       .then(function (res) {
         if (!res.ok) { throw new Error(res.body.error || t("Dat lukte niet.")); }
         el("poort").hidden = true;
@@ -2953,7 +2978,7 @@
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body)
     })
-      .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, body: d }; }); })
+      .then(lees)
       .then(function (res) {
         if (!res.ok || !res.body.url) {
           throw new Error(res.body.error || t("Afrekenen lukte niet."));
@@ -3029,7 +3054,7 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ wachtwoord: el("verwijder-wachtwoord").value })
       })
-        .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, body: d }; }); })
+        .then(lees)
         .then(function (res) {
           if (!res.ok) { throw new Error(res.body.error || t("Dat lukte niet.")); }
           document.body.innerHTML =
