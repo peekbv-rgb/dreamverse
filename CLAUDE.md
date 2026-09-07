@@ -534,8 +534,18 @@ Dat stuurt alle bestaande id's mee, ruimt de vorige versie op en werkt
 |---|---|---|---|---|
 | Gratis | € 0 | **1** | ja, vijf getekende panelen | alleen met tokens |
 | **Lite** | **€ 2,99** | **3** | ja, vijf getekende panelen | alleen met tokens |
-| Plus | € 7,99 | 6 | ja, plus een bewegend kernmoment | alleen met tokens |
-| Ultra | € 29,99 | 10 | ja, kernmoment op het beste model | 10 minuten inbegrepen |
+| Plus | € 7,99 | 6 | ja, plus **drie** bewegende kernmomenten | alleen met tokens |
+| Ultra | € 29,99 | 10 | ja, **vijf** kernmomenten op het beste model | 10 minuten inbegrepen |
+
+**Niet elke droom krijgt een kernmoment, en dat is het besluit dat Plus en Ultra
+gezond maakt.** Met alle zes kostte Plus € 4,14 per maand en bleef er 20% over;
+met drie is het € 2,49 en **41%**. Ultra ging van 16% naar 41%. Die ene animatie
+bij Runway kost € 0,55 tot € 1,47, tegen € 0,14 voor een hele droom zonder — dus
+het is precies die knop die de marge opat. Het maandtegoed staat in
+`PLANS[...]["kernmomenten"]`, de teller in `users.kern_op`, en die rolt om met
+`dromen_op` en `avatar_sec`. Is hij op, dan kost een kernmoment tokens; koopt
+iemand er zo een, dan gaat zijn maandtegoed **niet** ook nog omlaag — anders
+betaalt hij twee keer.
 
 Gratis geeft **één** droom en geen drie. Bij drie kostte een gratis gebruiker
 € 0,42 per maand, en vier van hen aten één betalende op; nu is dat € 0,14. Lite

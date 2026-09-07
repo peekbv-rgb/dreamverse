@@ -109,6 +109,7 @@ PLANS = {
         "dromen": 1,            # per maand
         "panelen": True,
         "video": "geen",
+        "kernmomenten": 0,
         "avatar_minuten": 0,    # alleen met tokens
     },
     "lite": {
@@ -120,6 +121,7 @@ PLANS = {
         "dromen": 3,
         "panelen": True,
         "video": "geen",        # het kernmoment gaat op tokens
+        "kernmomenten": 0,
         "avatar_minuten": 0,
     },
     "plus": {
@@ -127,7 +129,13 @@ PLANS = {
         "prijs": 7.99,          # starttarief
         "dromen": 6,
         "panelen": True,
-        "video": "snel",        # EUR 4,14 aan kosten, 48% marge
+        "video": "snel",
+        # De helft van je dromen krijgt een bewegend kernmoment, niet alle zes.
+        # Met alle zes kostte Plus EUR 4,14 en bleef er 20% over; met drie is het
+        # EUR 2,49 en 41%. Dat is dezelfde marge als Lite, en het maakt het
+        # verschil met Ultra uit te leggen: drie op het snelle model tegen vijf op
+        # het beste. Wie er meer wil koopt ze met tokens.
+        "kernmomenten": 3,
         "avatar_minuten": 0,
     },
     "ultra": {
@@ -135,7 +143,8 @@ PLANS = {
         "prijs": 29.99,
         "dromen": 10,
         "panelen": True,
-        "video": "top",         # EUR 17,77 aan kosten, 41% marge
+        "video": "top",         # met vijf kernmomenten: EUR 10,55 en 41% marge
+        "kernmomenten": 5,
         "avatar_minuten": 10,
     },
 }
@@ -186,6 +195,9 @@ def account():
         "dromen_gebruikt": dromen,
         "dromen_inbegrepen": plan["dromen"],
         "dromen_over": max(0, plan["dromen"] - dromen),
+        "kern_gebruikt": u["kern_op"],
+        "kern_inbegrepen": plan.get("kernmomenten", 0),
+        "kern_over": max(0, plan.get("kernmomenten", 0) - u["kern_op"]),
         "panelen_inbegrepen": plan["panelen"],
         "video": plan["video"],
         "video_omschrijving": {
@@ -250,7 +262,11 @@ def kwaliteiten(taal="nl"):
     saldo = a["tokens"]
     uit = []
     for sleutel, k in sorted(KWALITEIT.items(), key=lambda kv: kv[1]["rang"]):
-        inbegrepen = k["rang"] <= grens
+        # Een bewegend kernmoment is inbegrepen zolang je er deze maand nog hebt.
+        # Zijn ze op, dan staat de tokenprijs op de knop - en niet pas in een
+        # foutmelding nadat je geklikt hebt.
+        binnen = k["rang"] <= grens
+        inbegrepen = binnen and (not k["video"] or a["kern_over"] > 0)
         tokens = 0 if inbegrepen else k["tokens"]
         uit.append({
             "key": sleutel,
@@ -258,6 +274,9 @@ def kwaliteiten(taal="nl"):
             "uitleg": k["uitleg_en"] if eng else k["uitleg"],
             "bevat": k["bevat_en"] if eng else k["bevat"],
             "inbegrepen": inbegrepen, "tokens": tokens,
+            # Hoort bij je pakket maar je maandtegoed is op: dat is iets anders
+            # dan "zit niet in je pakket", en de app zegt dat ook anders.
+            "kern_op": bool(binnen and k["video"] and a["kern_over"] <= 0),
             # Alles onder je pakket valt er vanzelf ook in, dus "inbegrepen" bij
             # drie knoppen zegt niets. Alleen de hoogste die je hebt is nieuws.
             "beste": k["rang"] == grens,
@@ -267,19 +286,39 @@ def kwaliteiten(taal="nl"):
 
 
 def check_kwaliteit(sleutel):
-    """Mag deze kwaliteit? Geeft (instelling, tokens) terug."""
+    """Mag deze kwaliteit? Geeft (instelling, tokens) terug.
+
+    Twee dingen bepalen het antwoord. De rang zegt of dit uberhaupt bij je pakket
+    hoort. En voor een bewegend kernmoment telt daarnaast je maandtegoed: Plus
+    geeft er drie van de zes, Ultra vijf van de tien. Zijn die op, dan kost het
+    kernmoment tokens - net als een extra droom.
+
+    Met alle dromen een kernmoment kostte Plus EUR 4,14 per maand en bleef er 20%
+    over. Die ene animatie bij Runway is EUR 0,55 tot EUR 1,47, tegen EUR 0,14
+    voor een hele droom zonder.
+    """
     if sleutel not in KWALITEIT:
         raise Refused("Die kwaliteit bestaat niet.")
     k = KWALITEIT[sleutel]
     a = account()
-    if k["rang"] <= PLAN_RANG.get(a["plan"], 0):
-        return k, 0
+    binnen_pakket = k["rang"] <= PLAN_RANG.get(a["plan"], 0)
+
+    if binnen_pakket and not k["video"]:
+        return k, 0                       # tekst of stilstaande panelen: altijd
+    if binnen_pakket and a["kern_over"] > 0:
+        return k, 0                       # een kernmoment uit je maandtegoed
+
     if a["tokens"] >= k["tokens"]:
         return k, k["tokens"]
-    raise Refused(
-        "{} kost {} tokens en je hebt er {}. In je pakket {} zit {} inbegrepen.".format(
-            k["naam"], k["tokens"], a["tokens"], a["plan_naam"], a["video_omschrijving"]),
-        need_tokens=k["tokens"] - a["tokens"])
+
+    if binnen_pakket:
+        reden = ("Je {} kernmomenten van deze maand zijn op. Nog een {} kost {} "
+                 "tokens en je hebt er {}.").format(
+                     a["kern_inbegrepen"], k["naam"], k["tokens"], a["tokens"])
+    else:
+        reden = "{} kost {} tokens en je hebt er {}. In je pakket {} zit {} inbegrepen.".format(
+            k["naam"], k["tokens"], a["tokens"], a["plan_naam"], a["video_omschrijving"])
+    raise Refused(reden, need_tokens=k["tokens"] - a["tokens"])
 
 
 def check_dream():
@@ -370,10 +409,16 @@ def charge_extra(soort):
     return prijs
 
 
-def charge_dream(tokens):
-    """Een droom afboeken: de maandteller omhoog, en tokens eraf als het er waren."""
+def charge_dream(tokens, kern=0):
+    """Een droom afboeken: de maandtellers omhoog, en tokens eraf als het er waren.
+
+    `kern` is 1 als het bewegende kernmoment uit het maandtegoed kwam en niet uit
+    tokens. Zonder dat onderscheid zou iemand die er een bijkoopt ook nog zijn
+    maandtegoed kwijtraken - twee keer betalen voor hetzelfde.
+    """
     import accounts
-    accounts.tel_op(accounts.huidige()["id"], dromen=1, tokens=-int(tokens or 0))
+    accounts.tel_op(accounts.huidige()["id"], dromen=1, tokens=-int(tokens or 0),
+                    kern=int(kern or 0))
     _verversen()
 
 

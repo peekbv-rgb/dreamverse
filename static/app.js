@@ -2241,6 +2241,11 @@
         ? t("0 tokens")
         : k.tokens + " " + t(k.tokens === 1 ? "token" : "tokens");
       var regel = k.inbegrepen ? (allesGratis ? k.bevat : k.bevat + " · " + kost) : kost;
+      if (k.kern_op) {
+        // Hoort bij je pakket, maar je maandtegoed is op. Dat is iets anders dan
+        // "zit er niet in", en het staat er dus ook anders.
+        regel = kost + " · " + t("maandtegoed op");
+      }
       b.innerHTML = k.naam + "<small>" + regel + "</small>";
       if (k.beste) {
         b.classList.add("beste");
@@ -2280,6 +2285,12 @@
     var stukken = [];
     stukken.push('<b>' + a.plan_naam + "</b>");
     stukken.push(a.dromen_over + " " + t(a.dromen_over === 1 ? "droom over" : "dromen over"));
+    // Alleen tonen als je pakket er heeft: bij Gratis en Lite zou "0 kernmomenten"
+    // klinken als iets wat je kwijt bent in plaats van iets wat er nooit was.
+    if (a.kern_inbegrepen) {
+      stukken.push("<b>" + a.kern_over + "</b> " +
+                   t(a.kern_over === 1 ? "kernmoment" : "kernmomenten"));
+    }
     stukken.push('<b>' + a.tokens + "</b> " + t("tokens"));
     doos.innerHTML = stukken.join('<i aria-hidden="true">·</i>');
     if (betalenAan) {

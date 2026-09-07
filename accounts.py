@@ -169,6 +169,9 @@ LATERE_KOLOMMEN = (
     ("users", "stripe_klant", "TEXT NOT NULL DEFAULT ''"),
     ("users", "stripe_abo", "TEXT NOT NULL DEFAULT ''"),
     ("users", "pakket_tot", "TEXT NOT NULL DEFAULT ''"),
+    # Hoeveel bewegende kernmomenten deze maand al uit het pakket zijn gehaald.
+    # Rolt om met dromen_op en avatar_sec.
+    ("users", "kern_op", "INTEGER NOT NULL DEFAULT 0"),
 )
 
 
@@ -447,16 +450,16 @@ def rol_maand_om(user_id):
     if rij is None or rij["maand"] == maand():
         return
     with _lock:
-        db().execute("UPDATE users SET maand = ?, dromen_op = 0, avatar_sec = 0"
-                     " WHERE id = ?", (maand(), user_id))
+        db().execute("UPDATE users SET maand = ?, dromen_op = 0, avatar_sec = 0,"
+                     " kern_op = 0 WHERE id = ?", (maand(), user_id))
 
 
-def tel_op(user_id, dromen=0, avatar_sec=0, tokens=0):
+def tel_op(user_id, dromen=0, avatar_sec=0, tokens=0, kern=0):
     with _lock:
         db().execute(
             "UPDATE users SET dromen_op = dromen_op + ?, avatar_sec = avatar_sec + ?,"
-            " tokens = MAX(0, tokens + ?) WHERE id = ?",
-            (dromen, avatar_sec, tokens, user_id))
+            " tokens = MAX(0, tokens + ?), kern_op = kern_op + ? WHERE id = ?",
+            (dromen, avatar_sec, tokens, kern, user_id))
 
 
 def zet_tokens(user_id, aantal):

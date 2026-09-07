@@ -1132,7 +1132,10 @@ def create(dream, kwaliteit=None, lens=None):
     accounts.zet_droom(uid(), number, dream, episode["title"],
                        episode.get("motifs", []), date.today().isoformat())
 
-    plans.charge_dream(kosten_tokens + kwaliteit_tokens)
+    # Kwam het kernmoment uit het maandtegoed, dan telt dat af. Kocht hij het
+    # met tokens, dan niet - anders betaalt hij twee keer.
+    uit_tegoed = 1 if (niveau["video"] and not kwaliteit_tokens) else 0
+    plans.charge_dream(kosten_tokens + kwaliteit_tokens, kern=uit_tegoed)
     # De droom zelf hoort bij de verbeelding: de hele duiding verwijst ernaar,
     # en zonder die tekst is het bij het terugkijken raden waar het over ging.
     episode["dream"] = dream
