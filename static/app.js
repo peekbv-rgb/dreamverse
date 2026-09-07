@@ -1596,7 +1596,11 @@
     })
       .then(lees)
       .then(function (res) {
-        if (!res.ok) { throw new Error(res.body.error || t("Dat lukte niet.")); }
+        if (!res.ok) {
+          var op = new Error(res.body.error || t("Dat lukte niet."));
+          op.kanPanelen = !!res.body.kan_panelen;
+          throw op;
+        }
         melding.textContent = t("Onderweg. De zandloper onderin loopt mee.");
         verwachtWerk();
         startBezig(t("Aanvraag gestart…"));
@@ -1607,6 +1611,17 @@
       .catch(function (err) {
         melding.className = "extras-melding err";
         melding.textContent = err.message;
+        // Kan het wel zodra de panelen er zijn? Dan hoort daar een knop bij en
+        // geen zin die vertelt wat het kost zonder een manier om het te doen.
+        if (err.kanPanelen) {
+          var doe = document.createElement("button");
+          doe.type = "button";
+          doe.className = "koop";
+          doe.dataset.kind = "panelen";
+          doe.innerHTML = t("Maak de panelen") + " <b>1</b>";
+          melding.appendChild(document.createElement("br"));
+          melding.appendChild(doe);
+        }
       })
       .then(function () { knop.disabled = false; });
   }
@@ -2056,6 +2071,8 @@
     var doos = el("kwaliteit-knoppen");
     if (!doos || !a.kwaliteiten) { return; }
     doos.innerHTML = "";
+    // Kost er niets meer iets? Dan is de prijs geen onderscheid meer.
+    var allesGratis = a.kwaliteiten.every(function (k) { return k.inbegrepen; });
     a.kwaliteiten.forEach(function (k) {
       var b = document.createElement("button");
       b.type = "button";
@@ -2063,17 +2080,18 @@
       b.dataset.kwaliteit = k.key;
       b.setAttribute("aria-pressed", k.key === gekozenKwaliteit ? "true" : "false");
       b.title = k.uitleg;
-      /* Wat je krijgt én wat het kost.
+      /* Wat je krijgt, en wat het kost als het iets kost.
        *
-       * Hier stond alleen wat je kreeg zolang het in je pakket zat. Naast twee
-       * knoppen met "4 tokens" en "10 tokens" leest dat als een prijs die er nog
-       * bij komt maar die je niet ziet - en dan durf je niet te klikken. Nul
-       * hardop zeggen is het hele punt van een pakket.
+       * De nul is er om te contrasteren: naast een knop van "10 tokens" leest
+       * een knop zonder prijs als een prijs die je niet ziet, en dan durf je
+       * niet te klikken. Maar kost geen enkele optie iets - bij Ultra is alles
+       * inbegrepen - dan staat er vier keer "0 tokens" en zegt die nul niets
+       * meer. Dan alleen wat je krijgt.
        */
       var kost = k.inbegrepen
         ? t("0 tokens")
         : k.tokens + " " + t(k.tokens === 1 ? "token" : "tokens");
-      var regel = k.inbegrepen ? k.bevat + " · " + kost : kost;
+      var regel = k.inbegrepen ? (allesGratis ? k.bevat : k.bevat + " · " + kost) : kost;
       b.innerHTML = k.naam + "<small>" + regel + "</small>";
       if (k.beste) {
         b.classList.add("beste");

@@ -174,6 +174,8 @@
      "The server is briefly unreachable - it is restarting. Try again in a minute."],
     ["De server gaf een onverwacht antwoord.", "The server gave an unexpected answer."],
     ["Panelen erbij <b>1</b>", "Add the panels <b>1</b>"],
+    ["Vijf panelen erbij <b>1 token</b>", "Add five panels <b>1 token</b>"],
+    ["Maak de panelen", "Draw the panels"],
     ["Panelen erbij — 1 token", "Add the panels — 1 token"],
     ["Koos je \"alleen de duiding\" en wil je er toch beeld bij? Dan worden de vijf panelen alsnog getekend bij de duiding die er al staat. Je droom wordt niet opnieuw geschreven en het kost je geen droom uit je maand.",
      "Did you pick \"only the reading\" and want images after all? The five panels get drawn for the reading that is already there. Your dream is not rewritten and it does not cost you a dream from your month."],

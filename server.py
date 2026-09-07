@@ -569,9 +569,9 @@ class Handler(SimpleHTTPRequestHandler):
 
             if not beelden:
                 return self.send_json({
-                    "error": "Bij deze droom zijn nog geen panelen gemaakt, en bewegend "
-                             "beeld heeft een getekend paneel nodig om mee te beginnen. "
-                             "Maak eerst de panelen; dat kost 1 token.",
+                    # Kort houden: de knop eronder zegt zelf wat het kost.
+                    "error": "Bewegend beeld begint bij een getekend paneel, en die zijn "
+                             "er bij deze droom nog niet.",
                     "kan_panelen": True,
                 }, 409)
 
