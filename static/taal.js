@@ -145,6 +145,10 @@
     ["Tokens kopen", "Buy tokens"],
     ["Zet saldo", "Set balance"],
     ["Beheer uit", "Admin off"],
+    // Bevat een link, dus de sleutel is de innerHTML - en daarom enkele
+    // aanhalingstekens eromheen.
+    ['Nog geen idee wat dit is? <a href="/welkom.html">Lees eerst wat Dreamverse doet en wat het kost.</a>',
+     'Not sure what this is? <a href="/welkom.html">Read first what Dreamverse does and what it costs.</a>'],
     ["Voor wie", "For whom"],
     ["leeg = jijzelf", "empty = yourself"],
     ["Gezet voor", "Set for"],

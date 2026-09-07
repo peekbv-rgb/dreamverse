@@ -104,7 +104,8 @@ VRIJ = ("/api/health", "/api/registreren", "/api/inloggen", "/api/uitloggen",
 #
 # De privacyverklaring: die moet leesbaar zijn zonder account. Een verklaring
 # achter een wachtwoord beschermt niemand.
-ZONDER_BASIC = ("/api/stripe/webhook", "/privacy.html", "/herstel.html")
+ZONDER_BASIC = ("/api/stripe/webhook", "/privacy.html", "/herstel.html",
+                "/welkom.html")
 
 
 class Handler(SimpleHTTPRequestHandler):

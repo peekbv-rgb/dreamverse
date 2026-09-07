@@ -1649,3 +1649,21 @@ body.tekstpagina .end a { color: var(--throat); }
   margin: .6rem 0 0 !important;
   font-size: .82rem !important; color: rgba(216, 205, 234, .6) !important;
 }
+
+/* De publieke pagina: wat Dreamverse is, voor wie nog geen account heeft. */
+.taalkeus {
+  padding: .1rem .5rem; margin-left: .3rem;
+  font-size: .68rem; letter-spacing: .08em; text-transform: uppercase;
+  background: transparent; border: 1px solid rgba(216, 205, 234, .28);
+  border-radius: 999px; color: rgba(216, 205, 234, .7); cursor: pointer;
+}
+.taalkeus[aria-pressed="true"] {
+  border-color: var(--third-eye); color: var(--ink);
+  background: rgba(110, 98, 218, .22);
+}
+.welkom-knoppen { margin: 1.2rem 0 0; }
+.poort-uitleg {
+  margin: .9rem 0 0; font-size: .82rem; line-height: 1.55;
+  color: rgba(216, 205, 234, .75);
+}
+.poort-uitleg a { color: var(--ink); }

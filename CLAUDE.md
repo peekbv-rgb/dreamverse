@@ -243,6 +243,24 @@ De zeven middelpunten zijn een keer uitgemeten en staan als `y` in `VELDEN` in
 `static/app.js`, als fractie van de hoogte. **Vervang je de plaat, meet ze dan
 opnieuw** — anders vallen de cijfers en de dovers naast de lotussen.
 
+## De publieke pagina
+
+`static/welkom.html` is wat iemand zonder account te zien krijgt: wat Dreamverse
+doet, de vier pakketten met prijzen, wat een token kost, waar de grenzen liggen,
+en de kleine lettertjes met opzegtermijn, restitutie, KvK en contactadres. Buiten
+basic auth, net als de privacyverklaring.
+
+Twee redenen dat hij er is. **Voor Stripe**: bij Managed Payments zijn zij de
+verkoper en beoordelen ze de site, en tot vandaag zag een beoordelaar alleen een
+inlogscherm. **Voor testers**: die kregen een wachtwoordveld zonder te weten waar
+ze aan begonnen.
+
+Hij staat **los van de app**: geen `app.js`, geen `taal.js`. De vertaling zit in
+de pagina zelf, met `data-en` en `data-nl` naast elkaar op elk element, en
+Engels is er de standaard — Nederlands alleen als de browser dat zegt of de
+bezoeker het kiest. Dat is bewust: deze pagina is het eerste wat iemand van
+buiten Nederland ziet.
+
 ## Twee talen
 
 De pagina is in het Nederlands geschreven; `static/taal.js` houdt per zin bij wat er
