@@ -2890,6 +2890,28 @@
   }
 
   function naarStripe(body) {
+    /* Voor een minderjarige eerst een vraag, en alleen hier.
+     *
+     * Niet bij binnenkomst: een leeftijdsvraag op de deurmat is precies de
+     * drempel die we juist weghalen, en hij zegt niets - iedereen klikt "ja".
+     * Bij het afrekenen doet hij er wel toe, want dáár gaat geld om, en daar
+     * weten we de leeftijd ook echt: die staat in het profiel en is bij het
+     * aanmelden gevraagd, niet geraden.
+     */
+    if (profiel && profiel.minor) {
+      var vraag = t("Je bent nog geen achttien. Vraag eerst toestemming aan je "
+                    + "ouder of voogd voordat je iets koopt. Heb je die toestemming?");
+      if (!window.confirm(vraag)) {
+        var m = el("koop-melding");
+        if (m) {
+          m.className = "koop-melding err";
+          m.textContent = t("Geen probleem. Dreamverse blijft gewoon werken; je "
+                            + "kunt elke maand één droom laten verbeelden.");
+        }
+        return;
+      }
+    }
+
     var melding = el("koop-melding");
     if (melding) {
       melding.className = "koop-melding";

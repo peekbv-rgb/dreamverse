@@ -191,6 +191,22 @@ class Handler(SimpleHTTPRequestHandler):
     def do_GET(self):
         if not self.guard():
             return
+
+        # Wie niet is ingelogd, komt eerst op de welkomstpagina.
+        #
+        # Tot nu toe zag een nieuwe bezoeker een wachtwoordveld en verder niets:
+        # hij moest een account maken om te ontdekken waar hij een account voor
+        # maakte. Nu leest hij eerst wat het is, wat het kost en ziet hij drie
+        # kernmomenten bewegen; de knop daar brengt hem naar /app.
+        #
+        # /app blijft altijd de app zelf, ook uitgelogd - anders stuurt de knop
+        # op de welkomstpagina je in een kringetje terug.
+        kaal = self.path.split("?")[0]
+        if kaal in ("/", "/index.html") and not self.gebruiker:
+            self.path = "/welkom.html"
+        elif kaal in ("/app", "/app/"):
+            self.path = "/index.html"
+
         if self.path == "/api/profile":
             return self.send_json(dreamverse.public_profile())
         if self.path == "/api/mijn-gegevens":
