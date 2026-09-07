@@ -208,7 +208,15 @@ h1 {
   padding: 1.25rem 1.3rem 1.3rem;
   display: flex; flex-direction: column; gap: .85rem;
 }
-.composer label { font-size: .68rem; font-weight: 600; letter-spacing: .22em; text-transform: uppercase; color: var(--muted); }
+/* De drie vragen in het invoerkader zijn de koppen van dit deel: wat droomde
+   je, hoe wil je hem gevisualiseerd, hoe wil je hem geanalyseerd. Ze stonden op
+   .62 en .68rem in muted grijs - kleiner dan de knoppen eronder, terwijl ze de
+   vraag stellen waar die knoppen het antwoord op zijn. */
+.composer label, .kwaliteit-kop {
+  font-size: .84rem; font-weight: 700; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--ink);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, .6);
+}
 
 textarea {
   width: 100%; min-height: 7rem; resize: vertical;
@@ -928,10 +936,7 @@ body::after { opacity: .34; }
 
 /* Wat wil je van deze droom: alleen de duiding, of beeld erbij. */
 .kwaliteiten { display: flex; flex-direction: column; gap: .5rem; }
-.kwaliteit-kop {
-  font-size: .62rem; font-weight: 600; letter-spacing: .18em;
-  text-transform: uppercase; color: var(--muted);
-}
+
 /* Rijafstand ruimer dan kolomafstand.
    Het "in je pakket"-vlaggetje hangt met top: -.55rem boven zijn knop uit. Zolang
    alles op een regel past valt dat in de marge, maar zodra de rij afbreekt - bij
@@ -959,8 +964,11 @@ body::after { opacity: .34; }
   box-shadow: 0 0 22px rgba(110, 98, 218, .3);
 }
 .kwaliteit[aria-pressed="true"] small { color: #CFC7F5; }
-.kwaliteit.tekort { border-color: rgba(242, 198, 76, .45); }
-.kwaliteit.tekort small { color: var(--solar); }
+/* Tekort aan tokens kleurde het aantal geel. Dat was een derde betekenis voor
+   een kleur op dezelfde rij knoppen - groen is "in je pakket", violet is
+   "gekozen" - en het staat er toch al in woorden onder zodra je klikt. Het
+   aantal blijft nu gewoon leesbaar; alleen de rand geeft een zetje. */
+.kwaliteit.tekort { border-color: rgba(242, 198, 76, .3); }
 .kwaliteit-melding { margin: 0; font-size: .85rem; color: var(--muted); min-height: 1.2rem; }
 .kwaliteit-melding.err { color: #F5A08F; }
 
