@@ -29,7 +29,7 @@
     // -- de introductie ----------------------------------------------------
     ["Wij bouwen samen aan jouw persoonlijk universum van dromen.",
      "Together we are building your own personal universe of dreams."],
-    ["In de Dreamverse worden al jouw dromen gevisualiseerd en geanalyseerd; zo ontstaat een dagboek aan onvergetelijke dromen.",
+    ["In de Dreamverse worden al jouw dromen gevisualiseerd en geanalyseerd; zo ontstaat er een dagboek aan onvergetelijke dromen.",
      "In the Dreamverse all your dreams are visualised and analysed; what grows is a diary of unforgettable dreams."],
     ["Hoor Vera", "Hear Vera"],
     ["Nog een keer", "Once more"],
