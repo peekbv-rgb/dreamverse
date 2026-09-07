@@ -102,8 +102,17 @@ en het scheelt direct in de kostprijs per verbeelding.
   archief. Bij geweld tussen mensen en bij zelfdoding komt de duiding er wél —
   wie dit droomt en niets terugkrijgt is er slechter aan toe — met een vast
   hulpkader erboven. **Het model classificeert alleen** (`zorg` in
-  `ZORG_REGELS`); de teksten en de nummers staan in `HULP` in `static/app.js`,
+  `ZORG_REGELS`); de teksten en de nummers staan in `LANDEN` in `static/app.js`,
   want een gehallucineerd crisisnummer is het ergste wat deze app kan doen.
+- **Nummers per land, en geen nummer als we het land niet kennen.** `landcode()`
+  raadt het land uit de regio in de taalinstelling van de browser, anders uit de
+  tijdzone — zonder het te vragen en zonder een IP-adres ergens heen te sturen.
+  In `LANDEN` staat alleen wat bij de bron geverifieerd is: nu nl, be, de, gb en
+  us. Kennen we het land niet, dan komt er géén nummer, want een nummer uit een
+  ander land is erger dan geen nummer. Er staat **altijd** een link naar Find A
+  Helpline (ThroughLine, ruim 175 landen, pagina per land) — dat is beter
+  onderhouden dan een lijst van ons. Een land toevoegen is één regel in `LANDEN`,
+  en doe dat alleen met de bron erbij.
 - **De drempel ligt hoog en dat is opzet.** Een monster dat je achtervolgt is
   geen geweld waarvoor je Veilig Thuis belt, en doodgaan in een droom is iets
   anders dan een suïcidale droom — dat zijn juist de twee meest voorkomende

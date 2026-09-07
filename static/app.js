@@ -1244,107 +1244,199 @@
 
   /* Waar iemand naartoe kan, als een droom daarover ging.
    *
-   * De nummers staan hier hard in de code en komen nooit uit een model. Het
-   * model classificeert alleen; een gehallucineerd crisisnummer is het ergste
-   * wat deze app kan doen. Verandert er een nummer, dan verandert het hier - op
-   * één plek.
+   * Drie regels, en ze zijn geen van drieën onderhandelbaar.
    *
-   * Nederlandse nummers bij de Nederlandse taal, Amerikaanse bij de Engelse.
-   * Dat is een grove benadering: iemand die de app in het Engels gebruikt zit
-   * niet per definitie in de Verenigde Staten. Zolang dat niet per land te
-   * bepalen is, staat er ook altijd "iemand die je vertrouwt" bij - dat werkt
-   * overal.
+   * 1. **Geen letter komt uit een model.** Het model classificeert alleen; deze
+   *    nummers staan hier in de code. Een gehallucineerd crisisnummer is het
+   *    ergste wat deze app kan doen.
+   * 2. **Alleen wat nagekeken is.** In LANDEN staat uitsluitend wat bij de bron
+   *    is geverifieerd. Een land dat er niet in staat krijgt geen nummer, en
+   *    dat is beter dan een nummer dat daar niet werkt.
+   * 3. **Er is altijd een vangnet.** Find A Helpline (ThroughLine) houdt
+   *    hulplijnen bij in ruim 175 landen en heeft een pagina per land. Dat is
+   *    beter onderhouden dan een lijst die wij bijhouden, dus die link staat er
+   *    altijd bij - ook als we het land wel kennen.
+   *
+   * Een land toevoegen is één regel in LANDEN. Doe dat alleen met de bron erbij.
    */
-  var HULP = {
-    suicide: {
-      nl: {
-        kop: "Praat erover met iemand.",
-        tekst: "In je droom kwam zelfdoding voor. Denk je hier ook wakker aan, "
+  var HELPLINE = "https://findahelpline.com/";
+
+  var LANDEN = {
+    nl: {
+      naam: "Nederland", nood: "112",
+      suicide: [
+        { naam: "113 Zelfmoordpreventie", waarde: "113", href: "tel:113",
+          noot: "dag en nacht, gratis" },
+        { naam: "Of gratis", waarde: "0800-0113", href: "tel:08000113", noot: "" },
+        { naam: "Online", waarde: "113.nl", href: "https://www.113.nl", noot: "" }
+      ],
+      geweld: [
+        { naam: "Veilig Thuis", waarde: "0800-2000", href: "tel:08002000",
+          noot: "gratis, dag en nacht" },
+        { naam: "Online", waarde: "veiligthuis.nl",
+          href: "https://www.veiligthuis.nl/nl", noot: "" }
+      ]
+    },
+    be: {
+      naam: "België", nood: "112",
+      suicide: [
+        { naam: "Zelfmoordlijn", waarde: "1813", href: "tel:1813",
+          noot: "dag en nacht, gratis" },
+        { naam: "Online", waarde: "zelfmoord1813.be",
+          href: "https://www.zelfmoord1813.be", noot: "" }
+      ],
+      geweld: [
+        { naam: "Nulijn geweld en misbruik", waarde: "1712", href: "tel:1712",
+          noot: "gratis en anoniem" },
+        { naam: "Online", waarde: "1712.be", href: "https://www.1712.be", noot: "" }
+      ]
+    },
+    de: {
+      naam: "Deutschland", nood: "112",
+      suicide: [
+        { naam: "TelefonSeelsorge", waarde: "0800 111 0 111", href: "tel:08001110111",
+          noot: "rund um die Uhr, kostenlos" },
+        { naam: "Auch", waarde: "0800 111 0 222", href: "tel:08001110222", noot: "" }
+      ],
+      geweld: [
+        { naam: "Hilfetelefon Gewalt gegen Frauen", waarde: "116 016",
+          href: "tel:116016", noot: "kostenlos, rund um die Uhr" },
+        { naam: "Online", waarde: "hilfetelefon.de",
+          href: "https://www.hilfetelefon.de", noot: "" }
+      ]
+    },
+    gb: {
+      naam: "United Kingdom", nood: "999",
+      suicide: [
+        { naam: "Samaritans", waarde: "116 123", href: "tel:116123",
+          noot: "day and night, free" }
+      ],
+      geweld: [
+        { naam: "National Domestic Abuse Helpline", waarde: "0808 2000 247",
+          href: "tel:08082000247", noot: "24 hours, free" }
+      ]
+    },
+    us: {
+      naam: "United States", nood: "911",
+      suicide: [
+        { naam: "Suicide & Crisis Lifeline", waarde: "988", href: "tel:988",
+          noot: "day and night, free" }
+      ],
+      geweld: [
+        { naam: "National Domestic Violence Hotline", waarde: "1-800-799-7233",
+          href: "tel:18007997233", noot: "24 hours, free" }
+      ]
+    }
+  };
+
+  /* In welk land is deze dromer waarschijnlijk?
+   *
+   * Zonder het te vragen en zonder zijn IP-adres ergens heen te sturen. Eerst de
+   * regio uit de taalinstelling van de browser ("de-DE" -> de), want die is het
+   * nauwkeurigst als hij er staat. Anders de tijdzone, voor de landen die we
+   * kennen. Weten we het niet, dan blijft het leeg - en dan doet Find A Helpline
+   * het werk.
+   */
+  var ZONES = {
+    "Europe/Amsterdam": "nl", "Europe/Brussels": "be", "Europe/Berlin": "de",
+    "Europe/London": "gb", "Europe/Busingen": "de"
+  };
+
+  function landcode() {
+    try {
+      var talen = navigator.languages || [navigator.language || ""];
+      for (var i = 0; i < talen.length; i++) {
+        var deel = String(talen[i]).split("-");
+        if (deel.length > 1) {
+          var code = deel[deel.length - 1].toLowerCase();
+          if (LANDEN[code]) { return code; }
+        }
+      }
+      var zone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      if (ZONES[zone]) { return ZONES[zone]; }
+      if (/^America\//.test(zone) && /^en/i.test(navigator.language || "")) {
+        // Grof, en daarom alleen voor het noodnummer en met de zoeker erbij.
+        return null;
+      }
+    } catch (e) { /* dan weten we het niet */ }
+    return null;
+  }
+
+  var TEKST = {
+    nl: {
+      kopSuicide: "Praat erover met iemand.",
+      suicide: "In je droom kwam zelfdoding voor. Denk je hier ook wakker aan, "
              + "praat er dan vandaag met iemand over: iemand die je vertrouwt, of "
              + "je huisarts.",
-        lijnen: [
-          { naam: "113 Zelfmoordpreventie", waarde: "113", href: "tel:113",
-            noot: "dag en nacht, gratis" },
-          { naam: "Of gratis", waarde: "0800-0113", href: "tel:08000113", noot: "" },
-          { naam: "Online", waarde: "113.nl", href: "https://www.113.nl", noot: "" }
-        ]
-      },
-      en: {
-        kop: "Talk to someone about it.",
-        tekst: "Your dream involved suicide. If this is on your mind when you are "
-             + "awake too, talk to someone today: someone you trust, or your doctor.",
-        lijnen: [
-          { naam: "Suicide & Crisis Lifeline", waarde: "988", href: "tel:988",
-            noot: "day and night, free (US)" },
-          { naam: "In the Netherlands", waarde: "113", href: "tel:113", noot: "" }
-        ]
-      }
+      kopGeweld: "Praat erover met iemand.",
+      geweld: "Er kwam geweld voor in je droom. Speelt er in je leven iets waar "
+            + "geweld bij komt, dan hoef je dat niet alleen op te lossen. Praat met "
+            + "iemand die je vertrouwt.",
+      nood: "Direct gevaar",
+      zoeker: "Hulplijnen in jouw land",
+      elders: "Woon je ergens anders, dan vind je daar de hulplijnen van jouw land."
     },
-    geweld: {
-      nl: {
-        kop: "Praat erover met iemand.",
-        tekst: "Er kwam geweld voor in je droom. Speelt er in je leven iets waar "
-             + "geweld bij komt, dan hoef je dat niet alleen op te lossen. Praat met "
-             + "iemand die je vertrouwt, en bel Veilig Thuis - ook om alleen te "
-             + "vragen wat je kunt doen.",
-        lijnen: [
-          { naam: "Veilig Thuis", waarde: "0800-2000", href: "tel:08002000",
-            noot: "gratis, dag en nacht" },
-          { naam: "Online", waarde: "veiligthuis.nl", href: "https://www.veiligthuis.nl/nl",
-            noot: "" },
-          { naam: "Direct gevaar", waarde: "112", href: "tel:112", noot: "politie" }
-        ]
-      },
-      en: {
-        kop: "Talk to someone about it.",
-        tekst: "Your dream involved violence. If something in your life involves "
-             + "violence, you do not have to solve it alone. Talk to someone you "
-             + "trust, and call for advice - even just to ask what you could do.",
-        lijnen: [
-          { naam: "Domestic Violence Hotline", waarde: "1-800-799-7233",
-            href: "tel:18007997233", noot: "day and night, free (US)" },
-          { naam: "In the Netherlands", waarde: "veiligthuis.nl",
-            href: "https://www.veiligthuis.nl/nl", noot: "" },
-          { naam: "Immediate danger", waarde: "911", href: "tel:911", noot: "police" }
-        ]
-      }
+    en: {
+      kopSuicide: "Talk to someone about it.",
+      suicide: "Your dream involved suicide. If this is on your mind when you are "
+             + "awake too, talk to someone today: someone you trust, or your doctor.",
+      kopGeweld: "Talk to someone about it.",
+      geweld: "Your dream involved violence. If something in your life involves "
+            + "violence, you do not have to solve it alone. Talk to someone you trust.",
+      nood: "Immediate danger",
+      zoeker: "Helplines in your country",
+      elders: "Living somewhere else? That page lists the helplines for your country."
     }
   };
 
   /* Het hulpkader boven de duiding.
    *
-   * Boven, niet onder: wie dit nodig heeft moet het zien voordat hij aan het
-   * lezen begint. En het staat er zonder dat de duiding erover gaat - het model
-   * heeft opdracht om zelf geen hulp aan te raden, want dan zou het over de
-   * nummers gaan liegen.
+   * Boven, niet onder: wie dit nodig heeft moet het zien voordat hij begint te
+   * lezen. En de duiding zelf gaat er niet over - het model heeft opdracht om
+   * geen hulp aan te raden, juist zodat het niet over deze nummers kan liegen.
    */
   function toonZorg(ep) {
     var doos = el("zorg-kader");
     if (!doos) { return; }
     var soorten = (ep && ep.zorg) || [];
     var taal = (profiel && profiel.language) === "en" ? "en" : "nl";
+    var w = TEKST[taal];
+    var land = LANDEN[landcode()] || null;
     var stukken = [];
 
     ["suicide", "geweld"].forEach(function (soort) {
       if (soorten.indexOf(soort) === -1) { return; }
-      var h = HULP[soort] && HULP[soort][taal];
-      if (!h) { return; }
       var html = '<div class="zorg-blok zorg-' + soort + '">' +
-        '<p class="zorg-kop">' + h.kop + "</p>" +
-        "<p>" + h.tekst + "</p><ul>";
-      h.lijnen.forEach(function (r) {
-        html += "<li><span>" + r.naam + "</span> " +
-          '<a href="' + r.href + '"' +
-          (r.href.indexOf("http") === 0 ? ' target="_blank" rel="noopener"' : "") +
-          ">" + r.waarde + "</a>" +
-          (r.noot ? ' <em>' + r.noot + "</em>" : "") + "</li>";
+        '<p class="zorg-kop">' + (soort === "suicide" ? w.kopSuicide : w.kopGeweld) +
+        "</p><p>" + (soort === "suicide" ? w.suicide : w.geweld) + "</p><ul>";
+
+      // Wat we van dit land weten. Kennen we het land niet, dan slaan we dit
+      // over - een nummer uit een ander land is erger dan geen nummer.
+      (land ? land[soort] : []).forEach(function (r) {
+        html += regel(r.naam, r.waarde, r.href, r.noot);
       });
-      html += "</ul></div>";
+      if (land && land.nood) {
+        html += regel(w.nood, land.nood, "tel:" + land.nood.replace(/\s/g, ""), "");
+      }
+      // En altijd de zoeker: ruim 175 landen, door mensen die dit bijhouden.
+      html += regel(w.zoeker, "findahelpline.com",
+                    HELPLINE + (land ? "countries/" + landcode() : ""), "");
+      html += "</ul>";
+      if (!land) { html += '<p class="zorg-elders">' + w.elders + "</p>"; }
+      html += "</div>";
       stukken.push(html);
     });
 
     doos.innerHTML = stukken.join("");
     doos.hidden = !stukken.length;
+  }
+
+  function regel(naam, waarde, href, noot) {
+    var extern = href.indexOf("http") === 0;
+    return "<li><span>" + naam + "</span> " +
+      '<a href="' + href + '"' + (extern ? ' target="_blank" rel="noopener"' : "") +
+      ">" + waarde + "</a>" +
+      (noot ? " <em>" + noot + "</em>" : "") + "</li>";
   }
 
   /* Buiten bereik: geen verbeelding, wel een antwoord.

@@ -1643,3 +1643,9 @@ body.tekstpagina .end a { color: var(--throat); }
   flex: 1 1 100%; margin: -.2rem 0 .2rem;
   font-size: .82rem; color: rgba(216, 205, 234, .7);
 }
+
+/* De regel voor wie in een land woont dat we niet kennen. */
+.zorg-elders {
+  margin: .6rem 0 0 !important;
+  font-size: .82rem !important; color: rgba(216, 205, 234, .6) !important;
+}
