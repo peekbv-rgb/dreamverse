@@ -1667,3 +1667,42 @@ body.tekstpagina .end a { color: var(--throat); }
   color: rgba(216, 205, 234, .75);
 }
 .poort-uitleg a { color: var(--ink); }
+
+/* Voorbeelden van een kernmoment.
+   Poster nu, animatie pas bij een klik: de drie clips zijn samen ruim 8 MB en
+   dat wil je niet op iemands telefoonbundel zetten voor iets wat hij misschien
+   niet eens aanklikt. */
+.voorbeelden {
+  display: grid; gap: .9rem; margin: .8rem 0 1.4rem;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+}
+.voorbeeld {
+  position: relative; cursor: pointer; border-radius: 14px; overflow: hidden;
+  background: rgba(43, 28, 74, .6);
+  border: 1px solid rgba(242, 198, 76, .32);
+  transition: border-color 200ms ease, transform 200ms ease;
+}
+.voorbeeld:hover, .voorbeeld:focus-visible {
+  border-color: var(--solar); transform: translateY(-2px); outline: none;
+}
+.voorbeeld img, .voorbeeld video { display: block; width: 100%; height: auto; }
+
+/* Het driehoekje. Geen plaatje nodig: twee vormen met randen. */
+.voorbeeld-play {
+  position: absolute; left: 50%; top: 45%; transform: translate(-50%, -50%);
+  width: 3.4rem; height: 3.4rem; border-radius: 50%;
+  background: rgba(10, 7, 20, .62); backdrop-filter: blur(3px);
+  border: 1px solid rgba(242, 198, 76, .6);
+  pointer-events: none;
+}
+.voorbeeld-play::after {
+  content: ""; position: absolute; left: 56%; top: 50%;
+  transform: translate(-50%, -50%);
+  border-style: solid; border-width: .55rem 0 .55rem .9rem;
+  border-color: transparent transparent transparent var(--solar);
+}
+.voorbeeld-bij {
+  display: block; padding: .5rem .8rem .6rem;
+  font-size: .8rem; line-height: 1.4; color: #D8CDEA;
+  background: rgba(10, 7, 20, .55);
+}

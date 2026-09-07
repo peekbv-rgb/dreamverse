@@ -243,6 +243,24 @@ De zeven middelpunten zijn een keer uitgemeten en staan als `y` in `VELDEN` in
 `static/app.js`, als fractie van de hoogte. **Vervang je de plaat, meet ze dan
 opnieuw** — anders vallen de cijfers en de dovers naast de lotussen.
 
+## Voorbeelden van een kernmoment
+
+`static/voorbeelden/` bevat drie echte animaties uit het archief, met de
+vuurvogel voorop, plus een posterplaatje per stuk. Ze staan op de landingspagina
+en in de app bij *Los te koop* — want het verschil tussen "vijf tekeningen" en
+"vijf tekeningen plus een bewegend kernmoment" kun je niet uitleggen, dat moet je
+laten zien.
+
+**De clips laden pas bij een klik.** Samen zijn ze 8,3 MB en er is hier geen
+ffmpeg om ze te verkleinen; vooraf laden kost een halve minuut op een telefoon
+voor iets wat de meeste bezoekers niet aanklikken. De pagina toont dus posters
+van samen 154 kB, en `static/voorbeelden.js` maakt het `<video>`-element pas aan
+zodra iemand erop drukt.
+
+Ze staan in `static/` en niet in `data/`: dat laatste is git-ignored en verdwijnt
+bij elke deploy. Opnieuw klaarzetten na een nieuwe animatie:
+`python build/voorbeelden.py`.
+
 ## De publieke pagina
 
 `static/welkom.html` is wat iemand zonder account te zien krijgt: wat Dreamverse
