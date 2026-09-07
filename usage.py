@@ -48,7 +48,10 @@ def rates():
         "eur_per_m_output": _rate("PRIJS_OUTPUT_PER_M", 23.00),
         # Kling rekent in credits; wat een paneel kost hangt van je pakket af.
         # Vul in wat je bij de eerste factuur ziet.
-        "eur_per_panel": _rate("PRIJS_PER_PANEEL", 0.02),
+        # Kling Image 2.1 text-to-image: 4 eenheden a $0,0035 = $0,014 per beeld.
+        # Nagemeten op twintig panelen (precies 4,0 eenheden per stuk) en gelijk
+        # aan hun eigen prijstabel. Was 0,02 als schatting.
+        "eur_per_panel": _rate("PRIJS_PER_PANEEL", 0.013),
         # Runway rekent in credits van $0,01. Voor gwm1_avatars: 2 credits bij
         # het starten, daarna 2 credits per aangebroken zes seconden. Dat is een
         # traptarief, geen prijs per seconde, dus we rekenen het precies uit.

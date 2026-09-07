@@ -249,6 +249,26 @@ Engels, want dat gaat naar een beeldmodel.
 `<html translate="no">` staat er niet voor niets: Chrome zag de pagina als Engels en
 maakte van *Praat met Vera* "Praat ontmoette Vera".
 
+## Wat Kling kost
+
+Officiele tabel: <https://kling.ai/document-api/pricing/base/image>. Kling heeft
+documentatie voor modellen op <https://kling.ai/document-api/llms.txt> — handig,
+want de gewone prijspagina is een JavaScript-app waar geen enkele fetcher
+doorheen komt.
+
+Wij draaien op **Kling Image 2.1, text-to-image**: 4 eenheden à $0,0035 =
+**$0,014 per paneel**, dus $0,07 (€ 0,06) aan beeld per droom. Nagemeten op
+twintig panelen: precies 4,0 eenheden per stuk. Let op dat **image-to-image het
+dubbele kost** (8 eenheden) — dat telt zodra we paneel 1 als stijlreferentie
+voor de rest zouden gebruiken: dan wordt een droom 36 eenheden in plaats van 20.
+
+Het probleem is niet de prijs maar de **instap**: het kleinste betaalde pakket is
+$350 voor 100.000 eenheden, ofwel 5.000 dromen, met 180 dagen geldigheid en geen
+rollover. Dat verdient zichzelf pas terug rond de 140 abonnees die een half jaar
+blijven. Voor een testronde van dertig dromen ($2,10 aan verbruik) is het een
+afschrijving, geen investering. De proefpakketten die er nu staan verlopen
+**18 september 2026**.
+
 ## Wat er nog niet is
 
 - **Kling is aangesloten maar niet getest tegen de echte API** — er was hier geen
