@@ -1706,3 +1706,31 @@ body.tekstpagina .end a { color: var(--throat); }
   font-size: .8rem; line-height: 1.4; color: #D8CDEA;
   background: rgba(10, 7, 20, .55);
 }
+
+/* Een eigen vraag over je droom. */
+.vraagblok {
+  margin: 1rem 0; padding: 1rem 1.15rem; border-radius: 16px;
+  background: var(--panel); backdrop-filter: blur(10px);
+  border: 1px solid rgba(110, 98, 218, .3);
+}
+.vraagblok textarea { margin-top: .6rem; min-height: 3.4rem; }
+.vragen { display: grid; gap: .8rem; }
+.vraag-paar {
+  padding: .7rem .9rem; border-radius: 12px;
+  background: rgba(43, 28, 74, .45);
+  border-left: 3px solid var(--third-eye);
+}
+.vraag-paar p { margin: 0; font-size: .9rem; line-height: 1.6; color: #CFC4E4; }
+.vraag-vraag { color: var(--ink) !important; font-weight: 600; margin-bottom: .35rem !important; }
+.vraag-melding { margin: .5rem 0 0; font-size: .84rem; color: var(--muted); min-height: 1.1rem; }
+.vraag-melding.err { color: #F5A08F; }
+
+/* Kiezen kan op de landingspagina, kopen pas na het inloggen: de knop brengt
+   je naar de app en daar staat de poort. Wie niets van je weet moet wel kunnen
+   zeggen wat hij wil. */
+.tier-knop {
+  display: inline-block; margin: .2rem 0 .6rem;
+  font-size: .82rem; padding: .35rem .9rem;
+}
+
+.koop-pakket.wijs { animation: wijzen 2.4s ease-out 1; border-radius: 999px; }

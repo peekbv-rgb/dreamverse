@@ -573,6 +573,7 @@
     el("title").dataset.nl = ep.title;
     toonBril(ep);
     toonZorg(ep);
+    toonVragen(ep);
     player.hidden = false;
 
     // "Alleen de duiding" betekent ook echt geen beeld: geen panelen, en dus ook
@@ -1527,6 +1528,106 @@
           }
         };
       }
+    });
+  }
+
+  /* ------------------------------------------------- vragen over je droom */
+
+  /* Eén vraag per droom is inbegrepen, daarna kost hij een token.
+   *
+   * Dit is een proef: we willen weten of mensen hier iets mee doen voordat er
+   * meer aan gebouwd wordt. Daarom wordt elk gebruik apart geteld in de meter.
+   *
+   * De grenzen zijn dezelfde als bij de duiding - geen gezondheid, geen geld,
+   * geen voorspelling - en die staan in de prompt, niet hier. Wat hier staat is
+   * alleen hoe het eruitziet.
+   */
+  function toonVragen(ep) {
+    var blok = el("vraagblok");
+    if (!blok) { return; }
+    // Alleen bij een droom die echt bestaat; niet bij het voorbeeld.
+    if (!ep || !ep.number || ep.demo) { blok.hidden = true; return; }
+    blok.hidden = false;
+
+    var lijst = el("vragen");
+    var eerder = (ep.vragen || []);
+    lijst.innerHTML = "";
+    eerder.forEach(function (v) {
+      var d = document.createElement("div");
+      d.className = "vraag-paar";
+      var vr = document.createElement("p");
+      vr.className = "vraag-vraag";
+      vr.textContent = v.vraag;
+      var aw = document.createElement("p");
+      aw.textContent = v.antwoord;
+      d.appendChild(vr);
+      d.appendChild(aw);
+      lijst.appendChild(d);
+    });
+
+    var uitleg = el("vraag-uitleg");
+    if (uitleg) {
+      uitleg.textContent = eerder.length
+        ? t("De volgende vraag kost 1 token.")
+        : t("Je eerste vraag bij deze droom is inbegrepen.");
+    }
+  }
+
+  if (el("vraag-op")) {
+    el("vraag-op").addEventListener("click", function () {
+      var veld = el("vraag");
+      var tekst = (veld.value || "").trim();
+      var melding = el("vraag-melding");
+      melding.className = "vraag-melding";
+      if (!tekst) { veld.focus(); return; }
+      if (!episode || !episode.number) { return; }
+
+      this.disabled = true;
+      var knop = this;
+      knop.textContent = t("Bezig…");
+      melding.textContent = "";
+
+      fetch("/api/vraag", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ dream: episode.number, vraag: tekst })
+      })
+        .then(lees)
+        .then(function (res) {
+          if (!res.ok) {
+            var op = new Error(res.body.error || t("Dat lukte niet."));
+            op.tekort = res.body.need_tokens || 0;
+            throw op;
+          }
+          episode.vragen = res.body.vragen;
+          veld.value = "";
+          toonVragen(episode);
+          if (res.body.account) { toonAccount(res.body.account); }
+          laadVerbruik();
+          // Ging het over geweld of zelfdoding, dan hoort de verwijzing er ook
+          // hier bij - dezelfde als bij de duiding.
+          var laatste = res.body.vraag || {};
+          if ((laatste.zorg || []).length) {
+            toonZorg({ zorg: laatste.zorg });
+          }
+        })
+        .catch(function (err) {
+          melding.className = "vraag-melding err";
+          melding.textContent = err.message;
+          if (err.tekort) {
+            var koop = document.createElement("button");
+            koop.type = "button";
+            koop.className = "call-koop";
+            koop.textContent = t("Tokens kopen");
+            koop.addEventListener("click", naarTokens);
+            melding.appendChild(document.createElement("br"));
+            melding.appendChild(koop);
+          }
+        })
+        .then(function () {
+          knop.disabled = false;
+          knop.textContent = t("Vraag het");
+        });
     });
   }
 
@@ -3024,6 +3125,32 @@
 
   // De knoppen komen pas als afrekenen echt aanstaat. Een knop die "dat kan nog
   // niet" antwoordt is erger dan geen knop.
+  /* Kwam hij binnen via een pakketknop op de landingspagina?
+   *
+   * Dan onthouden we welke, en brengen we hem na het inloggen naar de
+   * pakketten. Niet kopen: dat blijft zijn eigen klik. Maar hij hoeft ook niet
+   * opnieuw te zoeken wat hij net al had aangewezen.
+   */
+  var gekozenViaWelkom = (function () {
+    var m = /[?&]kies=(gratis|lite|plus|ultra)/.exec(location.search);
+    if (!m) { return ""; }
+    history.replaceState(null, "", location.pathname);
+    return m[1];
+  })();
+
+  function naarPakket() {
+    if (!gekozenViaWelkom) { return; }
+    var doel = document.querySelector('.koop-pakket[data-pakket="' + gekozenViaWelkom + '"]');
+    var sectie = doel ? doel.closest("section") : null;
+    gekozenViaWelkom = "";
+    if (!sectie) { return; }
+    sectie.scrollIntoView({ behavior: "smooth", block: "center" });
+    if (doel) {
+      doel.classList.add("wijs");
+      setTimeout(function () { doel.classList.remove("wijs"); }, 2400);
+    }
+  }
+
   function toonKoopknoppen(aan) {
     betalenAan = !!aan;
     document.querySelectorAll(".koop-pakket").forEach(function (b) { b.hidden = !aan; });
@@ -3032,6 +3159,7 @@
     // De opwaardeerknoppen zitten in kaarten die al getekend kunnen zijn
     // voordat /api/health antwoord gaf.
     laadAccount();
+    if (aan) { setTimeout(naarPakket, 400); }
   }
 
   function naarPortaal() {

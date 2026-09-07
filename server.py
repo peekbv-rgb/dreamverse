@@ -593,6 +593,19 @@ class Handler(SimpleHTTPRequestHandler):
             plans.charge_extra(soort)
             return self.send_json({"ok": True, "kind": soort, "account": plans.account()})
 
+        if self.path == "/api/vraag":
+            # Een eigen vraag over je eigen droom. De eerste per droom is
+            # inbegrepen, daarna een token. Dit is een proef: we willen weten of
+            # er belangstelling voor is voordat we er meer aan bouwen.
+            payload = self.read_json() or {}
+            try:
+                return self.send_json(dreamverse.stel_vraag(
+                    int(payload.get("dream", 0)), payload.get("vraag", "")))
+            except plans.Refused as e:
+                return self.send_json({"error": str(e), "need_tokens": e.need_tokens}, 402)
+            except (dreamverse.DreamverseError, ValueError, TypeError) as e:
+                return self.send_json({"error": str(e)}, 400)
+
         if self.path == "/api/answer":
             payload = self.read_json() or {}
             try:

@@ -314,6 +314,18 @@
         <span class="lbl">Klein voorstel voor vandaag</span>
         <p id="today"></p>
       </div>
+      <!-- Een eigen vraag over deze droom. De eerste is inbegrepen. -->
+      <div class="vraagblok" id="vraagblok" hidden>
+        <span class="lbl">Vraag iets over deze droom</span>
+        <div class="vragen" id="vragen"></div>
+        <textarea id="vraag" rows="2" maxlength="500"
+                  placeholder="Waarom stond mijn moeder in die deuropening?"></textarea>
+        <div class="row">
+          <button type="button" class="primary" id="vraag-op">Vraag het</button>
+          <span class="antwoord-uitleg" id="vraag-uitleg"></span>
+        </div>
+        <p class="vraag-melding" id="vraag-melding"></p>
+      </div>
       <p class="question" id="question"></p>
       <div class="antwoord" id="antwoord-blok" hidden>
         <label for="antwoord">Je antwoord</label>

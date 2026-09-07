@@ -324,6 +324,33 @@ def check_call():
     )
 
 
+# Vragen stellen over je eigen droom. De eerste per droom is inbegrepen; daarna
+# kost hij een token. Gratis maken nodigt uit tot een gesprek, en dan bouw je
+# ongemerkt een chatbot na met de marge van een droom-app.
+VRAGEN_GRATIS = 1
+TOKENS_PER_VRAAG = 1
+
+
+def check_vraag(al_gesteld):
+    """Mag deze vraag? Geeft terug wat hij kost."""
+    if al_gesteld < VRAGEN_GRATIS:
+        return 0
+    saldo = account()["tokens"]
+    if saldo < TOKENS_PER_VRAAG:
+        raise Refused(
+            "De eerste vraag bij een droom is inbegrepen; daarna kost hij {} token "
+            "en je hebt er {}.".format(TOKENS_PER_VRAAG, saldo),
+            need_tokens=TOKENS_PER_VRAAG - saldo)
+    return TOKENS_PER_VRAAG
+
+
+def charge_vraag(kosten):
+    if kosten:
+        import accounts
+        accounts.tel_op(accounts.huidige()["id"], tokens=-int(kosten))
+        _verversen()
+
+
 def check_extra(soort):
     """Mag deze losse aankoop? Geeft het aantal tokens terug dat het kost."""
     if soort not in EXTRAS:

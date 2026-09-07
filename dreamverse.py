@@ -450,6 +450,118 @@ def judge_future(number, verdict):
     return next(d for d in load_archive() if d.get("n") == number)
 
 
+VRAAG_REGELS = """Je beantwoordt een vraag van de dromer over zijn eigen droom.
+
+Je hebt de droom, de duiding die er al geschreven is, en zijn eerdere dromen. Geef
+een kort antwoord: drie tot vijf zinnen, in {TAAL}, in de je-vorm. Geen opsomming,
+geen kopjes.
+
+Wat een goed antwoord doet:
+- Het gaat over déze droom en deze dromer. Verwijs naar wat er in de droom
+  gebeurde en, als het klopt, naar een eerdere droom uit de lijst.
+- Het herhaalt de duiding niet. Die heeft hij al gelezen; hij vraagt iets anders.
+- Weet je het niet, zeg dat dan. "Daar zegt je droom niets over" is een beter
+  antwoord dan een verzonnen betekenis.
+
+Dezelfde grenzen als de duiding, en ze zijn hard:
+- Nooit over gezondheid, ziekte, geld, zwangerschap of iemands dood - ook niet
+  als de dromer er expliciet naar vraagt. Zeg dan dat je daar niet over gaat.
+- Geen voorspelling die als voorspelling bedoeld is. Dit is vermaak.
+- Geen diagnose, geen therapie, geen advies over medicijnen of behandeling.
+- Nooit beweren dat iemand vreemdgaat, weggaat of dat een relatie eindigt, en
+  niets beweren over een specifieke derde persoon.
+
+Antwoord met uitsluitend geldige JSON, zonder tekst eromheen:
+
+{{"antwoord": string, "zorg": [string]}}
+
+Voor "zorg" gelden dezelfde regels als bij een verbeelding: kies alleen uit
+"seksueel", "geweld" en "suicide", en laat de lijst leeg tenzij het er echt over
+gaat. Bij twijfel leeg. Ga je vraag of droom over zelfdoding of over geweld
+tussen mensen, dan beantwoord je de vraag gewoon en met zorg; de app zet er zelf
+de juiste hulpverwijzing bij. Raad zelf geen hulplijnen aan en noem geen nummers.
+"""
+
+
+def stel_vraag(number, vraag):
+    """Een vraag van de dromer over zijn eigen droom beantwoorden.
+
+    De eerste vraag per droom is inbegrepen, daarna kost hij een token. Dat is
+    geen willekeurige grens: gratis maken nodigt uit tot een gesprek, en dan bouw
+    je ongemerkt een chatbot na met de marge van een droom-app.
+
+    Het antwoord wordt bij de verbeelding bewaard, zodat hij het terugleest als
+    hij die droom later opent.
+    """
+    vraag = (vraag or "").strip()[:500]
+    if not vraag:
+        raise DreamverseError("Er stond geen vraag in.")
+
+    episode = accounts.verbeelding(uid(), number)
+    if not episode:
+        raise DreamverseError("Die verbeelding is er niet meer.")
+
+    eerder = episode.get("vragen") or []
+    kosten = plans.check_vraag(len(eerder))
+
+    if not credentials_available():
+        raise DreamverseError("Er zijn geen inloggegevens, dus er kan niets "
+                              "beantwoord worden.")
+
+    profiel = load_profile()
+    taal = profiel.get("language", "nl")
+    droom = next((d.get("tekst") or "" for d in load_archive() if d.get("n") == number), "")
+
+    prompt = (
+        VRAAG_REGELS.replace("{TAAL}", TALEN.get(taal, TALEN["nl"]))
+        + "\n\n--- de droom ---\n" + droom
+        + "\n\n--- de duiding die er al staat ---\n"
+        + "\n".join(filter(None, [episode.get("why"), episode.get("meaning"),
+                                  episode.get("today")]))
+        + "\n\n--- eerdere dromen ---\n" + _history(load_archive())
+        + "\n\n--- eerder gevraagd bij deze droom ---\n"
+        + ("\n".join("V: {}\nA: {}".format(v.get("vraag"), v.get("antwoord"))
+                     for v in eerder) or "(nog niets)")
+        + "\n\n--- de vraag ---\n" + vraag
+    )
+
+    import anthropic
+    client = anthropic.Anthropic()
+    try:
+        response = client.messages.create(
+            model=MODEL,
+            max_tokens=1200,
+            # Een kort antwoord op een concrete vraag heeft geen hoge effort
+            # nodig, en dit is de goedkoopste aanroep van de hele app.
+            output_config={"effort": "low"},
+            messages=[{"role": "user", "content": prompt}],
+        )
+    except anthropic.RateLimitError:
+        raise DreamverseError("Te veel aanvragen achter elkaar. Wacht even.")
+    except anthropic.APIStatusError as e:
+        raise DreamverseError("Het model antwoordde niet: {}".format(str(e)[:120]))
+
+    rauw = "".join(b.text for b in response.content if getattr(b, "type", "") == "text")
+    data = _json_uit(rauw)
+    antwoord = str((data or {}).get("antwoord") or "").strip()
+    if not antwoord:
+        raise DreamverseError("Er kwam geen antwoord terug. Probeer het nog eens.")
+
+    zorg = [z for z in ZORG
+            if z in {str(x).strip().lower() for x in ((data or {}).get("zorg") or [])}]
+
+    nieuw = {"vraag": vraag, "antwoord": antwoord, "zorg": zorg,
+             "wanneer": date.today().isoformat(), "tokens": kosten}
+    episode["vragen"] = eerder + [nieuw]
+    save_episode(number, episode)
+
+    plans.charge_vraag(kosten)
+    u = getattr(response, "usage", None)
+    usage.vraag(number, getattr(u, "input_tokens", 0), getattr(u, "output_tokens", 0),
+                kosten)
+    return {"vraag": nieuw, "vragen": episode["vragen"], "account": plans.account()}
+
+
 def answer_question(number, answer):
     """Bewaar wat de dromer op de slotvraag antwoordde.
 
@@ -784,6 +896,27 @@ def build_prompt(dream, archive, number, name=None, language="nl", lens="vanzelf
 # --------------------------------------------------------------------------- #
 # Antwoord opschonen
 # --------------------------------------------------------------------------- #
+
+def _json_uit(raw):
+    """Het JSON-object uit een antwoord halen. None als het niet lukt.
+
+    parse_episode doet dit ook, maar die eist er panelen bij; een antwoord op een
+    vraag heeft die niet.
+    """
+    text = (raw or "").strip()
+    if text.startswith("```"):
+        text = re.sub(r"^```(?:json)?\s*|\s*```$", "", text, flags=re.S)
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError:
+        start, end = text.find("{"), text.rfind("}")
+        if start == -1 or end <= start:
+            return None
+        try:
+            return json.loads(text[start:end + 1])
+        except json.JSONDecodeError:
+            return None
+
 
 def parse_episode(raw):
     """Haal het JSON-object uit het antwoord en maak het veilig om te tonen."""

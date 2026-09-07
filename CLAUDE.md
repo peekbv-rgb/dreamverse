@@ -223,6 +223,14 @@ en het scheelt direct in de kostprijs per verbeelding.
   `ref` ("Droom 12") op in het archief en toont de dag waarop die droom er was.
   Zonder bekende datum valt hij terug op "Toen:", want een lege regel is erger
   dan een vaag woord.
+- **Eén vraag per droom is inbegrepen, daarna een token.** `POST /api/vraag`
+  laat de dromer iets vragen over zijn eigen droom; het model krijgt de droom, de
+  duiding die er al staat, zijn eerdere dromen en de eerder gestelde vragen mee.
+  Gratis maken nodigt uit tot een gesprek, en dan bouw je ongemerkt een chatbot
+  na met de marge van een droom-app. Dezelfde grenzen als de duiding staan in
+  `VRAAG_REGELS`, inclusief de zorgclassificatie — nagemeten: "betekent dit dat
+  ik ziek word" krijgt "daar ga ik niet over". **Dit is een proef**: elk gebruik
+  wordt apart geteld in `usage` zodat te zien is of er belangstelling voor is.
 - **Nooit `.env` committen.** `.gitignore` blokkeert ook `.env.*` en `data/`.
 - Basic auth gaat aan zodra `AUTH_USER` én `AUTH_PASSWORD` gevuld zijn. **Twee
   paden staan er altijd buiten**: `/api/stripe/webhook`, want Stripe stuurt geen

@@ -122,6 +122,14 @@ def hero_video(number, index, instelling):
                     "eur": instelling.get("kost")})
 
 
+def vraag(number, input_tokens, output_tokens, tokens_betaald):
+    """Een vraag over een droom. Apart geteld, want dit is een proef: we willen
+    weten of er belangstelling voor is voordat we er meer aan bouwen."""
+    return _append({"kind": "vraag", "who": _who(), "dream": number,
+                    "input_tokens": input_tokens, "output_tokens": output_tokens,
+                    "tokens": tokens_betaald})
+
+
 def narration(number, panelen, eur):
     return _append({"kind": "narration", "who": _who(), "dream": number,
                     "panels": panelen, "eur": round(eur, 4)})
@@ -180,6 +188,13 @@ def summary():
         kind = rec.get("kind")
         if kind == "episode":
             totaal["dreams"] += 1; d["dreams"] += 1
+            totaal["input_tokens"] += rec.get("input_tokens", 0)
+            totaal["output_tokens"] += rec.get("output_tokens", 0)
+        elif kind == "vraag":
+            # De tekstkosten tellen mee in dezelfde pot als de duiding, want het
+            # is hetzelfde model. Het aantal apart, want dat is de vraag: wordt
+            # dit gebruikt?
+            totaal["vragen"] = totaal.get("vragen", 0) + 1
             totaal["input_tokens"] += rec.get("input_tokens", 0)
             totaal["output_tokens"] += rec.get("output_tokens", 0)
         elif kind == "panel":

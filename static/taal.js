@@ -170,6 +170,11 @@
     ["Symbolisch", "Symbolic"],
     ["Spiritueel", "Spiritual"],
     ["Door welke bril", "Through which lens"],
+    ["Vraag iets over deze droom", "Ask something about this dream"],
+    ["Vraag het", "Ask it"],
+    ["Je eerste vraag bij deze droom is inbegrepen.",
+     "Your first question about this dream is included."],
+    ["De volgende vraag kost 1 token.", "The next question costs 1 token."],
     ["De server is even niet bereikbaar — hij start opnieuw op. Probeer het over een minuut nog eens.",
      "The server is briefly unreachable - it is restarting. Try again in a minute."],
     ["De server gaf een onverwacht antwoord.", "The server gave an unexpected answer."],
@@ -433,7 +438,8 @@
                   // In JavaScript gemaakt en daar al vertaald; een tweede slag
                   // erover zet de brontekst terug.
                   "#bril-knoppen", "#bril-uitslag", "#brilspectrum",
-                  "#spectrum-noot", "#zorg-kader"].join(",");
+                  "#spectrum-noot", "#zorg-kader", "#vragen",
+                  "#vraag-melding", "#vraag-uitleg"].join(",");
 
   var TE_VERTALEN = "h1,h2,p,label,span.lbl,span.label,span.tier-name,span.extras-kop," +
                     "span.kwaliteit-kop,span.antwoord-uitleg,button,option,#mode";
