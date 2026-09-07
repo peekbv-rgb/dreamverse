@@ -213,6 +213,16 @@ en het scheelt direct in de kostprijs per verbeelding.
   aanstond. Violet is dezelfde kleur als de gekozen bril eronder, dus een keuze
   ziet er overal hetzelfde uit. Het vlaggetje blijft groen, ook als die knop
   tegelijk de gekozene is — die twee dingen zijn allebei waar.
+- **Panelen zijn los bij te maken, voor 1 token.** Koos iemand "alleen de
+  duiding" en wil hij er toch beeld bij, dan tekent `/api/extra` met
+  `kind: "panelen"` de vijf panelen alsnog bij de duiding die er al staat. Het
+  antwoord was eerst "maak de droom opnieuw" — en dat kost een droom uit het
+  maandtegoed én levert een ándere verbeelding op, want het model schrijft dan
+  opnieuw. De prijs is het verschil tussen *duiding* en *eenvoudig*.
+- **Een draad noemt de datum, niet "toen".** `datumVan()` zoekt het nummer uit
+  `ref` ("Droom 12") op in het archief en toont de dag waarop die droom er was.
+  Zonder bekende datum valt hij terug op "Toen:", want een lege regel is erger
+  dan een vaag woord.
 - **Nooit `.env` committen.** `.gitignore` blokkeert ook `.env.*` en `data/`.
 - Basic auth gaat aan zodra `AUTH_USER` én `AUTH_PASSWORD` gevuld zijn. **Twee
   paden staan er altijd buiten**: `/api/stripe/webhook`, want Stripe stuurt geen

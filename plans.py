@@ -38,6 +38,12 @@ TOKENS_PER_EXTRA_DREAM = 3
 EXTRAS = {
     "film_snel": {"naam": "Hele verbeelding als animatie, 20 seconden", "tokens": 30, "kost": 2.76},
     "film_top": {"naam": "Hele verbeelding als animatie op het beste model", "tokens": 60, "kost": 7.36},
+    # Panelen bijmaken bij een droom die alleen een duiding kreeg. Kost wat vijf
+    # panelen kosten: het verschil tussen "alleen de duiding" en "eenvoudig".
+    # Zonder deze mogelijkheid was het antwoord "maak de droom opnieuw" - en dat
+    # kost een droom uit je maandtegoed en levert een andere verbeelding op,
+    # want het model schrijft dan opnieuw.
+    "panelen": {"naam": "Vijf panelen bij deze droom", "tokens": 1, "kost": 0.10},
     "kernmoment_top": {"naam": "Het belangrijkste moment, op het beste model", "tokens": 10, "kost": 1.47},
 }
 

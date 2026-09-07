@@ -551,11 +551,28 @@ class Handler(SimpleHTTPRequestHandler):
             beelden = [b for b in kling.PANELS.glob("{}-[0-9].*".format(
                            dreamverse.sleutel(nummer)))
                        if b.suffix.lower() in (".png", ".jpg", ".webp")]
+            if soort == "panelen":
+                # Deze is er juist voor het geval er nog geen beeld is.
+                if beelden:
+                    return self.send_json({
+                        "error": "Bij deze droom staan de panelen er al.",
+                    }, 409)
+                if not kling.enabled():
+                    return self.send_json({
+                        "error": "Het tekenen staat uit; er is geen sleutel ingesteld.",
+                    }, 503)
+                gestart = kling.render_async(dreamverse.sleutel(nummer), episode["panels"])
+                if not gestart:
+                    return self.send_json({"error": "Dit kon niet gestart worden."}, 500)
+                plans.charge_extra(soort)
+                return self.send_json({"ok": True, "kind": soort, "account": plans.account()})
+
             if not beelden:
                 return self.send_json({
-                    "error": "Bij deze droom zijn geen panelen gemaakt, en bewegend beeld "
-                             "heeft een getekend paneel nodig om mee te beginnen. Maak de "
-                             "droom opnieuw met beeld erbij.",
+                    "error": "Bij deze droom zijn nog geen panelen gemaakt, en bewegend "
+                             "beeld heeft een getekend paneel nodig om mee te beginnen. "
+                             "Maak eerst de panelen; dat kost 1 token.",
+                    "kan_panelen": True,
                 }, 409)
 
             import video

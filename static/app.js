@@ -422,7 +422,9 @@
         tag.className = "tag";
         tag.textContent = draad.ref;
         var toen = document.createElement("p");
-        toen.textContent = t("Toen:") + " " + draad.was;
+        // "Toen" zegt niets; een datum plaatst het meteen. Weten we hem niet -
+        // een oude droom zonder datum - dan blijft het bij "Toen".
+        toen.textContent = datumVan(draad.ref) + " " + draad.was;
         var nu = document.createElement("p");
         nu.className = "then";
         nu.textContent = t("Nu:") + " " + draad.now;
@@ -468,6 +470,26 @@
       threadsEl.appendChild(leeg);
     } else {
       el("threads-title").textContent = t("Je dromen samen");
+    }
+  }
+
+  /* De datum van de droom waar een draad naar verwijst.
+   *
+   * `ref` is iets als "Droom 12" of "Dream 12"; het nummer is wat telt. Zonder
+   * bekende datum valt hij terug op het oude woord, want een lege regel is
+   * erger dan een vaag woord.
+   */
+  function datumVan(ref) {
+    var m = String(ref || "").match(/(\d+)/);
+    var wanneer = m ? wanneerPerDroom[parseInt(m[1], 10)] : null;
+    if (!wanneer) { return t("Toen:"); }
+    var d = new Date(wanneer);
+    if (isNaN(d.getTime())) { return t("Toen:"); }
+    var taal = (profiel && profiel.language) === "en" ? "en-US" : "nl-NL";
+    try {
+      return d.toLocaleDateString(taal, { day: "numeric", month: "long", year: "numeric" }) + ":";
+    } catch (e) {
+      return wanneer + ":";
     }
   }
 
@@ -1026,6 +1048,12 @@
       .then(function (r) { return r.json(); })
       .then(function (d) {
         aantalDromen = (d.dreams || []).length;
+        // Wanneer was welke droom? De draden verwijzen met "Droom 12", en dan
+        // is de datum meer waard dan het woord "toen".
+        wanneerPerDroom = {};
+        (d.dreams || []).forEach(function (x) {
+          if (x && x.n) { wanneerPerDroom[x.n] = x.when || ""; }
+        });
         renderArchive(d.dreams || []);
         vulKeuzelijst(d.dreams || []);
         laadSpectrum();
@@ -2148,6 +2176,9 @@
   // Staat afrekenen aan? Komt uit /api/health. Zonder dit weten de kaarten niet
   // of er een opwaardeerknop bij mag.
   var betalenAan = false;
+
+  // Wanneer elke droom was, op nummer. Gevuld bij het laden van het archief.
+  var wanneerPerDroom = {};
 
   // Hoeveel dromen er in het archief staan. De lege stand van "Je dromen samen"
   // vertelt daarmee hoe ver je bent in plaats van alleen dat er niets is.
