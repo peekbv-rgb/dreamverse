@@ -455,6 +455,84 @@ def webhooks():
     return 0
 
 
+def tokenprijzen():
+    """Alleen de drie tokenpakketten opnieuw prijzen.
+
+    `--setup` maakt alles opnieuw aan, ook de abonnementen, en laat dan zes
+    verweesde producten achter. Als je alleen de tokenprijzen aanpast wil je dat
+    niet: je krijgt een catalogus vol dubbelingen en je weet straks niet meer
+    welk product bij welke prijs hoort.
+
+    Deze zoekt het bestaande product op naam op en hangt er een nieuwe prijs aan.
+    Een prijs bij Stripe is onveranderlijk - je maakt er een nieuwe en zet die als
+    standaard; de oude blijft bestaan maar wordt niet meer gebruikt. Dat is ook
+    precies wat je wilt: wie gisteren betaalde hield zijn eigen prijs.
+    """
+    import stripe
+    if not enabled():
+        print("Geen STRIPE_SECRET_KEY in de omgeving.")
+        return 1
+    c = klant()
+
+    print("Account: %s" % modus())
+    print("")
+    regels = []
+    for naam, pak in TOKENPAKKETTEN.items():
+        merk = "Dreamverse {}".format(pak["naam"])
+
+        # Het bestaande product zoeken. Zonder is er niets om aan te hangen en
+        # maken we er alsnog een - dan is dit de eerste keer.
+        product = None
+        try:
+            lijst = c.v1.products.list(params={"limit": 100, "active": True})
+            for p in getattr(lijst, "data", []) or []:
+                if getattr(p, "name", "") == merk:
+                    product = p
+                    break
+        except Exception as e:
+            print("Producten ophalen mislukte: %s" % str(e)[:160])
+            return 1
+
+        if product is None:
+            product = c.v1.products.create({
+                "name": merk,
+                "description": "Tegoed voor een bewegend kernmoment, een gesprek "
+                               "met Vera of een extra droom.",
+                "tax_code": BELASTINGCODE,
+                "default_price_data": {
+                    "unit_amount": pak["cent"],
+                    "currency": "eur",
+                    "tax_behavior": "inclusive",
+                },
+            })
+            prijs_id = product.default_price
+            print("  %-22s nieuw product   %s" % (merk, prijs_id))
+        else:
+            oud = getattr(product, "default_price", None)
+            prijs = c.v1.prices.create({
+                "product": product.id,
+                "unit_amount": pak["cent"],
+                "currency": "eur",
+                "tax_behavior": "inclusive",
+            })
+            c.v1.products.update(product.id, params={"default_price": prijs.id})
+            prijs_id = prijs.id
+            print("  %-22s EUR %5.2f       %s   (was %s)" % (
+                merk, pak["cent"] / 100, prijs_id, oud))
+
+        regels.append(("STRIPE_PRICE_{}".format(naam.upper()), prijs_id))
+
+    print("")
+    print("Zet dit in Render onder Environment (en in .env als je lokaal test):")
+    print("")
+    for k, v in regels:
+        print("%s=%s" % (k, v))
+    print("")
+    print("De oude prijzen blijven bestaan maar worden niet meer gebruikt. Wie er")
+    print("al op betaalde houdt zijn eigen prijs; dat is bij Stripe zo bedoeld.")
+    return 0
+
+
 def main():
     from dotenv import load_dotenv
     load_dotenv(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"))
@@ -463,9 +541,13 @@ def main():
     ap.add_argument("--setup", action="store_true", help="producten en prijzen aanmaken")
     ap.add_argument("--webhooks", action="store_true",
                     help="welke endpoints staan er, en in welk account?")
+    ap.add_argument("--tokenprijzen", action="store_true",
+                    help="alleen de drie tokenpakketten opnieuw prijzen")
     args = ap.parse_args()
     if args.setup:
         return setup()
+    if args.tokenprijzen:
+        return tokenprijzen()
     if args.webhooks:
         return webhooks()
     return check()
