@@ -906,7 +906,7 @@
       weg.textContent = "×";
       weg.addEventListener("click", function (e) {
         e.stopPropagation();
-        if (!window.confirm("Droom " + d.n + " verwijderen? De panelen en de video gaan mee.")) { return; }
+        if (!window.confirm(t("Droom") + " " + d.n + " " + t("verwijderen? De panelen en de animatie gaan mee."))) { return; }
         fetch("/api/dream/" + d.n, { method: "DELETE" })
           .then(function (r) { return r.json(); })
           .then(function () { loadArchive(); laadVerbruik(); laadAccount(); })
@@ -1346,7 +1346,7 @@
   });
 
   el("clear").addEventListener("click", function () {
-    if (!window.confirm(t("Het hele archief wissen? De panelen, de video's en de ingesproken tekst gaan mee. Je volgende droom wordt Droom 1."))) { return; }
+    if (!window.confirm(t("Het hele archief wissen? De panelen, de animaties en de ingesproken tekst gaan mee. Je volgende droom wordt Droom 1."))) { return; }
     fetch("/api/archive", { method: "DELETE" })
       .then(function () {
         loadArchive();

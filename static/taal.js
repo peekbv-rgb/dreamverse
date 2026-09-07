@@ -27,8 +27,10 @@
   // een object vol aanhalingstekens over meerdere regels.
   [
     // -- de introductie ----------------------------------------------------
-    ["Wij bouwen samen aan jouw persoonlijk universum van dromen",
-     "Together we are building your own personal universe of dreams"],
+    ["Wij bouwen samen aan jouw persoonlijk universum van dromen.",
+     "Together we are building your own personal universe of dreams."],
+    ["In de Dreamverse worden al jouw dromen gevisualiseerd en geanalyseerd; zo ontstaat een dagboek aan onvergetelijke dromen.",
+     "In the Dreamverse all your dreams are visualised and analysed; what grows is a diary of unforgettable dreams."],
     ["Hoor Vera", "Hear Vera"],
     ["Nog een keer", "Once more"],
     ["Geluid uit", "Sound off"],
@@ -59,7 +61,8 @@
     // -- de invoer ---------------------------------------------------------
     ["Wat droomde je?", "What did you dream?"],
     ["Ik vloog over de bergen en zag een vriendin huilen aan het zwembad…", "I was flying over the mountains and saw a friend crying by the pool…"],
-    ["Wat wil je van deze droom?", "What do you want from this dream?"],
+    ["Hoe wil je deze droom gevisualiseerd zien?",
+     "How would you like this dream visualised?"],
     ["Verbeeld mijn droom", "Imagine my dream"],
     ["Inspreken", "Speak it"],
     ["Archief wissen", "Clear the archive"],
@@ -153,7 +156,8 @@
     ['Wat we bewaren en aan wie we het doorgeven staat in de <a href="/privacy.html" target="_blank" rel="noopener">privacyverklaring</a>.',
      'What we keep and who we pass it to is in the <a href="/privacy.html" target="_blank" rel="noopener">privacy statement</a>.'],
     ["opwaarderen", "top up"],
-    ["Hoe wil je hem gelezen hebben?", "How would you like it read?"],
+    ["Hoe wil je deze droom geanalyseerd hebben?",
+     "How would you like this dream analysed?"],
     ["Vanzelf", "Let it choose"],
     ["0 tokens", "0 tokens"],
     ["token", "token"],
@@ -293,8 +297,8 @@
      "Free to get a taste, and three plans you can cancel monthly."],
 
     ["Gratis · €0", "Free · €0"],
-    ["Eén droom om te proeven, met de volledige duiding en vijf getekende panelen. Geen video, en Vera spreek je alleen met tokens.",
-     "One dream to get a taste, with the full reading and five drawn panels. No video, and you speak to Vera only with tokens."],
+    ["Eén droom om te proeven, met de volledige duiding en vijf getekende panelen. Geen animatie, en Vera spreek je alleen met tokens.",
+     "One dream to get a taste, with the full reading and five drawn panels. No animation, and you speak to Vera only with tokens."],
     ["Lite · €2,99", "Lite · €2.99"],
     ["Drie dromen per maand, elk met vijf getekende panelen en de hele duiding. Het bewegende kernmoment koop je met tokens, en zo betaal je alleen voor de dromen waar je het bij wilt.",
      "Three dreams a month, each with five drawn panels and the whole reading. The moving key moment is bought with tokens, so you only pay for the dreams you want it on."],
@@ -303,8 +307,8 @@
     ["Zes dromen per maand, elk met een <strong>bewegend kernmoment</strong> van vier seconden met geluid. De andere panelen zijn illustraties. Vera spreken gaat op tokens: twee per minuut.",
      "Six dreams a month, each with a <strong>moving key moment</strong> of four seconds with sound. The other panels are illustrations. Speaking to Vera runs on tokens: two per minute."],
     ["Ultra · €29,99", "Ultra · €29.99"],
-    ["Tien dromen per maand met het kernmoment op het <strong>beste videomodel</strong>, en tien minuten met Vera inbegrepen. Daarna praat je verder op tokens.",
-     "Ten dreams a month with the key moment on the <strong>best video model</strong>, and ten minutes with Vera included. After that you continue on tokens."],
+    ['Tien dromen per maand met het kernmoment op het <strong>beste animatiemodel</strong>, en tien minuten met Vera inbegrepen. Daarna praat je verder op tokens.',
+     'Ten dreams a month with the key moment on the <strong>best animation model</strong>, and ten minutes with Vera included. After that you continue on tokens.'],
 
     // -- verbruik ----------------------------------------------------------
     ["Wat Stripe aanbood", "What Stripe delivered"],
@@ -323,8 +327,8 @@
     ["Als film, beste model <b>60</b>", "As a film, best model <b>60</b>"],
     ["Waar je tokens aan uitgeeft", "What you spend tokens on"],
     ["Een kernmoment — 10 tokens", "One key moment — 10 tokens"],
-    ["Eén paneel uit je droom gaat bewegen, vier seconden, op het beste videomodel.",
-     "One panel from your dream starts moving, four seconds, on the best video model."],
+    ["Eén paneel uit je droom gaat bewegen, vier seconden, op het beste animatiemodel.",
+     "One panel from your dream starts moving, four seconds, on the best animation model."],
     ["De hele verbeelding als film — 30 tokens", "The whole imagining as a film — 30 tokens"],
     ["Alle vijf de panelen bewegen: twintig seconden in plaats van één moment.",
      "All five panels move: twenty seconds instead of one moment."],
@@ -343,8 +347,8 @@
      "<strong>There is no payment yet.</strong> You set the plan and tokens yourself above, and so can anyone who can reach the app. That has to be closed before this runs anywhere public."],
     ["<strong>Wat werkt.</strong> Tekst, geheugen en duiding worden per droom geschreven. De vijf panelen komen echt uit een beeldmodel, in een vaste stijl, met het kleurveld per paneel. Vera is aangesloten en praat met haar eigen stem; de knop bovenaan opent een gesprek van maximaal vijf minuten.",
      "<strong>What works.</strong> Text, memory and reading are written per dream. The five panels really do come from an image model, in a fixed style, with a colour field per panel. Vera is connected and speaks in her own voice; the button at the top opens a conversation of at most five minutes."],
-    ["<strong>Het kernmoment beweegt.</strong> Het model dat je verbeelding schrijft wijst zelf aan welk paneel het draaipunt is, en dat ene wordt echte video met geluid — vier seconden, op het snelle model bij Plus en op het beste bij Ultra. De andere vier blijven stil, want twintig seconden video per droom kost meer dan een maandabonnement opbrengt.",
-     "<strong>The key moment moves.</strong> The model that writes your imagining picks which panel is the turning point, and that one becomes real video with sound — four seconds, on the fast model with Plus and on the best one with Ultra. The other four stay still, because twenty seconds of video per dream costs more than a monthly subscription brings in."],
+    ['<strong>Het kernmoment beweegt.</strong> Het model dat je verbeelding schrijft wijst zelf aan welk paneel het draaipunt is, en dat ene wordt echte animatie met geluid — vier seconden, op het snelle model bij Plus en op het beste bij Ultra. De andere vier blijven stil, want twintig seconden animatie per droom kost meer dan een maandabonnement opbrengt.',
+     '<strong>The key moment moves.</strong> The model that writes your imagining picks which panel is the turning point, and that one becomes real animation with sound - four seconds, on the fast model with Plus and on the best one with Ultra. The other four stay still, because twenty seconds of animation per dream costs more than a monthly subscription brings in.'],
     ["<strong>De vooruitblik is vermaak, geen voorspelling.</strong> Hij gaat nooit over gezondheid, geld of iemands overlijden. Dat staat als regel in de prompt, niet in de hoop.",
      "<strong>The look ahead is entertainment, not prediction.</strong> It never touches health, money or anyone's death. That is a rule in the prompt, not a hope."],
 
@@ -380,8 +384,11 @@
     ["De duiding wordt opnieuw geschreven bij je panelen…", "The reading is being written again for your panels…"],
     ["Het kernmoment lukte niet", "The key moment did not work"],
     ["De film lukte niet", "The film did not work"],
+    ["Droom", "Dream"],
+    ["verwijderen? De panelen en de animatie gaan mee.",
+     "delete? The panels and the animation go with it."],
     ["De panelen lukten niet", "The panels did not work"],
-    ["Het hele archief wissen? De panelen, de video's en de ingesproken tekst gaan mee. Je volgende droom wordt Droom 1.", "Clear the whole archive? The panels, the videos and the narration go with it. Your next dream becomes Dream 1."]
+    ["Het hele archief wissen? De panelen, de animaties en de ingesproken tekst gaan mee. Je volgende droom wordt Droom 1.", "Clear the whole archive? The panels, the animations and the narration go with it. Your next dream becomes Dream 1."]
   ].forEach(function (paar) { EN[plat(paar[0])] = paar[1]; });
 
   // Wat het model of de server teruggeeft blijft staan: dat is al in de goede

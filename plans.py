@@ -78,12 +78,12 @@ KWALITEIT = {
         "uitleg": "Vijf panelen plus een bewegend kernmoment van vier seconden.",
     },
     "supreme": {
-        "naam_en": "Supreme", "bevat_en": "5 panels + best video",
-        "uitleg_en": "The same, but the key moment on the best video model.",
-        "bevat": "5 panelen + beste video",
+        "naam_en": "Supreme", "bevat_en": "5 panels + best animation",
+        "uitleg_en": "The same, but the key moment on the best animation model.",
+        "bevat": "5 panelen + beste animatie",
         "naam": "Supreme", "rang": 3, "panelen": True, "video": "top",
         "tokens": 10, "kost": 1.61,
-        "uitleg": "Hetzelfde, maar het kernmoment op het beste videomodel.",
+        "uitleg": "Hetzelfde, maar het kernmoment op het beste animatiemodel.",
     },
 }
 DEFAULT_KWALITEIT = "standaard"
