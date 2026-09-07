@@ -1487,24 +1487,21 @@ body.tekstpagina .end a { color: var(--throat); }
 }
 
 /* De belofte onder de kop.
-   Geen uitleg maar een toezegging, dus in de schrijfletter. En met dezelfde
-   donkere band als .sub: alleen een schaduw is niet genoeg, want de
-   achtergrond loopt hier langs lichtblauw en lavendel en dan valt gele tekst
-   gewoon weg. Dat is drie keer eerder de klacht geweest. */
-.belofte {
+   Eerst stond hij in goud en cursief en de regel eronder in weer iets anders -
+   drie alinea's onder elkaar met drie verschillende letters. Nu is het een
+   blok: dezelfde letter, dezelfde kleur en dezelfde maat als de inleiding
+   erboven. De donkere band blijft, want daar valt tekst anders weg tegen de
+   bewegende achtergrond. */
+.belofte, .belofte-sub {
   display: inline-block;
   margin: .5rem 0 0; max-width: 34rem;
-  font-family: var(--display);
-  font-size: 1.3rem; font-style: italic; font-weight: 600; line-height: 1.4;
-  color: #FFDE8A;
-  background: rgba(8, 6, 17, .62);
+  font-size: 1.02rem; line-height: 1.6;
+  color: #F6F2FF;
+  background: rgba(8, 6, 17, .55);
   backdrop-filter: blur(6px);
   border-radius: 12px;
-  padding: .45rem 1rem;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, .95), 0 2px 14px rgba(0, 0, 0, .8);
-}
-@media (max-width: 640px) {
-  .belofte { font-size: 1.14rem; }
+  padding: .5rem .95rem;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, .9), 0 2px 18px rgba(0, 0, 0, .75);
 }
 
 /* De privacyverklaring hoort op de plek waar je je gegevens afgeeft, niet
@@ -1592,24 +1589,7 @@ body.tekstpagina .end a { color: var(--throat); }
 .beheerrij-melding.mis { color: #F5A08F; }
 .beheerrij-knoppen input[type="email"] { width: 14rem; }
 
-/* De tweede regel onder de belofte: wat de Dreamverse doet.
-   Zachter dan de belofte zelf, maar met dezelfde donkere band - anders valt hij
-   weg zodra de achtergrond langs lichtblauw loopt. */
-.belofte-sub {
-  display: inline-block;
-  margin: .4rem 0 0; max-width: 36rem;
-  font-family: var(--display);
-  font-size: 1.02rem; font-style: italic; line-height: 1.5;
-  color: #F0EAFB;
-  background: rgba(8, 6, 17, .58);
-  backdrop-filter: blur(6px);
-  border-radius: 12px;
-  padding: .4rem .95rem;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, .95), 0 2px 14px rgba(0, 0, 0, .8);
-}
-@media (max-width: 640px) {
-  .belofte-sub { font-size: .95rem; }
-}
+
 
 /* Het hulpkader. Opvallend genoeg om niet te missen, rustig genoeg om niet te
    alarmeren - iemand die dit leest heeft geen schrikbalk nodig maar een adres. */
