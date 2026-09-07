@@ -474,6 +474,15 @@ ligt klaar.
   zes seconden, met een credit van $0,01. Wie opstart en meteen ophangt kost al
   €0,018. Daarom kan de avatar nooit in een vast abonnement van €4,99 — die hoort
   in tokens.
+- **Beslist op 7 september 2026: de animatie blijft bij Runway.** Kling kan
+  hetzelfde paneel ook laten bewegen — `build/kling_vergelijk.py` legt de twee
+  naast elkaar op dezelfde bewegingsopdracht — en het is ongeveer zes keer
+  goedkoper. Gemeten op droom 12: Kling v2.1 pro doet vijf seconden voor 3,5
+  eenheden en levert 12,9 MB **zonder audiospoor**; Runway veo3.1 doet vier
+  seconden voor € 1,47 en levert 1,1 MB **met** geluid. Ruud koos Runway op het
+  beeld. Daarmee blijft die ene animatie 91% van de kostprijs van een
+  *supreme*-droom, en blijft de vraag open of het kernmoment in Plus hoort of op
+  tokens.
 - **Beslist op 1 september 2026: panelen blijven bij Kling.** Runway's
   `muse_image` is met €0,009 per beeld de helft goedkoper en op één enkel beeld
   vaak indrukwekkender, maar houdt de stijl niet vast over vijf panelen: het ene
