@@ -23,6 +23,7 @@ Serveert de speler uit static/ en drie eindpunten:
     GET    /api/spectrum                       -> welk kleurveld elke droom koos
     GET    /api/mijn-gegevens                  -> alles wat we bewaren, als zip
     GET    /api/webhooklog                     -> wat Stripe aanbood (beheer)
+    GET    /api/rapport                        -> gebruik en terugkomst (beheer)
     POST   /api/account-verwijderen            -> alles weg, onomkeerbaar
     DELETE /api/dream/<nr>                     -> een droom en al zijn beelden wissen
     DELETE /api/archive                        -> archief wissen
@@ -221,6 +222,16 @@ class Handler(SimpleHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(blob)
             return
+
+        if self.path == "/api/rapport":
+            # Het cijfer waar dit project op staat of valt, achter dezelfde
+            # sleutel als de kostenmeter: hier staat in hoeveel mensen er zijn
+            # en wie er terugkwam, en dat gaat een bezoeker niets aan.
+            gegeven = (self.headers.get("X-Admin-Token") or "").strip()
+            if not ADMIN_TOKEN or not hmac.compare_digest(gegeven, ADMIN_TOKEN):
+                return self.send_json({"error": "Geen toegang."}, 403)
+            import rapport
+            return self.send_json(rapport.cijfers())
 
         if self.path == "/api/webhooklog":
             # Achter de beheerssleutel: hier staat in wat Stripe heeft
@@ -475,6 +486,9 @@ class Handler(SimpleHTTPRequestHandler):
             except Exception as e:
                 self.log_message("afrekenen mislukte: %s", e)
                 return self.send_json({"error": "Afrekenen lukte niet."}, 502)
+            # Wie er naar de betaalpagina gaat, is het begin van de trechter.
+            # Wat er daarna van komt staat in de tabel betalingen.
+            usage.checkout(soort, welk)
             return self.send_json({"url": url})
 
         if self.path == "/api/portaal":

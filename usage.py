@@ -130,6 +130,15 @@ def vraag(number, input_tokens, output_tokens, tokens_betaald):
                     "tokens": tokens_betaald})
 
 
+def checkout(soort, welk):
+    """Iemand is doorgestuurd naar de betaalpagina van Stripe.
+
+    Het begin van de trechter. Wat er van terugkwam staat in de tabel
+    betalingen; het verschil tussen die twee is wie er afhaakte.
+    """
+    return _append({"kind": "checkout", "who": _who(), "soort": soort, "welk": welk})
+
+
 def narration(number, panelen, eur):
     return _append({"kind": "narration", "who": _who(), "dream": number,
                     "panels": panelen, "eur": round(eur, 4)})

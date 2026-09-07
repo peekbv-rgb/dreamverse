@@ -351,9 +351,30 @@
     stopBezig();
   }
 
+  /* Kijken of het tekenwerk al klaar is.
+   *
+   * Hier stond 90 keer met vier seconden ertussen: precies zes minuten, en
+   * daarna hield hij stil op met kijken terwijl de zandloper doortikte. Wie een
+   * hele verbeelding als animatie koopt is zo een kwartier bezig, en zag dus een
+   * teller die niets meer betekende.
+   *
+   * Nu duurt het langer en gaat het rustiger: de eerste twee minuten elke vier
+   * seconden, daarna elke acht. En als de tijd echt op is, zegt hij dat - het
+   * werk loopt op de server gewoon door, dus verversen helpt.
+   */
+  // Twee minuten snel, daarna acht seconden: samen ruim twintig minuten. Genoeg
+  // voor een hele verbeelding als animatie, het langste werk dat er is.
+  var POLL_TOTAAL = 180;
+
   function pollPanels(number, tries) {
     if (pollTimer) { clearTimeout(pollTimer); pollTimer = null; }
-    if (tries <= 0) { return; }
+    if (tries <= 0) {
+      stopBezig();
+      statusEl.className = "status";
+      statusEl.textContent = t("Dit duurt langer dan verwacht. Het werk loopt door; "
+                               + "ververs de pagina om te kijken of het klaar is.");
+      return;
+    }
     fetch("/api/panels/" + number)
       .then(function (r) { return r.json(); })
       .then(function (state) {
@@ -384,7 +405,10 @@
                  || state.film_status === "busy"
                  || state.stem_status === "busy";
         if (bezig) {
-          pollTimer = setTimeout(function () { pollPanels(number, tries - 1); }, 4000);
+          // De eerste twee minuten snel kijken, daarna rustiger: dan is het
+          // groot werk en heeft elke vier seconden geen zin meer.
+          var pauze = tries > POLL_TOTAAL - 30 ? 4000 : 8000;
+          pollTimer = setTimeout(function () { pollPanels(number, tries - 1); }, pauze);
         }
       })
       .catch(function () { /* beeld is bijzaak; de verbeelding staat er al */ });
@@ -566,7 +590,7 @@
     filmpjes = {};
     try { speler.pause(); } catch (e) { /* niets aan de hand */ }
     if (pollTimer) { clearTimeout(pollTimer); pollTimer = null; }
-    if (ep.images_pending) { verwachtWerk(); pollPanels(ep.number, 90); }
+    if (ep.images_pending) { verwachtWerk(); pollPanels(ep.number, POLL_TOTAAL); }
     el("title").textContent = ep.title;
     // De kop draagt nu de titel van de droom, niet meer de slogan: dat is de
     // nieuwe brontekst, anders zet een taalwissel de slogan terug.
@@ -1707,7 +1731,7 @@
         startBezig(t("Aanvraag gestart…"));
         toonAccount(res.body.account);
         laadVerbruik();
-        pollPanels(nummer, 90);
+        pollPanels(nummer, POLL_TOTAAL);
       })
       .catch(function (err) {
         melding.className = "extras-melding err";
@@ -2617,6 +2641,56 @@
   }
   knoopBeheerrij();
 
+  /* Het cijfer waar dit project op staat of valt.
+   *
+   * Tien testpersonen, drie dagen, wie komt er op dag vier uit zichzelf terug.
+   * Alles hiervoor stond al in de database; er was alleen geen scherm dat het
+   * liet zien. Geen derde partij, geen cookies, geen banner - en dus ook geen
+   * klikgedrag, want dat zou clientmeting vragen.
+   */
+  function laadRapport() {
+    var doos = el("rapport");
+    if (!doos) { return; }
+    if (!beheerAan) { doos.hidden = true; return; }
+    fetch("/api/rapport", { headers: { "X-Admin-Token": beheerSleutel() } })
+      .then(lees)
+      .then(function (res) {
+        if (!res.ok) { doos.hidden = true; return; }
+        var c = res.body;
+        doos.hidden = false;
+        var deel = c.oud_genoeg
+          ? Math.round(100 * c.terug_dag4 / c.oud_genoeg) + "%"
+          : "—";
+        var html = '<p class="rapport-kop">' + t("Wie komt er terug") + "</p>";
+        html += '<div class="rapport-groot"><b>' + c.terug_dag4 + " / " + c.oud_genoeg +
+                "</b><span>" + t("terug op dag vier of later") + " (" + deel + ")</span></div>";
+        html += '<div class="rapport-rij">';
+        [[c.gebruikers, "mensen"], [c.met_droom, "met een droom"],
+         [c.dromen, "dromen"], [c.meerdaags, "meer dan een dag actief"],
+         [c.vragen, "vragen gesteld"], [c.omzet.toFixed(2), "euro omzet"]
+        ].forEach(function (r) {
+          html += "<div><b>" + r[0] + "</b><span>" + t(r[1]) + "</span></div>";
+        });
+        html += "</div>";
+
+        if ((c.mensen || []).length) {
+          html += '<table class="rapport-tabel"><thead><tr>' +
+            ["", t("pakket"), t("sinds"), t("dromen"), t("dagen"), t("vragen"), t("terug")]
+              .map(function (k) { return "<th>" + k + "</th>"; }).join("") +
+            "</tr></thead><tbody>";
+          c.mensen.forEach(function (m) {
+            html += "<tr><td>" + m.email + "</td><td>" + m.pakket + "</td><td>" +
+              m.sinds + "</td><td>" + m.dromen + "</td><td>" + m.actieve_dagen +
+              "</td><td>" + m.vragen + "</td><td>" + (m.terug ? "ja" : "—") +
+              "</td></tr>";
+          });
+          html += "</tbody></table>";
+        }
+        doos.innerHTML = html;
+      })
+      .catch(function () { doos.hidden = true; });
+  }
+
   /* Wat Stripe heeft aangeboden, en wat wij ermee deden.
    *
    * Zonder dit kijkglas is een webhook die niet aankomt onzichtbaar: de klant
@@ -2653,6 +2727,7 @@
 
   function laadVerbruik() {
     toonMeter();
+    laadRapport();
     laadWebhooklog();
     if (!beheerAan) { return; }
     fetch("/api/usage").then(function (r) { return r.json(); })

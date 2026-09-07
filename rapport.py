@@ -1,0 +1,156 @@
+"""Het cijfer waar dit project op staat of valt.
+
+Tien testpersonen, drie dagen, en kijken wie er op dag vier uit zichzelf
+terugkomt. Alles wat daarvoor nodig is stond al in de database; er was alleen
+geen scherm dat het liet zien.
+
+**Geen derde partij, geen cookies, geen banner.** Er wordt niets bijgehouden wat
+er niet al was: aanmeldingen staan in `users.gemaakt`, dromen in `dromen.wanneer`,
+vragen in de bewaarde verbeelding, betalingen in `betalingen`, en of iemand naar
+Stripe is doorgestuurd in `usage`. Voor een app waarin mensen over hun angsten en
+hun overledenen schrijven, is het gedrag van die mensen doorgeven aan een
+advertentiebedrijf een zwaardere prijs dan bij een webshop.
+
+Wat er dus **niet** in staat: waar mensen klikken, hoe ver ze scrollen, waar ze
+afhaken op een pagina. Dat zou clientmeting vragen en dat is precies de stap die
+een cookiebanner oplevert.
+
+    python rapport.py            # afdrukken in de terminal
+"""
+
+import json
+from collections import Counter, defaultdict
+from datetime import date, datetime, timedelta
+
+import accounts
+
+
+def _datum(waarde):
+    """Een datum uit de database, hoe hij ook is opgeschreven."""
+    if not waarde:
+        return None
+    tekst = str(waarde)[:10]
+    try:
+        return date.fromisoformat(tekst)
+    except ValueError:
+        return None
+
+
+def cijfers(dagen=30):
+    """Alles bij elkaar. Eén doorloop, want het zijn hooguit een paar duizend rijen."""
+    db = accounts.db()
+    vandaag = date.today()
+    grens = vandaag - timedelta(days=dagen)
+
+    gebruikers = {}
+    for r in db.execute("SELECT id, email, pakket, tokens, gemaakt FROM users"):
+        gebruikers[r["id"]] = {
+            "email": r["email"], "pakket": r["pakket"], "tokens": r["tokens"],
+            "sinds": _datum(r["gemaakt"]), "dagen": set(), "dromen": 0, "vragen": 0,
+        }
+
+    for r in db.execute("SELECT user_id, n, wanneer FROM dromen"):
+        u = gebruikers.get(r["user_id"])
+        if not u:
+            continue
+        u["dromen"] += 1
+        d = _datum(r["wanneer"])
+        if d:
+            u["dagen"].add(d)
+
+    # Vragen zitten in de bewaarde verbeelding; die is een woordenboek.
+    for r in db.execute("SELECT user_id, data FROM verbeeldingen"):
+        u = gebruikers.get(r["user_id"])
+        if not u:
+            continue
+        try:
+            u["vragen"] += len((json.loads(r["data"]) or {}).get("vragen") or [])
+        except (ValueError, TypeError):
+            pass
+
+    betaald = Counter()
+    omzet = 0.0
+    for r in db.execute("SELECT soort, bedrag FROM betalingen"):
+        betaald[r["soort"] or "?"] += 1
+        omzet += (r["bedrag"] or 0) / 100.0
+
+    # Per dag: hoeveel aanmeldingen, hoeveel dromen.
+    per_dag = defaultdict(lambda: {"nieuw": 0, "dromen": 0})
+    for u in gebruikers.values():
+        if u["sinds"] and u["sinds"] >= grens:
+            per_dag[u["sinds"]]["nieuw"] += 1
+        for d in u["dagen"]:
+            if d >= grens:
+                per_dag[d]["dromen"] += 1
+
+    # Het cijfer zelf: wie kwam er terug op dag vier of later?
+    #
+    # "Terug" is bewust streng: een dróom op dag vier of later, niet een bezoek.
+    # Iemand die alleen even kijkt is geen gebruiker; iemand die opnieuw een
+    # droom vertelt wel.
+    rijp = [u for u in gebruikers.values()
+            if u["sinds"] and (vandaag - u["sinds"]).days >= 3]
+    terug = [u for u in rijp
+             if any((d - u["sinds"]).days >= 3 for d in u["dagen"])]
+    meerdaags = [u for u in gebruikers.values() if len(u["dagen"]) > 1]
+
+    return {
+        "gebruikers": len(gebruikers),
+        "met_droom": sum(1 for u in gebruikers.values() if u["dromen"]),
+        "dromen": sum(u["dromen"] for u in gebruikers.values()),
+        "vragen": sum(u["vragen"] for u in gebruikers.values()),
+        "vragers": sum(1 for u in gebruikers.values() if u["vragen"]),
+        "meerdaags": len(meerdaags),
+        "oud_genoeg": len(rijp),
+        "terug_dag4": len(terug),
+        "pakketten": dict(Counter(u["pakket"] for u in gebruikers.values())),
+        "betalingen": dict(betaald),
+        "omzet": round(omzet, 2),
+        "per_dag": [
+            {"datum": d.isoformat(), "nieuw": v["nieuw"], "dromen": v["dromen"]}
+            for d, v in sorted(per_dag.items(), reverse=True)
+        ],
+        "mensen": sorted(
+            [{"email": u["email"], "pakket": u["pakket"], "tokens": u["tokens"],
+              "sinds": u["sinds"].isoformat() if u["sinds"] else "",
+              "dromen": u["dromen"], "actieve_dagen": len(u["dagen"]),
+              "vragen": u["vragen"],
+              "terug": bool(u["sinds"] and any((d - u["sinds"]).days >= 3
+                                               for d in u["dagen"]))}
+             for u in gebruikers.values()],
+            key=lambda x: (-x["dromen"], x["sinds"])),
+    }
+
+
+def main():
+    import os
+    from dotenv import load_dotenv
+    load_dotenv(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"))
+
+    c = cijfers()
+    print("Dreamverse - de cijfers van vandaag")
+    print("")
+    print("  gebruikers      %d, waarvan %d met minstens een droom" % (
+        c["gebruikers"], c["met_droom"]))
+    print("  dromen          %d" % c["dromen"])
+    print("  vragen          %d, door %d mensen" % (c["vragen"], c["vragers"]))
+    print("  meer dan een dag actief: %d" % c["meerdaags"])
+    print("")
+    if c["oud_genoeg"]:
+        print("  DAG VIER: %d van de %d mensen die er lang genoeg zijn kwamen terug (%d%%)"
+              % (c["terug_dag4"], c["oud_genoeg"],
+                 round(100 * c["terug_dag4"] / c["oud_genoeg"])))
+    else:
+        print("  DAG VIER: nog niemand is drie dagen onderweg.")
+    print("")
+    print("  pakketten       %s" % c["pakketten"])
+    print("  betalingen      %s, samen EUR %.2f" % (c["betalingen"], c["omzet"]))
+    print("")
+    print("  laatste dagen:")
+    for r in c["per_dag"][:10]:
+        print("    %s  %d nieuw, %d dromen" % (r["datum"], r["nieuw"], r["dromen"]))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

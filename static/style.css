@@ -1734,3 +1734,32 @@ body.tekstpagina .end a { color: var(--throat); }
 }
 
 .koop-pakket.wijs { animation: wijzen 2.4s ease-out 1; border-radius: 999px; }
+
+/* Het rapport: wie komt er terug. Alleen zichtbaar in beheer. */
+.rapport {
+  margin-bottom: 1.1rem; padding: 1rem 1.2rem; border-radius: 12px;
+  background: rgba(12, 8, 24, .6); border: 1px solid rgba(216, 205, 234, .16);
+}
+.rapport-kop {
+  margin: 0 0 .6rem; font-size: .7rem; letter-spacing: .12em;
+  text-transform: uppercase; color: rgba(216, 205, 234, .6);
+}
+.rapport-groot { display: flex; align-items: baseline; gap: .7rem; margin-bottom: .9rem; }
+.rapport-groot b { font-size: 2rem; font-family: var(--display); color: var(--solar); }
+.rapport-groot span { font-size: .86rem; color: rgba(216, 205, 234, .8); }
+.rapport-rij {
+  display: grid; gap: .6rem; margin-bottom: .9rem;
+  grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
+}
+.rapport-rij div { display: flex; flex-direction: column; }
+.rapport-rij b { font-size: 1.1rem; color: var(--ink); }
+.rapport-rij span { font-size: .74rem; color: rgba(216, 205, 234, .6); }
+.rapport-tabel { width: 100%; border-collapse: collapse; font-size: .78rem; }
+.rapport-tabel th {
+  text-align: left; padding: .3rem .5rem; color: rgba(216, 205, 234, .55);
+  font-weight: 600; letter-spacing: .06em; text-transform: uppercase; font-size: .66rem;
+}
+.rapport-tabel td {
+  padding: .3rem .5rem; color: #CFC4E4;
+  border-top: 1px solid rgba(216, 205, 234, .1);
+}

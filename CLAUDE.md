@@ -332,6 +332,26 @@ blijven. Voor een testronde van dertig dromen ($2,10 aan verbruik) is het een
 afschrijving, geen investering. De proefpakketten die er nu staan verlopen
 **18 september 2026**.
 
+## Het rapport
+
+`rapport.py` en `GET /api/rapport`, achter dezelfde beheersleutel als de
+kostenmeter. Het antwoord op de enige vraag die telt: **tien testpersonen, drie
+dagen, wie komt er op dag vier uit zichzelf terug.** Bovenaan staat dat cijfer,
+daaronder mensen, dromen, actieve dagen, gestelde vragen en omzet, en een tabel
+per gebruiker.
+
+"Terug" is bewust streng: een **droom** op dag vier of later, geen bezoek. Wie
+alleen even kijkt is geen gebruiker.
+
+**Geen derde partij, geen cookies, geen banner.** Alles komt uit gegevens die er
+al waren — `users.gemaakt`, `dromen.wanneer`, de vragen in de bewaarde
+verbeelding, de tabel `betalingen` — plus `usage.checkout()` voor het begin van
+de trechter. Daarom staat er ook **geen klikgedrag** in: waar mensen klikken en
+waar ze afhaken zou clientmeting vragen, en dat is precies de stap die een
+cookiebanner oplevert en het gedrag van dromers bij een advertentiebedrijf legt.
+
+    python rapport.py
+
 ## Wat er nog niet is
 
 - **Kling is aangesloten maar niet getest tegen de echte API** — er was hier geen

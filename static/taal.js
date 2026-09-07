@@ -170,6 +170,18 @@
     ["Symbolisch", "Symbolic"],
     ["Spiritueel", "Spiritual"],
     ["Door welke bril", "Through which lens"],
+    ["Wie komt er terug", "Who comes back"],
+    ["terug op dag vier of later", "back on day four or later"],
+    ["mensen", "people"],
+    ["met een droom", "with a dream"],
+    ["meer dan een dag actief", "active on more than one day"],
+    ["vragen gesteld", "questions asked"],
+    ["euro omzet", "euro revenue"],
+    ["sinds", "since"],
+    ["dagen", "days"],
+    ["terug", "back"],
+    ["Dit duurt langer dan verwacht. Het werk loopt door; ververs de pagina om te kijken of het klaar is.",
+     "This is taking longer than expected. The work continues; refresh the page to see if it is done."],
     ["Vraag iets over deze droom", "Ask something about this dream"],
     ["Vraag het", "Ask it"],
     ["Je eerste vraag bij deze droom is inbegrepen.",
@@ -439,7 +451,7 @@
                   // erover zet de brontekst terug.
                   "#bril-knoppen", "#bril-uitslag", "#brilspectrum",
                   "#spectrum-noot", "#zorg-kader", "#vragen",
-                  "#vraag-melding", "#vraag-uitleg"].join(",");
+                  "#vraag-melding", "#vraag-uitleg", "#rapport"].join(",");
 
   var TE_VERTALEN = "h1,h2,p,label,span.lbl,span.label,span.tier-name,span.extras-kop," +
                     "span.kwaliteit-kop,span.antwoord-uitleg,button,option,#mode";
