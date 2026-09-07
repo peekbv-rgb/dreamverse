@@ -190,7 +190,7 @@
       v.play().catch(function () { v.muted = true; v.play().catch(function () {}); });
       var merk = document.createElement("span");
       merk.className = "kern-merk";
-      merk.textContent = eigenFilm ? "film" : "kernmoment";
+      merk.textContent = eigenFilm ? t("animatie") : t("kernmoment");
       stage.appendChild(merk);
       narration.textContent = panel.narration;
       counter.textContent = (index + 1) + " / " + total;
@@ -324,7 +324,7 @@
     }
     if (state.film_status === "busy") {
       var f = Object.keys(state.film || {}).length;
-      regels.push(t("Film maken —") + " " + f + " " + t("van de") + " " + totaal + " " +
+      regels.push(t("Animatie maken —") + " " + f + " " + t("van de") + " " + totaal + " " +
                   t("panelen klaar"));
     }
 
@@ -333,7 +333,7 @@
       stuk.push(t("Het kernmoment lukte niet") +
                 (state.video_error ? " — " + state.video_error : ""));
     }
-    if (state.film_status === "failed") { stuk.push(t("De film lukte niet")); }
+    if (state.film_status === "failed") { stuk.push(t("De animatie lukte niet")); }
     if (state.status === "failed") { stuk.push(t("De panelen lukten niet")); }
 
     if (regels.length) {

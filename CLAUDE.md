@@ -362,7 +362,7 @@ in.
 ## Onder welke naam
 
 **Peek BV.** Op 7 september 2026 is de SBI-code voor softwareontwikkeling aan de
-KvK-inschrijving toegevoegd (KvK 27181493), juist omdat Managed Payments het
+KvK-inschrijving toegevoegd (KvK 18030812), juist omdat Managed Payments het
 bedrijfsprofiel beoordeelt en daar tot dan alleen een installatiebedrijf stond.
 De domeinen, het Stripe-account en de landingspagina staan allemaal op die naam.
 

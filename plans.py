@@ -36,8 +36,8 @@ TOKENS_PER_EXTRA_DREAM = 3
 # Wat je los kunt kopen. De marges staan erbij omdat ze anders wegzakken zodra
 # iemand een tarief aanpast.
 EXTRAS = {
-    "film_snel": {"naam": "Hele verbeelding als film, 20 seconden", "tokens": 30, "kost": 2.76},
-    "film_top": {"naam": "Hele verbeelding als film op het beste model", "tokens": 60, "kost": 7.36},
+    "film_snel": {"naam": "Hele verbeelding als animatie, 20 seconden", "tokens": 30, "kost": 2.76},
+    "film_top": {"naam": "Hele verbeelding als animatie op het beste model", "tokens": 60, "kost": 7.36},
     "kernmoment_top": {"naam": "Het belangrijkste moment, op het beste model", "tokens": 10, "kost": 1.47},
 }
 
