@@ -272,6 +272,7 @@
      "Your account, your dreams and all the imagery have been deleted. There is no copy."],
     ["Kies dit pakket", "Choose this plan"],
     ["Tokens bijkopen", "Buy tokens"],
+    ["Eén token is €0,25.", "One token is €0.25."],
     ["Je gaat naar de betaalpagina van Stripe…", "Taking you to Stripe's payment page…"],
     ["Afrekenen lukte niet.", "Checkout did not work."],
     ["Inloggen", "Log in"],
@@ -326,8 +327,6 @@
 
     // -- los te koop -------------------------------------------------------
     ["Los te koop", "Sold separately"],
-    ["Wat te duur is om in een pakket te stoppen. Eén token is €0,25.", "What is too expensive to put in a plan. One token is €0.25."],
-    ["Voor welke droom?", "For which dream?"],
     ["Kernmoment, beste model <b>10</b>", "Key moment, best model <b>10</b>"],
     ["Als film <b>30</b>", "As a film <b>30</b>"],
     ["Als film, beste model <b>60</b>", "As a film, best model <b>60</b>"],

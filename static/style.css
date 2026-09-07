@@ -1618,3 +1618,11 @@ body.tekstpagina .end a { color: var(--throat); }
   border-bottom: 1px solid rgba(242, 198, 76, .6);
 }
 .zorg-blok li em { font-style: normal; font-size: .8rem; color: rgba(216, 205, 234, .55); }
+
+/* De tokenprijs staat waar je tokens koopt, niet als ondertitel bij een kop
+   twee blokken hoger. Volle breedte, zodat de koopknoppen op hun eigen regel
+   blijven staan. */
+.extras-noot {
+  flex: 1 1 100%; margin: -.2rem 0 .2rem;
+  font-size: .82rem; color: rgba(216, 205, 234, .7);
+}
