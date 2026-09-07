@@ -543,7 +543,12 @@ kost € 2,99 en niet € 1,99, want bij een klein maandbedrag is de vaste $0,50
 transactiekosten het probleem en niet het percentage — op € 1,99 is dat 23% van
 de prijs. Drie dromen bij € 2,99 houdt 48% marge; bij € 1,99 was dat 33%.
 
-Eén token is € 0,25. Een avatarminuut kost 2 tokens (kostprijs € 0,18), een extra
+Tokens gaan per pakket: 20 voor € 7,00, 40 voor € 12,00, 100 voor € 25,00 —
+van € 0,35 naar € 0,25 per token, bijna dertig procent korting. Die staffel
+loopt bewust naar beneden vanaf € 0,35 en niet vanaf € 0,25: een kernmoment
+op het beste model kost 10 tokens en ons € 1,47, dus € 0,147 per token, en
+netto houden we van € 0,25 per token ongeveer € 0,19 over. Daaronder wordt de
+duurste knop die we verkopen verlieslatend. Een avatarminuut kost 2 tokens (kostprijs € 0,18), een extra
 droom kost er 3. De avatar zit bewust in géén enkel pakket onbeperkt: bij € 4,99
 is één gesprek van vijf minuten al een vijfde van de omzet.
 

@@ -40,11 +40,19 @@ BELASTINGCODE = "txcd_10105001"
 ABONNEMENTEN = ("lite", "plus", "ultra")
 
 # De tokenpakketten. Losse tokens kunnen niet: de vaste $0,50 per transactie
-# maakt een aankoop van twee tokens (€0,50) verlieslatend. Vanaf twintig klopt
-# het, en groter kopen wordt iets voordeliger per token.
+# maakt een aankoop van twee tokens (EUR 0,50) verlieslatend. Vanaf twintig
+# klopt het.
+#
+# De staffel loopt van EUR 0,35 naar EUR 0,25 per token - bijna dertig procent
+# korting op het grote pakket. Hij loopt bewust naar beneden vanaf 0,35 en niet
+# vanaf 0,25 naar beneden, en dat komt door een getal: een kernmoment op het
+# beste model kost 10 tokens en ons EUR 1,47, dus EUR 0,147 per token. Netto
+# houden we van EUR 0,25 per token ongeveer EUR 0,19 over, en daaronder wordt
+# dat kernmoment verlieslatend. Wie zijn hele pakket aan kernmomenten uitgeeft
+# is dus het slechtste geval, en ook dat blijft nu positief.
 TOKENPAKKETTEN = {
-    "tokens20": {"tokens": 20, "cent": 500, "naam": "20 tokens"},
-    "tokens40": {"tokens": 40, "cent": 1000, "naam": "40 tokens"},
+    "tokens20": {"tokens": 20, "cent": 700, "naam": "20 tokens"},
+    "tokens40": {"tokens": 40, "cent": 1200, "naam": "40 tokens"},
     "tokens100": {"tokens": 100, "cent": 2500, "naam": "100 tokens"},
 }
 

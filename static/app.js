@@ -1032,20 +1032,23 @@
   }
 
   // De keuzelijst bij "Los te koop" vullen met je dromen.
+  var keuzeDromen = [];
+
   function vulKeuzelijst(dreams) {
+    keuzeDromen = dreams || [];
     var kies = el("kies");
     if (!kies) { return; }
     kies.innerHTML = "";
     dreams.forEach(function (d) {
       var o = document.createElement("option");
       o.value = d.n;
-      // Bewegend beeld heeft een getekend paneel nodig als startframe. Zonder
-      // panelen valt er niets te kopen, en dat hoort hier te staan en niet pas
-      // in een foutmelding nadat je geklikt hebt.
-      o.disabled = !d.thumb;
+      // Een droom zonder panelen stond hier uitgeschakeld, want bewegend beeld
+      // heeft een getekend paneel nodig. Maar sinds je panelen los kunt kopen is
+      // dat juist de droom die je wilt kiezen - hij was niet te selecteren voor
+      // precies het ding dat hem zou helpen.
       o.textContent = t("Droom") + " " + d.n + " — " +
                       (d.title || d.text || "").slice(0, 40) +
-                      (d.thumb ? "" : "  (" + t("geen beeld") + ")");
+                      (d.thumb ? "" : "  (" + t("nog geen beeld") + ")");
       kies.appendChild(o);
     });
     if (!dreams.length) {
@@ -1054,17 +1057,32 @@
       leeg.value = "";
       kies.appendChild(leeg);
     }
-    // De eerste droom die wel beeld heeft, want een uitgeschakelde optie kan
-    // niet geselecteerd staan.
-    var bruikbaar = dreams.filter(function (d) { return d.thumb; })[0];
-    kies.value = bruikbaar ? String(bruikbaar.n) : "";
-    zetKoopKnoppen(!!bruikbaar);
+    // Liefst een droom met beeld voorop, want daar is het meeste voor te koop.
+    // Is die er niet, dan gewoon de eerste: panelen bijmaken kan wel.
+    var metBeeld = dreams.filter(function (d) { return d.thumb; })[0];
+    kies.value = String((metBeeld || dreams[0] || {}).n || "");
+    zetKoopKnoppen(keuzeDromen);
   }
 
-  function zetKoopKnoppen(mag) {
+  /* Welke knoppen mogen bij de gekozen droom?
+   *
+   * Heeft hij panelen, dan alles behalve panelen bijmaken. Heeft hij ze niet,
+   * dan alleen panelen bijmaken - de rest heeft een getekend paneel nodig als
+   * startframe. Zo hoef je niet te klikken om te horen dat het niet kan.
+   */
+  function zetKoopKnoppen(dreams) {
+    var kies = el("kies");
+    if (!kies) { return; }
+    var nummer = Number(kies.value);
+    var droom = (dreams || []).filter(function (d) { return d.n === nummer; })[0];
+    var heeftBeeld = !!(droom && droom.thumb);
     document.querySelectorAll(".kies-droom .koop").forEach(function (b) {
-      b.disabled = !mag;
-      b.title = mag ? "" : t("Kies een droom waar panelen bij gemaakt zijn.");
+      var isPanelen = b.dataset.kind === "panelen";
+      b.disabled = !droom || (isPanelen ? heeftBeeld : !heeftBeeld);
+      b.title = b.disabled
+        ? (isPanelen ? t("Bij deze droom staan de panelen er al.")
+                     : t("Deze droom heeft nog geen panelen. Maak die eerst."))
+        : "";
     });
   }
 
@@ -1749,6 +1767,12 @@
         }
       })
       .then(function () { knop.disabled = false; });
+  }
+
+  // Kies je een andere droom, dan veranderen de knoppen mee: bij een droom
+  // zonder panelen kun je alleen panelen kopen, en andersom.
+  if (el("kies")) {
+    el("kies").addEventListener("change", function () { zetKoopKnoppen(keuzeDromen); });
   }
 
   el("extras").addEventListener("click", function (e) {
