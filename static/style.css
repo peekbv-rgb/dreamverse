@@ -949,9 +949,12 @@ body::after { opacity: .34; }
   background: rgba(43, 28, 74, .5); border-color: var(--line);
   font-size: .85rem; font-weight: 600;
 }
+/* De regel onder de naam zegt wat je krijgt en wat het kost. Die stond in
+   muted grijs op een donkere knop, en dat is precies de tekst die je moet
+   kunnen lezen voordat je kiest. Nu lichter, iets groter en wat zwaarder. */
 .kwaliteit small {
-  font-weight: 500; font-size: .68rem; letter-spacing: .06em;
-  text-transform: uppercase; color: var(--muted);
+  font-weight: 600; font-size: .74rem; letter-spacing: .05em;
+  text-transform: uppercase; color: #D8CDEA;
 }
 /* Gekozen is violet, inbegrepen is groen.
    Allebei waren ze groen, en dan betekent een kleur twee dingen tegelijk: bij
