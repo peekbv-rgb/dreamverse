@@ -359,6 +359,19 @@ De betaalregels blijven na verwijdering staan zonder gebruiker: een bedrag, een
 datum en een gebeurtenis-id. Dat is boekhouding en er staat niets persoonlijks
 in.
 
+## Onder welke naam
+
+**Peek BV.** Op 7 september 2026 is de SBI-code voor softwareontwikkeling aan de
+KvK-inschrijving toegevoegd (KvK 27181493), juist omdat Managed Payments het
+bedrijfsprofiel beoordeelt en daar tot dan alleen een installatiebedrijf stond.
+De domeinen, het Stripe-account en de landingspagina staan allemaal op die naam.
+
+Later verhuizen naar een andere entiteit kan, maar de prijs loopt op: domeinen
+verhuizen eenvoudig, **Stripe-abonnementen niet**. Die hangen aan het account van
+de entiteit, dus bij een verhuizing moeten klanten hun betaling opnieuw
+goedkeuren. Bij nul klanten kost dat niets; bij vijftig kost het een deel van
+die vijftig.
+
 ## Afrekenen
 
 Stripe **Managed Payments**: Stripe is de verkoper en draagt de btw af in ruim
