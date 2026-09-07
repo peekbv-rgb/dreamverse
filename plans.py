@@ -38,7 +38,7 @@ TOKENS_PER_EXTRA_DREAM = 3
 EXTRAS = {
     "film_snel": {"naam": "Hele verbeelding als film, 20 seconden", "tokens": 30, "kost": 2.76},
     "film_top": {"naam": "Hele verbeelding als film op het beste model", "tokens": 60, "kost": 7.36},
-    "kernmoment_top": {"naam": "Kernmoment op het beste model", "tokens": 10, "kost": 1.47},
+    "kernmoment_top": {"naam": "Het belangrijkste moment, op het beste model", "tokens": 10, "kost": 1.47},
 }
 
 # Welk videomodel hoort bij welk pakket. gen4_turbo laten we links liggen: dat is
@@ -71,19 +71,19 @@ KWALITEIT = {
     },
     "standaard": {
         "naam_en": "Standard", "bevat_en": "5 panels + key moment",
-        "uitleg_en": "Five panels plus a moving key moment of four seconds.",
+        "uitleg_en": "Five panels plus the key moment - the most important moment of your dream - moving for four seconds.",
         "bevat": "5 panelen + kernmoment",
         "naam": "Standaard", "rang": 2, "panelen": True, "video": "snel",
         "tokens": 4, "kost": 0.69,
-        "uitleg": "Vijf panelen plus een bewegend kernmoment van vier seconden.",
+        "uitleg": "Vijf panelen plus het kernmoment - het belangrijkste moment uit je droom - vier seconden bewegend.",
     },
     "supreme": {
         "naam_en": "Supreme", "bevat_en": "5 panels + best animation",
-        "uitleg_en": "The same, but the key moment on the best animation model.",
+        "uitleg_en": "The same, but the key moment - the most important moment of your dream - on the best animation model.",
         "bevat": "5 panelen + beste animatie",
         "naam": "Supreme", "rang": 3, "panelen": True, "video": "top",
         "tokens": 10, "kost": 1.61,
-        "uitleg": "Hetzelfde, maar het kernmoment op het beste animatiemodel.",
+        "uitleg": "Hetzelfde, maar het kernmoment - het belangrijkste moment uit je droom - op het beste animatiemodel.",
     },
 }
 DEFAULT_KWALITEIT = "standaard"
