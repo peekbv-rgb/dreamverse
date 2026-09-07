@@ -1610,3 +1610,31 @@ body.tekstpagina .end a { color: var(--throat); }
 @media (max-width: 640px) {
   .belofte-sub { font-size: .95rem; }
 }
+
+/* Het hulpkader. Opvallend genoeg om niet te missen, rustig genoeg om niet te
+   alarmeren - iemand die dit leest heeft geen schrikbalk nodig maar een adres. */
+.zorg-kader { display: grid; gap: .8rem; margin-bottom: 1rem; }
+.zorg-blok {
+  padding: 1rem 1.15rem; border-radius: 16px;
+  background: rgba(18, 12, 34, .96);
+  border: 1px solid rgba(242, 198, 76, .45);
+  box-shadow: 0 0 26px rgba(242, 198, 76, .1);
+}
+.zorg-blok.zorg-suicide { border-color: rgba(242, 198, 76, .6); }
+.zorg-blok.zorg-geweld { border-color: rgba(226, 85, 79, .5); }
+.zorg-blok.zorg-bereik { border-color: rgba(216, 205, 234, .3); }
+.zorg-kop {
+  margin: 0 0 .4rem !important;
+  font-family: var(--display); font-size: 1.15rem; color: var(--solar);
+}
+.zorg-blok.zorg-geweld .zorg-kop { color: #F5A08F; }
+.zorg-blok.zorg-bereik .zorg-kop { color: var(--ink); }
+.zorg-blok p { margin: 0 0 .5rem; font-size: .9rem; line-height: 1.6; color: #E4DCF4; }
+.zorg-blok ul { margin: .6rem 0 0; padding: 0; list-style: none; display: grid; gap: .35rem; }
+.zorg-blok li { font-size: .88rem; color: #CFC4E4; }
+.zorg-blok li span { color: rgba(216, 205, 234, .7); }
+.zorg-blok li a {
+  font-weight: 700; color: var(--ink); text-decoration: none;
+  border-bottom: 1px solid rgba(242, 198, 76, .6);
+}
+.zorg-blok li em { font-style: normal; font-size: .8rem; color: rgba(216, 205, 234, .55); }

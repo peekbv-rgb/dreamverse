@@ -550,6 +550,7 @@
     // nieuwe brontekst, anders zet een taalwissel de slogan terug.
     el("title").dataset.nl = ep.title;
     toonBril(ep);
+    toonZorg(ep);
     player.hidden = false;
 
     // "Alleen de duiding" betekent ook echt geen beeld: geen panelen, en dus ook
@@ -1239,6 +1240,136 @@
 
   gesprekTerughalen();
 
+  /* ------------------------------------------------------------ veiligheid */
+
+  /* Waar iemand naartoe kan, als een droom daarover ging.
+   *
+   * De nummers staan hier hard in de code en komen nooit uit een model. Het
+   * model classificeert alleen; een gehallucineerd crisisnummer is het ergste
+   * wat deze app kan doen. Verandert er een nummer, dan verandert het hier - op
+   * één plek.
+   *
+   * Nederlandse nummers bij de Nederlandse taal, Amerikaanse bij de Engelse.
+   * Dat is een grove benadering: iemand die de app in het Engels gebruikt zit
+   * niet per definitie in de Verenigde Staten. Zolang dat niet per land te
+   * bepalen is, staat er ook altijd "iemand die je vertrouwt" bij - dat werkt
+   * overal.
+   */
+  var HULP = {
+    suicide: {
+      nl: {
+        kop: "Praat erover met iemand.",
+        tekst: "In je droom kwam zelfdoding voor. Denk je hier ook wakker aan, "
+             + "praat er dan vandaag met iemand over: iemand die je vertrouwt, of "
+             + "je huisarts.",
+        lijnen: [
+          { naam: "113 Zelfmoordpreventie", waarde: "113", href: "tel:113",
+            noot: "dag en nacht, gratis" },
+          { naam: "Of gratis", waarde: "0800-0113", href: "tel:08000113", noot: "" },
+          { naam: "Online", waarde: "113.nl", href: "https://www.113.nl", noot: "" }
+        ]
+      },
+      en: {
+        kop: "Talk to someone about it.",
+        tekst: "Your dream involved suicide. If this is on your mind when you are "
+             + "awake too, talk to someone today: someone you trust, or your doctor.",
+        lijnen: [
+          { naam: "Suicide & Crisis Lifeline", waarde: "988", href: "tel:988",
+            noot: "day and night, free (US)" },
+          { naam: "In the Netherlands", waarde: "113", href: "tel:113", noot: "" }
+        ]
+      }
+    },
+    geweld: {
+      nl: {
+        kop: "Praat erover met iemand.",
+        tekst: "Er kwam geweld voor in je droom. Speelt er in je leven iets waar "
+             + "geweld bij komt, dan hoef je dat niet alleen op te lossen. Praat met "
+             + "iemand die je vertrouwt, en bel Veilig Thuis - ook om alleen te "
+             + "vragen wat je kunt doen.",
+        lijnen: [
+          { naam: "Veilig Thuis", waarde: "0800-2000", href: "tel:08002000",
+            noot: "gratis, dag en nacht" },
+          { naam: "Online", waarde: "veiligthuis.nl", href: "https://www.veiligthuis.nl/nl",
+            noot: "" },
+          { naam: "Direct gevaar", waarde: "112", href: "tel:112", noot: "politie" }
+        ]
+      },
+      en: {
+        kop: "Talk to someone about it.",
+        tekst: "Your dream involved violence. If something in your life involves "
+             + "violence, you do not have to solve it alone. Talk to someone you "
+             + "trust, and call for advice - even just to ask what you could do.",
+        lijnen: [
+          { naam: "Domestic Violence Hotline", waarde: "1-800-799-7233",
+            href: "tel:18007997233", noot: "day and night, free (US)" },
+          { naam: "In the Netherlands", waarde: "veiligthuis.nl",
+            href: "https://www.veiligthuis.nl/nl", noot: "" },
+          { naam: "Immediate danger", waarde: "911", href: "tel:911", noot: "police" }
+        ]
+      }
+    }
+  };
+
+  /* Het hulpkader boven de duiding.
+   *
+   * Boven, niet onder: wie dit nodig heeft moet het zien voordat hij aan het
+   * lezen begint. En het staat er zonder dat de duiding erover gaat - het model
+   * heeft opdracht om zelf geen hulp aan te raden, want dan zou het over de
+   * nummers gaan liegen.
+   */
+  function toonZorg(ep) {
+    var doos = el("zorg-kader");
+    if (!doos) { return; }
+    var soorten = (ep && ep.zorg) || [];
+    var taal = (profiel && profiel.language) === "en" ? "en" : "nl";
+    var stukken = [];
+
+    ["suicide", "geweld"].forEach(function (soort) {
+      if (soorten.indexOf(soort) === -1) { return; }
+      var h = HULP[soort] && HULP[soort][taal];
+      if (!h) { return; }
+      var html = '<div class="zorg-blok zorg-' + soort + '">' +
+        '<p class="zorg-kop">' + h.kop + "</p>" +
+        "<p>" + h.tekst + "</p><ul>";
+      h.lijnen.forEach(function (r) {
+        html += "<li><span>" + r.naam + "</span> " +
+          '<a href="' + r.href + '"' +
+          (r.href.indexOf("http") === 0 ? ' target="_blank" rel="noopener"' : "") +
+          ">" + r.waarde + "</a>" +
+          (r.noot ? ' <em>' + r.noot + "</em>" : "") + "</li>";
+      });
+      html += "</ul></div>";
+      stukken.push(html);
+    });
+
+    doos.innerHTML = stukken.join("");
+    doos.hidden = !stukken.length;
+  }
+
+  /* Buiten bereik: geen verbeelding, wel een antwoord.
+   *
+   * Geen foutmelding en geen rode balk - er is niets stukgegaan en de dromer
+   * heeft niets verkeerd gedaan. Er is ook niets afgerekend, en dat zeggen we,
+   * anders gaat iemand zijn tokens natellen.
+   */
+  function buitenBereik() {
+    statusEl.className = "status";
+    statusEl.textContent = t("Deze droom is niet verbeeld en heeft je niets gekost.");
+    guideLine.textContent = t("Hier ga ik niet over.");
+    var doos = el("zorg-kader");
+    if (doos) {
+      doos.hidden = false;
+      doos.innerHTML = '<div class="zorg-blok zorg-bereik">' +
+        '<p class="zorg-kop">' + t("Dit valt buiten wat ik doe.") + "</p><p>" +
+        t("Je droom was uitgesproken seksueel. Daar maak ik geen verbeelding van "
+          + "en daar schrijf ik geen duiding over - niet omdat er iets mis is met "
+          + "je droom, maar omdat het buiten mijn bereik valt. Vertel me een "
+          + "andere droom, dan ga ik er wel voor zitten.") + "</p></div>";
+      doos.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }
+
   /* --------------------------------------------------------------- knoppen */
 
   el("next").addEventListener("click", function () {
@@ -1384,6 +1515,13 @@
       .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, body: d }; }); })
       .then(function (res) {
         if (!res.ok) { throw new Error(res.body.error || t("Het lukte niet.")); }
+        if (res.body.buiten_bereik) {
+          // Geen verbeelding, wel een antwoord. De invoer blijft staan: de
+          // dromer heeft niets verkeerd gedaan en mag hem aanpassen.
+          stopBezig();
+          buitenBereik();
+          return;
+        }
         var ep = res.body.episode;
         render(ep);
         input.value = "";

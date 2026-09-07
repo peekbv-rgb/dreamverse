@@ -33,6 +33,61 @@ MAX_ARCHIVE_IN_PROMPT = 15  # meer geschiedenis maakt de duiding niet beter, wel
 PALETTES = ("root", "sacral", "solar", "heart", "throat", "third_eye", "crown")
 MOTIFS = ("flight", "water", "figure", "structure", "expanse", "close")
 
+# --------------------------------------------------------------------------- #
+# Veiligheid
+# --------------------------------------------------------------------------- #
+
+# Dromen waar niet zomaar een verbeelding van gemaakt wordt, en dromen waar een
+# verwijzing naast hoort.
+#
+# Drie dingen zijn hier bewust zo:
+#
+# 1. **Het model classificeert, de app schrijft.** De nummers en de teksten staan
+#    vast in de code en komen nooit uit een model. Een gehallucineerd
+#    crisisnummer is het ergste wat deze app kan doen.
+# 2. **De drempel ligt hoog.** Een monster dat je achtervolgt is geen geweld
+#    waarvoor je Veilig Thuis belt, en doodgaan in een droom is iets heel anders
+#    dan een suicidale droom - dat zijn de twee meest voorkomende dromen die er
+#    zijn. Wie te vaak waarschuwt maakt de waarschuwing waardeloos en bezorgt
+#    mensen angst; dat is dezelfde reden waarom de vooruitblik nooit over
+#    gezondheid gaat.
+# 3. **Alleen "seksueel" weigert.** Bij geweld en bij zelfdoding komt de duiding
+#    er wel, want iemand die dit droomt en niets terugkrijgt is er slechter aan
+#    toe dan iemand die een zorgvuldige duiding met een verwijzing krijgt.
+ZORG = ("seksueel", "geweld", "suicide")
+
+ZORG_REGELS = """
+--- veiligheid ---
+
+Zet in het veld "zorg" een lijst met de woorden die van toepassing zijn. Meestal
+is die lijst leeg. Kies alleen uit: "seksueel", "geweld", "suicide".
+
+- "seksueel": de droom beschrijft expliciet seks. Niet bij naaktheid, verliefdheid,
+  een kus, aantrekking of een dubbelzinnige sfeer - dat hoort bij dromen en daar
+  schrijf je gewoon over.
+- "geweld": er komt geweld tussen mensen voor dat kan raken aan het echte leven
+  van de dromer - mishandeling, aanranding, verkrachting, slaan, bedreiging door
+  iemand die hij kent, geweld tegen een kind. NIET bij een monster, een achtervolging,
+  een oorlog in de verte, een gevecht dat als film of spel voelt, of een ongeluk.
+- "suicide": het gaat over zelfdoding - de dromer maakt een eind aan zijn leven,
+  wil dood, of iemand anders doet het. NIET bij doodgaan in het algemeen: vallen,
+  verdrinken, achtervolgd worden en sterven zijn heel gewone dromen en geen
+  suicidale dromen. Ook niet bij rouw om iemand die overleden is.
+
+Bij twijfel laat je het weg. Een verwijzing naar hulp bij een droom die daar niet
+over gaat, maakt iemand ongerust zonder reden.
+
+Staat er "seksueel" in de lijst, dan schrijf je verder niets: laat "panels" leeg,
+en laat "title", "why", "meaning", "future", "love" en "together" lege strings.
+De app zegt zelf tegen de dromer dat dit buiten haar bereik valt.
+
+Staat er "geweld" of "suicide" in, dan schrijf je de verbeelding wel, en met
+extra zorg: erken eerlijk wat er gebeurde en buig het niet weg, zoek daarna pas
+het licht. Geen aanmoediging, geen advies over hulp - de app zet daar zelf de
+juiste verwijzing bij, met de echte nummers.
+"""
+
+
 # De drie brillen waardoor een droom gelezen kan worden.
 #
 # Dit is iets anders dan de chakra's. Een chakraveld is een gevoel dat het model
@@ -93,6 +148,15 @@ def credentials_available():
         if map_.is_dir() and any(map_.glob("*.json")):
             return True
     return False
+
+
+class BuitenBereik(Exception):
+    """De droom valt buiten wat deze app duidt.
+
+    Aparte uitzondering, geen DreamverseError: dit is geen storing en het hoort
+    niet als fout op het scherm. Er is ook niets afgerekend en niets bewaard -
+    de dromer houdt zijn droom en zijn tokens.
+    """
 
 
 class DreamverseError(Exception):
@@ -585,7 +649,8 @@ Antwoord met uitsluitend geldige JSON, zonder tekst eromheen, in deze vorm:
  "night": string, "task": string,
  "today": string, "season": string, "together": string,
  "question": string, "motifs": [string], "key_panel": number,
- "lens": "psychologisch" | "symbolisch" | "spiritueel"}}
+ "lens": "psychologisch" | "symbolisch" | "spiritueel",
+ "zorg": [string]}}
 
 Regels voor de velden:
 - "lens" is de bril waardoor je deze droom gelezen hebt. Staat er hieronder een
@@ -698,6 +763,9 @@ def build_prompt(dream, archive, number, name=None, language="nl", lens="vanzelf
         RULES.replace("{TAAL}", TALEN.get(language, TALEN["nl"]))
         + wie
         + bril
+        # Achteraan, niet ergens in het midden: dit is de regel die het zwaarst
+        # weegt en die als laatste gelezen wordt.
+        + ZORG_REGELS
         + "\n\n--- eerdere dromen ---\n"
         + _history(archive)
         + "\n\n--- de droom van vannacht (dit wordt Droom {}) ---\n".format(number)
@@ -733,6 +801,17 @@ def parse_episode(raw):
             data = json.loads(text[start:end + 1])
         except json.JSONDecodeError:
             raise DreamverseError("Het antwoord kwam verminkt terug. Probeer het nog een keer.")
+
+    # De zorgwoorden eerst, vóór de eis dat er panelen zijn.
+    #
+    # Bij een expliciet seksuele droom schrijft het model bewust niets: geen
+    # panelen, geen titel, geen duiding. Zonder deze uitstap klapt de app dan op
+    # "er kwamen geen panelen terug", en dan lijkt het een storing terwijl het
+    # precies is wat we gevraagd hebben.
+    zorg = [z for z in ZORG
+            if z in {str(x).strip().lower() for x in (data.get("zorg") or [])}]
+    if "seksueel" in zorg:
+        return {"zorg": zorg, "panels": []}
 
     panels = []
     for p in (data.get("panels") or [])[:5]:
@@ -798,6 +877,8 @@ def parse_episode(raw):
         # dan een categorie die in geen enkele telling thuishoort.
         "lens": (str(data.get("lens") or "").strip().lower()
                  if str(data.get("lens") or "").strip().lower() in LENS_UITLEG else ""),
+        # Berekend bovenaan, vóór de paneelcontrole.
+        "zorg": zorg,
     }
 
 
@@ -902,6 +983,11 @@ def create(dream, kwaliteit=None, lens=None):
         gekozen = "vanzelf"
     episode = write_episode(dream, archive, number, profiel.get("name"),
                             profiel.get("language", "nl"), gekozen)
+
+    # Buiten bereik? Dan stopt het hier: vóór het afrekenen, vóór het opslaan en
+    # vóór het tekenwerk. Niets gekost, niets bewaard, geen droom in het archief.
+    if "seksueel" in (episode.get("zorg") or []):
+        raise BuitenBereik()
 
     # Opnieuw bepalen: het schrijven duurt een minuut, en in die tijd kan deze
     # gebruiker in een tweede tabblad een droom hebben ingestuurd.

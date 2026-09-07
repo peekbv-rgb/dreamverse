@@ -96,6 +96,21 @@ en het scheelt direct in de kostprijs per verbeelding.
   geld, zwangerschap of iemands dood. Dat staat in `RULES` in `dreamverse.py` en
   hoort daar te blijven: een app die zegt "let op je hart" bezorgt mensen echte
   angst en je kunt het niet terugnemen.
+- **Drie grenzen, en de nummers staan in de code.** Bij een expliciet seksuele
+  droom komt er geen verbeelding: `BuitenBereik` slaat toe **vóór** het
+  afrekenen en vóór het opslaan, dus zo'n droom kost niets en komt niet in het
+  archief. Bij geweld tussen mensen en bij zelfdoding komt de duiding er wél —
+  wie dit droomt en niets terugkrijgt is er slechter aan toe — met een vast
+  hulpkader erboven. **Het model classificeert alleen** (`zorg` in
+  `ZORG_REGELS`); de teksten en de nummers staan in `HULP` in `static/app.js`,
+  want een gehallucineerd crisisnummer is het ergste wat deze app kan doen.
+- **De drempel ligt hoog en dat is opzet.** Een monster dat je achtervolgt is
+  geen geweld waarvoor je Veilig Thuis belt, en doodgaan in een droom is iets
+  anders dan een suïcidale droom — dat zijn juist de twee meest voorkomende
+  dromen die er zijn. Wie te vaak waarschuwt maakt de waarschuwing waardeloos en
+  bezorgt mensen angst; dezelfde reden waarom de vooruitblik nooit over
+  gezondheid gaat. Nagemeten op vier dromen, inclusief een controlegeval dat
+  níet mag afgaan.
 - **Altijd positief duiden, maar niet wegwuiven.** Bij geweld, verlies of een
   overledene eerst erkennen, dan pas het licht zoeken.
 - **De vooruitblik beoordeelt alleen de dromer.** `POST /api/dream/<nr>/vooruitblik`

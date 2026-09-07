@@ -165,6 +165,12 @@
     ["Symbolisch", "Symbolic"],
     ["Spiritueel", "Spiritual"],
     ["Door welke bril", "Through which lens"],
+    ["Hier ga ik niet over.", "This is not mine to answer."],
+    ["Dit valt buiten wat ik doe.", "This falls outside what I do."],
+    ["Deze droom is niet verbeeld en heeft je niets gekost.",
+     "This dream was not imagined and it cost you nothing."],
+    ["Je droom was uitgesproken seksueel. Daar maak ik geen verbeelding van en daar schrijf ik geen duiding over - niet omdat er iets mis is met je droom, maar omdat het buiten mijn bereik valt. Vertel me een andere droom, dan ga ik er wel voor zitten.",
+     "Your dream was explicitly sexual. I do not make an imagining of that and I do not write a reading about it - not because there is anything wrong with your dream, but because it falls outside what I do. Tell me another dream and I will give it my full attention."],
     ["Je hebt", "You have"],
     ["droom", "dream"],
     ["dromen", "dreams"],
@@ -402,7 +408,7 @@
                   // In JavaScript gemaakt en daar al vertaald; een tweede slag
                   // erover zet de brontekst terug.
                   "#bril-knoppen", "#bril-uitslag", "#brilspectrum",
-                  "#spectrum-noot"].join(",");
+                  "#spectrum-noot", "#zorg-kader"].join(",");
 
   var TE_VERTALEN = "h1,h2,p,label,span.lbl,span.label,span.tier-name,span.extras-kop," +
                     "span.kwaliteit-kop,span.antwoord-uitleg,button,option,#mode";

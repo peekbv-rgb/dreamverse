@@ -622,6 +622,11 @@ class Handler(SimpleHTTPRequestHandler):
         try:
             episode = dreamverse.create(payload.get("dream", ""), payload.get("quality"),
                                         payload.get("lens"))
+        except dreamverse.BuitenBereik:
+            # Geen fout: een grens. 200, want er is niets stukgegaan, en de
+            # dromer moet dit als een antwoord van Vera zien en niet als een
+            # storing. Er is niets afgerekend.
+            return self.send_json({"buiten_bereik": True})
         except plans.Refused as e:
             return self.send_json({"error": str(e), "need_tokens": e.need_tokens}, 402)
         except dreamverse.DreamverseError as e:
