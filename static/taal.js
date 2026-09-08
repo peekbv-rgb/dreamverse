@@ -167,8 +167,6 @@
     // breekt dit bestand, en dan bestaat t() niet meer en staat de hele app stil.
     ['Wat we bewaren en wie het verwerkt staat in de <a href="/privacy.html" target="_blank" rel="noopener">privacyverklaring</a>. Je dromen zijn van jou: je kunt ze altijd downloaden of alles laten wissen.',
      'What we keep and who processes it is in the <a href="/privacy.html" target="_blank" rel="noopener">privacy statement</a>. Your dreams are yours: you can download them or have everything erased at any time.'],
-    ['Wat we bewaren en aan wie we het doorgeven staat in de <a href="/privacy.html" target="_blank" rel="noopener">privacyverklaring</a>.',
-     'What we keep and who we pass it to is in the <a href="/privacy.html" target="_blank" rel="noopener">privacy statement</a>.'],
     ["opwaarderen", "top up"],
     ["Hoe wil je deze droom geanalyseerd hebben?",
      "How would you like this dream analysed?"],
