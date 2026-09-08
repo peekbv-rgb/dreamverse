@@ -723,6 +723,28 @@ class Handler(SimpleHTTPRequestHandler):
         dreamverse.clear_archive()
         return self.send_json({"ok": True})
 
+    def guess_type(self, path):
+        """Tekstbestanden gaan altijd als UTF-8 de deur uit.
+
+        Zonder charset in de kop moet de browser gokken. Bij een HTML-pagina
+        valt hij terug op de meta-tag, dus daar viel het niet op - maar taal.js
+        en app.js hebben er zevenentachtig niet-ASCII tekens in staan en geen
+        meta-tag om op terug te vallen. Leest een browser die ooit als latin-1,
+        dan matcht elke vertaalsleutel met een accent niet meer en staat de app
+        halverwege in twee talen, zonder een fout in de console.
+
+        Nu werkt het omdat een script de codering van de pagina erft. Dat is
+        geen garantie maar een gunstige samenloop, en die willen we hier niet.
+        """
+        soort = super().guess_type(path)
+        hoofd = soort.split(";")[0].strip()
+        if "charset=" not in soort and (
+                hoofd.startswith("text/")
+                or hoofd in ("application/javascript", "application/json",
+                             "image/svg+xml", "application/manifest+json")):
+            return soort + "; charset=utf-8"
+        return soort
+
     def end_headers(self):
         """Pagina, stijl en script moeten na een deploy meteen vernieuwen.
 
