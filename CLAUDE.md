@@ -141,6 +141,17 @@ en het scheelt direct in de kostprijs per verbeelding.
   standaardwaarde bij een ontbrekend bestand is `status: "off"`, nooit `"done"`:
   met `done` en nul panelen concludeert de pagina dat de verbeelding af is
   terwijl er nooit iets gemaakt is.
+- **Panelen bijkopen liet ze niet zien.** Wie "alleen de duiding" koos en er
+  later panelen bij kocht, hield `quality: "duiding"` in de bewaarde
+  verbeelding. De speler leest dat veld en zet zichzelf in tekstmodus, dus de
+  panelen waren getekend, betaald en op te halen — en toch onzichtbaar. Dat
+  wordt nu bij het **laden** gecorrigeerd en niet bij de aankoop: zo klopt het
+  ook voor dromen die al gekocht waren, zonder de bewaarde verbeeldingen aan te
+  raken. Wat er op schijf staat is de waarheid.
+- **Een heropende droom haalt zijn panelen altijd één keer op.** Dat gebeurde
+  alleen bij `images_pending`, en die vlag is bij een afgeronde droom allang
+  `false` — dus wie terugkeek zag niets. Loopt er wél tekenwerk, dan blijft de
+  volledige poll draaien.
 - **Afrekenen pas als het werk echt kan.** `/api/extra` controleerde alleen het
   saldo en of de achtergrondtaak *startte*; die taak faalde daarna en de tokens
   waren weg. Nu weigert hij met 409 als er geen panelen liggen om te animeren.

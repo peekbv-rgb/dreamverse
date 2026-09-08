@@ -294,6 +294,20 @@ def load_episode(number):
                 episode["dream"] = d.get("text", "")
             episode["when"] = d.get("when", "")
             episode["future_check"] = d.get("future_check", "")
+
+    # Koos iemand "alleen de duiding" en kocht hij er later panelen bij, dan
+    # bleef `quality` op "duiding" staan. De speler leest dat veld en zet
+    # zichzelf in tekstmodus, dus de panelen waren wel getekend, wel betaald en
+    # wel op te halen - maar je zag ze nooit.
+    #
+    # Hier corrigeren en niet bij de aankoop: dan klopt het ook voor de dromen
+    # die al gekocht waren, zonder de bewaarde verbeeldingen aan te raken. Wat
+    # er op schijf staat is de waarheid.
+    if episode.get("quality") == "duiding":
+        getekend = [p for p in kling.PANELS.glob("{}-[0-9].*".format(sleutel(number)))
+                    if p.suffix.lower() in (".png", ".jpg", ".webp")]
+        if getekend:
+            episode["quality"] = "eenvoudig"
     return episode
 
 

@@ -320,7 +320,7 @@
                   t("van de") + " " + totaal);
     }
     if (state.video_status === "busy") {
-      regels.push(t("Kernmoment animeren — dit duurt ongeveer een minuut"));
+      regels.push(t("Kernmoment animeren — reken op een paar minuten"));
     }
     if (state.film_status === "busy") {
       var f = Object.keys(state.film || {}).length;
@@ -600,7 +600,12 @@
     filmpjes = {};
     try { speler.pause(); } catch (e) { /* niets aan de hand */ }
     if (pollTimer) { clearTimeout(pollTimer); pollTimer = null; }
-    if (ep.images_pending) { verwachtWerk(); pollPanels(ep.number, POLL_TOTAAL); }
+    // Altijd één keer kijken wat er op schijf staat, ook als er geen tekenwerk
+    // loopt. Stond dit alleen op images_pending, dan haalde een heropende droom
+    // zijn panelen nooit op: die vlag is dan allang false. Loopt er wél werk,
+    // dan blijven we doorpollen.
+    if (ep.images_pending) { verwachtWerk(); }
+    pollPanels(ep.number, ep.images_pending ? POLL_TOTAAL : 1);
     el("title").textContent = ep.title;
     // De kop draagt nu de titel van de droom, niet meer de slogan: dat is de
     // nieuwe brontekst, anders zet een taalwissel de slogan terug.

@@ -448,7 +448,7 @@
     ["Kijk maar. Ik heb er iets van gemaakt.", "Have a look. I made something of it."],
     ["Er ging iets mis. Probeer het zo nog eens.", "Something went wrong. Try again in a moment."],
     ["De vijf minuten zaten erop.", "The five minutes are up."],
-    ["Kernmoment animeren — dit duurt ongeveer een minuut", "Animating the key moment — this takes about a minute"],
+    ["Kernmoment animeren — reken op een paar minuten", "Animating the key moment — expect a few minutes"],
     ["Aanvraag gestart…", "Request started…"],
     ["De duiding wordt geschreven", "Writing the reading"],
     ["De duiding wordt opnieuw geschreven", "Rewriting the reading"],
