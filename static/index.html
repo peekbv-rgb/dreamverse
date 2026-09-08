@@ -328,6 +328,18 @@
         <p class="vraag-melding" id="vraag-melding"></p>
       </div>
       <p class="question" id="question"></p>
+      <div class="terugkoppeling" id="terugkoppeling" hidden>
+        <span class="lbl">Wat kan er beter?</span>
+        <p>Dreamverse is nieuw en jij bent een van de eersten. Wat zou je anders
+          willen? Eén zin is al genoeg.</p>
+        <textarea id="feedback-tekst" rows="3" maxlength="2000"
+                  placeholder="Ik snapte niet wat de kwaliteitsknoppen deden."></textarea>
+        <div class="row">
+          <button type="button" class="primary" id="feedback-op">Versturen</button>
+          <button type="button" class="ghost" id="feedback-weg">Nu even niet</button>
+          <span class="antwoord-uitleg" id="feedback-melding"></span>
+        </div>
+      </div>
       <div class="antwoord" id="antwoord-blok" hidden>
         <label for="antwoord">Je antwoord</label>
         <textarea id="antwoord" rows="2" placeholder="Schrijf op wat er in je opkomt. Het hoeft niet af te zijn."></textarea>

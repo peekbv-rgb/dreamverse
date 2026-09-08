@@ -138,6 +138,15 @@ CREATE TABLE IF NOT EXISTS verbeeldingen (
     data    TEXT NOT NULL,
     PRIMARY KEY (user_id, n)
 );
+
+CREATE TABLE IF NOT EXISTS feedback (
+    id      INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    tekst   TEXT NOT NULL DEFAULT '',
+    dromen  INTEGER NOT NULL DEFAULT 0,   -- hoeveel dromen hij toen had
+    wanneer TEXT NOT NULL DEFAULT ''
+);
+CREATE INDEX IF NOT EXISTS feedback_user ON feedback(user_id);
 """
 
 
@@ -535,6 +544,7 @@ def weg_gebruiker(user_id):
         db().execute("DELETE FROM sessies WHERE user_id = ?", (user_id,))
         db().execute("DELETE FROM dromen WHERE user_id = ?", (user_id,))
         db().execute("DELETE FROM verbeeldingen WHERE user_id = ?", (user_id,))
+        db().execute("DELETE FROM feedback WHERE user_id = ?", (user_id,))
         db().execute("DELETE FROM users WHERE id = ?", (user_id,))
 
 
@@ -559,7 +569,43 @@ def alles_van(user_id):
         "dromen": dromen(user_id),
         "duidingen": verbeeldingen,
         "betalingen": betalingen,
+        "feedback": feedback_van(user_id),
     }
+
+
+def bewaar_feedback(user_id, tekst, dromen=0):
+    """Wat een gebruiker vindt dat er beter kan.
+
+    Dit is het enige kanaal waarlangs we dat te weten komen. De app heeft geen
+    meetscript en geen advertentiepartij, dus er is niets dat vertelt waar
+    iemand afhaakt - alleen wat hij zelf opschrijft.
+
+    Er kan van alles in staan, tot stukken droom aan toe. Het valt daarom onder
+    dezelfde regels als de rest: mee in de zip, weg bij het verwijderen van het
+    account.
+    """
+    tekst = (tekst or "").strip()[:2000]
+    if not tekst:
+        raise AccountError("Er stond niets in.")
+    with _lock:
+        db().execute("INSERT INTO feedback (user_id, tekst, dromen, wanneer)"
+                     " VALUES (?, ?, ?, ?)", (user_id, tekst, dromen, nu()))
+    return True
+
+
+def feedback_van(user_id):
+    """Wat deze gebruiker heeft ingestuurd, oudste eerst."""
+    return [dict(r) for r in db().execute(
+        "SELECT tekst, dromen, wanneer FROM feedback WHERE user_id = ?"
+        " ORDER BY id", (user_id,)).fetchall()]
+
+
+def alle_feedback(limiet=200):
+    """Alles, met het adres erbij, voor het rapport. Nieuwste eerst."""
+    return [dict(r) for r in db().execute(
+        "SELECT f.tekst, f.dromen, f.wanneer, u.email"
+        " FROM feedback f LEFT JOIN users u ON u.id = f.user_id"
+        " ORDER BY f.id DESC LIMIT ?", (limiet,)).fetchall()]
 
 
 def log_webhook(soort, uitkomst):

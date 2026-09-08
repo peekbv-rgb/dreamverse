@@ -243,6 +243,10 @@ def public_profile():
         "gender": u["geslacht"],
         "language": u["taal"],
         "verified": bool(u["bevestigd"]),
+        # Of het feedbackkaartje nog getoond moet worden. Wie al iets heeft
+        # opgeschreven krijgt het niet nog eens - een tweede keer vragen leest
+        # als "we hebben het niet gelezen".
+        "feedback_gegeven": bool(accounts.feedback_van(u["id"])),
     }
 
 

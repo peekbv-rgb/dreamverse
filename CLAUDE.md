@@ -74,6 +74,7 @@ GET    /api/panels/<nr>                 -> stand van het tekenwerk
 GET    /panels/<bestand>.jpg            -> een gegenereerd paneel
 POST   /api/vera/session                -> WebRTC-gegevens voor een gesprek
 DELETE /api/vera/session/<id>           -> gesprek afsluiten
+POST   /api/feedback                    {"tekst"} -> wat er beter kan
 GET    /api/health                      -> {"ok", "key", "kling", "vera"}
 ```
 
@@ -239,6 +240,18 @@ en het scheelt direct in de kostprijs per verbeelding.
   wachtwoord beschermt niemand. Sinds er accounts zijn heb je basic auth
   overigens niet meer nodig: zonder inloggen komt niemand bij `/api` of
   `/panels`.
+
+- **Eén keer vragen wat er beter kan, en dan niet meer.** De app meet met opzet
+  geen klikgedrag, dus `rapport.py` ziet wél dat iemand wegblijft en nooit
+  waarom. `POST /api/feedback` is het enige kanaal dat dat gat vult. Het kaartje
+  komt **na** de eerste verbeelding — wie net binnen is heeft geen mening — en
+  verdwijnt zodra er iets is ingestuurd, want nog eens vragen leest als "we
+  hebben het niet gelezen". Wegklikken onthoudt de browser
+  (`dreamverse_feedback_weg`); of er al iets ingestuurd is weet de server
+  (`feedback_gegeven` in het profiel). Er kan van alles in zo'n veld staan, tot
+  stukken droom aan toe, dus het valt onder dezelfde regels als de rest: mee in
+  de zip, weg bij het verwijderen van het account, en genoemd in
+  `privacy.html`. Alles komt onderaan `python rapport.py` te staan.
 
 ## De chakrapilaar
 

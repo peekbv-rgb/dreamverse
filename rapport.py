@@ -94,7 +94,12 @@ def cijfers(dagen=30):
              if any((d - u["sinds"]).days >= 3 for d in u["dagen"])]
     meerdaags = [u for u in gebruikers.values() if len(u["dagen"]) > 1]
 
+    # Wat mensen zelf opschreven. Het enige stuk van dit rapport dat vertelt
+    # waarom iemand wegblijft in plaats van dat hij wegblijft.
+    terugkoppeling = accounts.alle_feedback()
+
     return {
+        "feedback": terugkoppeling,
         "gebruikers": len(gebruikers),
         "met_droom": sum(1 for u in gebruikers.values() if u["dromen"]),
         "dromen": sum(u["dromen"] for u in gebruikers.values()),
@@ -149,7 +154,29 @@ def main():
     print("  laatste dagen:")
     for r in c["per_dag"][:10]:
         print("    %s  %d nieuw, %d dromen" % (r["datum"], r["nieuw"], r["dromen"]))
+
+    if c["feedback"]:
+        print("")
+        print("  WAT MENSEN ZELF SCHREVEN (%d):" % len(c["feedback"]))
+        for f in c["feedback"][:15]:
+            print("")
+            print("    %s  %s  (na %d dromen)" % (
+                (f["wanneer"] or "")[:10], f["email"] or "(verwijderd)", f["dromen"]))
+            for regel in _omslaan(f["tekst"], 68):
+                print("      %s" % regel)
+    else:
+        print("")
+        print("  Nog niemand heeft iets opgeschreven.")
     return 0
+
+
+def _omslaan(tekst, breedte):
+    """Zelf omslaan; textwrap slikt de lege regels tussen alinea's op."""
+    import textwrap
+    uit = []
+    for alinea in (tekst or "").splitlines():
+        uit.extend(textwrap.wrap(alinea, breedte) or [""])
+    return uit
 
 
 if __name__ == "__main__":

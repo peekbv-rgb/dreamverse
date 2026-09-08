@@ -598,6 +598,7 @@
     toonBril(ep);
     toonZorg(ep);
     toonVragen(ep);
+    toonTerugkoppeling();
     player.hidden = false;
 
     // "Alleen de duiding" betekent ook echt geen beeld: geen panelen, en dus ook
@@ -1671,6 +1672,72 @@
           }
         };
       }
+    });
+  }
+
+  /* ------------------------------------------------------ wat kan er beter */
+
+  /* Het enige kanaal waarlangs we horen wat er mis is.
+   *
+   * De app meet met opzet geen klikgedrag: dat zou een cookiebanner opleveren
+   * en het gedrag van dromers bij een advertentiebedrijf leggen. Het rapport
+   * ziet dus wel dat iemand niet terugkomt, maar nooit waarom. Dit veld is het
+   * antwoord op die blinde vlek.
+   *
+   * Pas na de eerste verbeelding, niet bij binnenkomst: wie net binnen is heeft
+   * geen mening, wie zijn droom in vijf panelen heeft zien staan wel. En het
+   * gaat weg zodra hij iets heeft ingestuurd - nog eens vragen leest als "we
+   * hebben het niet gelezen".
+   */
+  var TERUG_WEG = "dreamverse_feedback_weg";
+
+  function terugAfgewezen() {
+    try { return localStorage.getItem(TERUG_WEG) === "ja"; } catch (e) { return false; }
+  }
+
+  function toonTerugkoppeling() {
+    var doos = el("terugkoppeling");
+    if (!doos) { return; }
+    var al = profiel && profiel.feedback_gegeven;
+    doos.hidden = !!(al || terugAfgewezen());
+  }
+
+  if (el("feedback-weg")) {
+    el("feedback-weg").addEventListener("click", function () {
+      try { localStorage.setItem(TERUG_WEG, "ja"); } catch (e) { /* mag geweigerd zijn */ }
+      el("terugkoppeling").hidden = true;
+    });
+  }
+
+  if (el("feedback-op")) {
+    el("feedback-op").addEventListener("click", function () {
+      var veld = el("feedback-tekst");
+      var tekst = (veld.value || "").trim();
+      var melding = el("feedback-melding");
+      if (!tekst) { veld.focus(); return; }
+
+      var knop = this;
+      knop.disabled = true;
+      melding.textContent = "";
+
+      fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tekst: tekst })
+      })
+        .then(lees)
+        .then(function (res) {
+          if (!res.ok) { throw new Error(res.body.error || t("Dat lukte niet.")); }
+          if (profiel) { profiel.feedback_gegeven = true; }
+          veld.value = "";
+          el("terugkoppeling").hidden = true;
+          statusEl.className = "status";
+          statusEl.textContent = t("Dank je. Ik lees alles wat hier binnenkomt.");
+        })
+        .catch(function (err) {
+          melding.textContent = err.message;
+          knop.disabled = false;
+        });
     });
   }
 

@@ -21,6 +21,7 @@ Serveert de speler uit static/ en drie eindpunten:
     DELETE /api/vera/session/<id>              -> gesprek afsluiten
     GET    /api/archive                        -> alle eerdere dromen
     GET    /api/spectrum                       -> welk kleurveld elke droom koos
+    POST   /api/feedback                       {"tekst"} wat er beter kan
     GET    /api/mijn-gegevens                  -> alles wat we bewaren, als zip
     GET    /api/webhooklog                     -> wat Stripe aanbood (beheer)
     GET    /api/rapport                        -> gebruik en terugkomst (beheer)
@@ -619,6 +620,22 @@ class Handler(SimpleHTTPRequestHandler):
                 return self.send_json({"error": str(e), "need_tokens": e.need_tokens}, 402)
             except (dreamverse.DreamverseError, ValueError, TypeError) as e:
                 return self.send_json({"error": str(e)}, 400)
+
+        if self.path == "/api/feedback":
+            # Wat er beter kan, in de woorden van de gebruiker zelf.
+            #
+            # Dit is het enige kanaal dat we hebben. De app meet bewust geen
+            # klikgedrag - dat zou een cookiebanner opleveren en het gedrag van
+            # dromers bij een advertentiebedrijf leggen - dus rapport.py kan wel
+            # zien dat iemand wegblijft, maar nooit waarom.
+            payload = self.read_json() or {}
+            u = accounts.huidige()
+            try:
+                accounts.bewaar_feedback(u["id"], payload.get("tekst", ""),
+                                         len(accounts.dromen(u["id"])))
+            except accounts.AccountError as e:
+                return self.send_json({"error": str(e)}, 400)
+            return self.send_json({"ok": True})
 
         if self.path == "/api/answer":
             payload = self.read_json() or {}

@@ -1730,6 +1730,18 @@ body.tekstpagina .end a { color: var(--throat); }
   border: 1px solid rgba(110, 98, 218, .3);
 }
 .vraagblok textarea { margin-top: .6rem; min-height: 3.4rem; }
+
+/* Het feedbackkaartje. Groen in plaats van violet: dit hoort niet bij de
+ * duiding, het is een vraag van ons aan de dromer. En het verdwijnt zodra hij
+ * geantwoord heeft - een tweede keer vragen leest als "we lazen het niet". */
+.terugkoppeling {
+  margin: 1rem 0; padding: 1rem 1.15rem; border-radius: 16px;
+  background: var(--panel); backdrop-filter: blur(10px);
+  border: 1px solid rgba(79, 191, 134, .35);
+}
+.terugkoppeling .lbl { color: var(--heart); }
+.terugkoppeling p { margin: .4rem 0 0; font-size: .9rem; line-height: 1.6; color: #CFC4E4; }
+.terugkoppeling textarea { margin-top: .6rem; min-height: 4.2rem; }
 .vragen { display: grid; gap: .8rem; }
 .vraag-paar {
   padding: .7rem .9rem; border-radius: 12px;
