@@ -138,6 +138,16 @@ header.top { display: flex; flex-direction: column; gap: .8rem; padding: 4rem 0 
 }
 .meta .dim { color: var(--muted); font-weight: 500; letter-spacing: .18em; }
 
+/* Terug naar de app, bovenaan.
+ *
+ * Onderaan stond al een link, maar die vind je pas na een pagina van acht
+ * schermen. Wie even iets opzoekt wil terug zonder te scrollen. */
+.meta .terug {
+  color: var(--muted); text-decoration: none; letter-spacing: .04em;
+  font-weight: 500; margin-right: .9rem; white-space: nowrap;
+}
+.meta .terug:hover { color: var(--heart); }
+
 h1 {
   font-family: var(--display);
   font-weight: 300;
