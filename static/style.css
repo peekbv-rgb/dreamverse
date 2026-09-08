@@ -628,6 +628,20 @@ section .entry { border-left-width: 3px; border-left-color: var(--tint); }
 /* Knoppen: niet allemaal violet. */
 #mic { border-color: rgba(79, 191, 134, .5); color: var(--heart); }
 
+/* Inspreken hoort bij het tekstvak, niet bij de startknop.
+ *
+ * Het stond onderaan naast "Verbeeld en duid mijn droom", en dan lijkt het een
+ * tweede manier om te beginnen. Het is geen actie maar een invoerwijze: je vult
+ * het vak hierboven met je stem in plaats van met je vingers. */
+.invoerwijze {
+  display: flex; align-items: center; gap: .7rem;
+  margin: .55rem 0 1.4rem;
+}
+.invoer-hint { font-size: .8rem; color: var(--muted); }
+
+/* En lucht boven de startknop, zodat hij niet tegen de brillen aan plakt. */
+.startrij { margin-top: 1.5rem; padding-top: 1.2rem; border-top: 1px solid var(--line); }
+
 /* Het balkje naast Inspreken.
  *
  * Zonder dit is er geen enkel teken dat de microfoon je hoort tot het eerste

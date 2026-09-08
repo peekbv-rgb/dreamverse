@@ -65,6 +65,7 @@
      "How would you like this dream visualised?"],
     ["Verbeeld en duid mijn droom", "Imagine and read my dream"],
     ["Duid mijn droom", "Read my dream"],
+    ["of typ het hierboven", "or type it above"],
     ["Verbeeld mijn droom", "Imagine my dream"],
     ["Inspreken", "Speak it"],
     ["Archief wissen", "Clear the archive"],

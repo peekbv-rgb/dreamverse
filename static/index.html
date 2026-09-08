@@ -213,6 +213,11 @@
   <div class="composer">
     <label for="dream">Wat droomde je?</label>
     <textarea id="dream" placeholder="Ik vloog over de bergen en zag een vriendin huilen aan het zwembad…"></textarea>
+    <div class="invoerwijze">
+      <button type="button" id="mic">Inspreken</button>
+      <span class="mic-meter" id="mic-meter" aria-hidden="true"></span>
+      <span class="invoer-hint">of typ het hierboven</span>
+    </div>
     <div class="kwaliteiten" id="kwaliteiten">
       <div class="kwaliteit-balk">
         <span class="kwaliteit-kop">Hoe wil je deze droom gevisualiseerd zien?</span>
@@ -225,10 +230,8 @@
       <span class="kwaliteit-kop">Hoe wil je deze droom geanalyseerd hebben?</span>
       <div class="bril-knoppen" id="bril-knoppen"></div>
     </div>
-    <div class="row">
+    <div class="row startrij">
       <button type="button" class="primary" id="go">Verbeeld en duid mijn droom</button>
-      <button type="button" id="mic">Inspreken</button>
-      <span class="mic-meter" id="mic-meter" aria-hidden="true"></span>
       <span class="spacer"></span>
       <button type="button" class="ghost" id="clear">Archief wissen</button>
     </div>
