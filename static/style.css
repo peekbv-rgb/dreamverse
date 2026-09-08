@@ -644,6 +644,17 @@ section .entry { border-left-width: 3px; border-left-color: var(--tint); }
 }
 .invoer-hint { font-size: .8rem; color: var(--muted); }
 
+/* Terug naar de uitleg.
+ *
+ * Wie eenmaal ingelogd is, ziet welkom.html nooit meer: die pagina komt alleen
+ * als je uitgelogd bent. Alles wat daar staat - wat de app doet, wat het kost,
+ * waar de grenzen liggen, wie erachter zit - was daarmee onvindbaar voor precies
+ * de mensen die ervoor betalen. */
+.voet-links { margin-top: 1.4rem; font-size: .84rem; }
+.voet-links a { color: var(--muted); text-decoration: none; border-bottom: 1px solid var(--line); }
+.voet-links a:hover { color: var(--heart); border-bottom-color: var(--heart); }
+.voet-links span { color: var(--line); margin: 0 .5rem; }
+
 /* En lucht boven de startknop, zodat hij niet tegen de brillen aan plakt. */
 .startrij { margin-top: 1.5rem; padding-top: 1.2rem; border-top: 1px solid var(--line); }
 

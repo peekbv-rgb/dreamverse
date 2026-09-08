@@ -322,6 +322,12 @@ verkoper en beoordelen ze de site, en tot vandaag zag een beoordelaar alleen een
 inlogscherm. **Voor testers**: die kregen een wachtwoordveld zonder te weten waar
 ze aan begonnen.
 
+**En hij blijft bereikbaar na het inloggen.** `/` stuurt alleen naar
+`welkom.html` zolang je uitgelogd bent, dus wie eenmaal binnen is zag hem nooit
+meer — precies de mensen die betalen konden niet meer nalezen wat de app doet,
+wat het kost en wie erachter zit. Onderaan de app staat daarom een regel met
+*Over Dreamverse*, *Pakketten en prijzen* (`#kosten`) en *Privacyverklaring*.
+
 Hij staat **los van de app**: geen `app.js`, geen `taal.js`. De vertaling zit in
 de pagina zelf, met `data-en` en `data-nl` naast elkaar op elk element, en
 Engels is er de standaard — Nederlands alleen als de browser dat zegt of de
