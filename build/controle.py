@@ -42,6 +42,25 @@ def bestanden():
         yield pad
 
 
+def css_variabelen():
+    """CSS-variabelen die gebruikt worden maar nergens gezet zijn.
+
+    Dezelfde soort fout als een stuurteken: hij meldt zich niet. `var(--foo)`
+    met een tikfout maakt de hele regel ongeldig, de browser slaat hem stil over
+    en je ziet alleen dat er iets niet kleurt. Zo stond `--third_eye` met een
+    lage streep op twee plekken, en werd `--water` nergens gezet - dus Vera's
+    portret lichtte nooit op als ze luisterde.
+    """
+    import re
+    pad = WORTEL / "static" / "style.css"
+    if not pad.exists():
+        return []
+    tekst = pad.read_text(encoding="utf-8")
+    gezet = set(re.findall(r"(--[\w-]+)\s*:", tekst))
+    gebruikt = set(re.findall(r"var\(\s*(--[\w-]+)", tekst))
+    return sorted(gebruikt - gezet)
+
+
 def main():
     gevonden = []
     for pad in bestanden():
@@ -63,9 +82,22 @@ def main():
                     for c in inhoud).strip()
                 gevonden.append((pad.relative_to(WORTEL), regel, kolom, code, zichtbaar))
 
-    if not gevonden:
-        print("Geen stuurtekens gevonden.")
+    zwevend = css_variabelen()
+
+    if not gevonden and not zwevend:
+        print("Geen stuurtekens gevonden, en elke CSS-variabele bestaat.")
         return 0
+
+    if zwevend:
+        print("CSS-variabelen die gebruikt worden maar nergens gezet zijn.")
+        print("De browser slaat zo'n regel stil over; je ziet alleen dat er")
+        print("iets niet kleurt:")
+        print("")
+        for naam in zwevend:
+            print("  %s" % naam)
+        print("")
+        if not gevonden:
+            return 1
 
     print("Stuurtekens in de broncode - bedoeld was bijna zeker de tekst,")
     print("niet het teken zelf:")

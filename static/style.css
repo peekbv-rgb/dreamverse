@@ -22,6 +22,11 @@
   --third-eye: #6E62DA;
   --crown: #B369DE;
 
+  /* Geen chakra, maar de kleur waarmee Vera oplicht als ze luistert. Stond
+     alleen in de schaduw als losse rgba, terwijl de rand var(--water) vroeg -
+     en die bestond niet, dus die rand kleurde nooit mee. */
+  --water: #63CFD6;
+
   --display: "Cormorant Garamond", Georgia, serif;
   --body: "Karla", "Segoe UI", Helvetica, Arial, sans-serif;
 }
@@ -1017,10 +1022,15 @@ body::after { opacity: .34; }
 /* De lijn door alle dromen heen: dit is waarom iemand blijft terugkomen. */
 .samen {
   margin: 0 0 1.4rem; padding: 1.2rem 1.5rem;
-  border-left: 3px solid var(--third_eye); border-radius: 0 14px 14px 0;
+  /* Stond hier als --third_eye, met een lage streep. Die variabele bestaat niet,
+     dus dit streepje was er al die tijd niet - zonder fout, zonder melding. */
+  border-left: 3px solid var(--third-eye); border-radius: 0 14px 14px 0;
   background: rgba(13, 7, 26, .92);
   font-size: 1.02rem; line-height: 1.65; color: var(--ink);
 }
+/* De gezamenlijke duiding komt in alinea's; zonder dit plakken ze aan elkaar. */
+.samen p { margin: 0 0 .9rem; }
+.samen p:last-child { margin-bottom: 0; }
 
 /* Het hoogste wat je pakket geeft: dat is het enige wat nieuws is. */
 .kwaliteit { position: relative; }
@@ -1080,7 +1090,7 @@ body::after { opacity: .34; }
   padding: .6rem .9rem; border-radius: 12px;
   background: rgba(30, 18, 54, .8); border-left: 2px solid var(--throat);
 }
-.teken { border-left-color: var(--third_eye); }
+.teken { border-left-color: var(--third-eye); }
 .mens .wie {
   display: block; font-weight: 600; color: var(--throat);
   font-size: .78rem; letter-spacing: .06em; text-transform: uppercase;

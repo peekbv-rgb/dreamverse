@@ -431,8 +431,18 @@
     if (nummer && nummer < samenVan) { return; }
     samenVan = nummer || samenVan;
 
+    // De gezamenlijke duiding komt nu in alinea's terug in plaats van in twee
+    // zinnen. Met textContent op een enkele <p> vallen die lege regels weg en
+    // wordt het één muur tekst - precies het stuk dat je wél wilt lezen.
     var samen = el("samen");
-    samen.textContent = tekst || "";
+    samen.innerHTML = "";
+    (tekst || "").split(/\n\s*\n/).forEach(function (stuk) {
+      var s = stuk.trim();
+      if (!s) { return; }
+      var a = document.createElement("p");
+      a.textContent = s;
+      samen.appendChild(a);
+    });
     samen.hidden = !tekst;
     threadsEl.innerHTML = "";
     el("threads-section").hidden = false;

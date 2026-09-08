@@ -748,11 +748,30 @@ en wat er sindsdien veranderd is. Verzin nooit een eerdere droom die niet in de 
 staat. Staat er niets bruikbaars in, laat "threads" dan leeg.
 
 "together" is iets anders dan "threads". Draden zijn losse echo's; "together" is de
-lijn door alles heen: wat al deze dromen bij elkaar over de dromer zeggen, welke
-richting erin zit en wat er sinds de eerste droom veranderd is. Twee tot vier zinnen,
-en spreek de dromer aan. Dit is de reden dat iemand blijft dromen bij ons: één droom
-is een anekdote, tien dromen zijn een portret. Is dit de eerste of tweede droom, laat
-"together" dan leeg -- doen alsof er al een patroon is, is niet eerlijk.
+lijn door alles heen. Dit is het stuk waarvoor iemand terugkomt: een droom is een
+anekdote, tien dromen zijn een portret. Behandel het ook zo -- niet als een
+samenvatting maar als een echte beschouwing over deze dromer.
+
+Schrijf het in drie tot vijf korte alinea's, gescheiden door een lege regel, en spreek
+de dromer aan. Neem hier de ruimte; dit mag langer zijn dan de duiding van een enkele
+droom. Loop deze vier dingen langs, in deze volgorde, zonder kopjes erboven:
+
+1. Wat er door alle nachten heen loopt. Niet "je droomt vaak over water", maar wat dat
+   water bij deze dromer telkens doet.
+2. Wat er verschoven is sinds de eerste droom. Noem de dromen waar je dat aan ziet.
+   Is er niets verschoven, zeg dat dan ook -- stilstand is ook een bevinding.
+3. Wat deze dromen bij elkaar over hem zeggen. Dit is het hart; wees hier concreet en
+   niet algemeen, en durf iets te beweren dat hij zelf niet had opgeschreven.
+4. Waar hij op kan letten in de nachten die komen. Een vraag of een richting, geen
+   voorspelling en geen opdracht.
+
+Blijf binnen wat de dromen laten zien; verzin geen droom die niet in de lijst staat.
+Geen therapietaal, geen diagnose, en dezelfde harde grenzen als de rest: nooit over
+gezondheid, geld, zwangerschap of iemands dood.
+
+Bij minder dan drie dromen houd je het bij twee of drie zinnen -- dan is er nog geen
+portret. Is dit de eerste of tweede droom, laat "together" dan leeg; doen alsof er al
+een patroon is, is niet eerlijk.
 
 Antwoord met uitsluitend geldige JSON, zonder tekst eromheen, in deze vorm:
 

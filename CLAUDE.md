@@ -150,6 +150,12 @@ en het scheelt direct in de kostprijs per verbeelding.
   `clear_archive()` als `delete_dream()` gaan langs `_ruim_nummer_op()`, en `create()`
   ruimt het nummer op dat hij gaat gebruiken. Wat niet met een cijfer begint,
   zoals `check.png`, blijft staan.
+- **`python build/controle.py` controleert ook de CSS-variabelen.** `var(--foo)`
+  met een tikfout maakt de hele regel ongeldig; de browser slaat hem stil over en
+  je ziet alleen dat er iets niet kleurt. Zo stond `--third_eye` met een lage
+  streep op twee plekken, en werd `--water` nergens gezet — waardoor Vera's
+  portret nooit oplichtte als ze luisterde. Zelfde soort fout als een stuurteken,
+  dus zelfde controle.
 - **Stuurtekens in de broncode: `python build/controle.py`.** Er stond een
   letterlijk backspace-teken (0x08) middenin `/[?&]beheer/` in `static/app.js`,
   waar een woordgrens bedoeld was. Die test matchte daardoor nooit, het
@@ -252,6 +258,18 @@ en het scheelt direct in de kostprijs per verbeelding.
   stukken droom aan toe, dus het valt onder dezelfde regels als de rest: mee in
   de zip, weg bij het verwijderen van het account, en genoemd in
   `privacy.html`. Alles komt onderaan `python rapport.py` te staan.
+
+- **"Je dromen samen" is een beschouwing, geen samenvatting.** Het veld
+  `together` was twee tot vier zinnen; nu zijn het drie tot vijf alinea's die
+  vier dingen langslopen: wat er door alle nachten heen loopt, wat er verschoven
+  is en waar je dat aan ziet, wat de dromen bij elkaar over hem zeggen, en waar
+  hij op kan letten. Dit is het stuk waarvoor iemand terugkomt, dus het mag
+  langer zijn dan de duiding van een enkele droom. Onder de drie dromen blijft
+  het bij een paar zinnen en bij een of twee dromen leeg — doen alsof er al een
+  patroon is, is niet eerlijk. Het blijft **één tekstveld**, geen nieuwe velden:
+  zo hoefden oude verbeeldingen niet gemigreerd te worden. De app splitst op
+  lege regels en maakt er `<p>`'s van, en daarom is `#samen` een `div` geworden
+  — een `<p>` mag geen `<p>` bevatten.
 
 ## De chakrapilaar
 
