@@ -604,6 +604,29 @@ antwoord van iemand anders is het ergste wat een cache hier kan doen.
 Aanmelden gebeurt alleen op een beveiligde verbinding en faalt stil: zonder
 service worker werkt de app precies zoals hij nu werkt.
 
+## De omgeving op Render
+
+`build/render.py` leest en zet de omgevingsvariabelen van de draaiende dienst,
+zodat een prijs-id of een webhookgeheim niet meer met de hand overgetikt hoeft te
+worden. Dat handmatige stapje was steeds hetzelfde probleem: de code klopte al,
+de omgeving nog niet, en daar zoek je een halve dag naar.
+
+```bash
+python build/render.py --check                            # sleutel goed, welke dienst
+python build/render.py --env                              # wat staat er nu
+python build/render.py --uit-env STRIPE_PRICE_TOKENS20 --ja   # uit .env overnemen
+```
+
+Drie remmen zitten er bewust in. Alleen `PUT /env-vars/<sleutel>` wordt gebruikt
+en **nooit** de variant die de hele set vervangt - die wist alles wat je niet
+meestuurt, en dan staat de app zonder API-sleutel stil. Zetten doet niets zonder
+`--ja`; zonder die vlag zie je alleen wat er zou veranderen. En waarden worden
+verhuld afgedrukt, want wat in de terminal staat, staat in de scrollback.
+
+`RENDER_API_KEY` geeft toegang tot **het hele account**, niet tot deze ene
+dienst. Hij hoort dus alleen in `.env`, en die is git-ignored. Render start de
+service opnieuw op zodra een variabele verandert: een paar minuten 502.
+
 ## Domeinen
 
 Geregistreerd op 6 september 2026, op naam van Peek BV: `dreamverse.nl`, plus
