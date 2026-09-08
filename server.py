@@ -254,6 +254,27 @@ class Handler(SimpleHTTPRequestHandler):
         if self.path == "/api/archive":
             return self.send_json({"dreams": dreamverse.archive_with_media(),
                                    "samen": dreamverse.latest_together()})
+        if self.path.split("?")[0] == "/api/bevestigen":
+            # De link uit de welkomstmail. Hij stond wel in de lijst met vrije
+            # paden maar er was nooit afhandeling voor, dus bevestigen kon
+            # helemaal niet - en met VERIFICATIE_NODIG aan had dat iedere nieuwe
+            # gebruiker buitengesloten.
+            #
+            # Geen JSON hier: hier klikt een mens op in zijn mailprogramma. Dus
+            # terug naar de app, die er een regel over zet.
+            from urllib.parse import parse_qs, urlparse
+            code = (parse_qs(urlparse(self.path).query).get("code") or [""])[0]
+            try:
+                accounts.bevestig(code)
+                heen = "/?bevestigd=1"
+            except accounts.AccountError:
+                heen = "/?bevestigd=0"
+            self.send_response(302)
+            self.send_header("Location", heen)
+            self.send_header("Content-Length", "0")
+            self.end_headers()
+            return
+
         if self.path == "/api/health":
             return self.send_json({
                 "ok": True,
@@ -377,9 +398,23 @@ class Handler(SimpleHTTPRequestHandler):
             # zijn eerste droom in staan. Bevestigen kan later.
             token = accounts.nieuwe_sessie(u["id"])
             accounts.zet_huidige(accounts.gebruiker(u["id"]))
-            if not VERIFICATIE_NODIG:
-                print("dreamverse: nieuw account {} (bevestigingscode {})".format(
-                    u["email"], u["bevestig_code"]), flush=True)
+
+            # Begroeten en het adres laten bevestigen, in een mail. Dit mag de
+            # aanmelding nooit tegenhouden: hapert de mailserver, dan is iemand
+            # nog steeds ingeschreven en ingelogd. Vandaar de brede except - er
+            # is geen fout uit smtplib die belangrijker is dan dat.
+            link = "{}/api/bevestigen?code={}".format(betalen.basis_url(),
+                                                      u["bevestig_code"])
+            try:
+                if mail.enabled():
+                    mail.welkomstbericht(u["email"], u["naam"], link, u["taal"])
+                    self.log_message("welkomstmail verstuurd naar %s", u["email"])
+                else:
+                    print("dreamverse: nieuw account {} (bevestigen: {})".format(
+                        u["email"], link), flush=True)
+            except Exception as e:
+                self.log_message("welkomstmail mislukte voor %s: %s", u["email"], e)
+
             return self.send_json({"ok": True, "profile": dreamverse.public_profile()},
                                   cookie=self.sessie_cookie(token))
 

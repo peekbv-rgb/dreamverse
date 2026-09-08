@@ -177,6 +177,68 @@ HERSTEL = {
 }
 
 
+# De welkomstmail doet twee dingen tegelijk, en dat is met opzet: begroeten en
+# het adres laten bevestigen. Een aparte verificatiemail leest als een hindernis;
+# dit leest als een bericht dat je toch al kreeg.
+#
+# Bevestigen is vrijblijvend zolang VERIFICATIE_NODIG uit staat. Wie de mail
+# wegklikt kan gewoon door - maar wie de link opent heeft het gedaan, en dan is
+# "wachtwoord vergeten" straks ook echt bruikbaar.
+WELKOM = {
+    "nl": (
+        "Welkom bij Dreamverse",
+        """Hoi {naam},
+
+Je account is klaar. Vertel morgenochtend je droom en je krijgt hem terug als
+verbeelding in vijf panelen, met een duiding en een vooruitblik. Elke droom die
+je vertelt telt mee in de volgende - daar zit het hele idee in.
+
+Bevestig even dat dit adres van jou is:
+
+{link}
+
+Dat hoeft niet meteen, maar het is wel nodig als je ooit je wachtwoord vergeet.
+
+Je dromen zijn van jou. Je haalt ze wanneer je wilt als zip op, en je kunt
+alles in een klik laten wissen.
+
+Kreeg je deze mail zonder dat je een account maakte, dan hoef je niets te doen.
+""",
+    ),
+    "en": (
+        "Welcome to Dreamverse",
+        """Hi {naam},
+
+Your account is ready. Tell us your dream tomorrow morning and you get it back
+as five illustrated panels, with a reading and a light look ahead. Every dream
+you tell counts towards the next one - that is the whole idea.
+
+Please confirm this address is yours:
+
+{link}
+
+It is not urgent, but you will need it if you ever forget your password.
+
+Your dreams are yours. Download them as a zip whenever you like, and erase
+everything in one click.
+
+If you got this mail without making an account, you can ignore it.
+""",
+    ),
+}
+
+
+def welkomstbericht(naar, naam, link, taal="nl"):
+    """Begroeten en het adres laten bevestigen, in een keer.
+
+    Faalt dit, dan mag de aanmelding er niet op stuklopen: iemand die net een
+    account maakte moet gewoon door kunnen, ook als onze mailserver hapert. De
+    aanroeper vangt dat af.
+    """
+    onderwerp, tekst = WELKOM.get(taal, WELKOM["nl"])
+    return verstuur(naar, onderwerp, tekst.format(naam=naam or "dromer", link=link))
+
+
 def herstelbericht(naar, link, taal="nl"):
     """De herstelmail, in de taal die de gebruiker in de app gekozen heeft.
 

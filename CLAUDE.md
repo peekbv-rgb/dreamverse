@@ -536,10 +536,18 @@ bestaand en een onbekend adres (anders is dat eindpunt een manier om uit te
 zoeken wie een account heeft), en de link staat **nooit** in het antwoord —
 alleen in de mail.
 
-**E-mailverificatie is gebouwd maar staat uit.** Er is een code per account en
-een eindpunt om hem in te wisselen; versturen vraagt SMTP-gegevens die er niet
-zijn. Zet `VERIFICATIE_NODIG=1` in de omgeving om het te eisen. Zolang het uit
-staat wordt de code bij het aanmaken naar de log geschreven.
+**Wie zich aanmeldt krijgt een welkomstmail, met de bevestigingslink erin.**
+Twee dingen in een bericht, met opzet: een aparte verificatiemail leest als een
+hindernis, dit leest als een bericht dat je toch al kreeg. Inloggen gebeurt
+meteen, dus de mail staat nooit tussen iemand en zijn eerste droom. Mislukt het
+versturen, dan gaat de aanmelding gewoon door en komt er een regel in de log -
+een haperende mailserver mag geen account kosten.
+
+`GET /api/bevestigen?code=...` wisselt de code in en stuurt door naar
+`/?bevestigd=1` of `=0`; de app zet daar een regel over in de statusregel. Dat
+eindpunt **bestond eerder helemaal niet**: het stond wel in `VRIJ` maar er was
+geen afhandeling voor, dus `VERIFICATIE_NODIG=1` zou iedere nieuwe gebruiker
+buitengesloten hebben. Nu kan die vlag veilig aan.
 
 ## Vera bij Runway
 

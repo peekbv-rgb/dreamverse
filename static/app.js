@@ -3541,6 +3541,19 @@
     } else if (/[?&]betaald=0/.test(location.search)) {
       history.replaceState(null, "", location.pathname);
     }
+
+    // Terug van de link uit de welkomstmail. Zeggen dat het gelukt is, want
+    // anders klik je op een link in je mail en beland je op een pagina die doet
+    // alsof er niets gebeurd is.
+    if (/[?&]bevestigd=1/.test(location.search)) {
+      statusEl.className = "status";
+      statusEl.textContent = t("Je e-mailadres is bevestigd. Dank je.");
+      history.replaceState(null, "", location.pathname);
+    } else if (/[?&]bevestigd=0/.test(location.search)) {
+      statusEl.className = "status err";
+      statusEl.textContent = t("Die bevestigingslink is niet geldig of al gebruikt.");
+      history.replaceState(null, "", location.pathname);
+    }
     toonIntro();
     loadArchive();
     laadVerbruik();
