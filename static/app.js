@@ -1111,6 +1111,105 @@
   var Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   var recogniser = null, listening = false;
 
+  /* Het balkje: laat zien dat de microfoon je hoort.
+   *
+   * SpeechRecognition geeft geen geluidsniveau terug - alleen woorden, en pas
+   * als het er woorden van kan maken. Tot dat moment is er geen enkel teken van
+   * leven, en wie zijn droom inspreekt terwijl de verkeerde microfoon aanstaat
+   * merkt het pas als hij klaar is. Daarom een tweede, eigen stream met een
+   * analyser erop.
+   *
+   * Twee dingen die hier goed moeten. De stream moet echt gestopt worden, want
+   * anders blijft het opnamelampje van het tabblad branden nadat je op stop hebt
+   * gedrukt - dan lijkt het alsof de app blijft meeluisteren. En als dit hele
+   * ding niet lukt, mag het inspreken er niet aan onderdoor gaan: het balkje is
+   * een hulpmiddel, geen voorwaarde.
+   */
+  var METER_BALKJES = 14;
+  var meterStaat = null;
+
+  function meterBouwen() {
+    var doos = el("mic-meter");
+    if (!doos || doos.childNodes.length) { return doos; }
+    for (var i = 0; i < METER_BALKJES; i++) {
+      var b = document.createElement("i");
+      // Oplopend, zoals een niveaumeter eruitziet.
+      b.style.height = Math.round(6 + (i / (METER_BALKJES - 1)) * 14) + "px";
+      doos.appendChild(b);
+    }
+    return doos;
+  }
+
+  function meterStoppen() {
+    var s = meterStaat;
+    meterStaat = null;
+    if (!s) { return; }
+    if (s.frame) { cancelAnimationFrame(s.frame); }
+    try { s.stream.getTracks().forEach(function (tr) { tr.stop(); }); } catch (e) { /* al weg */ }
+    try { s.ctx.close(); } catch (e) { /* al dicht */ }
+    var doos = el("mic-meter");
+    if (doos) {
+      doos.classList.remove("aan", "stil");
+      doos.querySelectorAll("i").forEach(function (b) { b.classList.remove("op"); });
+    }
+  }
+
+  function meterStarten() {
+    var doos = meterBouwen();
+    var Ctx = window.AudioContext || window.webkitAudioContext;
+    if (!doos || !Ctx || !navigator.mediaDevices) { return; }
+
+    navigator.mediaDevices.getUserMedia({ audio: true }).then(function (stream) {
+      // Ondertussen op stop gedrukt: niet alsnog opengaan.
+      if (!listening) {
+        stream.getTracks().forEach(function (tr) { tr.stop(); });
+        return;
+      }
+      var ctx = new Ctx();
+      var analyser = ctx.createAnalyser();
+      analyser.fftSize = 256;
+      analyser.smoothingTimeConstant = 0.6;
+      ctx.createMediaStreamSource(stream).connect(analyser);
+      var data = new Uint8Array(analyser.frequencyBinCount);
+      var balkjes = [].slice.call(doos.querySelectorAll("i"));
+      doos.classList.add("aan");
+
+      var stilSinds = Date.now(), gewaarschuwd = false;
+      var s = { stream: stream, ctx: ctx, frame: 0 };
+      meterStaat = s;
+
+      (function teken() {
+        if (meterStaat !== s) { return; }
+        s.frame = requestAnimationFrame(teken);
+        analyser.getByteFrequencyData(data);
+        var som = 0;
+        for (var i = 0; i < data.length; i++) { som += data[i] * data[i]; }
+        var rms = Math.sqrt(som / data.length) / 255;
+        // Wortel eroverheen: praten op normale sterkte moet het balkje vullen,
+        // niet twee streepjes oplichten.
+        var aan = Math.min(METER_BALKJES, Math.round(Math.sqrt(rms) * 1.9 * METER_BALKJES));
+        for (var j = 0; j < balkjes.length; j++) {
+          balkjes[j].classList.toggle("op", j < aan);
+        }
+
+        if (aan > 1) {
+          stilSinds = Date.now();
+          if (gewaarschuwd) {
+            gewaarschuwd = false;
+            doos.classList.remove("stil");
+            guideLine.textContent = t("Ik luister. Neem de tijd.");
+          }
+        } else if (!gewaarschuwd && Date.now() - stilSinds > 4000) {
+          gewaarschuwd = true;
+          doos.classList.add("stil");
+          guideLine.textContent = t("Ik hoor nog niets. Staat de juiste microfoon aan?");
+        }
+      })();
+    }).catch(function () {
+      /* Geen balkje dan. Het inspreken zelf loopt hier niet op stuk. */
+    });
+  }
+
   function setupMic() {
     var mic = el("mic");
     if (!Recognition) {
@@ -1135,6 +1234,7 @@
         mic.textContent = t("Stop met opnemen");
         guide.classList.add("listening");
         guideLine.textContent = t("Ik luister. Neem de tijd.");
+        meterStarten();
       };
       recogniser.onresult = function (e) {
         var live = "";
@@ -1152,6 +1252,7 @@
       };
       recogniser.onend = function () {
         listening = false;
+        meterStoppen();
         mic.classList.remove("rec");
         mic.textContent = t("Inspreken");
         guide.classList.remove("listening");

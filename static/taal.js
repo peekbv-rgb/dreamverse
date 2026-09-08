@@ -411,6 +411,8 @@
     ["Inspreken werkt in Chrome en Edge", "Speaking it works in Chrome and Edge"],
     ["Stop met opnemen", "Stop recording"],
     ["Ik luister. Neem de tijd.", "I am listening. Take your time."],
+    ["Ik hoor nog niets. Staat de juiste microfoon aan?",
+     "I am not picking anything up. Is the right microphone on?"],
     ["Geen toegang tot de microfoon. Sta dat toe in je browser.", "No access to the microphone. Allow it in your browser."],
     ["Het opnemen stopte onverwacht. Typ anders even.", "The recording stopped unexpectedly. Try typing instead."],
     ["Genoteerd. Zal ik je droom verbeelden?", "Noted. Shall I imagine your dream?"],

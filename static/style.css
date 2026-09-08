@@ -627,6 +627,22 @@ section .entry { border-left-width: 3px; border-left-color: var(--tint); }
 
 /* Knoppen: niet allemaal violet. */
 #mic { border-color: rgba(79, 191, 134, .5); color: var(--heart); }
+
+/* Het balkje naast Inspreken.
+ *
+ * Zonder dit is er geen enkel teken dat de microfoon je hoort tot het eerste
+ * woord op je scherm staat, en bij een app waar je je droom inspreekt is dat
+ * precies het moment waarop iemand denkt dat het stuk is.
+ */
+.mic-meter { display: none; align-items: flex-end; gap: 3px; height: 22px; }
+.mic-meter.aan { display: inline-flex; }
+.mic-meter i {
+  width: 3px; border-radius: 2px; background: var(--line); opacity: .45;
+  transition: background .09s linear, opacity .09s linear;
+}
+.mic-meter i.op { background: var(--heart); opacity: 1; }
+/* Hoort hij niets, dan wordt het balkje amber in plaats van groen. */
+.mic-meter.stil i.op, .mic-meter.stil i { background: var(--solar); opacity: .5; }
 #clear { border-color: rgba(226, 85, 79, .35); }
 #voice { border-color: rgba(74, 159, 226, .5); color: var(--throat); }
 .call { border-color: rgba(242, 198, 76, .55); color: var(--solar); }
