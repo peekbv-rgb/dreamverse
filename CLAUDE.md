@@ -459,6 +459,20 @@ python betalen.py --check     # staat alles klaar?
 python betalen.py --setup     # producten en prijzen aanmaken
 ```
 
+**Live sinds 8 september 2026.** De activatie liep via de instelwizard van
+Managed Payments; die dwingt je met de hand een eerste product te maken, vandaar
+dat `setup()` bestaande producten op naam hergebruikt. Belastingcategorie op het
+account: *AI as a Service (AIaaS) - Cloud Based - Personal Use*, oftewel
+`txcd_10105001` — er zijn vier AIaaS-varianten en de andere drie zijn zakelijk of
+"cloud én gedownload", allebei fout hier.
+
+De sleutel is een **beperkte** sleutel (`rk_live_`), geen volledige. Hij mag
+schrijven op Checkout Sessions, Customers, Products, Prices, Subscriptions en
+Billing Portal Sessions, en lezen op Balance en Webhook Endpoints — verder niets,
+dus geen uitbetalingen en geen bankgegevens. Mist er ooit een recht, dan noemt
+Stripe het letterlijk in de foutmelding; zo kwam `plan_write` (dat is *Prices*,
+onder zijn oude naam) alsnog aan het licht.
+
 Drie dingen die makkelijk fout gaan:
 
 - **`tax_behavior` is `inclusive`.** Anders telt Stripe de btw *boven op* je
