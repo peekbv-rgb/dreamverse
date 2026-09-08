@@ -329,7 +329,19 @@ def lees_gebeurtenis(lichaam, handtekening):
     if not geheim:
         raise BetaalError("STRIPE_WEBHOOK_SECRET ontbreekt; meldingen worden geweigerd.")
     try:
-        return stripe.Webhook.construct_event(lichaam, handtekening, geheim)
+        gebeurtenis = stripe.Webhook.construct_event(lichaam, handtekening, geheim)
+        # Als gewoon woordenboek verder, want de nieuwere SDK weigert .get() op
+        # zijn eigen objecten: "'get' is a dict method, but a Session is not a
+        # dict". Dat liet de eerste echte betaling stuklopen - het geld binnen,
+        # het pakket niet omgezet - en de foutafhandeling zelf viel er ook over,
+        # want die deed gebeurtenis.get("type"). Eén omzetting hier houdt alles
+        # erachter simpel en laat het niet afhangen van de SDK-versie.
+        if hasattr(gebeurtenis, "to_dict"):
+            # to_dict() gaat diep genoeg: data.object komt er als gewoon
+            # woordenboek uit. dict() eromheen werkt niet, want een Event is
+            # geen mapping.
+            return gebeurtenis.to_dict()
+        return gebeurtenis
     except ValueError:
         raise BetaalError("Onleesbare melding.")
     except stripe.SignatureVerificationError as e:
