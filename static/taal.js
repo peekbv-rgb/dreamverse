@@ -63,6 +63,8 @@
     ["Ik vloog over de bergen en zag een vriendin huilen aan het zwembad…", "I was flying over the mountains and saw a friend crying by the pool…"],
     ["Hoe wil je deze droom gevisualiseerd zien?",
      "How would you like this dream visualised?"],
+    ["Verbeeld en duid mijn droom", "Imagine and read my dream"],
+    ["Duid mijn droom", "Read my dream"],
     ["Verbeeld mijn droom", "Imagine my dream"],
     ["Inspreken", "Speak it"],
     ["Archief wissen", "Clear the archive"],

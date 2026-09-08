@@ -2034,7 +2034,7 @@
       })
       .then(function () {
         go.disabled = false;
-        go.textContent = t("Verbeeld mijn droom");
+        go.textContent = knopTekst();
         // Komt er geen tekenwerk, dan hoort de teller ook te stoppen.
         if (!werkGezien && !(episode && episode.images_pending)) { stopBezig(); }
       });
@@ -2396,6 +2396,7 @@
       b.className = "kwaliteit" + (k.tokens && !k.betaalbaar ? " tekort" : "");
       b.dataset.kwaliteit = k.key;
       b.setAttribute("aria-pressed", k.key === gekozenKwaliteit ? "true" : "false");
+      zetKnopTekst();
       b.title = k.uitleg;
       /* Wat je krijgt, en wat het kost als het iets kost.
        *
@@ -2424,6 +2425,24 @@
     });
   }
 
+  /* Wat er op de knop staat, hangt af van wat je gekozen hebt.
+   *
+   * "Verbeeld mijn droom" was maar de helft van het verhaal - er wordt ook
+   * geduid, en dat is de helft waar mensen voor terugkomen. Erger nog: bij
+   * "Alleen de duiding" wordt er niets verbeeld, en dan stond er iets wat
+   * gewoon niet waar was.
+   */
+  function knopTekst() {
+    return gekozenKwaliteit === "duiding"
+      ? t("Duid mijn droom")
+      : t("Verbeeld en duid mijn droom");
+  }
+
+  function zetKnopTekst() {
+    var go = el("go");
+    if (go && !go.disabled) { go.textContent = knopTekst(); }
+  }
+
   function kiesKwaliteit(k) {
     var melding = el("kwaliteit-melding");
     melding.className = "kwaliteit-melding";
@@ -2439,6 +2458,7 @@
       b.setAttribute("aria-pressed", b.dataset.kwaliteit === k.key ? "true" : "false");
     });
     melding.textContent = k.uitleg + (k.tokens ? "  Kost je " + k.tokens + " tokens." : "");
+    zetKnopTekst();
   }
 
   /* Je tegoed, boven de knoppen waar je het uitgeeft.
