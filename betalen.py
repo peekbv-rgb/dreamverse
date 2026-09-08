@@ -219,9 +219,26 @@ def _klant_id(user):
     bij zijn tweede aankoop een tweede klantdossier en klopt het abonnement niet
     meer bij het saldo.
     """
-    if user.get("stripe_klant"):
-        return user["stripe_klant"]
     c = klant()
+
+    # Bestaat de bewaarde klant nog? Bij de overstap van sandbox naar live niet:
+    # een cus_... uit de sandbox bestaat in het live-account eenvoudigweg niet,
+    # en dan mislukt elke afrekensessie met "No such customer" - een 502 en een
+    # knop die niets doet, precies op het moment dat iemand wil betalen.
+    #
+    # Dat is niet met een migratie op te lossen: het zijn twee losse werelden en
+    # het kan bij elke sleutelwissel opnieuw. Dus controleren we het hier, en
+    # maken we er stilzwijgend een nieuwe aan als de oude weg is. De ene extra
+    # aanroep per aankoop weegt niet op tegen een betaling die niet doorgaat.
+    if user.get("stripe_klant"):
+        try:
+            bestaand = c.v1.customers.retrieve(user["stripe_klant"])
+            if not getattr(bestaand, "deleted", False):
+                return bestaand.id
+        except Exception as e:
+            print("stripe-klant {} bestaat hier niet ({}); we maken een nieuwe".format(
+                user["stripe_klant"], str(e)[:80]), flush=True)
+
     gemaakt = c.v1.customers.create({
         "email": user["email"],
         "name": user["naam"] or None,
