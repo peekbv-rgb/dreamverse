@@ -369,6 +369,12 @@ cookiebanner oplevert en het gedrag van dromers bij een advertentiebedrijf legt.
   livekit) om de avatar op een eigen stemagent te zetten. Dat is **niet** nodig:
   zonder dat veld doet Runway het gesprek zelf, met `personality` en
   `start_script`. Laat je erdoor niet op een dwaalspoor zetten.
+- **`VERIFICATIE_NODIG=1` sluit iedereen buiten.** Er is een bevestigingscode
+  per account en een eindpunt om hem in te wisselen, maar `mail.py` kent alleen
+  `herstelbericht` - een verificatiemail bestaat niet, en in die tak gaat de
+  code zelfs niet naar de log. Zet hem dus niet aan voordat het versturen er is.
+  Vandaag krijgt een nieuwe gebruiker helemaal geen mail: hij is meteen
+  ingelogd, en dat is met opzet zo.
 - **Het archief is een bestand op schijf** en dus weg bij elke Render-deploy. Voor
   iets echts hoort daar een database.
 - **Geen betaling.** Pakket en tokensaldo staan in `data/profile.json` en worden
@@ -690,5 +696,11 @@ ligt klaar.
   echo-onderdrukking van de browser vangt het meeste, een koptelefoon vangt de
   rest), en Firefox en Safari kunnen dit niet — daar zegt de app dat eerlijk.
   Hoe schoon een gesprek van vijf minuten eruit komt, moet uit gebruik blijken.
-- Voordat er meer gebouwd wordt: tien testpersonen, drie dagen, en kijken wie op
-  dag vier uit zichzelf terugkomt. Dat cijfer beslist of dit een bedrijf is.
+- **Beslist op 8 september 2026: geen testronde, gewoon open.** Het plan was
+  tien testpersonen en kijken wie op dag vier terugkomt. Ruud heeft de app met
+  vrienden doorgenomen en kiest ervoor om live te gaan en het aan echte
+  bezoekers te vragen. `rapport.py` meet dat cijfer nog steeds - alleen nu op
+  wie er uit zichzelf komt in plaats van op een genodigd groepje.
+- **De app staat los van het afrekenen.** Gratis werkt zonder Stripe, dus de
+  deur kan open terwijl Managed Payments nog beoordeeld wordt. Zolang de
+  sandbox-sleutels erin staan geeft een betaalknop een fout uit de sandbox.
