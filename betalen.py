@@ -92,48 +92,115 @@ def klant():
 # Producten en prijzen aanmaken
 # --------------------------------------------------------------------------- #
 
+def _bestaand_product(c, merk):
+    """Een product met deze naam, of None.
+
+    Nodig omdat de instelwizard van Managed Payments je dwingt met de hand een
+    eerste product te maken voordat je verder mag. Zou setup() daarna blind
+    aanmaken, dan staat er een tweede "Dreamverse Lite" naast de eerste, hangen
+    er twee prijzen aan hetzelfde pakket, en is achteraf niet meer te zien welke
+    de klant betaalde.
+    """
+    try:
+        lijst = c.v1.products.list(params={"limit": 100, "active": True})
+    except Exception:
+        return None
+    for p in getattr(lijst, "data", []) or []:
+        if getattr(p, "name", "") == merk:
+            return p
+    return None
+
+
+def _prijs_erop(c, product, bedrag_cent, terugkerend=False):
+    """Een nieuwe prijs aan een bestaand product hangen en die standaard maken.
+
+    Een prijs is bij Stripe onveranderlijk; je maakt er een nieuwe naast. De
+    oude blijft bestaan maar wordt niet meer aangeboden, en wie er al op betaalde
+    houdt hem. Dat is precies de bedoeling.
+    """
+    gegevens = {
+        "product": product.id,
+        "unit_amount": bedrag_cent,
+        "currency": "eur",
+        "tax_behavior": "inclusive",
+    }
+    if terugkerend:
+        gegevens["recurring"] = {"interval": "month"}
+    prijs = c.v1.prices.create(gegevens)
+    c.v1.products.update(product.id, params={"default_price": prijs.id})
+    # De belastingcode van een handgemaakt product klopt zelden; die zetten we
+    # hier alsnog goed, want Managed Payments rekent daarop af.
+    try:
+        c.v1.products.update(product.id, params={"tax_code": BELASTINGCODE})
+    except Exception as e:
+        print("     let op: belastingcode niet gezet (%s)" % str(e)[:80])
+    return prijs.id
+
+
 def setup():
     """Maak de producten en prijzen in Stripe en druk de id's af.
 
-    Eenmalig, per omgeving. De id's komen in .env; ze staan niet in de code,
-    want een test- en een productieomgeving hebben andere id's.
+    Eenmalig per omgeving; live en sandbox hebben elk hun eigen id's, dus die
+    staan in .env en niet in de code.
+
+    Bestaat een product al onder dezelfde naam, dan wordt dat hergebruikt en
+    krijgt het alleen een nieuwe prijs. Zo kun je dit veilig nog eens draaien,
+    en zo pikt hij ook het product op dat de wizard van Managed Payments je
+    dwong met de hand te maken.
     """
     if not enabled():
         sys.exit("Geen STRIPE_SECRET_KEY in de omgeving.")
     c = klant()
     regels = []
+    print("Account: %s" % modus())
+    print("")
 
     for naam in ABONNEMENTEN:
         p = plans.PLANS[naam]
-        product = c.v1.products.create({
-            "name": "Dreamverse {}".format(p["naam"]),
-            "description": "{} dromen per maand met de volledige duiding.".format(p["dromen"]),
-            "tax_code": BELASTINGCODE,
-            "default_price_data": {
-                "unit_amount": int(round(p["prijs"] * 100)),
-                "currency": "eur",
-                # inclusive: de getoonde prijs is wat de klant betaalt.
-                "tax_behavior": "inclusive",
-                "recurring": {"interval": "month"},
-            },
-        })
-        regels.append(("STRIPE_PRICE_{}".format(naam.upper()), product.default_price))
-        print("  %-22s %s  (%s)" % (product.name, product.default_price, product.id))
+        merk = "Dreamverse {}".format(p["naam"])
+        cent = int(round(p["prijs"] * 100))
+        bestaand = _bestaand_product(c, merk)
+        if bestaand is not None:
+            prijs_id = _prijs_erop(c, bestaand, cent, terugkerend=True)
+            print("  %-22s %s  (hergebruikt %s)" % (merk, prijs_id, bestaand.id))
+        else:
+            product = c.v1.products.create({
+                "name": merk,
+                "description": "{} dromen per maand met de volledige duiding.".format(p["dromen"]),
+                "tax_code": BELASTINGCODE,
+                "default_price_data": {
+                    "unit_amount": cent,
+                    "currency": "eur",
+                    # inclusive: de getoonde prijs is wat de klant betaalt.
+                    "tax_behavior": "inclusive",
+                    "recurring": {"interval": "month"},
+                },
+            })
+            prijs_id = product.default_price
+            print("  %-22s %s  (nieuw %s)" % (merk, prijs_id, product.id))
+        regels.append(("STRIPE_PRICE_{}".format(naam.upper()), prijs_id))
 
     for naam, pak in TOKENPAKKETTEN.items():
-        product = c.v1.products.create({
-            "name": "Dreamverse {}".format(pak["naam"]),
-            "description": "Tegoed voor een bewegend kernmoment, een gesprek met "
-                           "Vera of een extra droom.",
-            "tax_code": BELASTINGCODE,
-            "default_price_data": {
-                "unit_amount": pak["cent"],
-                "currency": "eur",
-                "tax_behavior": "inclusive",
-            },
-        })
-        regels.append(("STRIPE_PRICE_{}".format(naam.upper()), product.default_price))
-        print("  %-22s %s  (%s)" % (product.name, product.default_price, product.id))
+        merk = "Dreamverse {}".format(pak["naam"])
+        bestaand = _bestaand_product(c, merk)
+        if bestaand is not None:
+            prijs_id = _prijs_erop(c, bestaand, pak["cent"])
+            print("  %-22s %s  (hergebruikt %s)" % (merk, prijs_id, bestaand.id))
+        else:
+            product = c.v1.products.create({
+                "name": merk,
+                "description": "Tegoed voor een bewegend kernmoment, een gesprek met "
+                               "Vera of een extra droom.",
+                "tax_code": BELASTINGCODE,
+                "default_price_data": {
+                    "unit_amount": pak["cent"],
+                    "currency": "eur",
+                    "tax_behavior": "inclusive",
+                },
+            })
+            prijs_id = product.default_price
+            print("  %-22s %s  (nieuw %s)" % (merk, prijs_id, product.id))
+        regels.append(("STRIPE_PRICE_{}".format(naam.upper()), prijs_id))
 
     print("\nZet dit in .env:\n")
     for k, v in regels:
