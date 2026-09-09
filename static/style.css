@@ -1884,6 +1884,10 @@ body.tekstpagina .end a { color: var(--throat); }
 .gids-kaart-titel { font-family: var(--display); font-size: 1.35rem; color: var(--ink); }
 .gids-kaart-regel { font-size: .86rem; color: var(--muted); line-height: 1.5; }
 .gids-leeg { color: var(--muted); font-size: .9rem; }
+.gids-groep {
+  margin: 1.6rem 0 .2rem; font-size: 1.5rem; color: var(--muted);
+  letter-spacing: .02em;
+}
 
 .gids-hero {
   display: block; width: 100%; max-height: 22rem; object-fit: cover;

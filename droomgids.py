@@ -35,6 +35,14 @@ BASIS = "/dream-meaning"
 # zonder dit concurreren het kale domein en www met elkaar om dezelfde tekst.
 SITE = "https://vera-dreamverse.com"
 
+# "Terug naar Dreamverse" wijst naar de landingspagina en niet naar "/".
+#
+# De gids hoort bij de publieke laag, en de publieke laag begint bij
+# welkom.html. Voor iemand van Google verandert er niets - die komt op "/"
+# toch op welkom.html uit. Maar wie ingelogd is werd door "/" de app in
+# geduwd, met Vera's introductie erbij, en dat is geen "terug".
+THUIS = "/welkom.html"
+
 
 TALEN = ("en", "nl")
 
@@ -60,6 +68,17 @@ def veld(d, sleutel, taal, standaard=""):
 
 def heeft_taal(d, taal):
     return taal == "en" or bool((d.get(taal) or {}).get("intro"))
+
+
+# De categorieën, in de volgorde waarin ze op de pagina staan. Een onderwerp
+# zonder categorie belandt onderaan bij "Other" - beter dan verdwijnen.
+GROEPEN = ("people", "animals", "events", "places", "emotions", "other")
+GROEPNAAM = {
+    "en": {"people": "People", "animals": "Animals", "events": "Events",
+           "places": "Places", "emotions": "Emotions", "other": "Other"},
+    "nl": {"people": "Mensen", "animals": "Dieren", "events": "Gebeurtenissen",
+           "places": "Plaatsen", "emotions": "Gevoelens", "other": "Overig"},
+}
 
 
 def _e(tekst):
@@ -130,7 +149,7 @@ KOP = """<!doctype html>
   <header class="top">
     <div class="meta">
       <a class="terug" href="{terug_href}">&larr; {terug_tekst}</a>
-      <span><a href="/">Dreamverse</a></span>
+      <span><a href="/welkom.html">Dreamverse</a></span>
       <span class="dim" id="taalknoppen">{taalknoppen}</span>
     </div>
 """
@@ -140,7 +159,7 @@ VOET = """  </div>
   <footer class="end">
     <p class="gegevens-voet">{voorbehoud}</p>
     <p><a href="{basis}">{alle}</a> &nbsp;&middot;&nbsp;
-      <a href="/">Dreamverse</a> &nbsp;&middot;&nbsp;
+      <a href="/welkom.html">Dreamverse</a> &nbsp;&middot;&nbsp;
       <a href="/privacy.html">{privacy}</a></p>
   </footer>
 </div>
@@ -254,29 +273,46 @@ OVERZICHT_TEKST = {
 def overzicht(taal="en"):
     lijst = [d for d in onderwerpen() if heeft_taal(d, taal)]
     w = OVERZICHT_TEKST.get(taal, OVERZICHT_TEKST["en"])
-    kaarten = []
-    for d in lijst:
+    def kaart(d):
         zoekwoorden = " ".join(
             [veld(d, "title", taal), d.get("title", ""), d.get("search", "")]
             + list(d.get("also", []))).lower()
-        kaarten.append(
-            '      <a class="gids-kaart" href="{href}" data-zoek="{zoek}">\n'
-            '        {beeld}\n'
-            '        <span class="gids-kaart-titel">{titel}</span>\n'
-            '        <span class="gids-kaart-regel">{regel}</span>\n'
-            '      </a>'.format(
-                href=_e(pad_voor(taal, d["slug"])), zoek=_e(zoekwoorden),
-                beeld=('<img src="{}" alt="" loading="lazy">'.format(_e(d["image"]))
-                       if d.get("image") else ""),
-                titel=_e(veld(d, "title", taal)),
-                regel=_e(veld(d, "card", taal))))
+        return ('      <a class="gids-kaart" href="{href}" data-zoek="{zoek}">\n'
+                '        {beeld}\n'
+                '        <span class="gids-kaart-titel">{titel}</span>\n'
+                '        <span class="gids-kaart-regel">{regel}</span>\n'
+                '      </a>'.format(
+                    href=_e(pad_voor(taal, d["slug"])), zoek=_e(zoekwoorden),
+                    beeld=('<img src="{}" alt="" loading="lazy">'.format(_e(d["image"]))
+                           if d.get("image") else ""),
+                    titel=_e(veld(d, "title", taal)),
+                    regel=_e(veld(d, "card", taal))))
+
+    # Per categorie een kop met zijn kaarten eronder. Zolang er maar een handvol
+    # onderwerpen is voegen koppen niets toe en staat alles op één hoop; vanaf
+    # een stuk of acht wordt de lijst een lijst en helpen ze wel.
+    namen = GROEPNAAM.get(taal, GROEPNAAM["en"])
+    if len(lijst) < 8:
+        kaarten = "\n".join(kaart(d) for d in lijst)
+    else:
+        stukken = []
+        for groep in GROEPEN:
+            hier = [d for d in lijst if (d.get("category") or "other") == groep]
+            if not hier:
+                continue
+            stukken.append('    </div>\n    <h2 class="gids-groep">{}</h2>\n'
+                           '    <div class="gids-kaarten">'.format(_e(namen[groep])))
+            stukken.append("\n".join(kaart(d) for d in hier))
+        # Het eerste blok opent al in de body, dus de eerste sluiter eraf.
+        kaarten = "\n".join(stukken)
+        kaarten = kaarten.replace("    </div>\n", "", 1)
 
     body = """    <h1 id="title">{kop}</h1>
     <p class="sub">{sub}</p>
-    <p class="gids-zoek">
+    <div class="gids-zoek">
       <input type="search" id="gids-zoek" placeholder="{zoek}"
              autocomplete="off" aria-label="{zoek}">
-    </p>
+    </div>
   </header>
 
   <section>
@@ -287,7 +323,7 @@ def overzicht(taal="en"):
 {cta}
   </section>
 """.format(kop=_e(w["kop"]), sub=_e(w["sub"]), zoek=_e(w["zoek"]),
-           leeg=_e(w["leeg"]), kaarten="\n".join(kaarten),
+           leeg=_e(w["leeg"]), kaarten=kaarten,
            cta=_uitnodiging(w["cta"], taal))
 
     alternatief, knoppen = _taalstukken(taal, "", TALEN)
@@ -296,7 +332,7 @@ def overzicht(taal="en"):
         canoniek=SITE + pad_voor(taal), alternatief=alternatief,
         ogbeeld="", schema=_schema_lijst(lijst, taal),
         taalknoppen=knoppen, taal=taal,
-        terug_href="/", terug_tekst=_e(w["terug"]))
+        terug_href="/welkom.html", terug_tekst=_e(w["terug"]))
         + body + VOET.format(basis=pad_voor(taal), taal=taal, **VOET_TEKST[taal]))
 
 

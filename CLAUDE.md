@@ -431,6 +431,22 @@ Google uitklapt in de zoekresultaten, en de reden dat de FAQ ónder het artikel
 hoort en niet andersom. `/sitemap.xml` en `/robots.txt` komen uit dezelfde
 module, dus een nieuw onderwerp staat er vanzelf in.
 
+**Categorieën** (`"category"` in de JSON: people, animals, events, places,
+emotions) verschijnen pas als kop vanaf acht onderwerpen. Daaronder voegen
+koppen niets toe en staat alles op één hoop.
+
+**Ook in de app, onder *Je dromen samen*:** een zoekveld waarin je een woord uit
+je droom intikt en doorklikt naar de gids. De onderwerpen komen van `/api/gids`
+en niet uit een lijst in de frontend — anders staat dezelfde lijst op twee
+plekken. Dat zoekveld staat bewust in een `<div>` en niet in een `<p>`: `taal.js`
+vervangt de `innerHTML` van elke `<p>`, en dan wordt het invoerveld bij een
+taalwissel opnieuw opgebouwd en is de listener weg.
+
+**"Terug naar Dreamverse" wijst naar `welkom.html` en niet naar `/`.** De gids
+hoort bij de publieke laag, en die begint bij de landingspagina. Voor iemand van
+Google verandert er niets; wie ingelogd is werd door `/` de app in geduwd, met
+Vera's introductie erbij, en dat is geen "terug".
+
 Zoeken op de overzichtspagina filtert wat er al staat (`static/gids.js`), zonder
 verzoek naar de server. Bij tientallen onderwerpen is dat sneller dan wat dan
 ook; worden het er vijfhonderd, dan hoort het zoeken naar de server te

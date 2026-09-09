@@ -1741,27 +1741,52 @@
    * betekenis, de duiding hierboven geeft die van hem. Dat staat er met zoveel
    * woorden bij, want het is precies waar een abonnement voor is.
    */
+  var gidsLijst = [];
+
+  function gidsTonen(woord) {
+    var doos = el("gids-woorden"), geen = el("gids-geen");
+    if (!doos) { return; }
+    woord = (woord || "").trim().toLowerCase();
+    var raak = woord
+      ? gidsLijst.filter(function (o) { return o.woorden.indexOf(woord) !== -1; })
+      : gidsLijst;
+    doos.innerHTML = "";
+    raak.forEach(function (o, i) {
+      if (i) { doos.appendChild(document.createTextNode(" · ")); }
+      var a = document.createElement("a");
+      a.href = (window.TAAL === "en" ? "" : "/nl") + "/dream-meaning/" + o.slug;
+      a.target = "_blank";
+      a.rel = "noopener";
+      a.textContent = (window.TAAL === "en" ? o.titel : (o.nl || o.titel));
+      doos.appendChild(a);
+    });
+    if (geen) { geen.hidden = raak.length !== 0; }
+  }
+
   function laadGids() {
-    var blok = el("gidsblok"), doos = el("gids-woorden");
-    if (!blok || !doos) { return; }
+    var blok = el("gidsblok");
+    if (!blok || !el("gids-woorden")) { return; }
     fetch("/api/gids")
       .then(lees)
       .then(function (res) {
-        var lijst = (res.body && res.body.onderwerpen) || [];
-        if (!lijst.length) { return; }
-        doos.innerHTML = "";
-        lijst.forEach(function (o, i) {
-          if (i) { doos.appendChild(document.createTextNode(" · ")); }
-          var a = document.createElement("a");
-          a.href = (window.TAAL === "en" ? "" : "/nl") + "/dream-meaning/" + o.slug;
-          a.target = "_blank";
-          a.rel = "noopener";
-          a.textContent = o.titel;
-          doos.appendChild(a);
-        });
+        gidsLijst = (res.body && res.body.onderwerpen) || [];
+        if (!gidsLijst.length) { return; }
+        gidsTonen("");
         blok.hidden = false;
       })
       .catch(function () { /* geen gids, geen blok */ });
+  }
+
+  if (el("gids-veld")) {
+    el("gids-veld").addEventListener("input", function () { gidsTonen(this.value); });
+    el("gids-veld").addEventListener("keydown", function (e) {
+      if (e.key === "Escape") { this.value = ""; gidsTonen(""); }
+      // Enter opent de eerste treffer: dat is wat je verwacht van een zoekvak.
+      if (e.key === "Enter") {
+        var eerste = el("gids-woorden").querySelector("a");
+        if (eerste) { window.open(eerste.href, "_blank", "noopener"); }
+      }
+    });
   }
 
   /* -------------------------------------------------------- je droom delen */

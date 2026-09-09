@@ -85,9 +85,12 @@
 
     // Los te koop
     ["Voor welke droom?", "For which dream?"],
-    ["Wat dromen betekenen", "What dreams mean"],
-    ["Vera's Dream Guide: wat slangen, tanden, water of een ex in het algemeen kunnen betekenen. Vrij te lezen. Wat het in <em>jouw</em> Dreamverse betekent staat hierboven — dat is iets anders.",
-     "Vera's Dream Guide: what snakes, teeth, water or an ex can mean in general. Free to read. What it means in <em>your</em> Dreamverse is above — that is something else."],
+    ["Zoek een teken uit je droom", "Look up a sign from your dream"],
+    ["Sloeg er iets terug in je duiding? Zoek het woord op in Vera's Dream Guide: wat een slang, een tand of water in het algemeen kan betekenen. Wat het in <em>jouw</em> Dreamverse betekent staat hierboven — dat is iets anders.",
+     "Did something in your reading stay with you? Look the word up in Vera's Dream Guide: what a snake, a tooth or water can mean in general. What it means in <em>your</em> Dreamverse is above — that is something else."],
+    ["slang, tanden, water…", "snake, teeth, water…"],
+    ["Daar staat nog niets over. Vertel het aan Vera — zij leest de droom, niet het zoekwoord.",
+     "Nothing here yet on that. Tell Vera instead — she reads the dream, not the keyword."],
     ["Deel deze droom", "Share this dream"],
     ["De kaart kon niet gemaakt worden.", "The card could not be made."],
     ["Opgeslagen als afbeelding. Delen naar Instagram gaat het makkelijkst vanaf je telefoon.",

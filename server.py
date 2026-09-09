@@ -342,7 +342,14 @@ class Handler(SimpleHTTPRequestHandler):
             # zonder dat er een lijst in twee bestanden staat. Nieuw onderwerp
             # erbij is dan een JSON, en niets anders.
             return self.send_json({"onderwerpen": [
-                {"slug": d["slug"], "titel": d["title"], "kort": d.get("short", "")}
+                {"slug": d["slug"], "titel": d["title"],
+                 "nl": (d.get("nl") or {}).get("title", ""),
+                 # De zoekwoorden meesturen, anders kan de app alleen op de
+                 # titel zoeken en vindt "tand" de tandendroom niet.
+                 "woorden": " ".join(
+                     [d.get("title", ""), d.get("search", ""),
+                      (d.get("nl") or {}).get("title", "")]
+                     + list(d.get("also", []))).lower()}
                 for d in droomgids.onderwerpen()]})
 
         if self.path == "/api/health":
