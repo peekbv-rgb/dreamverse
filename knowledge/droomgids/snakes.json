@@ -4,7 +4,13 @@
   "subtitle": "What could it mean?",
   "seo_title": "Dream About Snakes: What Could It Mean? | Dreamverse",
   "search": "dream about snakes",
-  "also": ["snake", "serpent", "snake bite", "black snake", "green snake"],
+  "also": [
+    "snake",
+    "serpent",
+    "snake bite",
+    "black snake",
+    "green snake"
+  ],
   "card": "Fear, transformation, danger — or something else?",
   "meta": "A snake in a dream does not have one universal meaning. What it was doing, and how you felt about it, may matter more than the snake itself.",
   "vera": "A snake doesn't have one universal meaning. What it was doing — and how you felt — may matter more than the snake itself.",
@@ -46,5 +52,53 @@
       "a": "A repeating image is the most interesting thing a dream can do. It rarely repeats identically: the snake moves closer or further away, or you react to it differently. That change from one night to the next is usually where the meaning sits — and it is exactly what you cannot see without a record of your earlier dreams."
     }
   ],
-  "related": ["teeth-falling-out"]
+  "related": [
+    "teeth-falling-out"
+  ],
+  "nl": {
+    "title": "Dromen over slangen",
+    "subtitle": "Wat kan het betekenen?",
+    "seo_title": "Dromen over slangen: wat betekent het? | Dreamverse",
+    "card": "Angst, verandering, gevaar — of iets anders?",
+    "meta": "Een slang in een droom heeft niet één vaste betekenis. Wat hij deed, en hoe jij je voelde, zegt vaak meer dan de slang zelf.",
+    "vera": "Een slang heeft geen vaste betekenis. Wat hij deed — en hoe jij je voelde — zegt vaak meer dan de slang zelf.",
+    "intro": "Slangen zijn een van de oudste beelden waar we over dromen, en een van de meest tegenstrijdige. In de ene droom is een slang een dreiging waar je niet vandaan komt; in de andere is hij rustig, en jij ook. Dat verschil is geen detail. Meestal is het de hele duiding.",
+    "perspectives": {
+      "psychological": "Slangendromen worden vaak in verband gebracht met iets wat als dreiging voelt: een situatie die je in de gaten houdt, een spanning die je niet benoemt, of iets wat je uit de weg gaat. De angst in de droom telt zwaarder dan de slang — een slang waar je niet bang voor was, leest heel anders.",
+      "symbolic": "Weinig dieren dragen zoveel betekenissen tegelijk. Een slang vervelt, dus staat hij voor verandering en vernieuwing; hij bijt, dus voor gevaar; hij verleidt, dus voor iets wat je wilt en wantrouwt. Welke het is, blijkt meestal uit wat hij deed.",
+      "spiritual": "In verschillende tradities verschijnt de slang als energie, genezing en verandering — opgerold onderaan de wervelkolom in de ene, om een staf gewonden als teken van geneeskunde in de andere, bewaker van een drempel in weer een andere. De rode draad is beweging van de ene toestand naar de volgende."
+    },
+    "details": [
+      "Viel de slang je aan, of negeerde hij je?",
+      "Was je bang?",
+      "Hield je hem vast?",
+      "Welke kleur had hij?",
+      "Was er meer dan één?",
+      "Waar was hij — binnen, buiten, in het water?",
+      "Kwam er eerder al een slang in een droom voor?"
+    ],
+    "cta": "Een slang die je vasthield en een slang die toesloeg zijn niet dezelfde droom. Vertel Vera wat er werkelijk gebeurde.",
+    "faq": [
+      {
+        "q": "Is dromen over slangen slecht?",
+        "a": "Niet per se. Slangen dragen dreiging en vernieuwing tegelijk, en dromers melden allebei. Een slang waar je rustig bij bleef is een heel andere droom dan een waar je voor wegrende, en de angst is meestal de veelzeggendste helft."
+      },
+      {
+        "q": "Wat betekent het als je door een slang gebeten wordt in een droom?",
+        "a": "Gebeten worden voegt aanraking en gevolg toe: er kwam iets door. Mensen brengen het het vaakst in verband met een situatie die hen eindelijk bereikte nadat ze er van een afstand naar keken. Wat er ná de beet gebeurde is net zo veel waard als de beet zelf."
+      },
+      {
+        "q": "Wat betekent een zwarte slang in een droom?",
+        "a": "Kleur is een van de details die dromers het scherpst onthouden, en dat is een teken dat het gewicht heeft. Zwart wordt vaker verbonden met iets ongeziens of onbenoemds dan met gevaar als zodanig — maar een kleur die je sterk opviel lees je samen met hoe je je voelde, niet los."
+      },
+      {
+        "q": "Wat betekent een groene slang in een droom?",
+        "a": "Groen wordt het vaakst verbonden met groei en met iets levends dat doorgaat. In slangendromen duikt het eerder op in de rustige dan in de angstige, al is dat een neiging en geen regel."
+      },
+      {
+        "q": "Waarom droom ik steeds over slangen?",
+        "a": "Een beeld dat terugkeert is het interessantste wat een droom kan doen. Het herhaalt zich zelden identiek: de slang komt dichterbij of juist verder weg, of jij reageert anders. Die verschuiving van nacht tot nacht is meestal waar de betekenis zit — en precies wat je niet ziet zonder een archief van je eerdere dromen."
+      }
+    ]
+  }
 }

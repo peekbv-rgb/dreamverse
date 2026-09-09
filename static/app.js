@@ -1728,6 +1728,42 @@
     });
   }
 
+  /* ------------------------------------------------------------- de gids */
+
+  /* Vera's Dream Guide in de app.
+   *
+   * De onderwerpen komen van de server en niet uit een lijst hier, want dan
+   * staat diezelfde lijst op twee plekken en loopt er een keer een uit de pas.
+   * Een nieuw onderwerp is een JSON in knowledge/droomgids/, en verschijnt hier
+   * vanzelf.
+   *
+   * Het verschil dat een bezoeker moet begrijpen: de gids geeft de algemene
+   * betekenis, de duiding hierboven geeft die van hem. Dat staat er met zoveel
+   * woorden bij, want het is precies waar een abonnement voor is.
+   */
+  function laadGids() {
+    var blok = el("gidsblok"), doos = el("gids-woorden");
+    if (!blok || !doos) { return; }
+    fetch("/api/gids")
+      .then(lees)
+      .then(function (res) {
+        var lijst = (res.body && res.body.onderwerpen) || [];
+        if (!lijst.length) { return; }
+        doos.innerHTML = "";
+        lijst.forEach(function (o, i) {
+          if (i) { doos.appendChild(document.createTextNode(" · ")); }
+          var a = document.createElement("a");
+          a.href = (window.TAAL === "en" ? "" : "/nl") + "/dream-meaning/" + o.slug;
+          a.target = "_blank";
+          a.rel = "noopener";
+          a.textContent = o.titel;
+          doos.appendChild(a);
+        });
+        blok.hidden = false;
+      })
+      .catch(function () { /* geen gids, geen blok */ });
+  }
+
   /* -------------------------------------------------------- je droom delen */
 
   /* Een verticale kaart van 1080 bij 1920, gemaakt in de browser.
@@ -3773,6 +3809,7 @@
       history.replaceState(null, "", location.pathname);
     }
     toonIntro();
+    laadGids();
     loadArchive();
     laadVerbruik();
     laadAccount();

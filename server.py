@@ -98,7 +98,7 @@ def auth_ok(header):
 BASIS = droomgids.BASIS
 
 VRIJ = ("/api/health", "/api/registreren", "/api/inloggen", "/api/uitloggen",
-        "/api/bevestigen", "/api/stripe/webhook",
+        "/api/bevestigen", "/api/stripe/webhook", "/api/gids",
         "/api/wachtwoord-vergeten", "/api/wachtwoord-herstellen")
 
 # Paden waar basic auth nooit voor mag staan, ook niet als AUTH_USER en
@@ -154,7 +154,8 @@ class Handler(SimpleHTTPRequestHandler):
         kaal = self.path.split("?")[0]
         # De kennislaag hoort ook bij de vrije paden, met al zijn onderwerpen -
         # een pagina waar Google op landt kan geen wachtwoordvenster hebben.
-        vrijuit = kaal in ZONDER_BASIC or kaal.startswith(BASIS)
+        vrijuit = (kaal in ZONDER_BASIC or kaal.startswith(BASIS)
+                   or kaal.startswith("/nl" + BASIS))
         if not vrijuit and not auth_ok(self.headers.get("Authorization")):
             self.send_response(401)
             self.send_header("WWW-Authenticate", 'Basic realm="dreamverse"')
@@ -248,14 +249,21 @@ class Handler(SimpleHTTPRequestHandler):
 
         # Vera's Dream Guide. Openbaar en zonder inlog: dit is de laag waar
         # Google op landt en vanwaar iemand de app in loopt.
-        if kaal == BASIS or kaal == BASIS + "/":
+        # Engels is het kale adres, Nederlands krijgt /nl ervoor. Twee adressen
+        # in plaats van een schakelaar, want Google moet ze los kunnen indexeren
+        # - en hreflang vertelt hem dat het vertalingen zijn en geen dubbele
+        # tekst.
+        gids_taal, gids_pad = "en", kaal
+        if kaal == "/nl" + BASIS or kaal.startswith("/nl" + BASIS + "/"):
+            gids_taal, gids_pad = "nl", kaal[3:]
+        if gids_pad == BASIS or gids_pad == BASIS + "/":
             accounts.tel_weergave("gids", self.headers.get("User-Agent"))
-            return self.send_html(droomgids.overzicht())
-        if kaal.startswith(BASIS + "/"):
-            slug = kaal[len(BASIS) + 1:].strip("/")
-            pagina = droomgids.artikel(slug) if slug else None
+            return self.send_html(droomgids.overzicht(gids_taal))
+        if gids_pad.startswith(BASIS + "/"):
+            slug = gids_pad[len(BASIS) + 1:].strip("/")
+            pagina = droomgids.artikel(slug, gids_taal) if slug else None
             if pagina is None:
-                return self.send_html(droomgids.overzicht(), 404)
+                return self.send_html(droomgids.overzicht(gids_taal), 404)
             accounts.tel_weergave("gids:" + slug[:30], self.headers.get("User-Agent"))
             return self.send_html(pagina)
         if kaal == "/sitemap.xml":
@@ -328,6 +336,14 @@ class Handler(SimpleHTTPRequestHandler):
             self.send_header("Content-Length", "0")
             self.end_headers()
             return
+
+        if self.path == "/api/gids":
+            # De onderwerpen uit de kennislaag, zodat de app ernaar kan wijzen
+            # zonder dat er een lijst in twee bestanden staat. Nieuw onderwerp
+            # erbij is dan een JSON, en niets anders.
+            return self.send_json({"onderwerpen": [
+                {"slug": d["slug"], "titel": d["title"], "kort": d.get("short", "")}
+                for d in droomgids.onderwerpen()]})
 
         if self.path == "/api/health":
             return self.send_json({

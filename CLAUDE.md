@@ -406,10 +406,18 @@ citaat, een inleiding, drie brillen (psychologisch, symbolisch, spiritueel) —
 dezelfde drie als in de app — dan *The details change everything* met de vragen
 die de betekenis kantelen, de knop naar de app, en pas daarná de FAQ.
 
-**Engels, en niet tweetalig.** De zoekvraag is Engels: *dream about teeth falling
-out* wordt honderdduizenden keren per maand gezocht, de Nederlandse variant een
-fractie daarvan. Twintig artikelen vertalen verdubbelt het werk voor een markt
-die vijftig keer kleiner is. De app blijft wel tweetalig; dit is de laag ervoor.
+**Tweetalig, met Engels als hoofdweg.** `/dream-meaning/snakes` is Engels,
+`/nl/dream-meaning/snakes` Nederlands — twee adressen en geen schakelaar, want
+Google moet ze los kunnen indexeren, en `hreflang` vertelt hem dat het
+vertalingen zijn en geen dubbele tekst. Het Nederlands staat in een `nl`-blok in
+dezelfde JSON; ontbreekt het, dan valt een veld terug op het Engels en verschijnt
+het onderwerp niet in de Nederlandse lijst. **Elk nieuw onderwerp is daarmee twee
+teksten**, en dat is de prijs van die knop: de Engelse zoekvraag is vele malen
+groter, maar Ruud wilde de keuze.
+
+Chrome vertaalt zo'n pagina anders zelf, en dan loopt een machinevertaling
+buiten het zoekvak. Vandaar `translate="no"` en `class="notranslate"`, net als op
+`welkom.html`.
 
 **Dezelfde grenzen als de duiding.** Wat er staat zijn associaties uit tradities
 en uit de psychologie, geen feiten en geen diagnose. Nooit over gezondheid,

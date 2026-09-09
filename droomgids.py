@@ -36,6 +36,32 @@ BASIS = "/dream-meaning"
 SITE = "https://vera-dreamverse.com"
 
 
+TALEN = ("en", "nl")
+
+
+def pad_voor(taal, slug=""):
+    """Het adres van een pagina in een taal. Engels is de kale vorm."""
+    voor = "" if taal == "en" else "/" + taal
+    return voor + BASIS + ("/" + slug if slug else "/")
+
+
+def veld(d, sleutel, taal, standaard=""):
+    """Een veld in de gevraagde taal, met het Engels als terugval.
+
+    Zo hoeft een nieuw onderwerp niet meteen vertaald te zijn: dan staat de
+    Engelse tekst er, en dat is beter dan een half lege pagina.
+    """
+    if taal != "en":
+        anders = (d.get(taal) or {})
+        if anders.get(sleutel):
+            return anders[sleutel]
+    return d.get(sleutel, standaard)
+
+
+def heeft_taal(d, taal):
+    return taal == "en" or bool((d.get(taal) or {}).get("intro"))
+
+
 def _e(tekst):
     return html.escape(str(tekst or ""), quote=True)
 
@@ -78,13 +104,15 @@ def onderwerp(slug):
 # --------------------------------------------------------------------------- #
 
 KOP = """<!doctype html>
-<html lang="en">
+<html lang="{taal}" translate="no" class="notranslate">
 <head>
 <meta charset="utf-8">
+<meta name="google" content="notranslate">
 <title>{titel}</title>
 <meta name="description" content="{beschrijving}">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="canonical" href="{canoniek}">
+{alternatief}
 <meta property="og:type" content="article">
 <meta property="og:title" content="{titel}">
 <meta property="og:description" content="{beschrijving}">
@@ -103,20 +131,17 @@ KOP = """<!doctype html>
     <div class="meta">
       <a class="terug" href="{terug_href}">&larr; {terug_tekst}</a>
       <span><a href="/">Dreamverse</a></span>
-      <span class="dim">dream guide</span>
+      <span class="dim" id="taalknoppen">{taalknoppen}</span>
     </div>
 """
 
 VOET = """  </div>
 
   <footer class="end">
-    <p class="gegevens-voet">Dream meanings on this page are general
-      associations from psychology and from various traditions. They are not
-      facts, not a diagnosis and not advice. What a dream means depends on what
-      happened in it and on the person who dreamt it.</p>
-    <p><a href="{basis}/">All dream meanings</a> &nbsp;&middot;&nbsp;
+    <p class="gegevens-voet">{voorbehoud}</p>
+    <p><a href="{basis}">{alle}</a> &nbsp;&middot;&nbsp;
       <a href="/">Dreamverse</a> &nbsp;&middot;&nbsp;
-      <a href="/privacy.html">Privacy statement</a></p>
+      <a href="/privacy.html">{privacy}</a></p>
   </footer>
 </div>
 
@@ -125,45 +150,132 @@ VOET = """  </div>
 </html>
 """
 
+# Het voorbehoud is geen formaliteit. Bij zoekverkeer komen mensen binnen die
+# zich ergens zorgen over maken, en dan hoort er te staan dat dit associaties
+# zijn en geen feiten.
+VOET_TEKST = {
+    "en": {
+        "voorbehoud": ("Dream meanings on this page are general associations from "
+                       "psychology and from various traditions. They are not facts, "
+                       "not a diagnosis and not advice. What a dream means depends on "
+                       "what happened in it and on the person who dreamt it."),
+        "alle": "All dream meanings",
+        "privacy": "Privacy statement",
+    },
+    "nl": {
+        "voorbehoud": ("Wat hier over dromen staat zijn algemene associaties uit de "
+                       "psychologie en uit verschillende tradities. Het zijn geen "
+                       "feiten, geen diagnose en geen advies. Wat een droom betekent "
+                       "hangt af van wat erin gebeurde en van wie hem droomde."),
+        "alle": "Alle droombetekenissen",
+        "privacy": "Privacyverklaring",
+    },
+}
 
-def _uitnodiging(regel, knop="Tell Vera your dream"):
+CTA_TEKST = {
+    "en": ("Your dream is more than one symbol.", "Tell Vera your dream",
+           "Interpret my dream"),
+    "nl": ("Je droom is meer dan één teken.", "Vertel Vera je droom",
+           "Duid mijn droom"),
+}
+
+
+def _taalstukken(taal, slug, talen):
+    """De hreflang-regels en de EN/NL-knoppen.
+
+    hreflang vertelt Google dat dit vertalingen van elkaar zijn en geen
+    dubbele tekst; zonder dat concurreren twee pagina's om dezelfde plek.
+    """
+    regels, knoppen = [], []
+    for code in TALEN:
+        if code not in talen:
+            continue
+        adres = SITE + pad_voor(code, slug)
+        regels.append('<link rel="alternate" hreflang="{}" href="{}">'.format(code, adres))
+        naam = "English" if code == "en" else "Nederlands"
+        if code == taal:
+            knoppen.append('<b>{}</b>'.format(naam))
+        else:
+            knoppen.append('<a href="{}">{}</a>'.format(pad_voor(code, slug), naam))
+    if len(talen) > 1:
+        regels.append('<link rel="alternate" hreflang="x-default" href="{}">'.format(
+            SITE + pad_voor("en", slug)))
+    return "\n".join(regels), " &middot; ".join(knoppen)
+
+
+def _uitnodiging(regel, taal="en", tweede=False):
     """Het blok dat naar de app leidt. Overal hetzelfde, want het is de conversie."""
+    kop, knop1, knop2 = CTA_TEKST.get(taal, CTA_TEKST["en"])
     return """
     <div class="gids-cta">
-      <p class="gids-cta-kop">Your dream is more than one symbol.</p>
+      <p class="gids-cta-kop">{kop}</p>
       <p>{regel}</p>
       <a class="knop-als-link" href="/app">{knop} &rarr;</a>
     </div>
-""".format(regel=_e(regel), knop=_e(knop))
+""".format(kop=_e(kop), regel=_e(regel), knop=_e(knop2 if tweede else knop1))
 
 
 # --------------------------------------------------------------------------- #
 # De overzichtspagina
 # --------------------------------------------------------------------------- #
 
-def overzicht():
-    lijst = onderwerpen()
+OVERZICHT_TEKST = {
+    "en": {
+        "kop": "Vera's Dream Guide",
+        "sub": "The growing library of the things we dream about. What did you dream about?",
+        "zoek": "Search…",
+        "leeg": ("Nothing here yet for that word. Tell Vera about it instead — "
+                 "she reads the dream, not the keyword."),
+        "cta": ("A dream dictionary gives you the average. Vera reads what actually "
+                "happened in yours, and everything you dreamt before it."),
+        "titel": "Dream Meanings &mdash; Vera's Dream Guide | Dreamverse",
+        "meta": ("What do snakes, teeth, water or an ex mean in a dream? Explore the "
+                 "symbols, people and places that appear in our dreams — and get your "
+                 "own dream read by Vera."),
+        "terug": "Dreamverse",
+    },
+    "nl": {
+        "kop": "Vera's Dream Guide",
+        "sub": "De groeiende bibliotheek van waar we over dromen. Waar droomde jij over?",
+        "zoek": "Zoeken…",
+        "leeg": ("Daar staat nog niets over. Vertel het aan Vera — zij leest de droom, "
+                 "niet het zoekwoord."),
+        "cta": ("Een droomwoordenboek geeft je het gemiddelde. Vera leest wat er in "
+                "die van jou werkelijk gebeurde, en alles wat je eerder droomde."),
+        "titel": "Wat betekent je droom? &mdash; Vera's Dream Guide | Dreamverse",
+        "meta": ("Wat betekenen slangen, tanden, water of een ex in een droom? Ontdek de "
+                 "tekens, mensen en plaatsen die in onze dromen opduiken — en laat je "
+                 "eigen droom lezen door Vera."),
+        "terug": "Dreamverse",
+    },
+}
+
+
+def overzicht(taal="en"):
+    lijst = [d for d in onderwerpen() if heeft_taal(d, taal)]
+    w = OVERZICHT_TEKST.get(taal, OVERZICHT_TEKST["en"])
     kaarten = []
     for d in lijst:
+        zoekwoorden = " ".join(
+            [veld(d, "title", taal), d.get("title", ""), d.get("search", "")]
+            + list(d.get("also", []))).lower()
         kaarten.append(
-            '      <a class="gids-kaart" href="{basis}/{slug}" data-zoek="{zoek}">\n'
+            '      <a class="gids-kaart" href="{href}" data-zoek="{zoek}">\n'
             '        {beeld}\n'
             '        <span class="gids-kaart-titel">{titel}</span>\n'
             '        <span class="gids-kaart-regel">{regel}</span>\n'
             '      </a>'.format(
-                basis=BASIS, slug=_e(d["slug"]),
-                zoek=_e(" ".join([d.get("title", ""), d.get("search", "")]
-                                 + list(d.get("also", []))).lower()),
+                href=_e(pad_voor(taal, d["slug"])), zoek=_e(zoekwoorden),
                 beeld=('<img src="{}" alt="" loading="lazy">'.format(_e(d["image"]))
                        if d.get("image") else ""),
-                titel=_e(d["title"]), regel=_e(d.get("card", ""))))
+                titel=_e(veld(d, "title", taal)),
+                regel=_e(veld(d, "card", taal))))
 
-    body = """    <h1 id="title">Vera's Dream Guide</h1>
-    <p class="sub">The growing library of the things we dream about. What did
-      you dream about?</p>
+    body = """    <h1 id="title">{kop}</h1>
+    <p class="sub">{sub}</p>
     <p class="gids-zoek">
-      <input type="search" id="gids-zoek" placeholder="Search your dream…"
-             autocomplete="off" aria-label="Search your dream">
+      <input type="search" id="gids-zoek" placeholder="{zoek}"
+             autocomplete="off" aria-label="{zoek}">
     </p>
   </header>
 
@@ -171,76 +283,97 @@ def overzicht():
     <div class="gids-kaarten" id="gids-kaarten">
 {kaarten}
     </div>
-    <p class="gids-leeg" id="gids-leeg" hidden>Nothing here yet for that word.
-      Tell Vera about it instead — she reads the dream, not the keyword.</p>
+    <p class="gids-leeg" id="gids-leeg" hidden>{leeg}</p>
 {cta}
   </section>
-""".format(kaarten="\n".join(kaarten),
-           cta=_uitnodiging("A dream dictionary gives you the average. Vera reads "
-                            "what actually happened in yours, and everything you "
-                            "dreamt before it."))
+""".format(kop=_e(w["kop"]), sub=_e(w["sub"]), zoek=_e(w["zoek"]),
+           leeg=_e(w["leeg"]), kaarten="\n".join(kaarten),
+           cta=_uitnodiging(w["cta"], taal))
 
-    schema = _schema_lijst(lijst)
+    alternatief, knoppen = _taalstukken(taal, "", TALEN)
     return (KOP.format(
-        titel="Dream Meanings &mdash; Vera's Dream Guide | Dreamverse",
-        beschrijving=("What do snakes, teeth, water or an ex mean in a dream? "
-                      "Explore the symbols, people and places that appear in our "
-                      "dreams — and get your own dream read by Vera."),
-        canoniek=SITE + BASIS + "/",
-        ogbeeld="",
-        schema=schema,
-        terug_href="/", terug_tekst="Dreamverse")
-        + body + VOET.format(basis=BASIS))
+        titel=w["titel"], beschrijving=_e(w["meta"]),
+        canoniek=SITE + pad_voor(taal), alternatief=alternatief,
+        ogbeeld="", schema=_schema_lijst(lijst, taal),
+        taalknoppen=knoppen, taal=taal,
+        terug_href="/", terug_tekst=_e(w["terug"]))
+        + body + VOET.format(basis=pad_voor(taal), taal=taal, **VOET_TEKST[taal]))
 
 
 # --------------------------------------------------------------------------- #
 # Eén onderwerp
 # --------------------------------------------------------------------------- #
 
-BRILLEN = (("psychological", "Psychological perspective"),
-           ("symbolic", "Symbolic perspective"),
-           ("spiritual", "Spiritual perspective"))
+BRILLEN = ("psychological", "symbolic", "spiritual")
+
+# De drie brillen heten in de app hetzelfde; dat is met opzet, zodat iemand die
+# van de gids naar de app loopt dezelfde woorden terugziet.
+KOPPEN = {
+    "en": {"psychological": "Psychological perspective",
+           "symbolic": "Symbolic perspective",
+           "spiritual": "Spiritual perspective",
+           "punt": "What it can point to",
+           "details": "The details change everything",
+           "faq": "Frequently asked questions",
+           "verwant": "Related dreams",
+           "sub": "What could it mean?",
+           "cta": "Tell Vera what actually happened.",
+           "terug": "All dream meanings"},
+    "nl": {"psychological": "Psychologisch bekeken",
+           "symbolic": "Symbolisch bekeken",
+           "spiritual": "Spiritueel bekeken",
+           "punt": "Waar het op kan wijzen",
+           "details": "De details veranderen alles",
+           "faq": "Veelgestelde vragen",
+           "verwant": "Verwante dromen",
+           "sub": "Wat kan het betekenen?",
+           "cta": "Vertel Vera wat er werkelijk gebeurde.",
+           "terug": "Alle droombetekenissen"},
+}
 
 
-def artikel(slug):
+def artikel(slug, taal="en"):
     d = onderwerp(slug)
-    if d is None:
+    if d is None or not heeft_taal(d, taal):
         return None
+    k = KOPPEN.get(taal, KOPPEN["en"])
 
+    brillen = (veld(d, "perspectives", taal) or {})
     blokken = []
-    for sleutel, kop in BRILLEN:
-        tekst = (d.get("perspectives") or {}).get(sleutel)
+    for sleutel in BRILLEN:
+        tekst = brillen.get(sleutel)
         if not tekst:
             continue
         blokken.append(
             '      <div class="block">\n'
             '        <span class="lbl">{kop}</span>\n'
             '        <p>{tekst}</p>\n'
-            '      </div>'.format(kop=_e(kop), tekst=_e(tekst)))
+            '      </div>'.format(kop=_e(k[sleutel]), tekst=_e(tekst)))
 
     vragen = "".join(
-        "        <li>{}</li>\n".format(_e(v)) for v in (d.get("details") or []))
+        "        <li>{}</li>\n".format(_e(v))
+        for v in (veld(d, "details", taal) or []))
 
     faq = "".join(
         '      <div class="gids-faq-paar">\n'
         '        <p class="gids-faq-v">{v}</p>\n'
         '        <p>{a}</p>\n'
         '      </div>\n'.format(v=_e(x.get("q")), a=_e(x.get("a")))
-        for x in (d.get("faq") or []))
+        for x in (veld(d, "faq", taal) or []))
 
     verwant = ""
     if d.get("related"):
         namen = []
         for s in d["related"]:
             ander = onderwerp(s)
-            if ander:
-                namen.append('<a href="{b}/{s}">{t}</a>'.format(
-                    b=BASIS, s=_e(s), t=_e(ander["title"])))
+            if ander and heeft_taal(ander, taal):
+                namen.append('<a href="{h}">{t}</a>'.format(
+                    h=_e(pad_voor(taal, s)), t=_e(veld(ander, "title", taal))))
         if namen:
             verwant = ('  <section>\n    <div class="head-rule">'
-                       '<h2>Related dreams</h2></div>\n'
-                       '    <p class="gids-verwant">{}</p>\n  </section>\n'
-                       .format(" &middot; ".join(namen)))
+                       '<h2>{kop}</h2></div>\n'
+                       '    <p class="gids-verwant">{namen}</p>\n  </section>\n'
+                       .format(kop=_e(k["verwant"]), namen=" &middot; ".join(namen)))
 
     body = """    <h1 id="title">{titel}</h1>
     <p class="sub">{ondertitel}</p>
@@ -256,45 +389,50 @@ def artikel(slug):
   </section>
 
   <section>
-    <div class="head-rule"><h2>What it can point to</h2></div>
+    <div class="head-rule"><h2>{kop_punt}</h2></div>
     <div class="reading">
 {blokken}
     </div>
   </section>
 
   <section>
-    <div class="head-rule"><h2>The details change everything</h2></div>
+    <div class="head-rule"><h2>{kop_details}</h2></div>
     <ul class="gids-vragen">
 {vragen}    </ul>
 {cta}  </section>
 
 {faqblok}{verwant}""".format(
-        titel=_e(d["title"]),
-        ondertitel=_e(d.get("subtitle", "What could it mean?")),
+        titel=_e(veld(d, "title", taal)),
+        ondertitel=_e(veld(d, "subtitle", taal, k["sub"])),
         hero=('  <img class="gids-hero" src="{}" alt="{}">\n'.format(
-                  _e(d["image"]), _e(d.get("alt", d["title"])))
+                  _e(d["image"]), _e(veld(d, "title", taal)))
               if d.get("image") else ""),
-        vera=_e(d.get("vera", "")),
-        intro=_e(d.get("intro", "")),
+        vera=_e(veld(d, "vera", taal)),
+        intro=_e(veld(d, "intro", taal)),
+        kop_punt=_e(k["punt"]), kop_details=_e(k["details"]),
         blokken="\n".join(blokken),
         vragen=vragen,
-        cta=_uitnodiging(d.get("cta", "Tell Vera what actually happened."),
-                         "Interpret my dream"),
+        cta=_uitnodiging(veld(d, "cta", taal, k["cta"]), taal, tweede=True),
         faqblok=('  <section>\n    <div class="head-rule">'
-                 '<h2>Frequently asked questions</h2></div>\n'
-                 '    <div class="gids-faq">\n{}    </div>\n  </section>\n'.format(faq)
+                 '<h2>{kop}</h2></div>\n'
+                 '    <div class="gids-faq">\n{faq}    </div>\n  </section>\n'.format(
+                     kop=_e(k["faq"]), faq=faq)
                  if faq else ""),
         verwant=verwant)
 
+    talen = [c for c in TALEN if heeft_taal(d, c)]
+    alternatief, knoppen = _taalstukken(taal, d["slug"], talen)
     return (KOP.format(
-        titel=_e(d.get("seo_title", d["title"] + " — What Could It Mean? | Dreamverse")),
-        beschrijving=_e(d.get("meta", "")),
-        canoniek=SITE + BASIS + "/" + _e(d["slug"]),
+        titel=_e(veld(d, "seo_title", taal, veld(d, "title", taal) + " | Dreamverse")),
+        beschrijving=_e(veld(d, "meta", taal)),
+        canoniek=SITE + pad_voor(taal, d["slug"]),
+        alternatief=alternatief,
         ogbeeld=('<meta property="og:image" content="{}{}">'.format(SITE, _e(d["image"]))
                  if d.get("image") else ""),
-        schema=_schema_artikel(d),
-        terug_href=BASIS + "/", terug_tekst="All dream meanings")
-        + body + VOET.format(basis=BASIS))
+        schema=_schema_artikel(d, taal),
+        taalknoppen=knoppen, taal=taal,
+        terug_href=pad_voor(taal), terug_tekst=_e(k["terug"]))
+        + body + VOET.format(basis=pad_voor(taal), **VOET_TEKST[taal]))
 
 
 # --------------------------------------------------------------------------- #
@@ -307,47 +445,55 @@ def _json_ld(data):
     return '<script type="application/ld+json">{}</script>'.format(ruw)
 
 
-def _schema_artikel(d):
+def _schema_artikel(d, taal="en"):
     """Article plus FAQPage. De FAQ is wat Google uitklapt in de zoekresultaten."""
     stukken = [{
         "@context": "https://schema.org",
         "@type": "Article",
-        "headline": d.get("seo_title") or d["title"],
-        "description": d.get("meta", ""),
-        "mainEntityOfPage": SITE + BASIS + "/" + d["slug"],
+        "inLanguage": taal,
+        "headline": veld(d, "seo_title", taal) or veld(d, "title", taal),
+        "description": veld(d, "meta", taal),
+        "mainEntityOfPage": SITE + pad_voor(taal, d["slug"]),
         "author": {"@type": "Organization", "name": "Dreamverse"},
         "publisher": {"@type": "Organization", "name": "Dreamverse"},
     }]
     if d.get("image"):
         stukken[0]["image"] = SITE + d["image"]
-    if d.get("faq"):
+    vragen = veld(d, "faq", taal)
+    if vragen:
         stukken.append({
             "@context": "https://schema.org",
             "@type": "FAQPage",
+            "inLanguage": taal,
             "mainEntity": [
                 {"@type": "Question", "name": x.get("q", ""),
                  "acceptedAnswer": {"@type": "Answer", "text": x.get("a", "")}}
-                for x in d["faq"]],
+                for x in vragen],
         })
     return "\n".join(_json_ld(s) for s in stukken)
 
 
-def _schema_lijst(lijst):
+def _schema_lijst(lijst, taal="en"):
     return _json_ld({
         "@context": "https://schema.org",
         "@type": "CollectionPage",
+        "inLanguage": taal,
         "name": "Vera's Dream Guide",
-        "url": SITE + BASIS + "/",
-        "hasPart": [{"@type": "Article", "headline": d["title"],
-                     "url": SITE + BASIS + "/" + d["slug"]} for d in lijst],
+        "url": SITE + pad_voor(taal),
+        "hasPart": [{"@type": "Article", "headline": veld(d, "title", taal),
+                     "url": SITE + pad_voor(taal, d["slug"])} for d in lijst],
     })
 
 
 def sitemap():
-    """Alle adressen die Google mag kennen, inclusief de vaste pagina's."""
-    adressen = [SITE + "/", SITE + "/welkom.html", SITE + "/privacy.html",
-                SITE + BASIS + "/"]
-    adressen += [SITE + BASIS + "/" + d["slug"] for d in onderwerpen()]
+    """Alle adressen die Google mag kennen, in beide talen."""
+    adressen = [SITE + "/", SITE + "/welkom.html", SITE + "/privacy.html"]
+    for taal in TALEN:
+        lijst = [d for d in onderwerpen() if heeft_taal(d, taal)]
+        if not lijst and taal != "en":
+            continue
+        adressen.append(SITE + pad_voor(taal))
+        adressen += [SITE + pad_voor(taal, d["slug"]) for d in lijst]
     regels = "".join("  <url><loc>{}</loc></url>\n".format(_e(a)) for a in adressen)
     return ('<?xml version="1.0" encoding="UTF-8"?>\n'
             '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'

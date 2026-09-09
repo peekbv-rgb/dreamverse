@@ -85,6 +85,9 @@
 
     // Los te koop
     ["Voor welke droom?", "For which dream?"],
+    ["Wat dromen betekenen", "What dreams mean"],
+    ["Vera's Dream Guide: wat slangen, tanden, water of een ex in het algemeen kunnen betekenen. Vrij te lezen. Wat het in <em>jouw</em> Dreamverse betekent staat hierboven — dat is iets anders.",
+     "Vera's Dream Guide: what snakes, teeth, water or an ex can mean in general. Free to read. What it means in <em>your</em> Dreamverse is above — that is something else."],
     ["Deel deze droom", "Share this dream"],
     ["De kaart kon niet gemaakt worden.", "The card could not be made."],
     ["Opgeslagen als afbeelding. Delen naar Instagram gaat het makkelijkst vanaf je telefoon.",

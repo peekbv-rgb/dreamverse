@@ -4,7 +4,12 @@
   "subtitle": "What could it mean?",
   "seo_title": "Dream About Teeth Falling Out: What Could It Mean? | Dreamverse",
   "search": "dream about teeth falling out",
-  "also": ["losing teeth", "tooth", "teeth crumbling", "teeth breaking"],
+  "also": [
+    "losing teeth",
+    "tooth",
+    "teeth crumbling",
+    "teeth breaking"
+  ],
   "card": "Why are dreams about losing teeth so common?",
   "meta": "Dreams about teeth falling out are among the most common there are. What they point to depends on what happened — whether they were loose, crumbling, or noticed by someone else.",
   "vera": "Almost everyone has had this one, and almost everyone wakes up unsettled by it. What matters is not that the teeth fell out, but what you were doing when they did — and whether anyone was watching.",
@@ -46,5 +51,53 @@
       "a": "A dream that returns is worth more attention than one that does not — that is the whole reason Dreamverse remembers every dream you tell it. A recurring image often shifts slightly each time, and that shift is usually where the meaning is."
     }
   ],
-  "related": ["snakes"]
+  "related": [
+    "snakes"
+  ],
+  "nl": {
+    "title": "Dromen dat je tanden uitvallen",
+    "subtitle": "Wat kan het betekenen?",
+    "seo_title": "Dromen dat je tanden uitvallen: wat betekent het? | Dreamverse",
+    "card": "Waarom komt deze droom zo vaak voor?",
+    "meta": "Dromen over uitvallende tanden horen bij de meest voorkomende die er zijn. Waar ze op wijzen hangt af van wat er gebeurde — of ze los zaten, verkruimelden, of dat iemand het zag.",
+    "vera": "Bijna iedereen heeft deze gehad, en bijna iedereen wordt er onrustig van wakker. Het gaat niet om dát ze uitvielen, maar om wat je deed toen het gebeurde — en of iemand keek.",
+    "intro": "Dromen over het verliezen van tanden komen opvallend vaak voor, in alle leeftijden en culturen. Ze worden vaak in verband gebracht met spanning, kwetsbaarheid, uiterlijk, spreken, of het gevoel dat iets je ontglipt. Maar die associatie is een beginpunt en geen antwoord: de betekenis hangt sterk af van wat er in de droom gebeurde en van hoe je je erbij voelde.",
+    "perspectives": {
+      "psychological": "Tandendromen komen vaker voor in periodes van spanning, overgang en zelfbewustzijn. Veelgenoemde lezingen gaan over controleverlies, zorgen om hoe je overkomt, of een verandering waar je niet voor koos. Sommigen melden ze vlak voor iets waar ze tegenop zien; anderen juist lang nadat het voorbij is.",
+      "symbolic": "Tanden dragen veel als teken: het is waarmee we bijten, kauwen, spreken en lachen. Ze verliezen kan staan voor verlies van kracht, van de mogelijkheid je uit te spreken, van jeugd, of van een gezicht dat je wilt laten zien. Welke van die het is, blijkt meestal uit de rest van de droom.",
+      "spiritual": "In verschillende tradities wordt het verliezen van tanden eerder gelezen als een overgang dan als verlies — het afwerpen van iets waar je uit gegroeid bent, een wisseling van fase, een einde dat ruimte maakt. Andere tradities verbinden de droom met familie en met nieuws dat van ver komt."
+    },
+    "details": [
+      "Zaten ze los, of vielen ze in één keer uit?",
+      "Verkruimelden ze, of braken ze schoon af?",
+      "Was er bloed?",
+      "Schaamde je je, of bleef je er rustig onder?",
+      "Zag iemand anders het?",
+      "Kon je nog praten?",
+      "Is dit in een eerdere droom ook gebeurd?"
+    ],
+    "cta": "Losse tanden en verkruimelende tanden zijn niet dezelfde droom. Ze alleen verliezen en ze verliezen waar iemand bij is ook niet. Vertel Vera wat er werkelijk gebeurde.",
+    "faq": [
+      {
+        "q": "Waarom dromen zoveel mensen dat hun tanden uitvallen?",
+        "a": "Het is een van de meest gemelde droomthema's die er zijn. Tanden zijn ongewoon beladen: ze zijn zichtbaar, ze horen blijvend te zijn, en er een verliezen is in het echt schrikken. Die combinatie maakt ze een natuurlijk beeld voor alles wat voelt alsof het je ontglipt."
+      },
+      {
+        "q": "Betekent dromen over uitvallende tanden dat er iets ergs gaat gebeuren?",
+        "a": "Nee. Een droom is geen voorspelling. Deze dromen duiken vaker op in spannende of veranderende periodes, en dat is een beschrijving van wanneer ze komen — niet van wat er daarna gebeurt."
+      },
+      {
+        "q": "Wat betekent het als mijn tanden verkruimelden in plaats van uitvielen?",
+        "a": "Verkruimelen en uitvallen lezen voor de meeste dromers anders. Uitvallen is plotseling en wordt vaker verbonden met één gebeurtenis; verkruimelen gaat geleidelijk, en dat brengen mensen eerder in verband met iets wat al langer aan hen knaagt."
+      },
+      {
+        "q": "Wat betekent het als iemand mijn tanden zag uitvallen?",
+        "a": "Gezien worden verandert de droom. Als er anderen bij zijn, ligt het gevoel dat mensen melden dichter bij blootstelling of schaamte dan bij verlies, en gaat de droom minder over de tanden dan over bekeken worden."
+      },
+      {
+        "q": "Waarom heb ik steeds dezelfde tandendroom?",
+        "a": "Een droom die terugkomt verdient meer aandacht dan een die dat niet doet — dat is precies waarom Dreamverse elke droom onthoudt die je vertelt. Een terugkerend beeld verschuift meestal een beetje per keer, en in die verschuiving zit doorgaans de betekenis."
+      }
+    ]
+  }
 }
