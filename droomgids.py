@@ -247,7 +247,7 @@ OVERZICHT_TEKST = {
                  "she reads the dream, not the keyword."),
         "cta": ("A dream dictionary explains the symbol. Vera interprets the dream "
                 "around it — and everything you dreamt before it."),
-        "titel": "Dream Meanings &mdash; Vera's Dream Guide | Dreamverse",
+        "titel": "Dream Meanings &mdash; Vera's Dream Guide",
         "meta": ("What do snakes, teeth, water or an ex mean in a dream? Explore the "
                  "symbols, people and places that appear in our dreams — and get your "
                  "own dream read by Vera."),
@@ -261,7 +261,7 @@ OVERZICHT_TEKST = {
                  "niet het zoekwoord."),
         "cta": ("Een droomwoordenboek verklaart het teken. Vera duidt de droom "
                 "eromheen — en alles wat je eerder droomde."),
-        "titel": "Wat betekent je droom? &mdash; Vera's Dream Guide | Dreamverse",
+        "titel": "Wat betekent je droom? &mdash; Vera's Dream Guide",
         "meta": ("Wat betekenen slangen, tanden, water of een ex in een droom? Ontdek de "
                  "tekens, mensen en plaatsen die in onze dromen opduiken — en laat je "
                  "eigen droom lezen door Vera."),
@@ -463,7 +463,7 @@ def artikel(slug, taal="en"):
     talen = [c for c in TALEN if heeft_taal(d, c)]
     alternatief, knoppen = _taalstukken(taal, d["slug"], talen)
     return (KOP.format(
-        titel=_e(veld(d, "seo_title", taal, veld(d, "title", taal) + " | Dreamverse")),
+        titel=_e(veld(d, "seo_title", taal, veld(d, "title", taal) + " | Vera Dreamverse")),
         beschrijving=_e(veld(d, "meta", taal)),
         canoniek=SITE + pad_voor(taal, d["slug"]),
         alternatief=alternatief,
@@ -494,8 +494,8 @@ def _schema_artikel(d, taal="en"):
         "headline": veld(d, "seo_title", taal) or veld(d, "title", taal),
         "description": veld(d, "meta", taal),
         "mainEntityOfPage": SITE + pad_voor(taal, d["slug"]),
-        "author": {"@type": "Organization", "name": "Dreamverse"},
-        "publisher": {"@type": "Organization", "name": "Dreamverse"},
+        "author": {"@type": "Organization", "name": "Vera Dreamverse"},
+        "publisher": {"@type": "Organization", "name": "Vera Dreamverse"},
     }]
     if d.get("image"):
         stukken[0]["image"] = SITE + d["image"]
