@@ -109,8 +109,8 @@
     // Mijn gegevens
     ["Een zip met je profiel, al je dromen zoals je ze verteld hebt, de duidingen die erbij geschreven zijn, en alle panelen, animaties en ingesproken tekst.",
      "A zip with your profile, every dream in the words you told it, the readings written for them, and all panels, animations and narration."],
-    ["Je account, je dromen, de duidingen en al het beeld gaan weg, en er blijft geen kopie achter. Loopt er een abonnement, dan wordt dat eerst opgezegd. Dit is niet ongedaan te maken.",
-     "Your account, your dreams, the readings and all the images go, and no copy stays behind. If a subscription is running it gets cancelled first. This cannot be undone."],
+    ["Je account, je dromen, de duidingen en al het beeld gaan weg uit onze actieve systemen; onze server bewaart daarnaast zeven dagen een automatische momentopname. Loopt er een abonnement, dan wordt dat eerst opgezegd. Dit is niet ongedaan te maken.",
+     "Your account, your dreams, the readings and all the images go from our active systems; our server also keeps an automatic snapshot for seven days. If a subscription is running it gets cancelled first. This cannot be undone."],
 
     // Beheer. Alleen Ruud ziet dit, maar half Nederlands leest als een half af
     // scherm - en hij kijkt er zelf ook in het Engels naar.
