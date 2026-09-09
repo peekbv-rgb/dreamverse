@@ -80,8 +80,8 @@
     // innerHTML van de <p> en niet de <a>'s erbinnen. Drie losse linkteksten
     // pasten daarom nergens op. Enkele aanhalingstekens, want er staan dubbele
     // in de HTML.
-    ['<a href="/welkom.html" target="_blank" rel="noopener">Over Dreamverse</a> <span aria-hidden="true">·</span> <a href="/welkom.html#kosten" target="_blank" rel="noopener">Pakketten en prijzen</a> <span aria-hidden="true">·</span> <a href="/privacy.html" target="_blank" rel="noopener">Privacyverklaring</a>',
-     '<a href="/welkom.html" target="_blank" rel="noopener">About Dreamverse</a> <span aria-hidden="true">·</span> <a href="/welkom.html#kosten" target="_blank" rel="noopener">Plans and prices</a> <span aria-hidden="true">·</span> <a href="/privacy.html" target="_blank" rel="noopener">Privacy statement</a>'],
+    ['<a href="/welkom.html" target="_blank" rel="noopener">Over Dreamverse</a> <span aria-hidden="true">&middot;</span> <a href="/dream-meaning/" target="_blank" rel="noopener">Dream Guide</a> <span aria-hidden="true">&middot;</span> <a href="/welkom.html#kosten" target="_blank" rel="noopener">Pakketten en prijzen</a> <span aria-hidden="true">&middot;</span> <a href="/privacy.html" target="_blank" rel="noopener">Privacyverklaring</a>',
+     '<a href="/welkom.html" target="_blank" rel="noopener">About Dreamverse</a> <span aria-hidden="true">&middot;</span> <a href="/dream-meaning/" target="_blank" rel="noopener">Dream Guide</a> <span aria-hidden="true">&middot;</span> <a href="/welkom.html#kosten" target="_blank" rel="noopener">Plans and prices</a> <span aria-hidden="true">&middot;</span> <a href="/privacy.html" target="_blank" rel="noopener">Privacy statement</a>'],
 
     // Los te koop
     ["Voor welke droom?", "For which dream?"],

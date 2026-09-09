@@ -390,6 +390,49 @@ Ze staan in `static/` en niet in `data/`: dat laatste is git-ignored en verdwijn
 bij elke deploy. Opnieuw klaarzetten na een nieuwe animatie:
 `python build/voorbeelden.py`.
 
+## Vera's Dream Guide
+
+De publieke kennislaag op `/dream-meaning/`. Google levert de eerste droom,
+Dreamverse zorgt dat iemand zijn volgende ook wil bewaren — dat is de hele
+redenering. Wie zoekt op *dream about snakes* krijgt een algemene betekenis, en
+onderaan de vraag die die betekenis persoonlijk maakt: wat deed die slang, en hoe
+voelde jij je.
+
+**De artikelen zijn gegevens, geen HTML.** Eén JSON per onderwerp in
+`knowledge/droomgids/`, één sjabloon in `droomgids.py`. Onderwerp eenentwintig is
+daarmee een bestandje van tien regels in plaats van een pagina overtikken, en een
+wijziging in de vormgeving raakt ze allemaal tegelijk. De vaste vorm: Vera's
+citaat, een inleiding, drie brillen (psychologisch, symbolisch, spiritueel) —
+dezelfde drie als in de app — dan *The details change everything* met de vragen
+die de betekenis kantelen, de knop naar de app, en pas daarná de FAQ.
+
+**Engels, en niet tweetalig.** De zoekvraag is Engels: *dream about teeth falling
+out* wordt honderdduizenden keren per maand gezocht, de Nederlandse variant een
+fractie daarvan. Twintig artikelen vertalen verdubbelt het werk voor een markt
+die vijftig keer kleiner is. De app blijft wel tweetalig; dit is de laag ervoor.
+
+**Dezelfde grenzen als de duiding.** Wat er staat zijn associaties uit tradities
+en uit de psychologie, geen feiten en geen diagnose. Nooit over gezondheid,
+ziekte, geld of iemands dood, en nooit als voorspelling. Onderaan elke pagina
+staat dat ook met zoveel woorden. Een pagina die zegt dat dromen over tanden
+betekent dat er iemand ziek wordt, bezorgt mensen echte angst.
+
+Wat Google eruit leest: `<title>`, een beschrijving, een canoniek adres,
+`og:`-velden, en JSON-LD met **Article** plus **FAQPage** — dat laatste is wat
+Google uitklapt in de zoekresultaten, en de reden dat de FAQ ónder het artikel
+hoort en niet andersom. `/sitemap.xml` en `/robots.txt` komen uit dezelfde
+module, dus een nieuw onderwerp staat er vanzelf in.
+
+Zoeken op de overzichtspagina filtert wat er al staat (`static/gids.js`), zonder
+verzoek naar de server. Bij tientallen onderwerpen is dat sneller dan wat dan
+ook; worden het er vijfhonderd, dan hoort het zoeken naar de server te
+verhuizen.
+
+**Nog te doen:** beeld per onderwerp (`"image"` in de JSON — het veld is er al en
+wordt overal gebruikt zodra het gevuld is), en de overige achttien onderwerpen.
+Het Kling-tegoed verloopt 18 september; die beelden zijn er een goede besteding
+van, want vier eenheden per stuk.
+
 ## De publieke pagina
 
 `static/welkom.html` is wat iemand zonder account te zien krijgt: wat Dreamverse

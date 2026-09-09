@@ -45,6 +45,7 @@ from dotenv import load_dotenv
 
 import accounts
 import betalen
+import droomgids
 import mail
 import dreamverse
 import kling
@@ -93,6 +94,9 @@ def auth_ok(header):
 # Wat je mag zien zonder in te loggen: de pagina zelf, de opmaak, Vera's
 # introductiefilmpje, en de twee eindpunten die je nodig hebt om in te loggen.
 # Al het andere hoort bij iemand.
+# Het adres van de kennislaag; de paden staan in droomgids.py.
+BASIS = droomgids.BASIS
+
 VRIJ = ("/api/health", "/api/registreren", "/api/inloggen", "/api/uitloggen",
         "/api/bevestigen", "/api/stripe/webhook",
         "/api/wachtwoord-vergeten", "/api/wachtwoord-herstellen")
@@ -107,7 +111,7 @@ VRIJ = ("/api/health", "/api/registreren", "/api/inloggen", "/api/uitloggen",
 # De privacyverklaring: die moet leesbaar zijn zonder account. Een verklaring
 # achter een wachtwoord beschermt niemand.
 ZONDER_BASIC = ("/api/stripe/webhook", "/privacy.html", "/herstel.html",
-                "/welkom.html")
+                "/welkom.html", "/sitemap.xml", "/robots.txt")
 
 
 class Handler(SimpleHTTPRequestHandler):
@@ -148,7 +152,10 @@ class Handler(SimpleHTTPRequestHandler):
 
     def guard(self):
         kaal = self.path.split("?")[0]
-        if kaal not in ZONDER_BASIC and not auth_ok(self.headers.get("Authorization")):
+        # De kennislaag hoort ook bij de vrije paden, met al zijn onderwerpen -
+        # een pagina waar Google op landt kan geen wachtwoordvenster hebben.
+        vrijuit = kaal in ZONDER_BASIC or kaal.startswith(BASIS)
+        if not vrijuit and not auth_ok(self.headers.get("Authorization")):
             self.send_response(401)
             self.send_header("WWW-Authenticate", 'Basic realm="dreamverse"')
             self.end_headers()
@@ -169,6 +176,22 @@ class Handler(SimpleHTTPRequestHandler):
             return True
         self.send_json({"error": "Log eerst in.", "login": True}, 401)
         return False
+
+    def send_html(self, tekst, code=200):
+        ruw = tekst.encode("utf-8")
+        self.send_response(code)
+        self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.send_header("Content-Length", str(len(ruw)))
+        self.end_headers()
+        self.wfile.write(ruw)
+
+    def send_tekst(self, tekst, soort):
+        ruw = tekst.encode("utf-8")
+        self.send_response(200)
+        self.send_header("Content-Type", soort + "; charset=utf-8")
+        self.send_header("Content-Length", str(len(ruw)))
+        self.end_headers()
+        self.wfile.write(ruw)
 
     def read_raw(self):
         """De onbewerkte body. De webhook van Stripe heeft die letterlijk nodig:
@@ -222,6 +245,23 @@ class Handler(SimpleHTTPRequestHandler):
             accounts.tel_weergave(
                 "landing" if self.path == "/welkom.html" else "app",
                 self.headers.get("User-Agent"))
+
+        # Vera's Dream Guide. Openbaar en zonder inlog: dit is de laag waar
+        # Google op landt en vanwaar iemand de app in loopt.
+        if kaal == BASIS or kaal == BASIS + "/":
+            accounts.tel_weergave("gids", self.headers.get("User-Agent"))
+            return self.send_html(droomgids.overzicht())
+        if kaal.startswith(BASIS + "/"):
+            slug = kaal[len(BASIS) + 1:].strip("/")
+            pagina = droomgids.artikel(slug) if slug else None
+            if pagina is None:
+                return self.send_html(droomgids.overzicht(), 404)
+            accounts.tel_weergave("gids:" + slug[:30], self.headers.get("User-Agent"))
+            return self.send_html(pagina)
+        if kaal == "/sitemap.xml":
+            return self.send_tekst(droomgids.sitemap(), "application/xml")
+        if kaal == "/robots.txt":
+            return self.send_tekst(droomgids.robots(), "text/plain")
 
         if self.path == "/api/profile":
             return self.send_json(dreamverse.public_profile())

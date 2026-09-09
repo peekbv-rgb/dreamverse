@@ -1851,3 +1851,72 @@ body.tekstpagina .end a { color: var(--throat); }
   padding: .3rem .5rem; color: #CFC4E4;
   border-top: 1px solid rgba(216, 205, 234, .1);
 }
+
+
+/* ---------------------------------------------------- Vera's Dream Guide -- */
+
+/* De publieke kennislaag. Zelfde grond en zelfde letters als de app, want wie
+   hier binnenkomt via Google moet zien dat dit één ding is. */
+.gids-zoek { margin: 1.2rem 0 0; }
+.gids-zoek input {
+  width: 100%; max-width: 26rem; padding: .8rem 1.1rem;
+  border-radius: 100px; border: 1px solid var(--line);
+  background: rgba(13, 7, 26, .8); color: var(--ink);
+  font-family: var(--body); font-size: .95rem;
+}
+.gids-zoek input:focus { outline: none; border-color: var(--crown); }
+
+.gids-kaarten {
+  display: grid; gap: 1rem; margin: .5rem 0 1.6rem;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+}
+.gids-kaart {
+  display: flex; flex-direction: column; gap: .35rem;
+  padding: 1.1rem 1.2rem; border-radius: 16px; text-decoration: none;
+  background: var(--panel); border: 1px solid var(--line);
+  transition: border-color .15s, transform .15s;
+}
+.gids-kaart:hover { border-color: var(--crown); transform: translateY(-2px); }
+.gids-kaart img {
+  width: 100%; aspect-ratio: 16 / 10; object-fit: cover;
+  border-radius: 10px; margin-bottom: .5rem;
+}
+.gids-kaart-titel { font-family: var(--display); font-size: 1.35rem; color: var(--ink); }
+.gids-kaart-regel { font-size: .86rem; color: var(--muted); line-height: 1.5; }
+.gids-leeg { color: var(--muted); font-size: .9rem; }
+
+.gids-hero {
+  display: block; width: 100%; max-height: 22rem; object-fit: cover;
+  border-radius: 18px; margin: 0 0 1.4rem;
+}
+
+.gids-vera {
+  margin: 0 0 1.2rem; padding: 1.1rem 1.4rem;
+  border-left: 3px solid var(--crown); border-radius: 0 14px 14px 0;
+  background: rgba(43, 28, 74, .45);
+}
+.gids-vera p {
+  margin: 0; font-family: var(--display); font-style: italic;
+  font-size: 1.2rem; line-height: 1.55; color: var(--ink);
+}
+.gids-vera cite { display: block; margin-top: .5rem; font-size: .82rem;
+                  font-style: normal; color: var(--muted); }
+
+.gids-vragen { margin: .4rem 0 1.2rem; padding-left: 1.1rem; }
+.gids-vragen li { margin: .3rem 0; color: #CFC4E4; line-height: 1.6; }
+
+/* De stap naar de app. Dit is de conversie, dus hij mag opvallen. */
+.gids-cta {
+  margin: 1.6rem 0 0; padding: 1.4rem 1.5rem; border-radius: 18px;
+  background: rgba(43, 28, 74, .5); border: 1px solid rgba(179, 105, 222, .35);
+  text-align: center;
+}
+.gids-cta-kop {
+  margin: 0 0 .4rem; font-family: var(--display); font-size: 1.5rem; color: var(--ink);
+}
+.gids-cta p { color: #CFC4E4; line-height: 1.6; }
+.gids-cta .knop-als-link { margin-top: .8rem; }
+
+.gids-faq-paar { margin: 0 0 1rem; }
+.gids-faq-v { margin: 0 0 .25rem !important; color: var(--ink) !important; font-weight: 600; }
+.gids-verwant a { color: var(--throat); }
