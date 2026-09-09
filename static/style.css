@@ -670,9 +670,14 @@ section .entry { border-left-width: 3px; border-left-color: var(--tint); }
  * waar de grenzen liggen, wie erachter zit - was daarmee onvindbaar voor precies
  * de mensen die ervoor betalen. */
 .voet-links { margin-top: 1.4rem; font-size: .84rem; }
-.voet-links a { color: var(--muted); text-decoration: none; border-bottom: 1px solid var(--line); }
+/* Bijna wit en niet var(--muted): dit zijn de enige vier links in de app naar
+   buiten, en een link moet ook van gewone tekst te onderscheiden zijn. */
+.voet-links a {
+  color: var(--ink); text-decoration: none; white-space: nowrap;
+  border-bottom: 1px solid rgba(179, 105, 222, .55);
+}
 .voet-links a:hover { color: var(--heart); border-bottom-color: var(--heart); }
-.voet-links span { color: var(--line); margin: 0 .5rem; }
+.voet-links span { color: var(--muted); margin: 0 .5rem; }
 
 /* En lucht boven de startknop, zodat hij niet tegen de brillen aan plakt. */
 .startrij { margin-top: 1.5rem; padding-top: 1.2rem; border-top: 1px solid var(--line); }
@@ -740,7 +745,16 @@ header.top { position: relative; }
 header.top::before { inset: -8% -14%; }
 .head-rule::after { inset: -60% -20% -120%; }
 
-footer.end { background: rgba(8,6,17,.5); border-radius: 16px; padding: 1.2rem 1.3rem; }
+/* De voet ligt op de bewegende achtergrond, en die is op sommige plekken fel
+   oranje en paars. Op halve dekking schijnt dat er dwars doorheen: de vier
+   links onderaan stonden op een oranje wolk en waren niet te lezen. Zelfde
+   behandeling als de gidswoorden dus - een echte donkere grond, geen waas. */
+footer.end {
+  background: rgba(13, 7, 26, .92);
+  border: 1px solid var(--line); border-radius: 16px;
+  backdrop-filter: blur(10px);
+  padding: 1.2rem 1.3rem;
+}
 
 /* Nog steeds te licht boven de felle plekken: losse tekst krijgt een eigen
    donkere band in plaats van alleen een schaduw. */
@@ -751,7 +765,10 @@ footer.end { background: rgba(8,6,17,.5); border-radius: 16px; padding: 1.2rem 1
   border-radius: 12px;
   padding: .5rem .95rem;
 }
-.meta { background: rgba(8, 6, 17, .5); backdrop-filter: blur(6px); border-radius: 100px; padding: .35rem 1rem; }
+/* De bovenste regel stond op halve dekking, en dat is te weinig: nagerekend
+   haalt var(--muted) daarop 2,1:1 boven een felle plek in de achtergrond, waar
+   4,5:1 de ondergrens is. Zelfde dekking als de voet dus. */
+.meta { background: rgba(13, 7, 26, .92); backdrop-filter: blur(10px); border-radius: 100px; padding: .35rem 1rem; }
 
 /* Het levende doek. Klein gerekend, groot getoond, en vervaagd - daardoor is
    het zacht als licht in plaats van scherp als een grafiek. */

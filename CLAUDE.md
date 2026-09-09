@@ -467,12 +467,8 @@ plekken. Dat zoekveld staat bewust in een `<div>` en niet in een `<p>`: `taal.js
 vervangt de `innerHTML` van elke `<p>`, en dan wordt het invoerveld bij een
 taalwissel opnieuw opgebouwd en is de listener weg.
 
-De lijst met woorden eronder staat op een **eigen donkere grond**. Hij lag
-rechtstreeks op de bewegende achtergrond, en die is op sommige plekken fel paars
-en cyaan — lichtpaarse links daarop zijn niet te lezen. Bij losse tekst lost een
-`text-shadow` dat op (zie `.sub, .head-rule p, …`), maar bij een link niet
-genoeg: die moet óók nog van gewone tekst te onderscheiden zijn. En omdat de
-achtergrond beweegt bestaat "meestal leesbaar" hier niet.
+De lijst met woorden eronder staat op een **eigen donkere grond**. Zie
+*Leesbaar boven een bewegende achtergrond* hieronder.
 
 **"Terug naar Dreamverse" wijst naar `welkom.html` en niet naar `/`.** De gids
 hoort bij de publieke laag, en die begint bij de landingspagina. Voor iemand van
@@ -525,6 +521,35 @@ Drie dingen die hier stuk waren en meelopen:
   `eersteDroomOverzetten()` de opslag leegmaakt, want `toonIntro()` haalt eerst
   het profiel op en is dus later klaar. De introductie staat nog gewoon bij *Je
   gegevens*, en de geboortedatum wordt pas bij een aankoop gevraagd.
+
+## Leesbaar boven een bewegende achtergrond
+
+Het doek achter de app beweegt en is op sommige plekken fel oranje, cyaan of
+paars. Alles wat daar rechtstreeks op ligt is daarom soms leesbaar en soms niet,
+en "soms" bestaat hier niet als eis. Twee keer is dat misgegaan op precies
+dezelfde manier: de woordenlijst van de gids, en de vier links onderaan de app.
+
+**De regel: tekst krijgt een eigen grond van `rgba(13, 7, 26, .92)`, geen waas.**
+Op halve dekking schijnt een felle plek er dwars doorheen. Nagerekend als
+contrastverhouding (WCAG; 4,5:1 is de ondergrens voor gewone tekst, en de
+rekensom staat hieronder zodat je hem kunt herhalen):
+
+| grond | `--ink` | `--muted` |
+|---|---|---|
+| `rgba(13,7,26,.92)` | 15,4:1 | 6,8:1 |
+| `rgba(8,6,17,.55)` | 5,5:1 | 2,5:1 |
+| `rgba(8,6,17,.50)` | 4,8:1 | **2,1:1** |
+
+Dus: `footer.end`, `.gids-woorden`, `.gids-geen` en `.meta` staan op `.92`.
+`.sub` en `.head-rule p` mogen op `.55` blijven omdat ze in diezelfde regel hun
+kleur naar `#F6F2FF` zetten en daarmee boven de 5:1 uitkomen.
+
+**En een link is strenger dan tekst.** `.gids-woorden a` en `.voet-links a`
+stonden op `var(--crown)` en `var(--muted)`; die moeten niet alleen leesbaar zijn
+maar ook nog van gewone tekst te onderscheiden. Ze zijn nu `var(--ink)` met een
+paarse onderstreep. Een `text-shadow` — wat `.sub, .head-rule p, .meta,
+.meter-noot, footer.end, .antwoord-uitleg` doen — helpt bij losse tekst, maar
+niet bij een link en niet boven de felste plekken.
 
 ## De publieke pagina
 
