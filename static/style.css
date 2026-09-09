@@ -694,6 +694,12 @@ section .entry { border-left-width: 3px; border-left-color: var(--tint); }
 .mic-meter.stil i.op, .mic-meter.stil i { background: var(--solar); opacity: .5; }
 #clear { border-color: rgba(226, 85, 79, .35); }
 #voice { border-color: rgba(74, 159, 226, .5); color: var(--throat); }
+
+/* Delen: de kaart is de advertentie, dus de knop mag opvallen zonder de
+   speler over te nemen. */
+#deel { border-color: rgba(179, 105, 222, .55); color: var(--crown); }
+.deel-melding { margin: .5rem 0 0; font-size: .84rem; color: var(--muted); min-height: 1.2rem; }
+.deel-melding.err { color: #F5A08F; }
 .call { border-color: rgba(242, 198, 76, .55); color: var(--solar); }
 .account .schakel button[aria-pressed="true"] { border-color: var(--heart); color: var(--heart); }
 

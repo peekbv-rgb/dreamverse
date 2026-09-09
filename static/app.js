@@ -173,6 +173,7 @@
   function show(n) {
     var total = episode.panels.length;
     index = Math.max(0, Math.min(total - 1, n));
+    deelKnopBijwerken();
     var panel = episode.panels[index];
     stage.innerHTML = scene(panel);
     // Een gekochte film: elk paneel beweegt.
@@ -399,6 +400,7 @@
         }
         // Staat het net binnengekomen paneel in beeld, dan meteen tonen.
         if (fresh && panelImages[index] && !stage.querySelector(".painted")) { show(index); }
+        deelKnopBijwerken();
         toonVoortgang(state);
         var bezig = state.status !== "done"
                  || (kernVideo && kernVideo.status === "busy")
@@ -1720,6 +1722,155 @@
           }
         };
       }
+    });
+  }
+
+  /* -------------------------------------------------------- je droom delen */
+
+  /* Een verticale kaart van 1080 bij 1920, gemaakt in de browser.
+   *
+   * Instagram heeft geen manier om vanaf een website te posten. De enige weg
+   * die er echt uitkomt is het deelmenu van het toestel zelf: daar staat
+   * Instagram in, en daar kun je een bestand naartoe sturen. Vandaar een
+   * afbeelding en geen link — een link naar je paneel is bij een ander dood,
+   * want die route controleert of het jouw gebruikersnummer is.
+   *
+   * **Wat er op de kaart staat is het beeld, niet je droom.** Geen duiding,
+   * geen droomtekst, geen titel. Dat is het intieme deel, en iemand die op
+   * "delen" drukt om een mooi plaatje te sturen hoort niet per ongeluk zijn
+   * nacht op straat te leggen. Wat er wél op staat is "Vannacht droomde ik…"
+   * en onderaan het merk — de kaart is de advertentie.
+   */
+  var KAART_B = 1080, KAART_H = 1920;
+
+  function kaartTekst() {
+    return (window.TAAL === "en") ? "Last night I dreamed…" : "Vannacht droomde ik…";
+  }
+
+  function beeldLaden(bron) {
+    return new Promise(function (klaar, mis) {
+      var im = new Image();
+      im.onload = function () { klaar(im); };
+      im.onerror = function () { mis(new Error("beeld niet geladen")); };
+      im.src = bron;
+    });
+  }
+
+  /* Het beeld vullend in een vak, midden uitgesneden. */
+  function vullend(ctx, im, x, y, b, h) {
+    var s = Math.max(b / im.width, h / im.height);
+    var bb = im.width * s, hh = im.height * s;
+    ctx.drawImage(im, x + (b - bb) / 2, y + (h - hh) / 2, bb, hh);
+  }
+
+  async function kaartMaken(bron) {
+    var c = document.createElement("canvas");
+    c.width = KAART_B; c.height = KAART_H;
+    var ctx = c.getContext("2d");
+
+    // De grond van de app, met een violette gloed erachter.
+    ctx.fillStyle = "#08060F";
+    ctx.fillRect(0, 0, KAART_B, KAART_H);
+    var gloed = ctx.createRadialGradient(KAART_B / 2, KAART_H * 0.34, 80,
+                                         KAART_B / 2, KAART_H * 0.34, KAART_B);
+    gloed.addColorStop(0, "rgba(110, 98, 218, .55)");
+    gloed.addColorStop(1, "rgba(8, 6, 17, 0)");
+    ctx.fillStyle = gloed;
+    ctx.fillRect(0, 0, KAART_B, KAART_H);
+
+    // Het paneel, groot en vierkant in het midden.
+    var vakY = 520, vakH = 1120;
+    var im = await beeldLaden(bron);
+    ctx.save();
+    ctx.beginPath();
+    if (ctx.roundRect) { ctx.roundRect(60, vakY, KAART_B - 120, vakH, 40); }
+    else { ctx.rect(60, vakY, KAART_B - 120, vakH); }
+    ctx.clip();
+    vullend(ctx, im, 60, vakY, KAART_B - 120, vakH);
+    ctx.restore();
+
+    // Naar onderen laten wegvloeien, zodat het beeld in de kaart zakt in
+    // plaats van er als een plakker op te liggen.
+    var vaag = ctx.createLinearGradient(0, vakY + vakH - 220, 0, vakY + vakH);
+    vaag.addColorStop(0, "rgba(8, 6, 17, 0)");
+    vaag.addColorStop(1, "rgba(8, 6, 17, .96)");
+    ctx.fillStyle = vaag;
+    ctx.fillRect(60, vakY + vakH - 220, KAART_B - 120, 220);
+
+    ctx.textAlign = "center";
+    ctx.fillStyle = "#F2EEFB";
+    ctx.font = 'italic 300 96px "Cormorant Garamond", Georgia, serif';
+    ctx.fillText(kaartTekst(), KAART_B / 2, 350);
+
+    // Het merk: klein, onderaan, en niet schreeuwen. Wie de kaart mooi vindt
+    // zoekt de naam wel op; wie hem opgedrongen krijgt deelt hem niet.
+    ctx.font = '600 34px Karla, "Segoe UI", Helvetica, Arial, sans-serif';
+    ctx.fillStyle = "rgba(167, 154, 203, .95)";
+    ctx.letterSpacing = "6px";
+    ctx.fillText("DREAMVERSE", KAART_B / 2, KAART_H - 150);
+    ctx.letterSpacing = "0px";
+    ctx.font = '400 30px Karla, "Segoe UI", Helvetica, Arial, sans-serif';
+    ctx.fillStyle = "rgba(167, 154, 203, .65)";
+    ctx.fillText("vera-dreamverse.com", KAART_B / 2, KAART_H - 92);
+
+    return new Promise(function (klaar) { c.toBlob(klaar, "image/png"); });
+  }
+
+  /* Welk beeld gaat er op de kaart: wat er nu in de speler staat. */
+  function huidigPaneelBeeld() {
+    var pad = panelImages[index];
+    if (pad) { return pad; }
+    // Geen getekend paneel? Dan is er niets te delen dat de moeite waard is.
+    return null;
+  }
+
+  function deelKnopBijwerken() {
+    var knop = el("deel");
+    if (!knop) { return; }
+    var kan = !!huidigPaneelBeeld() && !(episode && episode.demo);
+    knop.hidden = !kan;
+  }
+
+  if (el("deel")) {
+    el("deel").addEventListener("click", async function () {
+      var knop = this, melding = el("deel-melding");
+      var bron = huidigPaneelBeeld();
+      melding.className = "deel-melding";
+      melding.textContent = "";
+      if (!bron) { return; }
+
+      knop.disabled = true;
+      var oudeTekst = knop.textContent;
+      knop.textContent = t("Bezig…");
+      try {
+        // De letters moeten binnen zijn, anders tekent het doek in Times New
+        // Roman en ziet de kaart er niet uit als de app.
+        if (document.fonts && document.fonts.ready) { await document.fonts.ready; }
+        var blob = await kaartMaken(bron);
+        var bestand = new File([blob], "dreamverse.png", { type: "image/png" });
+
+        if (navigator.canShare && navigator.canShare({ files: [bestand] })) {
+          await navigator.share({ files: [bestand] });
+          melding.textContent = "";
+        } else {
+          // Geen deelmenu — op een laptop is dat de regel. Dan opslaan, en
+          // zeggen wat je er vervolgens mee doet.
+          var url = URL.createObjectURL(blob);
+          var a = document.createElement("a");
+          a.href = url; a.download = "dreamverse.png";
+          document.body.appendChild(a); a.click(); a.remove();
+          setTimeout(function () { URL.revokeObjectURL(url); }, 5000);
+          melding.textContent = t("Opgeslagen als afbeelding. Delen naar Instagram gaat het makkelijkst vanaf je telefoon.");
+        }
+      } catch (e) {
+        // Wegklikken van het deelmenu is geen fout.
+        if (!(e && e.name === "AbortError")) {
+          melding.className = "deel-melding err";
+          melding.textContent = t("De kaart kon niet gemaakt worden.");
+        }
+      }
+      knop.disabled = false;
+      knop.textContent = oudeTekst;
     });
   }
 

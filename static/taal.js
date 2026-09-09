@@ -85,6 +85,10 @@
 
     // Los te koop
     ["Voor welke droom?", "For which dream?"],
+    ["Deel deze droom", "Share this dream"],
+    ["De kaart kon niet gemaakt worden.", "The card could not be made."],
+    ["Opgeslagen als afbeelding. Delen naar Instagram gaat het makkelijkst vanaf je telefoon.",
+     "Saved as an image. Sharing to Instagram is easiest from your phone."],
     ["vragen", "questions"],
     ["20 tokens <b>€7,00</b>", "20 tokens <b>€7.00</b>"],
     ["40 tokens <b>€12,00</b>", "40 tokens <b>€12.00</b>"],

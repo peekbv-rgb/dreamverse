@@ -320,6 +320,29 @@ en het scheelt direct in de kostprijs per verbeelding.
   lege regels en maakt er `<p>`'s van, en daarom is `#samen` een `div` geworden
   — een `<p>` mag geen `<p>` bevatten.
 
+## De DreamCard
+
+De knop **Deel deze droom** bij de speler maakt een verticale kaart van
+1080 bij 1920 in de browser en geeft hem aan het deelmenu van het toestel. Daar
+staat Instagram in, en dat is de enige weg die er echt uitkomt: **posten vanaf
+een website kan bij Instagram niet.**
+
+Op de kaart staat het beeld, "Vannacht droomde ik…" en onderaan het merk.
+**Geen duiding, geen droomtekst, geen titel** — dat is het intieme deel, en wie
+op delen drukt om een mooi plaatje te sturen hoort niet per ongeluk zijn nacht
+op straat te leggen. Een link naar het paneel zou trouwens ook niet werken: die
+route controleert of het jouw gebruikersnummer is, dus bij een ander is hij dood.
+Publieke deellinks zijn een heel ander en veel groter besluit.
+
+De knop verschijnt alleen als er een getekend paneel staat en niet bij het
+voorbeeld, en volgt het paneel dat je op dat moment bekijkt. Zonder deelmenu —
+op een laptop is dat de regel — wordt de kaart opgeslagen als afbeelding, met de
+mededeling dat delen vanaf een telefoon makkelijker gaat.
+
+Twee dingen die goed moeten. `document.fonts.ready` wordt afgewacht, anders
+tekent het doek in Times New Roman en ziet de kaart er niet uit als de app. En
+`AbortError` is geen fout: dat is iemand die het deelmenu wegklikt.
+
 ## De chakrapilaar
 
 Hij staat op de pagina tussen *Je dromen samen* en *Je droomarchief*, en
