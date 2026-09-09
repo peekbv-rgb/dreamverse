@@ -76,9 +76,35 @@
     ["Deze taal kent de spraakherkenning niet.", "Speech recognition does not know this language."],
     ["Inspreken kan alleen in Chrome en Edge. Typ je droom hierboven.",
      "Speaking it in only works in Chrome and Edge. Type your dream above."],
-    ["Over Dreamverse", "About Dreamverse"],
-    ["Pakketten en prijzen", "Plans and prices"],
-    ["Privacyverklaring", "Privacy statement"],
+    // De voetnootregel is één sleutel, want de vertaalslag vervangt de hele
+    // innerHTML van de <p> en niet de <a>'s erbinnen. Drie losse linkteksten
+    // pasten daarom nergens op. Enkele aanhalingstekens, want er staan dubbele
+    // in de HTML.
+    ['<a href="/welkom.html" target="_blank" rel="noopener">Over Dreamverse</a> <span aria-hidden="true">·</span> <a href="/welkom.html#kosten" target="_blank" rel="noopener">Pakketten en prijzen</a> <span aria-hidden="true">·</span> <a href="/privacy.html" target="_blank" rel="noopener">Privacyverklaring</a>',
+     '<a href="/welkom.html" target="_blank" rel="noopener">About Dreamverse</a> <span aria-hidden="true">·</span> <a href="/welkom.html#kosten" target="_blank" rel="noopener">Plans and prices</a> <span aria-hidden="true">·</span> <a href="/privacy.html" target="_blank" rel="noopener">Privacy statement</a>'],
+
+    // Los te koop
+    ["Voor welke droom?", "For which dream?"],
+    ["vragen", "questions"],
+    ["20 tokens <b>€7,00</b>", "20 tokens <b>€7.00</b>"],
+    ["40 tokens <b>€12,00</b>", "40 tokens <b>€12.00</b>"],
+    ["100 tokens <b>€25,00</b>", "100 tokens <b>€25.00</b>"],
+    ["Waarom stond mijn moeder in die deuropening?",
+     "Why was my mother standing in that doorway?"],
+
+    // Mijn gegevens
+    ["Een zip met je profiel, al je dromen zoals je ze verteld hebt, de duidingen die erbij geschreven zijn, en alle panelen, animaties en ingesproken tekst.",
+     "A zip with your profile, every dream in the words you told it, the readings written for them, and all panels, animations and narration."],
+    ["Je account, je dromen, de duidingen en al het beeld gaan weg, en er blijft geen kopie achter. Loopt er een abonnement, dan wordt dat eerst opgezegd. Dit is niet ongedaan te maken.",
+     "Your account, your dreams, the readings and all the images go, and no copy stays behind. If a subscription is running it gets cancelled first. This cannot be undone."],
+
+    // Beheer. Alleen Ruud ziet dit, maar half Nederlands leest als een half af
+    // scherm - en hij kijkt er zelf ook in het Engels naar.
+    ["Gratis", "Free"],
+    ["Vul je <code>ADMIN_TOKEN</code> in. Die staat bij Render onder <em>Environment</em>. Hij blijft daarna in deze browser staan.",
+     "Enter your <code>ADMIN_TOKEN</code>. You will find it on Render under <em>Environment</em>. It stays in this browser afterwards."],
+    ["Rekent niets af. Het saldo wordt op dit getal <em>gezet</em>, niet erbij opgeteld. Laat <em>Voor wie</em> leeg voor je eigen account, of vul het adres van een testpersoon in — dan hoef je niet als hem in te loggen. <em>Beheer uit</em> haalt beheer weg voor dit bezoek; met <code>?beheer</code> zet je het weer aan.",
+     "Charges nothing. The balance is <em>set</em> to this number, not added to it. Leave <em>For whom</em> empty for your own account, or fill in a tester's address — then you do not have to log in as them. <em>Admin off</em> removes admin for this visit; <code>?beheer</code> switches it back on."],
     ["Je e-mailadres is bevestigd. Dank je.", "Your e-mail address is confirmed. Thank you."],
     ["Die bevestigingslink is niet geldig of al gebruikt.",
      "That confirmation link is not valid, or has already been used."],

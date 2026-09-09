@@ -232,6 +232,18 @@ en het scheelt direct in de kostprijs per verbeelding.
   er niet over wil nadenken de classificatie. Alles zit in `LENZEN` en
   `LENS_UITLEG` in `dreamverse.py`; de verbeelding wordt als woordenboek bewaard,
   dus er was geen migratie nodig.
+- **Een sleutel is de héle `innerHTML` van het element, niet de tekst erbinnen.**
+  De voetnootregel met drie links kreeg drie losse vertalingen — *Over
+  Dreamverse*, *Pakketten en prijzen*, *Privacyverklaring* — en die pasten
+  nergens op, want `<a>` staat niet in `TE_VERTALEN`; vertaald wordt de `<p>`
+  eromheen, met de opmaak erin. Eén sleutel met de hele regel HTML dus, in
+  enkele aanhalingstekens.
+- **`python build/controle.py` kijkt ook of elke `t("...")` uit `app.js` een
+  regel in `taal.js` heeft.** Zo'n zin valt anders terug op het Nederlands en
+  blijft staan zodra iemand op English drukt — zonder fout, zonder melding.
+  Wat in `index.html` staat vangt die controle níet: daar bepalen CSS-selectors
+  wie meedoet en dat vraagt een echte browser. Die kant meet je door in de app
+  op English te drukken en te kijken welke elementen hun `data-nl` houden.
 - **Sleutels in `taal.js` met HTML erin moeten enkele aanhalingstekens hebben.**
   De vertaalslag vervangt `innerHTML`, dus een zin met een link erin heeft die
   link in de sleutel staan. Zet je daar dubbele aanhalingstekens omheen, dan

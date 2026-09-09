@@ -61,6 +61,39 @@ def css_variabelen():
     return sorted(gebruikt - gezet)
 
 
+def vertalingen():
+    """`t("...")` in app.js zonder regel in taal.js.
+
+    Zo'n zin valt terug op het Nederlands en blijft staan als de bezoeker op
+    English drukt. Dat meldt zich nergens: er is geen fout, de app werkt, er
+    staat alleen ineens een Nederlandse zin tussen de Engelse.
+
+    Dit vangt alleen wat JavaScript maakt. Wat in index.html staat is hiermee
+    niet te controleren - daar bepalen CSS-selectors welke elementen meedoen, en
+    dat vraagt een echte browser. Die kant meet je door in de app op English te
+    drukken en te kijken welke elementen hun `data-nl` houden.
+    """
+    import re
+    app = WORTEL / "static" / "app.js"
+    taal = WORTEL / "static" / "taal.js"
+    if not app.exists() or not taal.exists():
+        return []
+    plat = lambda s: re.sub(r"\s+", " ", s).strip()
+
+    sleutels = set()
+    for m in re.finditer(r"\[\s*(['\"])((?:\\.|(?!\1).)*?)\1\s*,",
+                         taal.read_text(encoding="utf-8"), re.S):
+        sleutels.add(plat(m.group(2).replace('\\"', '"').replace("\\'", "'")))
+
+    mist = set()
+    for m in re.finditer(r"\bt\(\s*(['\"])((?:\\.|(?!\1).)*?)\1\s*\)",
+                         app.read_text(encoding="utf-8"), re.S):
+        zin = plat(m.group(2).replace('\\"', '"').replace("\\'", "'"))
+        if zin and zin not in sleutels:
+            mist.add(zin)
+    return sorted(mist)
+
+
 def main():
     gevonden = []
     for pad in bestanden():
@@ -83,10 +116,22 @@ def main():
                 gevonden.append((pad.relative_to(WORTEL), regel, kolom, code, zichtbaar))
 
     zwevend = css_variabelen()
+    onvertaald = vertalingen()
 
-    if not gevonden and not zwevend:
-        print("Geen stuurtekens gevonden, en elke CSS-variabele bestaat.")
+    if not gevonden and not zwevend and not onvertaald:
+        print("Geen stuurtekens, elke CSS-variabele bestaat, "
+              "elke t()-zin heeft een vertaling.")
         return 0
+
+    if onvertaald:
+        print("Zinnen uit app.js zonder regel in taal.js. Die blijven in het")
+        print("Nederlands staan zodra iemand op English drukt:")
+        print("")
+        for zin in onvertaald:
+            print("  %s" % zin[:100])
+        print("")
+        if not gevonden and not zwevend:
+            return 1
 
     if zwevend:
         print("CSS-variabelen die gebruikt worden maar nergens gezet zijn.")
