@@ -96,7 +96,15 @@ en het scheelt direct in de kostprijs per verbeelding.
 - **De vooruitblik is vermaak, geen voorspelling.** Nooit over gezondheid, ziekte,
   geld, zwangerschap of iemands dood. Dat staat in `RULES` in `dreamverse.py` en
   hoort daar te blijven: een app die zegt "let op je hart" bezorgt mensen echte
-  angst en je kunt het niet terugnemen.
+  angst en je kunt het niet terugnemen. **En de kop erboven zegt dat ook.** Daar
+  stond *Wat eraan zit te komen* — een voorspelling, drie regels boven de zin
+  dat dit geen voorspelling is; de app sprak zichzelf tegen op de plek waar
+  iemand haar het scherpst leest. Nu: *Waar deze droom je aandacht op kan
+  vestigen* / *What this dream may be pointing toward*. De promptregel is
+  meegegaan (geen "je zult", geen "er komt": iets om op te letten, niet iets om
+  op te wachten), en de vraag achteraf is van *Klopte het?* naar *Heb je het
+  teruggezien?* gegaan met Ja/Deels/Nee. Wat bewaard wordt blijft
+  `raak/deels/mis`, dus oude oordelen blijven staan.
 - **Drie grenzen, en de nummers staan in de code.** Bij een expliciet seksuele
   droom komt er geen verbeelding: `BuitenBereik` slaat toe **vóór** het
   afrekenen en vóór het opslaan, dus zo'n droom kost niets en komt niet in het
@@ -472,6 +480,43 @@ wordt overal gebruikt zodra het gevuld is), en de overige achttien onderwerpen.
 Het Kling-tegoed verloopt 18 september; die beelden zijn er een goede besteding
 van, want vier eenheden per stuk.
 
+## Eerst de droom, dan pas het account
+
+Het eerste scherm van `/app` was naam, e-mail en wachtwoord — gevraagd aan
+iemand die nog niet weet wat hij ervoor terugkrijgt. Nu staat er *Wat droomde je
+vannacht?* met een tekstvak en *Inspreken*, en verder niets. Pas als die tekst
+er staat komt de account, met een reden erbij: *Je droom staat klaar voor Vera.*
+
+**De tekst blijft tot dat moment alleen in de browser** (`dreamverse_eerste_droom`
+in `localStorage`, een dag geldig). Dat is geen gemak maar een grens: een droom
+is een bijzonder persoonsgegeven en er is nog geen account om hem aan te hangen,
+dus hij gaat pas naar de server als de gebruiker bestaat. Wie afhaakt kost
+daardoor ook niets — er wordt niets gegenereerd voordat het account er is.
+
+**Na het aanmelden komt de tekst in de invoer en licht de knop op, maar hij
+wordt niet verstuurd.** Verbeelden kost geld en soms tokens, en de kwaliteit is
+een keuze die hij nog niet gemaakt heeft. Zelfde regel als bij een gesprek met
+Vera: daar wordt ook nooit vanzelf een verbeelding van gemaakt.
+
+Drie dingen die hier stuk waren en meelopen:
+
+- **De poort was altijd Nederlands.** Zolang het een inlogvenster was viel dat
+  nauwelijks op; als eerste scherm van het product krijgt iemand die net op
+  *Start for free* heeft gedrukt een Nederlandse vraag. `poortTaal()` leest
+  dezelfde `dreamverse_taal` als `welkom.html` en `privacy.html`, met de
+  browsertaal erachter en Engels als standaard.
+- **Die taal gaat mee bij het registreren** (`taal` in de body van
+  `/api/registreren`). Zonder dat begon iedereen op Nederlands, ook wie zijn
+  droom in het Engels intypte — en een duiding wordt geschreven en niet
+  vertaald, dus dat is achteraf niet te herstellen.
+- **Vera's introductie wordt overgeslagen als er een droom klaarstaat.** Anders
+  krijgt iemand die net zijn naam heeft ingevuld meteen een venster dat opnieuw
+  om naam, geboortedatum en geslacht vraagt — precies het scherm waar dit pad
+  omheen gebouwd is. `startteMetDroom` wordt gezet *voordat*
+  `eersteDroomOverzetten()` de opslag leegmaakt, want `toonIntro()` haalt eerst
+  het profiel op en is dus later klaar. De introductie staat nog gewoon bij *Je
+  gegevens*, en de geboortedatum wordt pas bij een aankoop gevraagd.
+
 ## De publieke pagina
 
 `static/welkom.html` is wat iemand zonder account te zien krijgt: wat Dreamverse
@@ -602,7 +647,17 @@ cookiebanner oplevert en het gedrag van dromers bij een advertentiebedrijf legt.
   met de hand gezet via `POST /api/account`. Dat eindpunt vraagt sinds
   2 september 2026 om de header `X-Admin-Token`, die moet kloppen met `ADMIN_TOKEN`
   uit de omgeving. Staat die niet gezet, dan kan aanpassen helemaal niet — dat is
-  de veilige stand. In de app is er geen zichtbare beheerknop: zet
+  de veilige stand. **De opmaak van het beheerpaneel staat niet meer in
+  `static/index.html`** maar in `beheer/paneel.html`, en komt van
+  `GET /api/beheer-paneel` achter dezelfde sleutel als de handelingen erin.
+  Hij stond er wél, en daarmee kreeg élke ingelogde dromer de knoppen voor
+  pakketten en tokensaldo én de kostprijs van een droom mee in zijn HTML.
+  Wijzigen kon hij niet — `hmac.compare_digest` tegen `ADMIN_TOKEN`, en zonder
+  die variabele weigert het eindpunt helemaal — maar lezen wel. `app.js`
+  bevat de beheercode zelf nog; die losmaken vraagt een eigen bundel of een
+  eigen pagina. En de sleutel in `localStorage` op dezelfde origin als de app
+  blijft de echte zwakte: één XSS in de dromerkant leest hem. In de app is er
+  geen zichtbare beheerknop: zet
   `?beheer` achter het adres, vul de sleutel in de kaart in, en de knoppen én de
   kostenmeter verschijnen. De sleutel blijft daarna in `localStorage` van die ene
   browser staan, dus dat is eenmalig per browser, en met de knop **Beheer uit**
@@ -789,7 +844,7 @@ Dat stuurt alle bestaande id's mee, ruimt de vorige versie op en werkt
 
 | | prijs | dromen/maand | panelen | avatar |
 |---|---|---|---|---|
-| Gratis | € 0 | **1** | ja, vijf getekende panelen | alleen met tokens |
+| Gratis | € 0 | **3** | **de eerste** met vijf panelen, daarna de duiding | alleen met tokens |
 | **Lite** | **€ 2,99** | **3** | ja, vijf getekende panelen | alleen met tokens |
 | Plus | € 7,99 | 6 | ja, plus **drie** bewegende kernmomenten | alleen met tokens |
 | Ultra | € 29,99 | 10 | ja, **vijf** kernmomenten op het beste model | 10 minuten inbegrepen |
@@ -804,9 +859,32 @@ het is precies die knop die de marge opat. Het maandtegoed staat in
 iemand er zo een, dan gaat zijn maandtegoed **niet** ook nog omlaag — anders
 betaalt hij twee keer.
 
-Gratis geeft **één** droom en geen drie. Bij drie kostte een gratis gebruiker
-€ 0,42 per maand, en vier van hen aten één betalende op; nu is dat € 0,14. Lite
-kost € 2,99 en niet € 1,99, want bij een klein maandbedrag is de vaste $0,50
+**Gratis geeft drie dromen, en alleen de eerste krijgt beeld.** Het was er één,
+met het argument dat drie volledige dromen € 0,42 per maand kosten en vier
+gratis gebruikers dan één betalende opeten. Dat klopte, maar het kocht die
+besparing met het enige wat het abonnement verkoopt: bij één droom is er geen
+tweede en geen derde, en dus nooit een verband om te laten zien — `together`
+blijft onder de drie dromen met opzet leeg. Drie *volledige* dromen weggeven kan
+óók niet, want dan heeft Lite (drie dromen voor € 2,99) geen reden meer om te
+bestaan. Vandaar de trap: `GRATIS_MET_BEELD = 1` in `plans.py`, en `PLAN_RANG`
+is daarvoor de functie `plan_rang(plan, droomnummer)` geworden. Wie op droom
+twee tóch beeld wil koopt het met een token, via dezelfde knop die er al was.
+Kostprijs van een gratis gebruiker: € 0,22 per maand in plaats van € 0,15 —
+`python prijzen.py --scan` kent die trap, anders rekent hij drie keer het dure
+tarief en lijkt de gratis laag bijna drie keer zo duur als hij is.
+
+**En op de derde nacht staat "Vera zag iets" boven de gezamenlijke duiding.**
+Dat is het betaalmoment, en met opzet niet "je gratis dromen zijn op": wat
+iemand overtuigt is geen grens maar een vondst. Op de kaart staan de tekens die
+in meer dan één droom voorkwamen en de draad naar een eerdere nacht, en pas
+daaronder de knop naar de pakketten. Er staat **niets** in dat verzonnen is —
+`symbols` mag per prompt alleen tekens noemen die vaker dan eens voorkwamen, en
+een draad verwijst naar een droom die echt bestaat. Is er geen van beide, dan
+blijft de kaart weg: beweren dat er een patroon is terwijl er niets te noemen
+valt is de snelste manier om dit onderdeel ongeloofwaardig te maken. Wie al
+betaalt ziet hem niet.
+
+Lite kost € 2,99 en niet € 1,99, want bij een klein maandbedrag is de vaste $0,50
 transactiekosten het probleem en niet het percentage — op € 1,99 is dat 23% van
 de prijs. Drie dromen bij € 2,99 houdt 48% marge; bij € 1,99 was dat 33%.
 
@@ -888,6 +966,18 @@ service opnieuw op zodra een variabele verandert: een paar minuten 502.
 
 Geregistreerd op 6 september 2026, op naam van Peek BV: `dreamverse.nl`, plus
 `veradreamverse` en `vera-dreamverse` op .com, .nl, .eu, .be, .store en .online.
+**Naar buiten heet het Vera Dreamverse.** Er staat sinds juni 2026 een app *The
+DreamVerse* in de App Store, óók een droomapp met dagboek, spraak en AI-duiding,
+en er zijn meer Dreamverse-namen in omloop. Of dat een merkenprobleem is, is
+niet vastgesteld — daar hoort een echte check bij voor Benelux (BOIP), EU
+(EUIPO, klasse 9, 41 en 42) en de VS (USPTO), en die is nog niet gedaan.
+Ondertussen is *Vera Dreamverse* hoe dan ook de veiligere en onderscheidender
+naam, en hij staat al op het domein en op Instagram. Dus staat hij nu in alles
+wat Google leest: de `<title>` van de drie pagina's, de titels en de JSON-LD van
+de gidsartikelen, en auteur en uitgever in het schema. **In de app zelf blijft
+er Dreamverse staan** — dat is hoe iemand het noemt zodra hij binnen is, en dat
+hoeft niet mee te veranderen met de naam waarop hij ons gevonden heeft.
+
 **`dreamverse.com` is niet van ons.** Gekozen hoofddomein: **vera-dreamverse.com**,
 dezelfde naam als het Instagram-account *Veradreamverse*.
 
