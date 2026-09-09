@@ -1059,7 +1059,7 @@
         if (!window.confirm(t("Droom") + " " + d.n + " " + t("verwijderen? De panelen en de animatie gaan mee."))) { return; }
         fetch("/api/dream/" + d.n, { method: "DELETE" })
           .then(function (r) { return r.json(); })
-          .then(function () { loadArchive(); laadVerbruik(); laadAccount(); })
+          .then(function () { loadArchive(); laadAccount(); })
           .catch(function () {});
       });
 
@@ -2178,7 +2178,6 @@
           veld.value = "";
           toonVragen(episode);
           if (res.body.account) { toonAccount(res.body.account); }
-          laadVerbruik();
           // Ging het over geweld of zelfdoding, dan hoort de verwijzing er ook
           // hier bij - dezelfde als bij de duiding.
           var laatste = res.body.vraag || {};
@@ -2281,7 +2280,6 @@
         verwachtWerk();
         startBezig(t("Aanvraag gestart…"));
         toonAccount(res.body.account);
-        laadVerbruik();
         pollPanels(nummer, POLL_TOTAAL);
       })
       .catch(function (err) {
@@ -2383,7 +2381,6 @@
         render(ep);
         input.value = "";
         loadArchive();
-        laadVerbruik();
         laadAccount();
         statusEl.textContent = ep.demo
           ? (ep.demo_reason || t("Dit is een voorbeeld."))
@@ -2438,7 +2435,7 @@
     if (sessionId) {
       // Afsluiten bij Runway, anders loopt de teller door.
       fetch("/api/vera/session/" + sessionId, { method: "DELETE" })
-        .then(function () { laadVerbruik(); laadAccount(); }).catch(function () {});
+        .then(function () { laadAccount(); }).catch(function () {});
       sessionId = null;
     }
     el("call-panel").hidden = true;
@@ -2886,16 +2883,9 @@
       html += "<button type='button' data-opwaarderen='1'>" +
               t("Tokens kopen") + "</button>";
     }
-    if (beheerAan) {
-      ["gratis", "lite", "plus", "ultra"].forEach(function (p) {
-        html += "<button type='button' data-plan='" + p + "' aria-pressed='" +
-                (a.plan === p ? "true" : "false") + "'>" + t(p) + "</button>";
-      });
-      html += "<button type='button' data-tokens='10'>" + t("+10 tokens") + "</button>";
-    }
-    // Geen zichtbare beheerknop: dat is het enige knopje dat een bezoeker ziet
-    // en niet snapt. Beheer zet je aan met ?beheer achter het adres; daarna
-    // blijft de sleutel in deze browser staan en verschijnen de knoppen vanzelf.
+    // Hier stonden de pakketknoppen en +10 tokens van het beheer. Die zaten in
+    // de kaart van elke dromer, verborgen achter een vlag in JavaScript, en dat
+    // is geen slot maar een gordijn. Ze staan nu op /beheer.
     if (a.plan !== "gratis") {
       html += "<button type='button' class='ghost' data-portaal='1'>" +
               t("abonnement") + "</button>";
@@ -2908,15 +2898,6 @@
     el("account").querySelectorAll("[data-opwaarderen]").forEach(function (b) {
       b.addEventListener("click", naarTokens);
     });
-    el("account").querySelectorAll("[data-plan]").forEach(function (b) {
-      b.addEventListener("click", function () { zetAccount({ plan: b.dataset.plan }); });
-    });
-    el("account").querySelectorAll("[data-tokens]").forEach(function (b) {
-      b.addEventListener("click", function () { zetAccount({ tokens: 10 }); });
-    });
-    el("account").querySelectorAll("[data-beheer]").forEach(function (b) {
-      b.addEventListener("click", vraagBeheer);
-    });
     el("account").querySelectorAll("[data-uit]").forEach(function (b) {
       b.addEventListener("click", uitloggen);
     });
@@ -2924,14 +2905,6 @@
       b.addEventListener("click", naarPortaal);
     });
   }
-
-  /* Pakket en saldo met de hand zetten.
-   *
-   * Dat is een beheerdershandeling: het is gratis Ultra met tien avatarminuten.
-   * De server vraagt sindsdien om ADMIN_TOKEN, en die sleutel woont alleen in
-   * deze browser. Wie hem niet heeft ziet de knoppen niet eens.
-   */
-  var BEHEER_SLEUTEL = "dreamverse_admin";
 
   // Staat afrekenen aan? Komt uit /api/health. Zonder dit weten de kaarten niet
   // of er een opwaardeerknop bij mag.
@@ -2944,424 +2917,9 @@
   // vertelt daarmee hoe ver je bent in plaats van alleen dat er niets is.
   var aantalDromen = 0;
 
-  /* Zit je nú in beheer?
-   *
-   * De sleutel blijft in deze browser staan zodat je hem niet elke keer hoeft te
-   * plakken, maar dat is iets anders dan in beheer zitten. Op de sleutel alleen
-   * bleef de kostenmeter, de webhooklog en de pakketknoppen voorgoed in beeld,
-   * ook als je de app gewoon als dromer opende. Beheer is een stand van dit
-   * paginabezoek: aan met ?beheer achter het adres, weg zodra je de pagina
-   * ververst zonder.
-   */
-  var beheerAan = false;
-
-  function beheerSleutel() {
-    try { return localStorage.getItem(BEHEER_SLEUTEL) || ""; } catch (e) { return ""; }
-  }
-
-  function zetAccount(body) {
-    var sleutel = beheerSleutel();
-    if (!sleutel) { return; }
-    // Voor wie? Leeg is jezelf; een adres is een testpersoon.
-    var wie = el("beheer-wie");
-    if (wie && wie.value.trim()) { body.wie = wie.value.trim(); }
-    fetch("/api/account", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "X-Admin-Token": sleutel },
-      body: JSON.stringify(body)
-    })
-      .then(function (r) {
-        if (r.status === 403) {
-          try { localStorage.removeItem(BEHEER_SLEUTEL); } catch (e) { /* niets */ }
-          throw new Error("sleutel afgekeurd");
-        }
-        return r.json();
-      })
-      .then(function (a) {
-        // Ging het over iemand anders, dan is dit niet jouw kaart. Melden en
-        // je eigen gegevens opnieuw ophalen, anders zie je zijn saldo staan.
-        if (a && a.wie && (!profiel || a.wie !== profiel.email)) {
-          beheerMelding(t("Gezet voor") + " " + a.wie + ": " +
-                        (a.plan_naam || a.plan) + ", " + a.tokens + " " + t("tokens"));
-          laadAccount();
-          return;
-        }
-        toonAccount(a);
-      })
-      .catch(function () { laadAccount(); });
-  }
-
-  /* Beheer aanzetten met ?beheer achter het adres.
-   *
-   * Hier stond een letterlijk backspace-teken in de reguliere expressie: een
-   * woordgrens die als stuurteken is weggeschreven in plaats van als tekst.
-   * Daardoor matchte hij nooit en gebeurde er bij ?beheer niets, zonder enig
-   * spoor: geen fout, geen melding, geen venster. Zoiets is in een editor
-   * onzichtbaar; `python build/controle.py` zoekt er nu naar.
-   */
-  if (/[?&]beheer/.test(location.search)) {
-    if (beheerSleutel()) {
-      // Sleutel al bekend: meteen aan, zonder er weer om te vragen.
-      beheerAan = true;
-      history.replaceState(null, "", location.pathname);
-    } else {
-      setTimeout(function () { vraagBeheer(); }, 400);
-    }
-  }
-
-  /* De beheersleutel vragen met een veld in de pagina.
-   *
-   * Dit was een window.prompt, en die kwam op Render niet. Chrome onderdrukt zo
-   * een dialoog zodra het tabblad de focus niet heeft of de bezoeker ooit "geen
-   * dialoogvensters meer" heeft aangevinkt - en dan is beheer onbereikbaar
-   * zonder dat er iets te zien is. Een kaart in de pagina heeft dat probleem
-   * niet, ligt boven het introvenster, en werkt op een telefoon.
-   */
-  function vraagBeheer() {
-    var poort = el("beheerpoort");
-    if (!poort) { return; }
-    el("beheerpoort-fout").hidden = true;
-    el("beheerpoort-sleutel").value = "";
-    poort.hidden = false;
-    setTimeout(function () { el("beheerpoort-sleutel").focus(); }, 60);
-  }
-
-  function beheerMelding(tekst, mis) {
-    var doos = el("beheerrij-melding");
-    if (!doos) { return; }
-    doos.hidden = false;
-    doos.className = "beheerrij-melding" + (mis ? " mis" : "");
-    doos.textContent = tekst;
-  }
-
-  function beheerpoortSluiten() {
-    if (el("beheerpoort")) { el("beheerpoort").hidden = true; }
-    // Het adres schoon achterlaten, ook als je afhaakt: anders vraagt elke
-    // verversing het opnieuw.
-    if (/[?&]beheer/.test(location.search)) {
-      history.replaceState(null, "", location.pathname);
-    }
-  }
-
-  if (el("beheerpoort")) {
-    el("beheerpoort-weg").addEventListener("click", beheerpoortSluiten);
-    el("beheerpoort-oog").addEventListener("click", function () {
-      var veld = el("beheerpoort-sleutel");
-      var open = veld.type === "text";
-      veld.type = open ? "password" : "text";
-      this.textContent = open ? t("laat zien") : t("verberg");
-      veld.focus();
-    });
-    el("beheerpoort").addEventListener("click", function (e) {
-      if (e.target === this) { beheerpoortSluiten(); }
-    });
-    document.addEventListener("keydown", function (e) {
-      if (e.key === "Escape" && !el("beheerpoort").hidden) { beheerpoortSluiten(); }
-    });
-    el("beheerpoort-form").addEventListener("submit", function (e) {
-      e.preventDefault();
-      var sleutel = el("beheerpoort-sleutel").value.trim();
-      var fout = el("beheerpoort-fout");
-      var door = el("beheerpoort-door");
-      if (!sleutel) { el("beheerpoort-sleutel").focus(); return; }
-      fout.hidden = true;
-      door.disabled = true;
-      door.textContent = t("Bezig…");
-      fetch("/api/account", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "X-Admin-Token": sleutel },
-        body: JSON.stringify({})
-      }).then(function (r) {
-        door.disabled = false;
-        door.textContent = t("Aanzetten");
-        if (r.status === 403) {
-          // Twee verschillende oorzaken, en het scheelt een middag zoeken om te
-          // weten welke van de twee het is.
-          return r.json().catch(function () { return {}; }).then(function (d) {
-            fout.textContent = /staat uit/.test(d.error || "")
-              ? t("ADMIN_TOKEN staat niet in de omgeving van de server. Zonder die "
-                  + "sleutel kan beheer helemaal niet - dat is de veilige stand.")
-              : t("Die sleutel wordt niet geaccepteerd.");
-            fout.hidden = false;
-          });
-        }
-        if (!r.ok) {
-          fout.textContent = t("Die sleutel wordt niet geaccepteerd.");
-          fout.hidden = false;
-          return;
-        }
-        try { localStorage.setItem(BEHEER_SLEUTEL, sleutel); } catch (e2) { /* niets */ }
-        beheerAan = true;
-        beheerpoortSluiten();
-        laadAccount();
-        // Eerst de opmaak ophalen; pas daarna valt er iets te vullen of te
-        // wijzen. Zonder dit scrolt naarBeheerrij() naar een lege plek.
-        beheerPaneel(function () { laadVerbruik(); naarBeheerrij(); });
-      }).catch(function () {
-        door.disabled = false;
-        door.textContent = t("Aanzetten");
-        fout.textContent = t("De server antwoordde niet. Probeer het nog eens.");
-        fout.hidden = false;
-      });
-    });
-  }
-
-  /* Na het aanzetten meteen laten zien waar de knoppen staan.
-   *
-   * Zonder dit verschijnt er ergens onderaan de pagina een sectie die je niet
-   * ziet, en lijkt het alsof de sleutel niets deed.
-   */
-  function naarBeheerrij() {
-    setTimeout(function () {
-      var doel = el("beheerrij");
-      var sectie = el("meter-section");
-      if (!doel || !sectie || sectie.hidden) { return; }
-      doel.scrollIntoView({ behavior: "smooth", block: "center" });
-      doel.classList.add("wijs");
-      setTimeout(function () { doel.classList.remove("wijs"); }, 2400);
-    }, 250);
-  }
-
   function laadAccount() {
     fetch("/api/account").then(function (r) { return r.json(); })
       .then(toonAccount).catch(function () {});
-  }
-
-  /* ----------------------------------------------------------- wat het kost */
-
-  function euro(n) { return "€" + n.toFixed(2).replace(".", ","); }
-
-  function cel(waarde, label, klasse) {
-    return '<div class="meter-cel ' + (klasse || "") + '"><b>' + waarde +
-           "</b><span>" + label + "</span></div>";
-  }
-
-  function toonVerbruik(u) {
-    var t = u.totals, m = el("meter");
-    // De meter komt met het beheerpaneel mee en bestaat dus niet altijd.
-    if (!m) { return; }
-    if (!t.dreams && !t.sessions && !t.panels) { return; }
-
-    var html = '<div class="meter-cijfers">';
-    html += cel(t.dreams, "dromen");
-    html += cel(t.panels, "panelen");
-    html += cel(t.sessions, "gesprekken");
-    html += cel(Math.round(t.avatar_seconds) + " s", "avatartijd");
-    html += cel(u.cost_per_dream === null ? "—" : euro(u.cost_per_dream),
-                "per droom", "uitgelicht");
-    html += cel(u.totals.videos, "kernmomenten");
-    html += cel(euro(u.avatar_per_5min), "gesprek van 5 min", "uitgelicht");
-    html += "</div>";
-
-    if (u.by_day.length) {
-      html += '<table class="dagen"><thead><tr><th>dag</th><th>dromen</th>' +
-              "<th>panelen</th><th>gesprekken</th><th>avatartijd</th></tr></thead><tbody>";
-      u.by_day.forEach(function (d) {
-        html += "<tr><td>" + d.date + "</td><td>" + d.dreams + "</td><td>" + d.panels +
-                "</td><td>" + d.sessions + "</td><td>" + Math.round(d.avatar_seconds) + " s</td></tr>";
-      });
-      html += "</tbody></table>";
-    }
-
-    html += '<p class="meter-noot">Tekst ' + euro(u.costs.tekst) + ", panelen " +
-            euro(u.costs.panelen) + ", video " + euro(u.costs.video || 0);
-    html += ", avatar " + euro(u.costs.avatar) + ". Runway rekent 2 credits bij het " +
-            "starten en 2 per aangebroken zes seconden, dus " + euro(u.avatar_per_minute) +
-            " per gesprekminuut — en ook wie meteen ophangt kost al iets.</p>";
-    m.innerHTML = html;
-  }
-
-  /* De kostenmeter is voor jou, niet voor de bezoeker.
-   *
-   * Daar staat de kostprijs in - wat een droom ons kost aan tekst, beeld en
-   * stem. Dat is precies wat een klant niet hoort te zien. Weggooien is zonde,
-   * want zonder die cijfers weet je niet of je prijs klopt; dus achter dezelfde
-   * beheersleutel als de pakketknoppen.
-   */
-  /* Het beheerpaneel komt van de server, niet uit de pagina.
-   *
-   * De opmaak stond in index.html en ging dus mee naar élke ingelogde dromer:
-   * de knoppen voor pakketten en tokensaldo, en de kostprijs van een droom.
-   * Wijzigen kon hij niet - /api/account eist de sleutel en weigert zonder
-   * ADMIN_TOKEN - maar lezen wel, en dan weet hij hoe het beheer werkt en wat
-   * wij aan hem verdienen. Nu komt het van GET /api/beheer-paneel, achter
-   * dezelfde sleutel als de handelingen erin, en wordt het één keer ingevoegd.
-   */
-  var paneelBezig = false;
-
-  function beheerPaneel(klaar) {
-    var anker = el("beheer-anker");
-    if (!anker) { return; }
-    if (el("meter-section")) { if (klaar) { klaar(); } return; }
-    if (paneelBezig || !beheerSleutel()) { return; }
-    paneelBezig = true;
-    fetch("/api/beheer-paneel", { headers: { "X-Admin-Token": beheerSleutel() } })
-      .then(function (r) { return r.ok ? r.text() : ""; })
-      .then(function (html) {
-        paneelBezig = false;
-        if (!html || el("meter-section")) { return; }
-        anker.innerHTML = html;
-        knoopBeheerrij();
-        if (klaar) { klaar(); }
-      })
-      .catch(function () { paneelBezig = false; });
-  }
-
-  function toonMeter() {
-    var sectie = el("meter-section");
-    if (!sectie) {
-      // Nog niet opgehaald. Pas als beheer aanstaat, en daarna nog een ronde.
-      if (beheerAan) { beheerPaneel(laadVerbruik); }
-      return;
-    }
-    sectie.hidden = !beheerAan;
-  }
-
-  /* Pakket en saldo met de hand, in het beheerpaneel.
-   *
-   * Zonder dit is "zet mij op vijfhonderd tokens" een shell op de server, en op
-   * Render is er geen shell. De knoppen staan in de sectie die alleen met de
-   * beheersleutel zichtbaar is, dus een bezoeker ziet ze nooit.
-   */
-  function knoopBeheerrij() {
-    document.querySelectorAll("#beheerrij [data-plan]").forEach(function (b) {
-      b.addEventListener("click", function () {
-        zetAccount({ plan: b.dataset.plan });
-      });
-    });
-    var zet = el("beheer-zet");
-    var veld = el("beheer-saldo");
-    if (!zet || !veld) { return; }
-    zet.addEventListener("click", function () {
-      var n = parseInt(veld.value, 10);
-      if (isNaN(n) || n < 0) { veld.focus(); return; }
-      zet.disabled = true;
-      zet.textContent = t("Bezig…");
-      zetAccount({ saldo: n });
-      setTimeout(function () {
-        zet.disabled = false;
-        zet.textContent = t("Zet saldo");
-      }, 900);
-    });
-    veld.addEventListener("keydown", function (e) {
-      if (e.key === "Enter") { e.preventDefault(); zet.click(); }
-    });
-
-    /* Beheer weer uit.
-     *
-     * Aanzetten kon, uitzetten niet - de sleutel bleef voorgoed in deze browser
-     * staan en daarmee de kostenmeter, de webhooklog en de pakketknoppen. Dat
-     * is precies wat je niet in beeld wilt als je de app als dromer gebruikt,
-     * of als je hem aan iemand laat zien.
-     */
-    var uit = el("beheer-uit");
-    if (uit) {
-      uit.addEventListener("click", function () {
-        // Alleen de stand uit. De sleutel blijft, anders moet je hem de volgende
-        // keer weer opzoeken bij Render - en daar was hij nu net voor bewaard.
-        beheerAan = false;
-        toonMeter();
-        laadWebhooklog();
-        laadAccount();
-        var doos = el("webhooklog");
-        if (doos) { doos.hidden = true; }
-      });
-    }
-  }
-  // Niet bij het laden aanroepen: de knoppen bestaan pas nadat het paneel van
-  // /api/beheer-paneel is opgehaald. beheerPaneel() doet het daar.
-
-  /* Het cijfer waar dit project op staat of valt.
-   *
-   * Tien testpersonen, drie dagen, wie komt er op dag vier uit zichzelf terug.
-   * Alles hiervoor stond al in de database; er was alleen geen scherm dat het
-   * liet zien. Geen derde partij, geen cookies, geen banner - en dus ook geen
-   * klikgedrag, want dat zou clientmeting vragen.
-   */
-  function laadRapport() {
-    var doos = el("rapport");
-    if (!doos) { return; }
-    if (!beheerAan) { doos.hidden = true; return; }
-    fetch("/api/rapport", { headers: { "X-Admin-Token": beheerSleutel() } })
-      .then(lees)
-      .then(function (res) {
-        if (!res.ok) { doos.hidden = true; return; }
-        var c = res.body;
-        doos.hidden = false;
-        var deel = c.oud_genoeg
-          ? Math.round(100 * c.terug_dag4 / c.oud_genoeg) + "%"
-          : "—";
-        var html = '<p class="rapport-kop">' + t("Wie komt er terug") + "</p>";
-        html += '<div class="rapport-groot"><b>' + c.terug_dag4 + " / " + c.oud_genoeg +
-                "</b><span>" + t("terug op dag vier of later") + " (" + deel + ")</span></div>";
-        html += '<div class="rapport-rij">';
-        [[c.gebruikers, "mensen"], [c.met_droom, "met een droom"],
-         [c.dromen, "dromen"], [c.meerdaags, "meer dan een dag actief"],
-         [c.vragen, "vragen gesteld"], [c.omzet.toFixed(2), "euro omzet"]
-        ].forEach(function (r) {
-          html += "<div><b>" + r[0] + "</b><span>" + t(r[1]) + "</span></div>";
-        });
-        html += "</div>";
-
-        if ((c.mensen || []).length) {
-          html += '<table class="rapport-tabel"><thead><tr>' +
-            ["", t("pakket"), t("sinds"), t("dromen"), t("dagen"), t("vragen"), t("terug")]
-              .map(function (k) { return "<th>" + k + "</th>"; }).join("") +
-            "</tr></thead><tbody>";
-          c.mensen.forEach(function (m) {
-            html += "<tr><td>" + m.email + "</td><td>" + m.pakket + "</td><td>" +
-              m.sinds + "</td><td>" + m.dromen + "</td><td>" + m.actieve_dagen +
-              "</td><td>" + m.vragen + "</td><td>" + (m.terug ? "ja" : "—") +
-              "</td></tr>";
-          });
-          html += "</tbody></table>";
-        }
-        doos.innerHTML = html;
-      })
-      .catch(function () { doos.hidden = true; });
-  }
-
-  /* Wat Stripe heeft aangeboden, en wat wij ermee deden.
-   *
-   * Zonder dit kijkglas is een webhook die niet aankomt onzichtbaar: de klant
-   * heeft betaald, Stripe zegt dat hij het heeft afgeleverd, en wij weten van
-   * niets. Dat kostte een middag zoeken.
-   */
-  function laadWebhooklog() {
-    var doos = el("webhooklog");
-    if (!doos) { return; }
-    if (!beheerAan) { doos.hidden = true; return; }
-    fetch("/api/webhooklog", { headers: { "X-Admin-Token": beheerSleutel() } })
-      .then(function (r) { return r.json(); })
-      .then(function (d) {
-        var log = d.log || [];
-        doos.hidden = false;
-        if (!log.length) {
-          doos.innerHTML = '<p class="webhooklog-leeg">' +
-            t("Stripe heeft nog niets aangeboden.") + "</p>";
-          return;
-        }
-        var html = '<p class="webhooklog-kop">' + t("Wat Stripe aanbood") + "</p>";
-        log.forEach(function (r) {
-          var mis = /geweigerd|MISLUKT|geen gebruiker/.test(r.soort + r.uitkomst);
-          html += '<div class="webhooklog-rij' + (mis ? " mis" : "") + '">' +
-                  '<span class="wl-tijd">' + (r.wanneer || "").slice(0, 19).replace("T", " ") +
-                  "</span>" +
-                  '<span class="wl-soort">' + r.soort + "</span>" +
-                  '<span class="wl-uit">' + r.uitkomst + "</span></div>";
-        });
-        doos.innerHTML = html;
-      })
-      .catch(function () { doos.hidden = true; });
-  }
-
-  function laadVerbruik() {
-    toonMeter();
-    laadRapport();
-    laadWebhooklog();
-    if (!beheerAan) { return; }
-    fetch("/api/usage").then(function (r) { return r.json(); })
-      .then(toonVerbruik).catch(function () {});
   }
 
   /* ------------------------------------------------- introductie en profiel */
@@ -4229,7 +3787,6 @@
     toonIntro();
     laadGids();
     loadArchive();
-    laadVerbruik();
     laadAccount();
     // Heeft hij zijn droom verteld voordat hij een account had, dan staat die
     // hier klaar. Hier en niet in de poort: zo werkt het ook als de pagina

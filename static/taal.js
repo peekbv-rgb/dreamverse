@@ -115,10 +115,6 @@
     // Beheer. Alleen Ruud ziet dit, maar half Nederlands leest als een half af
     // scherm - en hij kijkt er zelf ook in het Engels naar.
     ["Gratis", "Free"],
-    ["Vul je <code>ADMIN_TOKEN</code> in. Die staat bij Render onder <em>Environment</em>. Hij blijft daarna in deze browser staan.",
-     "Enter your <code>ADMIN_TOKEN</code>. You will find it on Render under <em>Environment</em>. It stays in this browser afterwards."],
-    ["Rekent niets af. Het saldo wordt op dit getal <em>gezet</em>, niet erbij opgeteld. Laat <em>Voor wie</em> leeg voor je eigen account, of vul het adres van een testpersoon in — dan hoef je niet als hem in te loggen. <em>Beheer uit</em> haalt beheer weg voor dit bezoek; met <code>?beheer</code> zet je het weer aan.",
-     "Charges nothing. The balance is <em>set</em> to this number, not added to it. Leave <em>For whom</em> empty for your own account, or fill in a tester's address — then you do not have to log in as them. <em>Admin off</em> removes admin for this visit; <code>?beheer</code> switches it back on."],
     ["Je e-mailadres is bevestigd. Dank je.", "Your e-mail address is confirmed. Thank you."],
     ["Die bevestigingslink is niet geldig of al gebruikt.",
      "That confirmation link is not valid, or has already been used."],
@@ -222,15 +218,10 @@
     ["Ik kon je niet horen.", "I could not hear you."],
     ["Daar hebben we tokens voor nodig.", "We need tokens for that."],
     ["Tokens kopen", "Buy tokens"],
-    ["Zet saldo", "Set balance"],
-    ["Beheer uit", "Admin off"],
     // Bevat een link, dus de sleutel is de innerHTML - en daarom enkele
     // aanhalingstekens eromheen.
     ['Nog geen idee wat dit is? <a href="/welkom.html">Lees eerst wat Dreamverse doet en wat het kost.</a>',
      'Not sure what this is? <a href="/welkom.html">Read first what Dreamverse does and what it costs.</a>'],
-    ["Voor wie", "For whom"],
-    ["leeg = jijzelf", "empty = yourself"],
-    ["Gezet voor", "Set for"],
     // Deze twee sleutels zijn innerHTML en bevatten dus dubbele
     // aanhalingstekens. Daarom enkele aanhalingstekens eromheen - met dubbele
     // breekt dit bestand, en dan bestaat t() niet meer en staat de hele app stil.
@@ -253,13 +244,8 @@
     ["Bij deze droom staan de panelen er al.", "This dream already has its panels."],
     ["Deze droom heeft nog geen panelen. Maak die eerst.",
      "This dream has no panels yet. Draw those first."],
-    ["Wie komt er terug", "Who comes back"],
-    ["terug op dag vier of later", "back on day four or later"],
     ["mensen", "people"],
     ["met een droom", "with a dream"],
-    ["meer dan een dag actief", "active on more than one day"],
-    ["vragen gesteld", "questions asked"],
-    ["euro omzet", "euro revenue"],
     ["sinds", "since"],
     ["dagen", "days"],
     ["terug", "back"],
@@ -335,18 +321,10 @@
     ["Ik heb het opgeschreven. Kijk het na.", "I wrote it down. Have a look."],
     ["Dit heb ik uit je gesprek opgeschreven. Lees het na — haal eruit wat Vera zei en wat er niet bij hoort. Daarna verbeeldt hij hem, en telt hij mee in je chakra's en in de duiding van alle dromen.",
      "This is what I wrote down from your conversation. Read it over - take out what Vera said and anything that does not belong. After that it gets imagined, and it counts in your chakras and in the reading of all your dreams."],
-    ["Aanzetten", "Turn on"],
-    ["Laat maar", "Never mind"],
-    ["Beheer", "Admin"],
     ["laat zien", "show"],
     ["verberg", "hide"],
-    ["Die sleutel wordt niet geaccepteerd.", "That key is not accepted."],
     ["De server antwoordde niet. Probeer het nog eens.",
      "The server did not answer. Try again."],
-    ["ADMIN_TOKEN staat niet in de omgeving van de server. Zonder die sleutel kan beheer helemaal niet - dat is de veilige stand.",
-     "ADMIN_TOKEN is not set in the server environment. Without that key admin is off entirely - that is the safe state."],
-    ["Pakket met de hand", "Plan by hand"],
-    ["Tokensaldo", "Token balance"],
     ["Verbinden mislukte.", "Connecting failed."],
     ["Terugkijken", "Look back"],
     ["verbonden", "connected"],
@@ -377,8 +355,6 @@
     ["gratis", "free"],
     ["plus", "plus"],
     ["ultra", "ultra"],
-    ["+10 tokens", "+10 tokens"],
-    ["beheer", "admin"],
     ["uitloggen", "log out"],
     ["abonnement", "subscription"],
     ["Je gegevens", "Your data"],
@@ -390,7 +366,6 @@
     ["Mijn account verwijderen", "Delete my account"],
     ["Typ je wachtwoord om het te bevestigen", "Type your password to confirm"],
     ["Ja, verwijder alles", "Yes, delete everything"],
-    ["Laat maar", "Never mind"],
     ["Alles is weg.", "Everything is gone."],
     ["Je account, je dromen en al het beeld zijn verwijderd. Er is geen kopie.",
      "Your account, your dreams and all the imagery have been deleted. There is no copy."],
@@ -418,8 +393,6 @@
      'Tonight is one dream.<br>After three nights your Dreamverse begins.'],
     ["Je vertelt je droom; je krijgt een verbeelding met een duiding en een vooruitblik. Elke eerdere droom telt mee.",
      "You tell your dream; you get an imagining with a reading and a look ahead. Every earlier dream counts."],
-    ["Beheerderssleutel (ADMIN_TOKEN uit .env)", "Admin key (ADMIN_TOKEN from .env)"],
-    ["Die sleutel wordt niet geaccepteerd.", "That key is not accepted."],
     ["voorbeeldmodus", "example mode"],
     ["Vera is niet aangesloten", "Vera is not connected"],
 
@@ -442,12 +415,6 @@
      'Ten dreams a month, <strong>five of them with a key moment on the best animation model</strong>, and ten minutes with Vera included. After that you continue on tokens.'],
 
     // -- verbruik ----------------------------------------------------------
-    ["Wat Stripe aanbood", "What Stripe delivered"],
-    ["Stripe heeft nog niets aangeboden.", "Stripe has not delivered anything yet."],
-    ["Wat dit kost", "What this costs"],
-    ["Wat het maken van deze dromen jou gekost heeft. Alleen zichtbaar in beheer.",
-     "What making these dreams cost you. Only visible in admin mode."],
-    ["Nog niets gemeten.", "Nothing measured yet."],
 
     // -- los te koop -------------------------------------------------------
     ["Los te koop", "Sold separately"],

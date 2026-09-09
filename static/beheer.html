@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="nl" translate="no" class="notranslate">
+<head>
+<meta charset="utf-8">
+<meta name="google" content="notranslate">
+<meta name="robots" content="noindex, nofollow">
+<title>Beheer — Vera Dreamverse</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=Karla:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="/icoon-192.png" sizes="192x192">
+</head>
+<body class="beheerpagina">
+
+<!-- Het beheerpaneel op zijn eigen adres.
+
+     Het zat in de app: de opmaak stond in index.html en de code in app.js, dus
+     elke ingelogde dromer downloadde het hele ding. Wijzigen kon hij niet, maar
+     lezen wel - hoe het beheer werkt, welke eindpunten er zijn, en wat een
+     droom ons kost.
+
+     Drie dingen zijn hier anders dan daar. De pagina is niets meer dan deze
+     schil: de knoppen en de cijfers komen van de server en alleen als de sleutel
+     klopt. Er is géén dromersessie voor nodig - beheren doe je als beheerder,
+     niet als iemand met een droomarchief. En de sleutel wordt niet bewaard: hij
+     gaat één keer over de lijn en komt terug als een HttpOnly cookie, waar
+     JavaScript niet bij kan. Dat is het verschil dat telt, want wat een
+     aanvaller wil stelen is niet het wachtwoord maar het bewijs dat je het al
+     gegeven hebt - en daar helpt twee-factor niets tegen.
+-->
+
+<div class="wrap">
+
+  <header class="top">
+    <div class="meta"><span>Vera Dreamverse</span><span class="dim">beheer</span></div>
+    <h1>Beheer</h1>
+    <p class="sub">Pakketten, tokensaldo, het rapport en wat het gekost heeft.</p>
+  </header>
+
+  <section id="poort-sectie" hidden>
+    <div class="beheerkaart">
+      <h2>Sleutel</h2>
+      <p>Vul je <code>ADMIN_TOKEN</code> in. Die staat bij Render onder
+        <em>Environment</em>. Hij wordt niet in deze browser bewaard: je krijgt
+        een sessie van acht uur terug, en die eindigt ook bij elke deploy.</p>
+      <form id="sleutel-form" autocomplete="off">
+        <div class="ww-veld">
+          <input type="password" id="sleutel" autocomplete="off" spellcheck="false"
+                 placeholder="ADMIN_TOKEN">
+          <button type="button" class="ww-oog" id="sleutel-oog"
+                  aria-label="Sleutel laten zien">laat zien</button>
+        </div>
+        <p class="poort-fout" id="sleutel-fout" hidden></p>
+        <button type="submit" class="primary" id="sleutel-door">Aanmelden</button>
+      </form>
+    </div>
+  </section>
+
+  <div id="paneel" hidden></div>
+
+  <section id="afmelden-sectie" hidden>
+    <div class="row">
+      <button type="button" class="ghost" id="afmelden">Afmelden</button>
+      <span class="spacer"></span>
+      <a class="linkje" href="/app">Naar de app</a>
+    </div>
+  </section>
+
+  <footer class="end">
+    <p>Deze pagina staat los van de app. Er komt geen droom en geen duiding van
+      een gebruiker langs — alleen aantallen, bedragen en de knoppen om een
+      pakket te zetten.</p>
+  </footer>
+
+</div>
+
+<script src="beheer.js"></script>
+</body>
+</html>

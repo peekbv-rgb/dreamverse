@@ -4,9 +4,7 @@ Serveert de speler uit static/ en drie eindpunten:
 
     POST   /api/episode      {"dream": "..."}  -> de verbeelding
     GET    /api/profile                        -> wie de dromer is
-    GET    /api/usage                          -> wat het tot nu toe gekost heeft
     GET    /api/account                        -> pakket, saldo en wat er over is
-    POST   /api/account                        -> pakket of saldo zetten (beheer)
     POST   /api/profile      {"name": "..."}   -> naam onthouden
     POST   /api/answer                         -> antwoord op de slotvraag bewaren
     POST   /api/extra                          -> losse aankoop met tokens
@@ -23,8 +21,15 @@ Serveert de speler uit static/ en drie eindpunten:
     GET    /api/spectrum                       -> welk kleurveld elke droom koos
     POST   /api/feedback                       {"tekst"} wat er beter kan
     GET    /api/mijn-gegevens                  -> alles wat we bewaren, als zip
-    GET    /api/webhooklog                     -> wat Stripe aanbood (beheer)
-    GET    /api/rapport                        -> gebruik en terugkomst (beheer)
+    GET    /beheer                             -> het beheerpaneel, eigen pagina
+    POST   /api/beheer/inloggen  {"sleutel"}   -> beheersessie (HttpOnly cookie)
+    POST   /api/beheer/uitloggen               -> die sessie weer weg
+    GET    /api/beheer/status                  -> mag ik hier zijn?
+    GET    /api/beheer/paneel                  -> de opmaak van het paneel
+    GET    /api/beheer/rapport                 -> gebruik en terugkomst
+    GET    /api/beheer/webhooklog              -> wat Stripe aanbood
+    GET    /api/beheer/usage                   -> wat het tot nu toe gekost heeft
+    POST   /api/beheer/account   {"wie", ...}  -> pakket of saldo van iemand zetten
     POST   /api/account-verwijderen            -> alles weg, onomkeerbaar
     DELETE /api/dream/<nr>                     -> een droom en al zijn beelden wissen
     DELETE /api/archive                        -> archief wissen
@@ -38,6 +43,9 @@ import base64
 import hmac
 import json
 import os
+import secrets
+import threading
+import time
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
@@ -68,6 +76,60 @@ AUTH_PASSWORD = os.environ.get("AUTH_PASSWORD", "")
 # Zonder dit kon iedereen die de app kon bereiken zichzelf Ultra geven met tien
 # avatarminuten erbij, en dat is echt geld.
 ADMIN_TOKEN = os.environ.get("ADMIN_TOKEN", "")
+
+# --------------------------------------------------------------------------- #
+# Beheer heeft een eigen sessie, los van die van een dromer
+# --------------------------------------------------------------------------- #
+#
+# De sleutel stond in localStorage van de app, op dezelfde origin als alles wat
+# een dromer te zien krijgt. Daarmee was één cross-site scripting in de
+# dromerkant genoeg om hem te lezen, en dan kan de vinder pakketten en saldi van
+# iedereen zetten. Twee-factor helpt daar niet tegen: wat gestolen wordt is niet
+# het wachtwoord maar het bewijs dat je het al gegeven hebt.
+#
+# Daarom: de sleutel gaat één keer over de lijn naar /api/beheer/inloggen en
+# komt terug als een cookie dat HttpOnly is - JavaScript kan er niet bij, ook
+# niet het onze. Hij leeft in het geheugen van dit proces, dus een herstart of
+# een deploy logt de beheerder uit. Dat is geen gebrek: dit is een paneel dat je
+# een paar keer per week opent, en een sessie die een deploy overleeft is een
+# sessie die maanden blijft staan.
+BEHEER_COOKIE = "dv_beheer"
+BEHEER_UREN = 8
+_beheer_sessies = {}
+_beheer_slot = threading.Lock()
+
+# Een sleutel raden moet duur zijn. Er is er precies één en die verandert nooit,
+# dus zonder rem is dit het enige eindpunt in de app waar brute kracht loont.
+_beheer_mis = {"aantal": 0, "wanneer": 0.0}
+
+
+def beheer_sessie_maken():
+    token = secrets.token_urlsafe(32)
+    with _beheer_slot:
+        nu = time.time()
+        # Meteen opruimen wat verlopen is; er zijn er nooit veel.
+        for t in [t for t, v in _beheer_sessies.items() if v < nu]:
+            del _beheer_sessies[t]
+        _beheer_sessies[token] = nu + BEHEER_UREN * 3600
+    return token
+
+
+def beheer_sessie_geldig(token):
+    if not token:
+        return False
+    with _beheer_slot:
+        verloopt = _beheer_sessies.get(token)
+        if verloopt is None:
+            return False
+        if verloopt < time.time():
+            del _beheer_sessies[token]
+            return False
+    return True
+
+
+def beheer_sessie_weg(token):
+    with _beheer_slot:
+        _beheer_sessies.pop(token, None)
 
 # E-mailverificatie. Uit, tenzij je het aanzet. Het mechanisme staat er - een
 # code per account, een eindpunt om hem in te wisselen - maar versturen vraagt
@@ -100,6 +162,15 @@ BASIS = droomgids.BASIS
 VRIJ = ("/api/health", "/api/registreren", "/api/inloggen", "/api/uitloggen",
         "/api/bevestigen", "/api/stripe/webhook", "/api/gids",
         "/api/wachtwoord-vergeten", "/api/wachtwoord-herstellen")
+
+# Beheer loopt buiten de gebruikerssessie om, en dat is het punt.
+#
+# Deze paden zaten onder /api/ en vroegen dus óók om een ingelogde dromer. Dat
+# knoopte twee dingen aan elkaar die niets met elkaar te maken hebben: beheren
+# doe je als beheerder, niet als iemand met een droomarchief. Ze hangen nu
+# alleen aan beheer_ok(), en dat is een strengere eis en geen lossere - er komt
+# geen enkel pad bij dat zonder sleutel iets teruggeeft.
+BEHEER_PADEN = "/api/beheer/"
 
 # Paden waar basic auth nooit voor mag staan, ook niet als AUTH_USER en
 # AUTH_PASSWORD gevuld zijn.
@@ -143,12 +214,125 @@ class Handler(SimpleHTTPRequestHandler):
         return "{}=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax".format(accounts.SESSIE_COOKIE)
 
     def sessietoken(self):
+        return self.cookie(accounts.SESSIE_COOKIE)
+
+    def cookie(self, naam_gezocht):
         rauw = self.headers.get("Cookie") or ""
         for stuk in rauw.split(";"):
             naam, _, waarde = stuk.strip().partition("=")
-            if naam == accounts.SESSIE_COOKIE:
+            if naam == naam_gezocht:
                 return waarde
         return ""
+
+    # -- beheer -------------------------------------------------------------- #
+
+    def beheer_cookie(self, token):
+        """SameSite=Strict, want dit paneel wordt nooit vanaf een andere site
+        aangeroepen en er zit geen enkele reden achter om dat toe te staan."""
+        veilig = "; Secure" if os.environ.get("RENDER") else ""
+        return "{}={}; Path=/; Max-Age={}; HttpOnly; SameSite=Strict{}".format(
+            BEHEER_COOKIE, token, BEHEER_UREN * 3600, veilig)
+
+    def wis_beheer_cookie(self):
+        return "{}=; Path=/; Max-Age=0; HttpOnly; SameSite=Strict".format(BEHEER_COOKIE)
+
+    def beheer_ok(self):
+        """Mag dit verzoek beheren?
+
+        Twee wegen. De cookie is voor het paneel in de browser; die is HttpOnly
+        en dus niet te stelen met een script. De header is voor een script of
+        een curl vanaf de eigen machine - handig, en het is dezelfde sleutel die
+        toch al in .env staat.
+        """
+        if not ADMIN_TOKEN:
+            return False
+        if beheer_sessie_geldig(self.cookie(BEHEER_COOKIE)):
+            return True
+        gegeven = (self.headers.get("X-Admin-Token") or "").strip()
+        return hmac.compare_digest(gegeven, ADMIN_TOKEN)
+
+    def beheer_post(self):
+        """Alles wat het beheerpaneel schrijft. Eén poort, geen losse controles."""
+        if self.path == "/api/beheer/inloggen":
+            if not ADMIN_TOKEN:
+                return self.send_json({"error": "Beheer staat uit. Zet ADMIN_TOKEN in "
+                                                "de omgeving.", "uit": True}, 403)
+            # Een rem op raden. Er is precies één sleutel en die verandert
+            # nooit, dus dit is het enige eindpunt in de app waar brute kracht
+            # loont. Na drie missers een seconde wachten per poging - genoeg om
+            # het onbetaalbaar te maken, te weinig om er zelf last van te hebben.
+            if _beheer_mis["aantal"] >= 3 and time.time() - _beheer_mis["wanneer"] < 60:
+                time.sleep(1)
+            gegeven = ((self.read_json() or {}).get("sleutel") or "").strip()
+            if not hmac.compare_digest(gegeven, ADMIN_TOKEN):
+                _beheer_mis["aantal"] += 1
+                _beheer_mis["wanneer"] = time.time()
+                self.log_message("beheer: sleutel afgekeurd (%d op rij)",
+                                 _beheer_mis["aantal"])
+                return self.send_json({"error": "Die sleutel wordt niet geaccepteerd."}, 403)
+            _beheer_mis["aantal"] = 0
+            token = beheer_sessie_maken()
+            self.log_message("beheer: sessie geopend")
+            return self.send_json({"ok": True}, cookie=self.beheer_cookie(token))
+
+        if self.path == "/api/beheer/uitloggen":
+            beheer_sessie_weg(self.cookie(BEHEER_COOKIE))
+            return self.send_json({"ok": True}, cookie=self.wis_beheer_cookie())
+
+        if not self.beheer_ok():
+            return self.beheer_muur()
+
+        if self.path == "/api/beheer/account":
+            # Pakket of tokensaldo van één account zetten.
+            #
+            # "wie" is hier verplicht, anders dan vroeger. Toen liep dit via de
+            # ingelogde dromer en was leeg-laten "mijzelf"; op een eigen
+            # beheerpagina is er geen "mijzelf", en raden naar wie er bedoeld
+            # wordt bij een handeling die gratis Ultra uitdeelt is precies wat
+            # je niet wilt.
+            payload = self.read_json() or {}
+            doel = (payload.get("wie") or "").strip()
+            if not doel:
+                return self.send_json({"error": "Voor wie? Vul een e-mailadres in."}, 400)
+            ander = accounts.op_email(doel)
+            if ander is None:
+                return self.send_json({"error": "Geen account met dat adres."}, 404)
+            eigen = accounts.huidige_of_none()
+            accounts.zet_huidige(ander)
+            try:
+                if payload.get("plan"):
+                    plans.set_plan(payload["plan"])
+                if payload.get("tokens") is not None:
+                    plans.add_tokens(int(payload["tokens"]))
+                # "saldo" zet een vast aantal, "tokens" telt erbij op.
+                if payload.get("saldo") is not None:
+                    plans.set_tokens(int(payload["saldo"]))
+                antwoord = plans.account()
+                antwoord["wie"] = accounts.huidige()["email"]
+                self.log_message("beheer: %s -> pakket=%s saldo=%s",
+                                 doel, payload.get("plan"), payload.get("saldo"))
+            except (plans.Refused, ValueError, TypeError) as e:
+                return self.send_json({"error": str(e)}, 400)
+            finally:
+                # Altijd terug naar wie er echt aan de lijn is, ook na een fout.
+                accounts.zet_huidige(eigen)
+            return self.send_json(antwoord)
+
+        return self.send_json({"error": "Onbekend beheerpad."}, 404)
+
+    def beheer_muur(self):
+        """Weigert, en zegt apart of de sleutel fout is of helemaal niet bestaat.
+
+        Dat onderscheid is voor de beheerder en niet voor een aanvaller: "geen
+        toegang" terwijl ADMIN_TOKEN niet in de omgeving staat, is een half uur
+        zoeken naar een sleutel die nergens geldig is.
+        """
+        if not ADMIN_TOKEN:
+            self.send_json({"error": "Beheer staat uit. Zet ADMIN_TOKEN in de omgeving.",
+                            "uit": True}, 403)
+        else:
+            self.send_json({"error": "Geen toegang."}, 403)
+        return None
 
     def guard(self):
         kaal = self.path.split("?")[0]
@@ -174,6 +358,11 @@ class Handler(SimpleHTTPRequestHandler):
         pad = self.path.split("?")[0]
         beschermd = pad.startswith("/api/") or pad.startswith("/panels/")
         if self.gebruiker or not beschermd or pad in VRIJ:
+            return True
+        # Beheer heeft geen dromersessie nodig; die paden bewaken zichzelf met
+        # beheer_ok(). Zonder deze regel zou de beheerder eerst een droomaccount
+        # moeten hebben om het paneel te kunnen openen.
+        if pad.startswith(BEHEER_PADEN):
             return True
         self.send_json({"error": "Log eerst in.", "login": True}, 401)
         return False
@@ -232,6 +421,12 @@ class Handler(SimpleHTTPRequestHandler):
             self.path = "/welkom.html"
         elif kaal in ("/app", "/app/"):
             self.path = "/index.html"
+        elif kaal in ("/beheer", "/beheer/"):
+            # Het beheerpaneel heeft een eigen pagina en een eigen script, en
+            # staat daarmee los van de app. Wat hier binnenkomt is een schil met
+            # een sleutelveld; de knoppen en de cijfers komen pas van de server
+            # als die sleutel klopt.
+            self.path = "/beheer.html"
 
         # Tellen dat er iemand langskwam. Alleen deze twee pagina's, en alleen
         # het aantal - geen IP-adres, geen cookie, geen kenmerk waarmee iemand te
@@ -286,49 +481,43 @@ class Handler(SimpleHTTPRequestHandler):
             self.wfile.write(blob)
             return
 
-        if self.path == "/api/rapport":
-            # Het cijfer waar dit project op staat of valt, achter dezelfde
-            # sleutel als de kostenmeter: hier staat in hoeveel mensen er zijn
-            # en wie er terugkwam, en dat gaat een bezoeker niets aan.
-            gegeven = (self.headers.get("X-Admin-Token") or "").strip()
-            if not ADMIN_TOKEN or not hmac.compare_digest(gegeven, ADMIN_TOKEN):
-                return self.send_json({"error": "Geen toegang."}, 403)
-            import rapport
-            return self.send_json(rapport.cijfers())
+        # -- beheer, alles achter beheer_ok() ------------------------------- #
+        #
+        # Vier eindpunten die hiervoor los van elkaar dezelfde header-controle
+        # deden, en één (/api/usage) die er helemaal geen had: elke ingelogde
+        # dromer kon opvragen wat de hele installatie tot nu toe gekost heeft.
+        if self.path.startswith(BEHEER_PADEN):
+            if self.path == "/api/beheer/status":
+                # Mag ik hier zijn? De pagina vraagt dit als eerste, zodat hij
+                # het sleutelveld of het paneel laat zien en niet allebei.
+                return self.send_json({"ok": self.beheer_ok(),
+                                       "uit": not ADMIN_TOKEN})
+            if not self.beheer_ok():
+                return self.beheer_muur()
 
-        if self.path == "/api/beheer-paneel":
-            # De opmaak van het beheerpaneel, achter dezelfde sleutel als de
-            # handelingen erin.
-            #
-            # Dit stuk stond in static/index.html, en daarmee kreeg elke
-            # ingelogde dromer de knoppen voor pakketten en tokensaldo én de
-            # kostprijs van een droom mee in zijn HTML. Wijzigen kon hij niet -
-            # /api/account eist deze sleutel en weigert zonder ADMIN_TOKEN -
-            # maar lezen wel. Nu krijgt wie de sleutel niet heeft de opmaak
-            # niet eens.
-            gegeven = (self.headers.get("X-Admin-Token") or "").strip()
-            if not ADMIN_TOKEN or not hmac.compare_digest(gegeven, ADMIN_TOKEN):
-                return self.send_json({"error": "Geen toegang."}, 403)
-            pad = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                               "beheer", "paneel.html")
-            try:
-                with open(pad, encoding="utf-8") as f:
-                    return self.send_html(f.read())
-            except OSError:
-                return self.send_json({"error": "Paneel niet gevonden."}, 500)
-
-        if self.path == "/api/webhooklog":
-            # Achter de beheerssleutel: hier staat in wat Stripe heeft
-            # aangeboden en wat wij ermee deden. Het kijkglas dat ontbrak.
-            gegeven = (self.headers.get("X-Admin-Token") or "").strip()
-            if not ADMIN_TOKEN or not hmac.compare_digest(gegeven, ADMIN_TOKEN):
-                return self.send_json({"error": "Geen toegang."}, 403)
-            return self.send_json({"log": accounts.webhooklog()})
+            if self.path == "/api/beheer/paneel":
+                # De opmaak zelf. Die stond in static/index.html, en daarmee
+                # kreeg elke ingelogde dromer de knoppen voor pakketten en
+                # tokensaldo én de kostprijs van een droom mee in zijn HTML.
+                pad = ROOT / "beheer" / "paneel.html"
+                try:
+                    return self.send_html(pad.read_text(encoding="utf-8"))
+                except OSError:
+                    return self.send_json({"error": "Paneel niet gevonden."}, 500)
+            if self.path == "/api/beheer/rapport":
+                # Het cijfer waar dit project op staat of valt: hoeveel mensen
+                # er zijn en wie er terugkwam.
+                import rapport
+                return self.send_json(rapport.cijfers())
+            if self.path == "/api/beheer/webhooklog":
+                # Wat Stripe heeft aangeboden en wat wij ermee deden.
+                return self.send_json({"log": accounts.webhooklog()})
+            if self.path == "/api/beheer/usage":
+                return self.send_json(usage.summary())
+            return self.send_json({"error": "Onbekend beheerpad."}, 404)
 
         if self.path == "/api/spectrum":
             return self.send_json(dreamverse.spectrum())
-        if self.path == "/api/usage":
-            return self.send_json(usage.summary())
         if self.path == "/api/account":
             a = plans.account()
             a["kwaliteiten"] = plans.kwaliteiten(
@@ -473,6 +662,10 @@ class Handler(SimpleHTTPRequestHandler):
     def do_POST(self):
         if not self.guard():
             return
+
+        # -- beheer ---------------------------------------------------------- #
+        if self.path.startswith(BEHEER_PADEN):
+            return self.beheer_post()
 
         if self.path == "/api/vera/session":
             try:
@@ -789,50 +982,6 @@ class Handler(SimpleHTTPRequestHandler):
             except (dreamverse.DreamverseError, ValueError, TypeError) as e:
                 return self.send_json({"error": str(e)}, 400)
 
-        if self.path == "/api/account":
-            # Zolang er geen betaling is, worden pakket en saldo met de hand
-            # gezet - maar alleen door wie de beheerderssleutel heeft.
-            if not ADMIN_TOKEN:
-                return self.send_json({
-                    "error": "Pakket en saldo aanpassen staat uit. Zet ADMIN_TOKEN in "
-                             "de omgeving als je dit wilt kunnen.",
-                }, 403)
-            gegeven = (self.headers.get("X-Admin-Token") or "").strip()
-            if not hmac.compare_digest(gegeven, ADMIN_TOKEN):
-                self.log_message("account-aanpassing geweigerd: verkeerde sleutel")
-                return self.send_json({"error": "Geen toegang."}, 403)
-            payload = self.read_json() or {}
-
-            # "wie" laat de beheerder het pakket of saldo van een ander account
-            # zetten. Dat is nodig zodra er testpersonen zijn: anders zou je als
-            # die persoon moeten inloggen om hem tokens te geven, en dan heb je
-            # zijn wachtwoord nodig. Alleen zetten, nooit lezen - er komt geen
-            # droom en geen duiding van iemand anders langs deze weg.
-            doel = (payload.get("wie") or "").strip()
-            eigen = accounts.huidige_of_none()
-            if doel:
-                ander = accounts.op_email(doel)
-                if ander is None:
-                    return self.send_json({"error": "Geen account met dat adres."}, 404)
-                accounts.zet_huidige(ander)
-            try:
-                if payload.get("plan"):
-                    plans.set_plan(payload["plan"])
-                if payload.get("tokens") is not None:
-                    plans.add_tokens(int(payload["tokens"]))
-                # "saldo" zet een vast aantal, "tokens" telt erbij op.
-                if payload.get("saldo") is not None:
-                    plans.set_tokens(int(payload["saldo"]))
-                antwoord = plans.account()
-                antwoord["wie"] = accounts.huidige()["email"]
-            except (plans.Refused, ValueError, TypeError) as e:
-                return self.send_json({"error": str(e)}, 400)
-            finally:
-                # Altijd terug naar wie er echt aan de lijn is, ook na een fout.
-                # Anders praat de rest van dit verzoek namens een ander.
-                if doel and eigen:
-                    accounts.zet_huidige(eigen)
-            return self.send_json(antwoord)
 
         if self.path != "/api/episode":
             return self.send_json({"error": "Onbekend eindpunt."}, 404)

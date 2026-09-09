@@ -1591,36 +1591,34 @@ body.tekstpagina .end a { color: var(--throat); }
   .tokenpakketten.wijs { animation: none; box-shadow: 0 0 0 3px rgba(242, 198, 76, .55); }
 }
 
-/* De beheerkaart ligt boven alles, ook boven het introvenster van Vera (90).
-   Dat is het hele punt: de prompt die hier stond lag eronder. */
-.beheerpoort {
-  position: fixed; inset: 0; z-index: 140;
-  display: flex; align-items: center; justify-content: center; padding: 1.5rem;
-  background: rgba(6, 4, 14, .78); backdrop-filter: blur(6px);
-}
-.beheerpoort-kaart {
-  width: 100%; max-width: 26rem; padding: 1.6rem 1.7rem;
+/* Het sleutelvenster van het beheer lag hier: een kaart bovenop de app, op
+   z-index 140. Die hoeft niet meer boven iets te liggen, want beheer heeft een
+   eigen pagina (/beheer) en hoeft nergens meer doorheen te komen. Wat blijft is
+   de kaart zelf, nu gewoon een blok op die pagina. */
+.beheerkaart {
+  width: 100%; max-width: 30rem; padding: 1.6rem 1.7rem;
   background: rgba(16, 11, 30, .97);
   border: 1px solid rgba(216, 205, 234, .22); border-radius: 14px;
   box-shadow: 0 24px 60px rgba(0, 0, 0, .6);
 }
-.beheerpoort-kaart h2 {
+.beheerkaart h2 {
   margin: 0 0 .5rem; font-size: 1.3rem; color: var(--ink); text-shadow: none;
 }
-.beheerpoort-kaart p {
+.beheerkaart p {
   margin: 0 0 1rem; font-size: .85rem; line-height: 1.55;
   color: rgba(216, 205, 234, .78);
 }
-.beheerpoort-kaart code {
+.beheerkaart code {
   padding: .05rem .3rem; font-size: .82rem;
   background: rgba(255, 255, 255, .08); border-radius: 4px;
 }
-.beheerpoort-kaart .ww-veld { margin-bottom: .8rem; }
-.beheerpoort-fout {
-  margin: 0 0 .8rem !important; color: #F5A08F !important; font-size: .82rem;
-}
-.beheerpoort-knoppen { display: flex; gap: .6rem; align-items: center; }
-.beheerrij.wijs { animation: wijzen 2.4s ease-out 1; }
+.beheerkaart .ww-veld { margin-bottom: .8rem; }
+
+/* De beheerpagina heeft de bewegende achtergrond niet: die hangt aan een canvas
+   in de app, en hier staat geen canvas. body heeft al var(--void) als grond, dus
+   er hoeft alleen wat lucht omheen. */
+body.beheerpagina .wrap { padding-top: 2rem; }
+body.beheerpagina .beheerrij { margin-top: 0; }
 
 /* Meeschrijven: te zien dat het gebeurt, zonder het gesprek te storen. */
 .call-meeschrijf {
@@ -1947,14 +1945,32 @@ body.tekstpagina .end a { color: var(--throat); }
 .gids-kaart-regel { font-size: .86rem; color: var(--muted); line-height: 1.5; }
 .gids-leeg { color: var(--muted); font-size: .9rem; }
 /* De gidslinks in de app. Zonder dit staan het kale blauwe browserlinks met
-   een streep eronder, midden in een pagina die verder geen enkele zo heeft. */
-.gids-woorden { margin: .6rem 0 0; line-height: 2; color: var(--line); }
-.gids-woorden a {
-  color: var(--crown); text-decoration: none;
-  border-bottom: 1px solid rgba(179, 105, 222, .35);
+   een streep eronder, midden in een pagina die verder geen enkele zo heeft.
+
+   En ze staan op een eigen donkere grond, net als elk ander tekstblok hier. Dat
+   was niet zo: deze lijst lag rechtstreeks op de bewegende achtergrond, en die
+   is op sommige plekken fel paars en cyaan. Lichtpaarse links op fel paars zijn
+   niet te lezen - en anders dan bij losse tekst helpt een text-shadow daar niet
+   genoeg, want een link moet ook nog van gewone tekst te onderscheiden zijn.
+   De achtergrond beweegt, dus "meestal leesbaar" bestaat hier niet. */
+.gids-woorden {
+  margin: .7rem 0 0; padding: .9rem 1.1rem; border-radius: 14px;
+  line-height: 2.1; color: var(--muted);
+  background: rgba(13, 7, 26, .92); border: 1px solid var(--line);
+  backdrop-filter: blur(10px);
 }
-.gids-woorden a:hover { color: var(--ink); border-bottom-color: var(--ink); }
-.gids-geen { margin: .6rem 0 0; font-size: .88rem; color: var(--muted); }
+.gids-woorden:empty { display: none; }
+.gids-woorden a {
+  color: var(--ink); text-decoration: none;
+  border-bottom: 1px solid rgba(179, 105, 222, .55);
+  white-space: nowrap;
+}
+.gids-woorden a:hover { color: var(--crown); border-bottom-color: var(--crown); }
+.gids-geen {
+  margin: .7rem 0 0; padding: .9rem 1.1rem; border-radius: 14px;
+  font-size: .88rem; color: var(--muted);
+  background: rgba(13, 7, 26, .92); border: 1px solid var(--line);
+}
 
 .gids-groep {
   margin: 1.6rem 0 .2rem; font-size: 1.5rem; color: var(--muted);

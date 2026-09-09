@@ -204,11 +204,13 @@ en het scheelt direct in de kostprijs per verbeelding.
   catch alsnog draaide. Daarom worden `.vlag` en `.geluid-aan` doorgelaten in
   `wachtOpAanraking`, en weet elke poging aan zijn `begroetingRonde` of hij nog
   de actuele is.
-- **Beheer vraagt zijn sleutel in de pagina, niet met `window.prompt`.** Chrome
-  onderdrukt zo'n dialoog zodra het tabblad de focus niet heeft, en hij lag
-  onder Vera's introvenster. De kaart `#beheerpoort` ligt op z-index 140, boven
-  alles, en zegt apart of de sleutel is afgekeurd of `ADMIN_TOKEN` helemaal niet
-  in de omgeving staat.
+- **Beheer vraagt zijn sleutel op een eigen pagina.** Het was eerst een
+  `window.prompt` (die onderdrukt Chrome zodra het tabblad de focus kwijt is),
+  daarna een kaart bovenop de app, en nu `/beheer`. Zie de sectie *Beheer staat
+  op /beheer, buiten de app*. Wat van de eerste twee stappen overblijft is de
+  les eronder: zeg apart of de sleutel is afgekeurd of `ADMIN_TOKEN` helemaal
+  niet in de omgeving staat, want dat verschil scheelt een half uur zoeken naar
+  een sleutel die nergens geldig is.
 - **Opwaarderen moet één klik zijn vanaf het getal dat je aankijkt.** De
   koopknoppen stonden bijna vierduizend pixels onder de invoer; wie ziet dat hij
   nul tokens heeft staat bovenaan en gaat niet zoeken. Dan bestaat opwaarderen
@@ -465,6 +467,13 @@ plekken. Dat zoekveld staat bewust in een `<div>` en niet in een `<p>`: `taal.js
 vervangt de `innerHTML` van elke `<p>`, en dan wordt het invoerveld bij een
 taalwissel opnieuw opgebouwd en is de listener weg.
 
+De lijst met woorden eronder staat op een **eigen donkere grond**. Hij lag
+rechtstreeks op de bewegende achtergrond, en die is op sommige plekken fel paars
+en cyaan — lichtpaarse links daarop zijn niet te lezen. Bij losse tekst lost een
+`text-shadow` dat op (zie `.sub, .head-rule p, …`), maar bij een link niet
+genoeg: die moet óók nog van gewone tekst te onderscheiden zijn. En omdat de
+achtergrond beweegt bestaat "meestal leesbaar" hier niet.
+
 **"Terug naar Dreamverse" wijst naar `welkom.html` en niet naar `/`.** De gids
 hoort bij de publieke laag, en die begint bij de landingspagina. Voor iemand van
 Google verandert er niets; wie ingelogd is werd door `/` de app in geduwd, met
@@ -578,8 +587,7 @@ afschrijving, geen investering. De proefpakketten die er nu staan verlopen
 
 ## Het rapport
 
-`rapport.py` en `GET /api/rapport`, achter dezelfde beheersleutel als de
-kostenmeter. Het antwoord op de enige vraag die telt: **tien testpersonen, drie
+`rapport.py` en `GET /api/beheer/rapport`, te zien op `/beheer`. Het antwoord op de enige vraag die telt: **tien testpersonen, drie
 dagen, wie komt er op dag vier uit zichzelf terug.** Bovenaan staat dat cijfer,
 daaronder mensen, dromen, actieve dagen, gestelde vragen en omzet, en een tabel
 per gebruiker.
@@ -643,36 +651,66 @@ cookiebanner oplevert en het gedrag van dromers bij een advertentiebedrijf legt.
   ingelogd, en dat is met opzet zo.
 - **Het archief is een bestand op schijf** en dus weg bij elke Render-deploy. Voor
   iets echts hoort daar een database.
-- **Geen betaling.** Pakket en tokensaldo staan in `data/profile.json` en worden
-  met de hand gezet via `POST /api/account`. Dat eindpunt vraagt sinds
-  2 september 2026 om de header `X-Admin-Token`, die moet kloppen met `ADMIN_TOKEN`
-  uit de omgeving. Staat die niet gezet, dan kan aanpassen helemaal niet — dat is
-  de veilige stand. **De opmaak van het beheerpaneel staat niet meer in
-  `static/index.html`** maar in `beheer/paneel.html`, en komt van
-  `GET /api/beheer-paneel` achter dezelfde sleutel als de handelingen erin.
-  Hij stond er wél, en daarmee kreeg élke ingelogde dromer de knoppen voor
-  pakketten en tokensaldo én de kostprijs van een droom mee in zijn HTML.
-  Wijzigen kon hij niet — `hmac.compare_digest` tegen `ADMIN_TOKEN`, en zonder
-  die variabele weigert het eindpunt helemaal — maar lezen wel. `app.js`
-  bevat de beheercode zelf nog; die losmaken vraagt een eigen bundel of een
-  eigen pagina. En de sleutel in `localStorage` op dezelfde origin als de app
-  blijft de echte zwakte: één XSS in de dromerkant leest hem. In de app is er
-  geen zichtbare beheerknop: zet
-  `?beheer` achter het adres, vul de sleutel in de kaart in, en de knoppen én de
-  kostenmeter verschijnen. De sleutel blijft daarna in `localStorage` van die ene
-  browser staan, dus dat is eenmalig per browser, en met de knop **Beheer uit**
-  gaat hij er weer af — anders blijven de kostenmeter, de webhooklog en de
-  pakketknoppen voorgoed in beeld, ook als je de app gewoon als dromer gebruikt
-  of hem aan iemand laat zien. Daar staat ook een veld
-  **Tokensaldo**: dat *zet* een vast aantal (`{"saldo": 500}`), waar
-  `{"tokens": 10}` optelt. Zetten moest erbij omdat optellen eerst vraagt wat er
-  stond, en tussen die twee stappen kan een gesprek met Vera er een paar
-  afhalen. Op Render is geen shell, dus zonder dat veld is "zet mij op 500
-  tokens" niet te doen. Met **Voor wie** vul je het adres van een testpersoon in
-  en zet je diens pakket of saldo zonder als hem in te loggen — anders had je
-  zijn wachtwoord nodig. Dat pad zet alleen; er komt geen droom en geen duiding
-  van een ander langs, en na afloop gaat de gebruikerslaag in een `finally`
-  terug naar wie er echt aan de lijn is.
+- **Geen betaling.** Pakket en tokensaldo worden met de hand gezet, in het
+  beheerpaneel. Zie hieronder.
+
+## Beheer staat op /beheer, buiten de app
+
+Het zat *in* de app: de opmaak in `static/index.html`, de code in
+`static/app.js`, de sleutel in `localStorage`. Daarmee downloadde elke ingelogde
+dromer de hele beheerlaag — de knoppen voor pakketten en tokensaldo, de
+kostprijs per droom, de webhooklog en het rapport. Wijzigen kon hij niet
+(`hmac.compare_digest` tegen `ADMIN_TOKEN`, en zonder die variabele weigert de
+server helemaal), maar lezen wel. Verbergen gebeurde met een vlag in JavaScript,
+en dat is geen slot maar een gordijn.
+
+Nu:
+
+- **Een eigen pagina.** `/beheer` → `static/beheer.html` plus
+  `static/beheer.js`. De pagina zelf is een schil met een sleutelveld; de
+  knoppen en de cijfers komen van `GET /api/beheer/paneel`
+  (`beheer/paneel.html`, buiten `static/`) en alleen als de sleutel klopt. In
+  `index.html` en `app.js` staat er geen letter meer van, en de dode
+  beheerzinnen zijn ook uit `taal.js` gehaald — die stonden er nog met
+  `?beheer` en "ADMIN_TOKEN staat bij Render onder Environment" in.
+- **Een eigen sessie, geen sleutel in de browser.** `POST /api/beheer/inloggen`
+  neemt de sleutel één keer aan en geeft een cookie terug dat **HttpOnly** is:
+  JavaScript kan er niet bij, ook het onze niet. Dát is de winst. De sleutel
+  stond in `localStorage` op dezelfde origin als de app, en dan is één XSS in de
+  dromerkant genoeg om hem te stelen. Twee-factor helpt daar niet tegen — wat
+  gestolen wordt is niet het wachtwoord maar het bewijs dat je het al gegeven
+  hebt. `SameSite=Strict`, acht uur geldig, en de sessies leven in het geheugen
+  van het proces: een deploy meldt je af. Dat is geen gebrek maar de bovengrens
+  op hoe lang zo'n sessie kan blijven staan.
+- **Geen dromersessie nodig.** Alles onder `/api/beheer/` valt buiten `guard()`
+  en hangt alleen aan `beheer_ok()`. Beheren doe je als beheerder, niet als
+  iemand met een droomarchief.
+- **Een rem op raden.** Na drie missers een seconde per poging. Er is precies
+  één sleutel en die verandert nooit, dus dit is het enige eindpunt waar brute
+  kracht loont.
+- **De header blijft werken.** `X-Admin-Token` doet het nog, voor een script of
+  een curl vanaf de eigen machine.
+
+De paden zijn verhuisd: `/api/rapport` → `/api/beheer/rapport`,
+`/api/webhooklog` → `/api/beheer/webhooklog`, `/api/usage` →
+`/api/beheer/usage`, `POST /api/account` → `POST /api/beheer/account`. Die
+laatste eist nu **`wie`**: vroeger was leeg-laten "mijzelf", maar op een pagina
+zonder ingelogde dromer is er geen mijzelf, en raden bij een handeling die
+gratis Ultra uitdeelt is precies wat je niet wilt. `/api/usage` had trouwens
+*helemaal geen* controle — elke ingelogde dromer kon opvragen wat de hele
+installatie tot nu toe gekost heeft.
+
+**Tokensaldo** *zet* een vast aantal (`{"saldo": 500}`), waar `{"tokens": 10}`
+optelt. Zetten moest erbij omdat optellen eerst vraagt wat er stond, en tussen
+die twee stappen kan een gesprek met Vera er een paar afhalen. Op Render is geen
+shell, dus zonder dat veld is "zet mij op 500 tokens" niet te doen. Dat pad zet
+alleen; er komt geen droom en geen duiding van een ander langs, en na afloop
+gaat de gebruikerslaag in een `finally` terug naar wie er echt aan de lijn is.
+
+**Wat er nog niet is:** een tweede beheerder, en daarmee ook geen reden voor een
+beheerdersaccount met MFA. Zolang er één operator is, is een sleutel die je
+inruilt voor een HttpOnly sessie het eerlijke antwoord.
+
 ## Wat de AVG hier betekent
 
 Dromen zijn geen gewone gegevens: mensen vertellen erin over hun angsten, hun

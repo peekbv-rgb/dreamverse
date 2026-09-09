@@ -1,25 +1,27 @@
-<!-- Het beheerpaneel. Staat bewust NIET in static/index.html.
+<!-- Het beheerpaneel. Staat bewust NIET in static/.
 
-     Het stond daar wel, en daarmee kreeg elke ingelogde dromer de knoppen voor
-     pakketten, tokensaldo en de kostprijs van een droom mee in zijn HTML.
-     Wijzigen kon hij niet - /api/account eist X-Admin-Token en weigert zonder
-     ADMIN_TOKEN - maar hij kon wel lezen hoe het beheer werkt en wat een droom
-     ons kost. Dat hoort een klant niet te zien.
+     Dit stuk stond in static/index.html, en daarmee kreeg elke ingelogde dromer
+     de knoppen voor pakketten en tokensaldo én de kostprijs van een droom mee in
+     zijn HTML. Wijzigen kon hij niet - de server eist de beheerderssleutel en
+     weigert zonder ADMIN_TOKEN - maar lezen wel.
 
-     Nu komt dit stuk van GET /api/beheer-paneel, achter dezelfde sleutel als de
-     handelingen zelf. Wie de sleutel niet heeft krijgt de opmaak niet eens.
+     Nu komt dit van GET /api/beheer/paneel en wordt het ingevoegd in
+     static/beheer.html, een eigen pagina met een eigen script. Wie de sleutel
+     niet heeft krijgt de opmaak niet eens, en de app van een dromer bevat er
+     geen letter van.
 -->
-  <section id="meter-section" hidden>
+  <section id="meter-section">
     <div class="head-rule">
-      <h2>Wat dit kost</h2>
-      <p>Wat het maken van deze dromen jou gekost heeft. Alleen zichtbaar in beheer.</p>
+      <h2>Pakket en saldo zetten</h2>
+      <p>Rekent niets af. Dit is de plek waar je een testpersoon een pakket of
+        tokens geeft zonder als hem in te loggen.</p>
     </div>
     <div class="beheerrij" id="beheerrij">
       <div class="beheerrij-blok">
         <span class="beheerrij-kop">Voor wie</span>
         <div class="beheerrij-knoppen">
           <input type="email" id="beheer-wie" autocomplete="off" spellcheck="false"
-                 placeholder="leeg = jijzelf">
+                 placeholder="adres van het account">
         </div>
       </div>
       <div class="beheerrij-blok">
@@ -39,22 +41,33 @@
           <button type="button" id="beheer-zet">Zet saldo</button>
         </div>
       </div>
-      <div class="beheerrij-blok">
-        <span class="beheerrij-kop">Beheer</span>
-        <div class="beheerrij-knoppen">
-          <button type="button" id="beheer-uit" class="ghost">Beheer uit</button>
-        </div>
-      </div>
       <p class="beheerrij-melding" id="beheerrij-melding" hidden></p>
-      <p class="beheerrij-uitleg">Rekent niets af. Het saldo wordt op dit getal
-        <em>gezet</em>, niet erbij opgeteld. Laat <em>Voor wie</em> leeg voor je eigen
-        account, of vul het adres van een testpersoon in — dan hoef je niet als
-        hem in te loggen. <em>Beheer uit</em> haalt beheer weg voor dit bezoek;
-        met <code>?beheer</code> zet je het weer aan.</p>
+      <p class="beheerrij-uitleg">Het saldo wordt op dit getal <em>gezet</em>, niet
+        erbij opgeteld — anders moet je eerst vragen wat er stond, en tussen die
+        twee stappen kan een gesprek met Vera er een paar afhalen.
+        <em>Voor wie</em> is verplicht: dit is geen pagina met een ingelogde
+        dromer, dus er is geen "mijzelf" om naar te raden bij een handeling die
+        gratis Ultra uitdeelt.</p>
+    </div>
+
+    <div class="head-rule">
+      <h2>Wie er komt en wie terugkomt</h2>
+      <p>De enige vraag die telt: wie vertelt er op dag vier uit zichzelf nog een
+        droom.</p>
     </div>
     <div class="rapport" id="rapport" hidden></div>
-    <div class="webhooklog" id="webhooklog" hidden></div>
+
+    <div class="head-rule">
+      <h2>Wat dit kost</h2>
+      <p>Wat het maken van deze dromen ons gekost heeft, aan tekst, beeld en stem.</p>
+    </div>
     <div class="meter" id="meter">
       <p class="meter-leeg">Nog niets gemeten.</p>
     </div>
+
+    <div class="head-rule">
+      <h2>Wat Stripe aanbood</h2>
+      <p>Het kijkglas op de webhook: wat er binnenkwam en wat wij ermee deden.</p>
+    </div>
+    <div class="webhooklog" id="webhooklog" hidden></div>
   </section>
