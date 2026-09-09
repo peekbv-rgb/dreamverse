@@ -292,12 +292,12 @@
       <div class="block"><span class="lbl">Waarom je dit droomde</span><p id="why"></p></div>
       <div class="block"><span class="lbl">Wat de droom zegt</span><p id="meaning"></p></div>
       <div class="block future">
-        <span class="lbl">Wat eraan zit te komen</span><p id="future"></p>
+        <span class="lbl">Waar deze droom je aandacht op kan vestigen</span><p id="future"></p>
         <div class="oordeel" id="oordeel" hidden>
           <span class="oordeel-vraag" id="oordeel-vraag"></span>
-          <button type="button" class="oordeel-knop" data-oordeel="raak">Klopte</button>
+          <button type="button" class="oordeel-knop" data-oordeel="raak">Ja</button>
           <button type="button" class="oordeel-knop" data-oordeel="deels">Deels</button>
-          <button type="button" class="oordeel-knop" data-oordeel="mis">Niet</button>
+          <button type="button" class="oordeel-knop" data-oordeel="mis">Nee</button>
         </div>
       </div>
       <div class="block liefde"><span class="lbl">In de liefde</span><p id="love"></p></div>
@@ -479,55 +479,11 @@
     </div>
   </section>
 
-  <section id="meter-section" hidden>
-    <div class="head-rule">
-      <h2>Wat dit kost</h2>
-      <p>Wat het maken van deze dromen jou gekost heeft. Alleen zichtbaar in beheer.</p>
-    </div>
-    <div class="beheerrij" id="beheerrij">
-      <div class="beheerrij-blok">
-        <span class="beheerrij-kop">Voor wie</span>
-        <div class="beheerrij-knoppen">
-          <input type="email" id="beheer-wie" autocomplete="off" spellcheck="false"
-                 placeholder="leeg = jijzelf">
-        </div>
-      </div>
-      <div class="beheerrij-blok">
-        <span class="beheerrij-kop">Pakket met de hand</span>
-        <div class="beheerrij-knoppen">
-          <button type="button" data-plan="gratis">Gratis</button>
-          <button type="button" data-plan="lite">Lite</button>
-          <button type="button" data-plan="plus">Plus</button>
-          <button type="button" data-plan="ultra">Ultra</button>
-        </div>
-      </div>
-      <div class="beheerrij-blok">
-        <span class="beheerrij-kop">Tokensaldo</span>
-        <div class="beheerrij-knoppen">
-          <input type="number" id="beheer-saldo" min="0" max="10000" step="1"
-                 inputmode="numeric" placeholder="500">
-          <button type="button" id="beheer-zet">Zet saldo</button>
-        </div>
-      </div>
-      <div class="beheerrij-blok">
-        <span class="beheerrij-kop">Beheer</span>
-        <div class="beheerrij-knoppen">
-          <button type="button" id="beheer-uit" class="ghost">Beheer uit</button>
-        </div>
-      </div>
-      <p class="beheerrij-melding" id="beheerrij-melding" hidden></p>
-      <p class="beheerrij-uitleg">Rekent niets af. Het saldo wordt op dit getal
-        <em>gezet</em>, niet erbij opgeteld. Laat <em>Voor wie</em> leeg voor je eigen
-        account, of vul het adres van een testpersoon in — dan hoef je niet als
-        hem in te loggen. <em>Beheer uit</em> haalt beheer weg voor dit bezoek;
-        met <code>?beheer</code> zet je het weer aan.</p>
-    </div>
-    <div class="rapport" id="rapport" hidden></div>
-    <div class="webhooklog" id="webhooklog" hidden></div>
-    <div class="meter" id="meter">
-      <p class="meter-leeg">Nog niets gemeten.</p>
-    </div>
-  </section>
+  <!-- Het beheerpaneel stond hier. Het komt nu van GET /api/beheer-paneel,
+       achter de beheersleutel, en wordt hier ingevoegd zodra die klopt.
+       Zo krijgt een gewone dromer de knoppen en de kostprijs niet meer
+       in zijn HTML mee. -->
+  <div id="beheer-anker"></div>
 
   <section>
     <div class="head-rule">

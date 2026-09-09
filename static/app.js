@@ -553,11 +553,12 @@
     doos.hidden = false;
     doos.dataset.dream = ep.number;
     var gegeven = ep.future_check || "";
-    var gezegd = {raak: "Je zei dat dit klopte.", deels: "Je zei dat dit deels klopte.",
-                  mis: "Je zei dat dit niet uitkwam."};
+    var gezegd = {raak: "Je zei dat je dit hebt teruggezien.",
+                  deels: "Je zei dat je hier iets van hebt teruggezien.",
+                  mis: "Je zei dat je dit niet hebt teruggezien."};
     el("oordeel-vraag").textContent = gegeven
       ? t(gezegd[gegeven])
-      : t("Dit stond hier") + " " + dagen + " " + t("dagen geleden. Klopte het?");
+      : t("Dit stond hier") + " " + dagen + " " + t("dagen geleden. Heb je het teruggezien?");
     doos.querySelectorAll(".oordeel-knop").forEach(function (b) {
       b.setAttribute("aria-pressed", b.dataset.oordeel === gegeven ? "true" : "false");
     });
@@ -3007,8 +3008,9 @@
         beheerAan = true;
         beheerpoortSluiten();
         laadAccount();
-        laadVerbruik();
-        naarBeheerrij();
+        // Eerst de opmaak ophalen; pas daarna valt er iets te vullen of te
+        // wijzen. Zonder dit scrolt naarBeheerrij() naar een lege plek.
+        beheerPaneel(function () { laadVerbruik(); naarBeheerrij(); });
       }).catch(function () {
         door.disabled = false;
         door.textContent = t("Aanzetten");
@@ -3050,6 +3052,8 @@
 
   function toonVerbruik(u) {
     var t = u.totals, m = el("meter");
+    // De meter komt met het beheerpaneel mee en bestaat dus niet altijd.
+    if (!m) { return; }
     if (!t.dreams && !t.sessions && !t.panels) { return; }
 
     var html = '<div class="meter-cijfers">';
@@ -3088,9 +3092,43 @@
    * want zonder die cijfers weet je niet of je prijs klopt; dus achter dezelfde
    * beheersleutel als de pakketknoppen.
    */
+  /* Het beheerpaneel komt van de server, niet uit de pagina.
+   *
+   * De opmaak stond in index.html en ging dus mee naar élke ingelogde dromer:
+   * de knoppen voor pakketten en tokensaldo, en de kostprijs van een droom.
+   * Wijzigen kon hij niet - /api/account eist de sleutel en weigert zonder
+   * ADMIN_TOKEN - maar lezen wel, en dan weet hij hoe het beheer werkt en wat
+   * wij aan hem verdienen. Nu komt het van GET /api/beheer-paneel, achter
+   * dezelfde sleutel als de handelingen erin, en wordt het één keer ingevoegd.
+   */
+  var paneelBezig = false;
+
+  function beheerPaneel(klaar) {
+    var anker = el("beheer-anker");
+    if (!anker) { return; }
+    if (el("meter-section")) { if (klaar) { klaar(); } return; }
+    if (paneelBezig || !beheerSleutel()) { return; }
+    paneelBezig = true;
+    fetch("/api/beheer-paneel", { headers: { "X-Admin-Token": beheerSleutel() } })
+      .then(function (r) { return r.ok ? r.text() : ""; })
+      .then(function (html) {
+        paneelBezig = false;
+        if (!html || el("meter-section")) { return; }
+        anker.innerHTML = html;
+        knoopBeheerrij();
+        if (klaar) { klaar(); }
+      })
+      .catch(function () { paneelBezig = false; });
+  }
+
   function toonMeter() {
     var sectie = el("meter-section");
-    if (sectie) { sectie.hidden = !beheerAan; }
+    if (!sectie) {
+      // Nog niet opgehaald. Pas als beheer aanstaat, en daarna nog een ronde.
+      if (beheerAan) { beheerPaneel(laadVerbruik); }
+      return;
+    }
+    sectie.hidden = !beheerAan;
   }
 
   /* Pakket en saldo met de hand, in het beheerpaneel.
@@ -3144,7 +3182,8 @@
       });
     }
   }
-  knoopBeheerrij();
+  // Niet bij het laden aanroepen: de knoppen bestaan pas nadat het paneel van
+  // /api/beheer-paneel is opgehaald. beheerPaneel() doet het daar.
 
   /* Het cijfer waar dit project op staat of valt.
    *

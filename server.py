@@ -296,6 +296,27 @@ class Handler(SimpleHTTPRequestHandler):
             import rapport
             return self.send_json(rapport.cijfers())
 
+        if self.path == "/api/beheer-paneel":
+            # De opmaak van het beheerpaneel, achter dezelfde sleutel als de
+            # handelingen erin.
+            #
+            # Dit stuk stond in static/index.html, en daarmee kreeg elke
+            # ingelogde dromer de knoppen voor pakketten en tokensaldo én de
+            # kostprijs van een droom mee in zijn HTML. Wijzigen kon hij niet -
+            # /api/account eist deze sleutel en weigert zonder ADMIN_TOKEN -
+            # maar lezen wel. Nu krijgt wie de sleutel niet heeft de opmaak
+            # niet eens.
+            gegeven = (self.headers.get("X-Admin-Token") or "").strip()
+            if not ADMIN_TOKEN or not hmac.compare_digest(gegeven, ADMIN_TOKEN):
+                return self.send_json({"error": "Geen toegang."}, 403)
+            pad = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                               "beheer", "paneel.html")
+            try:
+                with open(pad, encoding="utf-8") as f:
+                    return self.send_html(f.read())
+            except OSError:
+                return self.send_json({"error": "Paneel niet gevonden."}, 500)
+
         if self.path == "/api/webhooklog":
             # Achter de beheerssleutel: hier staat in wat Stripe heeft
             # aangeboden en wat wij ermee deden. Het kijkglas dat ontbrak.

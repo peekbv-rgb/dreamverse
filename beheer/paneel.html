@@ -1,0 +1,60 @@
+<!-- Het beheerpaneel. Staat bewust NIET in static/index.html.
+
+     Het stond daar wel, en daarmee kreeg elke ingelogde dromer de knoppen voor
+     pakketten, tokensaldo en de kostprijs van een droom mee in zijn HTML.
+     Wijzigen kon hij niet - /api/account eist X-Admin-Token en weigert zonder
+     ADMIN_TOKEN - maar hij kon wel lezen hoe het beheer werkt en wat een droom
+     ons kost. Dat hoort een klant niet te zien.
+
+     Nu komt dit stuk van GET /api/beheer-paneel, achter dezelfde sleutel als de
+     handelingen zelf. Wie de sleutel niet heeft krijgt de opmaak niet eens.
+-->
+  <section id="meter-section" hidden>
+    <div class="head-rule">
+      <h2>Wat dit kost</h2>
+      <p>Wat het maken van deze dromen jou gekost heeft. Alleen zichtbaar in beheer.</p>
+    </div>
+    <div class="beheerrij" id="beheerrij">
+      <div class="beheerrij-blok">
+        <span class="beheerrij-kop">Voor wie</span>
+        <div class="beheerrij-knoppen">
+          <input type="email" id="beheer-wie" autocomplete="off" spellcheck="false"
+                 placeholder="leeg = jijzelf">
+        </div>
+      </div>
+      <div class="beheerrij-blok">
+        <span class="beheerrij-kop">Pakket met de hand</span>
+        <div class="beheerrij-knoppen">
+          <button type="button" data-plan="gratis">Gratis</button>
+          <button type="button" data-plan="lite">Lite</button>
+          <button type="button" data-plan="plus">Plus</button>
+          <button type="button" data-plan="ultra">Ultra</button>
+        </div>
+      </div>
+      <div class="beheerrij-blok">
+        <span class="beheerrij-kop">Tokensaldo</span>
+        <div class="beheerrij-knoppen">
+          <input type="number" id="beheer-saldo" min="0" max="10000" step="1"
+                 inputmode="numeric" placeholder="500">
+          <button type="button" id="beheer-zet">Zet saldo</button>
+        </div>
+      </div>
+      <div class="beheerrij-blok">
+        <span class="beheerrij-kop">Beheer</span>
+        <div class="beheerrij-knoppen">
+          <button type="button" id="beheer-uit" class="ghost">Beheer uit</button>
+        </div>
+      </div>
+      <p class="beheerrij-melding" id="beheerrij-melding" hidden></p>
+      <p class="beheerrij-uitleg">Rekent niets af. Het saldo wordt op dit getal
+        <em>gezet</em>, niet erbij opgeteld. Laat <em>Voor wie</em> leeg voor je eigen
+        account, of vul het adres van een testpersoon in — dan hoef je niet als
+        hem in te loggen. <em>Beheer uit</em> haalt beheer weg voor dit bezoek;
+        met <code>?beheer</code> zet je het weer aan.</p>
+    </div>
+    <div class="rapport" id="rapport" hidden></div>
+    <div class="webhooklog" id="webhooklog" hidden></div>
+    <div class="meter" id="meter">
+      <p class="meter-leeg">Nog niets gemeten.</p>
+    </div>
+  </section>
