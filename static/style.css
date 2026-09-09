@@ -653,6 +653,8 @@ section .entry { border-left-width: 3px; border-left-color: var(--tint); }
   margin: .55rem 0 1.4rem;
 }
 .invoer-hint { font-size: .8rem; color: var(--muted); }
+/* Kan de browser het niet, dan is dit geen terzijde maar het antwoord. */
+.invoer-hint.kan-niet { color: var(--solar); }
 
 /* Terug naar de uitleg.
  *

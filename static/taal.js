@@ -66,6 +66,8 @@
     ["Verbeeld en duid mijn droom", "Imagine and read my dream"],
     ["Duid mijn droom", "Read my dream"],
     ["of typ het hierboven", "or type it above"],
+    ["Inspreken kan alleen in Chrome en Edge. Typ je droom hierboven.",
+     "Speaking it in only works in Chrome and Edge. Type your dream above."],
     ["Over Dreamverse", "About Dreamverse"],
     ["Pakketten en prijzen", "Plans and prices"],
     ["Privacyverklaring", "Privacy statement"],

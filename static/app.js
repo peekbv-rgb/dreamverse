@@ -1229,8 +1229,17 @@
   function setupMic() {
     var mic = el("mic");
     if (!Recognition) {
+      // Firefox, Safari en iPhone kennen de Web Speech API niet. Dat stond
+      // alleen in een title-tooltip: onzichtbaar op een telefoon en makkelijk
+      // te missen op een laptop. Wat je overhoudt is een grijze knop die niets
+      // doet zonder te zeggen waarom - en dan denk je dat de app stuk is.
       mic.disabled = true;
       mic.title = t("Inspreken werkt in Chrome en Edge");
+      var hint = document.querySelector(".invoer-hint");
+      if (hint) {
+        hint.classList.add("kan-niet");
+        hint.textContent = t("Inspreken kan alleen in Chrome en Edge. Typ je droom hierboven.");
+      }
       return;
     }
     mic.addEventListener("click", function () {
