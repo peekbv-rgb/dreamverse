@@ -370,7 +370,15 @@ h2 { font-family: var(--display); font-weight: 300; font-size: 1.9rem; letter-sp
 .block:nth-of-type(1)::before { background: linear-gradient(var(--sacral), var(--solar)); }
 .block:nth-of-type(2)::before { background: linear-gradient(var(--heart), var(--throat)); }
 .block.future::before { background: linear-gradient(var(--third-eye), var(--crown)); }
-.block .lbl { font-size: .65rem; font-weight: 600; letter-spacing: .22em; text-transform: uppercase; color: var(--muted); }
+/* Het kopje boven een blok. Dit stond als `.block .lbl`, en daardoor kregen de
+   zes labels búiten een .block - "Wat je vertelde", "Als deze droom een opdracht
+   was", "Vraag iets over deze droom", "Wat kan er beter?", "Je naam en je
+   geboortedatum", "Alles meenemen/weghalen" - helemaal geen opmaak. Die stonden
+   als gewone tekst op 16,5px tussen kopjes van 10,4px in kapitalen. Twee regels
+   verderop staat `.terugkoppeling .lbl { color: ... }`, die dus een basis
+   aannam die er niet was. Nu hangt de opmaak aan `.lbl` zelf en zetten de
+   blokken alleen nog de kleur. */
+.lbl { font-size: .65rem; font-weight: 600; letter-spacing: .22em; text-transform: uppercase; color: var(--muted); }
 .block p { margin: 0; font-family: var(--display); font-weight: 300; font-size: 1.28rem; line-height: 1.5; }
 .block.future { background: rgba(43, 28, 74, .55); }
 .block.future .lbl { color: var(--crown); }
@@ -796,7 +804,9 @@ body::before { opacity: .55; }
   background: rgba(13, 7, 26, .92);
   padding: .9rem 1.2rem .9rem 1.1rem;
 }
-.vandaag .lbl { font-size: .64rem; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; color: var(--solar); }
+/* Alleen de kleur; maat en spatiering komen van .lbl, anders zijn er twee
+   labelmaten die op een haar na hetzelfde zijn. */
+.vandaag .lbl { color: var(--solar); }
 .vandaag p { margin: 0; font-family: var(--display); font-size: 1.25rem; font-weight: 300; color: var(--ink); }
 
 /* De naam van het seizoen waar de dromer in zit. */
@@ -1972,7 +1982,12 @@ body.beheerpagina .beheerrij { margin-top: 0; }
    De achtergrond beweegt, dus "meestal leesbaar" bestaat hier niet. */
 .gids-woorden {
   margin: .7rem 0 0; padding: .9rem 1.1rem; border-radius: 14px;
-  line-height: 2.1; color: var(--muted);
+  /* Dezelfde letter als op de gidspagina zelf: daar staan deze titels als
+     .gids-kaart-titel in Cormorant, hier stonden ze in Karla op de erfelijke
+     basismaat - dezelfde woorden, twee lettertypes. En het is leestekst, en die
+     is in deze app overal Cormorant. */
+  font-family: var(--display); font-size: 1.2rem; font-weight: 300;
+  line-height: 1.9; color: var(--muted);
   background: rgba(13, 7, 26, .92); border: 1px solid var(--line);
   backdrop-filter: blur(10px);
 }

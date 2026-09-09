@@ -522,6 +522,46 @@ Drie dingen die hier stuk waren en meelopen:
   het profiel op en is dus later klaar. De introductie staat nog gewoon bij *Je
   gegevens*, en de geboortedatum wordt pas bij een aankoop gevraagd.
 
+## Twee letters, en waarvoor ze zijn
+
+`--display` is Cormorant Garamond, `--body` is Karla. De verdeling is niet
+willekeurig en er hoort niets buiten te vallen:
+
+- **Cormorant** is wat je léést: koppen, de alinea's van de duiding, "Je dromen
+  samen", het klein voorstel voor vandaag, het invoerveld waar je je droom in
+  typt, en de woordenlijst van de gids.
+- **Karla** is alles eromheen: labels, knoppen, tabellen, de kleine lettertjes,
+  de bovenregel en de voetregel.
+
+Er staat nergens een letternaam in `style.css` — alleen `var(--display)` en
+`var(--body)`. Wat er wél misgaat is dat een element helemaal vergeten wordt en
+op de erfelijke basismaat blijft staan (16,5px Karla). Zo gebeurde het twee keer:
+
+- **`.lbl` was `.block .lbl`.** De zes labels búiten een `.block` — *Wat je
+  vertelde*, *Als deze droom een opdracht was*, *Vraag iets over deze droom*,
+  *Wat kan er beter?*, *Je naam en je geboortedatum*, *Alles
+  meenemen/weghalen* — kregen daardoor géén opmaak en stonden als gewone tekst
+  van 16,5px tussen kopjes van 10,4px in kapitalen. Twee regels verderop staat
+  `.terugkoppeling .lbl { color: … }`, die dus een basis aannam die er niet was.
+  De opmaak hangt nu aan **`.lbl` zelf** en de blokken zetten alleen nog de
+  kleur. Nagemeten: alle zestien labels zijn Karla 10,4px in kapitalen.
+- **De woordenlijst van de gids in de app** stond in Karla op de basismaat,
+  terwijl diezelfde titels op `/dream-meaning/` als `.gids-kaart-titel` in
+  Cormorant staan. Dezelfde woorden, twee lettertypes.
+
+Zoek zulke gevallen zo, in de console van de app:
+
+```js
+document.querySelectorAll("p,li,span,a,div").forEach(e => {
+  if (e.children.length || (e.textContent||"").trim().length < 4) return;
+  if (Math.abs(parseFloat(getComputedStyle(e).fontSize) - 16.5) < .3)
+    console.log(e.className || e.tagName, e.textContent.trim().slice(0, 40));
+});
+```
+
+Alles wat daar uitkomt is óf bewust body-tekst óf vergeten. `.sub`, `.belofte`
+en `.belofte-sub` staan er bewust in.
+
 ## Leesbaar boven een bewegende achtergrond
 
 Het doek achter de app beweegt en is op sommige plekken fel oranje, cyaan of
