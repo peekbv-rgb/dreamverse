@@ -292,20 +292,25 @@ def overzicht(taal="en"):
     # onderwerpen is voegen koppen niets toe en staat alles op één hoop; vanaf
     # een stuk of acht wordt de lijst een lijst en helpen ze wel.
     namen = GROEPNAAM.get(taal, GROEPNAAM["en"])
+    def raster(rijen, kop=None):
+        uit = ""
+        if kop:
+            uit += '    <h2 class="gids-groep">{}</h2>\n'.format(_e(kop))
+        return (uit + '    <div class="gids-kaarten">\n'
+                + "\n".join(rijen) + "\n    </div>\n")
+
+    # Elke groep zijn eigen raster met de kop erbóven, en niet één raster waar
+    # de koppen in vallen - dan worden het zelf roostervakjes en staan ze naast
+    # de kaarten in plaats van erboven.
     if len(lijst) < 8:
-        kaarten = "\n".join(kaart(d) for d in lijst)
+        kaarten = raster([kaart(d) for d in lijst])
     else:
         stukken = []
         for groep in GROEPEN:
             hier = [d for d in lijst if (d.get("category") or "other") == groep]
-            if not hier:
-                continue
-            stukken.append('    </div>\n    <h2 class="gids-groep">{}</h2>\n'
-                           '    <div class="gids-kaarten">'.format(_e(namen[groep])))
-            stukken.append("\n".join(kaart(d) for d in hier))
-        # Het eerste blok opent al in de body, dus de eerste sluiter eraf.
-        kaarten = "\n".join(stukken)
-        kaarten = kaarten.replace("    </div>\n", "", 1)
+            if hier:
+                stukken.append(raster([kaart(d) for d in hier], namen[groep]))
+        kaarten = "".join(stukken)
 
     body = """    <h1 id="title">{kop}</h1>
     <p class="sub">{sub}</p>
@@ -316,9 +321,8 @@ def overzicht(taal="en"):
   </header>
 
   <section>
-    <div class="gids-kaarten" id="gids-kaarten">
-{kaarten}
-    </div>
+    <div id="gids-kaarten">
+{kaarten}    </div>
     <p class="gids-leeg" id="gids-leeg" hidden>{leeg}</p>
 {cta}
   </section>

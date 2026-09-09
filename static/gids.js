@@ -26,6 +26,14 @@
       k.hidden = !past;
       if (past) { raak++; }
     });
+    // Een categoriekop zonder zichtbare kaarten eronder is een kop boven niets.
+    doos.querySelectorAll(".gids-kaarten").forEach(function (r) {
+      var iets = [].slice.call(r.querySelectorAll(".gids-kaart"))
+                   .some(function (k) { return !k.hidden; });
+      r.hidden = !iets;
+      var kop = r.previousElementSibling;
+      if (kop && kop.classList.contains("gids-groep")) { kop.hidden = !iets; }
+    });
     if (leeg) { leeg.hidden = raak !== 0; }
   }
 
