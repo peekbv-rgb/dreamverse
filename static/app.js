@@ -3338,17 +3338,42 @@
 
   el("i-geboorte").addEventListener("change", function () { bewaarProfiel(); });
 
+  /* Wie de introductie een keer gezien heeft, krijgt hem niet meer.
+   *
+   * Hij stond onvoorwaardelijk aan, dus Vera stelde zich bij elke keer openen
+   * opnieuw voor - ook aan iemand die zijn negende droom komt vertellen. Dat is
+   * een begroeting die een drempel wordt. Hij is niet weg: bij Je gegevens haal
+   * je hem terug via "Introductie opnieuw" bij Je gegevens.
+   */
+  var INTRO_GEZIEN = "dreamverse_intro_gezien";
+
+  function introSluiten() {
+    el("intro").hidden = true;
+    try { el("intro-video").pause(); } catch (e) { /* al gestopt */ }
+    try { localStorage.setItem(INTRO_GEZIEN, "ja"); } catch (e) { /* mag niet */ }
+  }
+
+  function introAlGezien() {
+    try { return localStorage.getItem(INTRO_GEZIEN) === "ja"; } catch (e) { return false; }
+  }
+
   el("intro-start").addEventListener("click", function () {
     bewaarProfiel().then(function () {
-      el("intro").hidden = true;
-      try { el("intro-video").pause(); } catch (e) { /* al gestopt */ }
+      introSluiten();
       el("dream").focus();
     });
   });
-  el("intro-later").addEventListener("click", function () {
-    el("intro").hidden = true;
-    try { el("intro-video").pause(); } catch (e) { /* al gestopt */ }
-  });
+  el("intro-later").addEventListener("click", introSluiten);
+
+  // De weg terug. Zonder dit zijn je naam, geboortedatum en geslacht na de
+  // eerste keer onbereikbaar - dat venster is de enige plek waar ze staan, en
+  // de geboortedatum bepaalt de leeftijdscontrole bij een aankoop.
+  if (el("intro-terug")) {
+    el("intro-terug").addEventListener("click", function () {
+      el("intro").hidden = false;
+      el("intro").scrollIntoView({ block: "center" });
+    });
+  }
 
   // Eén klik zet het geluid aan en speelt vanaf het begin. Daarna mag de
   // browser de rest van de sessie ook geluid van ons afspelen.
@@ -3512,8 +3537,10 @@
         if (doel) { doel.scrollIntoView({ behavior: "smooth", block: "center" }); }
         return;
       }
-      el("intro").hidden = false;
-    }).catch(function () { el("intro").hidden = false; });
+      // Alleen bij de eerste keer. Daarna is het geen introductie meer maar
+      // een tussenscherm tussen jou en je droom.
+      el("intro").hidden = introAlGezien();
+    }).catch(function () { el("intro").hidden = introAlGezien(); });
   }
 
   /* --------------------------------------------------------------- starten */

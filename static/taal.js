@@ -80,11 +80,15 @@
     // innerHTML van de <p> en niet de <a>'s erbinnen. Drie losse linkteksten
     // pasten daarom nergens op. Enkele aanhalingstekens, want er staan dubbele
     // in de HTML.
-    ['<a href="/welkom.html" target="_blank" rel="noopener">Over Dreamverse</a> <span aria-hidden="true">&middot;</span> <a href="/dream-meaning/" target="_blank" rel="noopener">Dream Guide</a> <span aria-hidden="true">&middot;</span> <a href="/welkom.html#kosten" target="_blank" rel="noopener">Pakketten en prijzen</a> <span aria-hidden="true">&middot;</span> <a href="/privacy.html" target="_blank" rel="noopener">Privacyverklaring</a>',
-     '<a href="/welkom.html" target="_blank" rel="noopener">About Dreamverse</a> <span aria-hidden="true">&middot;</span> <a href="/dream-meaning/" target="_blank" rel="noopener">Dream Guide</a> <span aria-hidden="true">&middot;</span> <a href="/welkom.html#kosten" target="_blank" rel="noopener">Plans and prices</a> <span aria-hidden="true">&middot;</span> <a href="/privacy.html" target="_blank" rel="noopener">Privacy statement</a>'],
+    ['<a href="/welkom.html" target="_blank" rel="noopener">Over Dreamverse</a> <span aria-hidden="true">·</span> <a href="/dream-meaning/" target="_blank" rel="noopener">Dream Guide</a> <span aria-hidden="true">·</span> <a href="/welkom.html#kosten" target="_blank" rel="noopener">Pakketten en prijzen</a> <span aria-hidden="true">·</span> <a href="/privacy.html" target="_blank" rel="noopener">Privacyverklaring</a>',
+     '<a href="/welkom.html" target="_blank" rel="noopener">About Dreamverse</a> <span aria-hidden="true">·</span> <a href="/dream-meaning/" target="_blank" rel="noopener">Dream Guide</a> <span aria-hidden="true">·</span> <a href="/welkom.html#kosten" target="_blank" rel="noopener">Plans and prices</a> <span aria-hidden="true">·</span> <a href="/privacy.html" target="_blank" rel="noopener">Privacy statement</a>'],
 
     // Los te koop
     ["Voor welke droom?", "For which dream?"],
+    ["Je naam en je geboortedatum", "Your name and date of birth"],
+    ["Die vulde je in bij de introductie. Wil je ze aanpassen, of Vera nog eens horen, dan open je dat venster hier opnieuw.",
+     "You filled those in during the introduction. To change them, or to hear Vera again, open that window here."],
+    ["Introductie opnieuw", "Introduction again"],
     ["Zoek een teken uit je droom", "Look up a sign from your dream"],
     ["Sloeg er iets terug in je duiding? Zoek het woord op in Vera's Dream Guide: wat een slang, een tand of water in het algemeen kan betekenen. Wat het in <em>jouw</em> Dreamverse betekent staat hierboven — dat is iets anders.",
      "Did something in your reading stay with you? Look the word up in Vera's Dream Guide: what a snake, a tooth or water can mean in general. What it means in <em>your</em> Dreamverse is above — that is something else."],

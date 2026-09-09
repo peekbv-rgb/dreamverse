@@ -351,6 +351,21 @@ Twee dingen die goed moeten. `document.fonts.ready` wordt afgewacht, anders
 tekent het doek in Times New Roman en ziet de kaart er niet uit als de app. En
 `AbortError` is geen fout: dat is iemand die het deelmenu wegklikt.
 
+- **Vera's introductie komt één keer, niet elke keer.** `el("intro").hidden`
+  stond onvoorwaardelijk op `false`, dus Vera stelde zich opnieuw voor aan iemand
+  die zijn negende droom kwam vertellen. Een begroeting die je elke ochtend
+  wegklikt is een drempel. Wegklikken onthoudt de browser
+  (`dreamverse_intro_gezien`). **En er is een weg terug**, want dat venster is de
+  enige plek waar naam, geboortedatum en geslacht staan — en die geboortedatum
+  bepaalt de leeftijdscontrole bij een aankoop. Bij *Je gegevens* staat
+  *Introductie opnieuw*.
+- **Een sleutel in `taal.js` mag geen HTML-entiteit bevatten.** De browser
+  decodeert `&middot;` bij het inlezen, dus `innerHTML` geeft het teken terug en
+  niet de entiteit — en dan matcht de sleutel nooit. Zo bleef de hele
+  voetnootregel van de app onvertaald terwijl de sleutel er wél stond.
+  `python build/controle.py` let er nu op. Zet in de HTML dus gewoon `·` en niet
+  `&middot;`.
+
 ## De chakrapilaar
 
 Hij staat op de pagina tussen *Je dromen samen* en *Je droomarchief*, en

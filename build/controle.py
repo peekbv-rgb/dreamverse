@@ -94,6 +94,33 @@ def vertalingen():
     return sorted(mist)
 
 
+def entiteiten():
+    """Sleutels in taal.js met een HTML-entiteit erin.
+
+    De browser decodeert `&middot;` bij het inlezen, dus `innerHTML` geeft het
+    teken terug en niet de entiteit. Staat de entiteit in de sleutel, dan matcht
+    hij nooit - zonder fout, zonder melding, en de zin blijft in het Nederlands
+    staan. Zo bleef de hele voetnootregel van de app onvertaald.
+
+    `&amp;`, `&lt;` en `&gt;` mogen wel: die komen er ook weer als entiteit uit.
+    """
+    import re
+    pad = WORTEL / "static" / "taal.js"
+    if not pad.exists():
+        return []
+    tekst = pad.read_text(encoding="utf-8")
+    verdacht = re.compile(r"&(?!amp;|lt;|gt;)[a-zA-Z]+;|&#\d+;|&#x[0-9a-fA-F]+;")
+    uit = []
+    # Twee alternatieven in plaats van een backreference: een `\1` in een
+    # regex overleeft de reis door een shell niet en wordt een 0x01-teken.
+    sleutel = re.compile(r"""\[\s*(?:'([^']*)'|"([^"]*)")\s*,""")
+    for m in sleutel.finditer(tekst):
+        zin = m.group(1) if m.group(1) is not None else m.group(2)
+        if zin and verdacht.search(zin):
+            uit.append(zin[:90])
+    return uit
+
+
 def main():
     gevonden = []
     for pad in bestanden():
@@ -117,11 +144,23 @@ def main():
 
     zwevend = css_variabelen()
     onvertaald = vertalingen()
+    gecodeerd = entiteiten()
 
-    if not gevonden and not zwevend and not onvertaald:
-        print("Geen stuurtekens, elke CSS-variabele bestaat, "
-              "elke t()-zin heeft een vertaling.")
+    if not gevonden and not zwevend and not onvertaald and not gecodeerd:
+        print("Geen stuurtekens, elke CSS-variabele bestaat, elke t()-zin heeft "
+              "een vertaling, geen entiteiten in de sleutels.")
         return 0
+
+    if gecodeerd:
+        print("Sleutels in taal.js met een HTML-entiteit erin. De browser")
+        print("decodeert die bij het inlezen, dus innerHTML geeft het teken")
+        print("terug en de sleutel matcht nooit:")
+        print("")
+        for zin in gecodeerd:
+            print("  %s" % zin)
+        print("")
+        if not gevonden and not zwevend and not onvertaald:
+            return 1
 
     if onvertaald:
         print("Zinnen uit app.js zonder regel in taal.js. Die blijven in het")
