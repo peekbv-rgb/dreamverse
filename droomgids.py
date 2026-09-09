@@ -245,8 +245,8 @@ OVERZICHT_TEKST = {
         "zoek": "Search…",
         "leeg": ("Nothing here yet for that word. Tell Vera about it instead — "
                  "she reads the dream, not the keyword."),
-        "cta": ("A dream dictionary gives you the average. Vera reads what actually "
-                "happened in yours, and everything you dreamt before it."),
+        "cta": ("A dream dictionary explains the symbol. Vera interprets the dream "
+                "around it — and everything you dreamt before it."),
         "titel": "Dream Meanings &mdash; Vera's Dream Guide | Dreamverse",
         "meta": ("What do snakes, teeth, water or an ex mean in a dream? Explore the "
                  "symbols, people and places that appear in our dreams — and get your "
@@ -259,8 +259,8 @@ OVERZICHT_TEKST = {
         "zoek": "Zoeken…",
         "leeg": ("Daar staat nog niets over. Vertel het aan Vera — zij leest de droom, "
                  "niet het zoekwoord."),
-        "cta": ("Een droomwoordenboek geeft je het gemiddelde. Vera leest wat er in "
-                "die van jou werkelijk gebeurde, en alles wat je eerder droomde."),
+        "cta": ("Een droomwoordenboek verklaart het teken. Vera duidt de droom "
+                "eromheen — en alles wat je eerder droomde."),
         "titel": "Wat betekent je droom? &mdash; Vera's Dream Guide | Dreamverse",
         "meta": ("Wat betekenen slangen, tanden, water of een ex in een droom? Ontdek de "
                  "tekens, mensen en plaatsen die in onze dromen opduiken — en laat je "
