@@ -112,8 +112,6 @@
     ["Je account, je dromen, de duidingen en al het beeld gaan weg uit onze actieve systemen; onze server bewaart daarnaast zeven dagen een automatische momentopname. Loopt er een abonnement, dan wordt dat eerst opgezegd. Dit is niet ongedaan te maken.",
      "Your account, your dreams, the readings and all the images go from our active systems; our server also keeps an automatic snapshot for seven days. If a subscription is running it gets cancelled first. This cannot be undone."],
 
-    // Beheer. Alleen Ruud ziet dit, maar half Nederlands leest als een half af
-    // scherm - en hij kijkt er zelf ook in het Engels naar.
     ["Gratis", "Free"],
     ["Je e-mailadres is bevestigd. Dank je.", "Your e-mail address is confirmed. Thank you."],
     ["Die bevestigingslink is niet geldig of al gebruikt.",
