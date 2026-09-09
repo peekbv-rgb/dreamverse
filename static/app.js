@@ -1271,9 +1271,7 @@
       };
       recogniser.onerror = function (e) {
         statusEl.className = "status err";
-        statusEl.textContent = e.error === "not-allowed"
-          ? t("Geen toegang tot de microfoon. Sta dat toe in je browser.")
-          : t("Het opnemen stopte onverwacht. Typ anders even.");
+        statusEl.textContent = t(spraakfout(e.error));
       };
       recogniser.onend = function () {
         listening = false;
@@ -1314,6 +1312,32 @@
     return ((profiel && profiel.language) || "nl") === "en" ? "en-US" : "nl-NL";
   }
 
+  /* Wat de spraakherkenning zegt als het misgaat, in mensentaal.
+   *
+   * De ruwe code kwam op het scherm: "Meeschrijven stopte: service-not-allowed".
+   * Dat is jargon uit een API en zegt een dromer niets, terwijl er in dit geval
+   * een oplossing van één tik achter zit. Op een iPhone komt die code van een
+   * privévenster of van dictaat dat uitstaat, en dat kun je gewoon zeggen.
+   */
+  function spraakfout(code) {
+    return {
+      "service-not-allowed":
+        "De spraakdienst van je toestel doet niet mee. Op een iPhone komt dat "
+        + "meestal door een privévenster, of doordat Dicteren uitstaat bij "
+        + "Instellingen, Algemeen, Toetsenbord.",
+      "not-allowed":
+        "De microfoon is geweigerd. Zet hem aan bij de site-instellingen van je "
+        + "browser.",
+      "audio-capture":
+        "Er is geen microfoon gevonden.",
+      "network":
+        "Spraak naar tekst kon het net niet op. Op een bedrijfsnetwerk zit daar "
+        + "soms een firewall tussen.",
+      "language-not-supported":
+        "Deze taal kent de spraakherkenning niet."
+    }[code] || ("Meeschrijven stopte: " + code);
+  }
+
   function meeschrijvenStarten() {
     if (!Recognition) {
       // Firefox en Safari kunnen dit niet. Dat eerlijk zeggen is beter dan een
@@ -1339,7 +1363,7 @@
     };
     r.onerror = function (e) {
       if (e.error === "no-speech" || e.error === "aborted") { return; }
-      meeschrijfMelding(t("Meeschrijven stopte:") + " " + e.error, true);
+      meeschrijfMelding(t(spraakfout(e.error)), true);
     };
     r.onend = function () {
       // De herkenning stopt zichzelf na een stilte. Zolang het gesprek loopt

@@ -205,6 +205,19 @@ en het scheelt direct in de kostprijs per verbeelding.
   Daarom gaat hij ook in `localStorage` (`dreamverse_gesprek`), met een grens van
   een uur — daarna is het geen "net ingesproken" meer en zou hij een oude tekst
   in een nieuwe sessie duwen.
+- **`service-not-allowed` op een iPhone is geen storing.** Safari geeft die code
+  als de spraakdienst niet mag: in een privévenster, of met Dicteren uit onder
+  Instellingen → Algemeen → Toetsenbord. De ruwe code stond op het scherm
+  ("Meeschrijven stopte: service-not-allowed"), en dat is jargon waar een
+  dromer niets mee kan terwijl er een oplossing van één tik achter zit. Eén
+  functie `spraakfout()` vertaalt de vijf codes die echt voorkomen, en bedient
+  zowel het meeschrijven bij Vera als de knop Inspreken. Onbekende codes vallen
+  terug op de ruwe melding — liever een code dan niets.
+- **De Web Speech API is op een telefoon niet te vertrouwen.** Vera hoort de
+  dromer wel (dat is LiveKit met een eigen microfoonstroom), maar de tekst komt
+  van de browser. Wordt dit een telefoonproduct — en dat is het, want je vertelt
+  je droom 's ochtends in bed — dan hoort het transcriberen naar de server te
+  verhuizen in plaats van aan Safari te hangen.
 - **Spraakherkenning volgt de taal uit het profiel.** `recogniser.lang` stond
   hard op `nl-NL`, dus een Engelse gebruiker sprak in en kreeg Nederlandse
   brij terug. Eén functie `taalcode()` bedient nu het inspreken én het
