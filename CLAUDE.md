@@ -334,8 +334,16 @@ op straat te leggen. Een link naar het paneel zou trouwens ook niet werken: die
 route controleert of het jouw gebruikersnummer is, dus bij een ander is hij dood.
 Publieke deellinks zijn een heel ander en veel groter besluit.
 
-De knop verschijnt alleen als er een getekend paneel staat en niet bij het
-voorbeeld, en volgt het paneel dat je op dat moment bekijkt. Zonder deelmenu —
+**Beweegt het paneel, dan komt er een beeldje uit de animatie op de kaart** en
+niet het stilstaande paneel. De video staat al te spelen in de speler, dus die is
+rechtstreeks op het doek te tekenen — geen extra download en geen opname. Het
+paneel is het startbeeld waar de animatie mee begon; halverwege staat er meestal
+meer te gebeuren. Een video van tien seconden delen is te lang voor een verhaal;
+een still eruit is beter. `readyState >= 2` wordt gecontroleerd, anders krijg je
+een zwart vlak.
+
+De knop verschijnt alleen als er iets te delen valt en niet bij het voorbeeld,
+en volgt het paneel dat je op dat moment bekijkt. Zonder deelmenu —
 op een laptop is dat de regel — wordt de kaart opgeslagen als afbeelding, met de
 mededeling dat delen vanaf een telefoon makkelijker gaat.
 

@@ -200,6 +200,9 @@
       var pips2 = bar.querySelectorAll("span");
       for (var q = 0; q < pips2.length; q++) { pips2[q].classList.toggle("done", q <= index); }
       speak(panel.narration);
+      // De video staat er nu pas; de knop kijkt ernaar om te weten of er iets
+      // te delen valt.
+      deelKnopBijwerken();
       return;
     }
     if (kernVideo && kernVideo.panel === index && kernVideo.status === "busy") {
@@ -1748,6 +1751,10 @@
   }
 
   function beeldLaden(bron) {
+    // Een spelende video is zelf al te tekenen: het beeldje dat nu in de speler
+    // staat is precies wat de dromer ziet, en bij een kernmoment is dat een
+    // sterker beeld dan het stilstaande paneel waar de animatie mee begon.
+    if (bron && bron.nodeName === "VIDEO") { return Promise.resolve(bron); }
     return new Promise(function (klaar, mis) {
       var im = new Image();
       im.onload = function () { klaar(im); };
@@ -1758,8 +1765,9 @@
 
   /* Het beeld vullend in een vak, midden uitgesneden. */
   function vullend(ctx, im, x, y, b, h) {
-    var s = Math.max(b / im.width, h / im.height);
-    var bb = im.width * s, hh = im.height * s;
+    var bw = im.videoWidth || im.width, bh = im.videoHeight || im.height;
+    var s = Math.max(b / bw, h / bh);
+    var bb = bw * s, hh = bh * s;
     ctx.drawImage(im, x + (b - bb) / 2, y + (h - hh) / 2, bb, hh);
   }
 
@@ -1816,12 +1824,19 @@
     return new Promise(function (klaar) { c.toBlob(klaar, "image/png"); });
   }
 
-  /* Welk beeld gaat er op de kaart: wat er nu in de speler staat. */
+  /* Welk beeld gaat er op de kaart: wat er nu in de speler staat.
+   *
+   * Beweegt dit paneel, dan nemen we het beeldje van dit moment uit de video en
+   * niet het stilstaande paneel. Dat paneel is het startbeeld waar de animatie
+   * mee begon; halverwege staat er meestal meer te gebeuren. Een video van tien
+   * seconden delen is te lang voor een verhaal - een still eruit is beter.
+   */
   function huidigPaneelBeeld() {
-    var pad = panelImages[index];
-    if (pad) { return pad; }
-    // Geen getekend paneel? Dan is er niets te delen dat de moeite waard is.
-    return null;
+    var v = stage.querySelector("video");
+    // readyState 2 betekent: er is een beeldje om te tekenen. Zonder die
+    // controle krijg je een zwart vlak op de kaart.
+    if (v && v.readyState >= 2 && v.videoWidth) { return v; }
+    return panelImages[index] || null;
   }
 
   function deelKnopBijwerken() {
