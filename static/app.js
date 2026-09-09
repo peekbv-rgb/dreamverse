@@ -1821,7 +1821,11 @@
     ctx.fillStyle = "rgba(167, 154, 203, .65)";
     ctx.fillText("vera-dreamverse.com", KAART_B / 2, KAART_H - 92);
 
-    return new Promise(function (klaar) { c.toBlob(klaar, "image/png"); });
+    // JPEG en geen PNG: het beeld is geschilderd, niet een schermafdruk met
+    // scherpe lijnen. PNG maakte er 2,5 MB van, wat op een telefoonbundel
+    // telt en het deelmenu traag opent. Kwaliteit 92 is met het blote oog
+    // niet van het origineel te onderscheiden.
+    return new Promise(function (klaar) { c.toBlob(klaar, "image/jpeg", 0.92); });
   }
 
   /* Welk beeld gaat er op de kaart: wat er nu in de speler staat.
@@ -1862,7 +1866,7 @@
         // Roman en ziet de kaart er niet uit als de app.
         if (document.fonts && document.fonts.ready) { await document.fonts.ready; }
         var blob = await kaartMaken(bron);
-        var bestand = new File([blob], "dreamverse.png", { type: "image/png" });
+        var bestand = new File([blob], "dreamverse.jpg", { type: "image/jpeg" });
 
         if (navigator.canShare && navigator.canShare({ files: [bestand] })) {
           await navigator.share({ files: [bestand] });
@@ -1872,7 +1876,7 @@
           // zeggen wat je er vervolgens mee doet.
           var url = URL.createObjectURL(blob);
           var a = document.createElement("a");
-          a.href = url; a.download = "dreamverse.png";
+          a.href = url; a.download = "dreamverse.jpg";
           document.body.appendChild(a); a.click(); a.remove();
           setTimeout(function () { URL.revokeObjectURL(url); }, 5000);
           melding.textContent = t("Opgeslagen als afbeelding. Delen naar Instagram gaat het makkelijkst vanaf je telefoon.");
