@@ -173,6 +173,18 @@
     ["Je zei dat je dit niet hebt teruggezien.", "You said you did not notice this."],
     ["Je eigen tekens", "Your own signs"],
 
+    // -- eerst de droom, dan pas het account --------------------------------
+    ["Wat droomde je vannacht?", "What did you dream last night?"],
+    ["Vertel er nog iets meer over, dan kan Vera er iets mee.",
+     "Tell a little more about it, then Vera has something to work with."],
+    ["Verder", "Continue"],
+    ["Je droom blijft zolang in deze browser en gaat nergens heen. Heb je al een account?",
+     "Your dream stays in this browser for now and goes nowhere. Already have an account?"],
+    ["Je droom staat klaar voor Vera.", "Your dream is ready for Vera."],
+    ["Maak een gratis account om hem verbeeld te zien. Drie dromen per maand, geen betaalgegevens.",
+     "Create a free account to see it imagined. Three dreams a month, no payment details."],
+    ["Eerst nog iets aanpassen", "Change something first"],
+
     // -- Vera zag iets: het betaalmoment op de derde nacht ------------------
     ["Vera zag iets", "Vera noticed something"],
     ["Dit kwam in meer dan één van je dromen terug:", "This came back in more than one of your dreams:"],
@@ -536,8 +548,13 @@
                   "#spectrum-noot", "#zorg-kader", "#vragen",
                   "#vraag-melding", "#vraag-uitleg", "#rapport"].join(",");
 
+  // span.invoer-hint stond hier niet, dus "of typ het hierboven" bleef in het
+  // Nederlands staan naast een Engelse knop. Dat viel weinig op naast het
+  // invoerveld van de app; op het eerste scherm van iemand die net van de
+  // Engelse landingspagina komt, is het het derde wat hij leest.
   var TE_VERTALEN = "h1,h2,p,label,span.lbl,span.label,span.tier-name,span.extras-kop," +
-                    "span.kwaliteit-kop,span.antwoord-uitleg,button,option,#mode";
+                    "span.kwaliteit-kop,span.antwoord-uitleg,span.invoer-hint,span.veld-hint," +
+                    "button,option,#mode";
 
   function vertaal(taal) {
     document.querySelectorAll(TE_VERTALEN).forEach(function (e) {

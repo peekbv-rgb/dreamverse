@@ -1361,6 +1361,29 @@ body::after { opacity: .34; }
 }
 #poort-door { margin-top: .3rem; }
 
+/* Eerst de droom, dan pas het account. Het droomveld staat in dezelfde kaart
+   als de inlogvelden, want het is dezelfde stap in dezelfde deur - alleen komt
+   hij nu ná de vraag waarvoor iemand kwam. */
+.poort-stap { display: flex; flex-direction: column; gap: .8rem; }
+.poort-stap label {
+  font-size: .64rem; font-weight: 600; letter-spacing: .2em;
+  text-transform: uppercase; color: var(--muted);
+}
+#poort-droom {
+  font-family: var(--body); font-size: 1rem; line-height: 1.5;
+  padding: .7rem .8rem; border-radius: 10px; resize: vertical;
+  background: rgba(43, 28, 74, .6); color: var(--ink);
+  border: 1px solid var(--line);
+}
+#poort-droom:focus-visible { outline: 2px solid var(--crown); outline-offset: 2px; }
+.poort-stap .invoerwijze { margin: 0; }
+.poort-klaar-kop {
+  margin: 0; font-family: var(--display); font-size: 1.5rem;
+  font-weight: 300; color: var(--ink);
+}
+.poort-klaar-sub { margin: 0 0 .4rem; color: #C9BCDF; font-size: .88rem; line-height: 1.55; }
+#poort-al-account, #poort-terug { align-self: flex-start; font-size: .84rem; }
+
 /* Uitloggen staat bij het saldo: daar staat toch al wie je bent. */
 .uitloggen { padding: .3rem .8rem; font-size: .76rem; }
 

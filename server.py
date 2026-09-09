@@ -497,6 +497,17 @@ class Handler(SimpleHTTPRequestHandler):
             token = accounts.nieuwe_sessie(u["id"])
             accounts.zet_huidige(accounts.gebruiker(u["id"]))
 
+            # De taal waarin hij zich aanmeldt is de taal waarin hij zijn droom
+            # verteld heeft. Zonder dit begint iedereen op Nederlands - ook wie
+            # van de Engelse landingspagina komt en zijn droom in het Engels op
+            # het eerste scherm heeft ingetypt - en dan komt de duiding in de
+            # verkeerde taal terug. Die wordt namelijk niet vertaald maar
+            # geschreven; corrigeren achteraf kan niet.
+            if payload.get("taal") in accounts.TALEN:
+                accounts.zet_profiel(u["id"], {"language": payload["taal"]})
+                u = accounts.gebruiker(u["id"])
+                accounts.zet_huidige(u)
+
             # Begroeten en het adres laten bevestigen, in een mail. Dit mag de
             # aanmelding nooit tegenhouden: hapert de mailserver, dan is iemand
             # nog steeds ingeschreven en ingelogd. Vandaar de brede except - er

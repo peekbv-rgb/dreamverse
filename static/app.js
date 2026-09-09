@@ -1230,8 +1230,10 @@
   var METER_BALKJES = 14;
   var meterStaat = null;
 
-  function meterBouwen() {
-    var doos = el("mic-meter");
+  // De meter hangt aan een element-id, want er zijn er twee: de invoer in de
+  // app en het eerste scherm waar iemand zonder account zijn droom vertelt.
+  function meterBouwen(id) {
+    var doos = el(id || "mic-meter");
     if (!doos || doos.childNodes.length) { return doos; }
     for (var i = 0; i < METER_BALKJES; i++) {
       var b = document.createElement("i");
@@ -1256,8 +1258,8 @@
     }
   }
 
-  function meterStarten() {
-    var doos = meterBouwen();
+  function meterStarten(id) {
+    var doos = meterBouwen(id);
     var Ctx = window.AudioContext || window.webkitAudioContext;
     if (!doos || !Ctx || !navigator.mediaDevices) { return; }
 
@@ -3662,7 +3664,14 @@
       }
       // Alleen bij de eerste keer. Daarna is het geen introductie meer maar
       // een tussenscherm tussen jou en je droom.
-      el("intro").hidden = introAlGezien();
+      //
+      // En ook niet bij wie zijn droom al verteld heeft voordat hij een account
+      // maakte. Die heeft zijn naam net ingevuld, staat op het punt zijn droom
+      // te zien, en krijgt dan een venster dat opnieuw om zijn naam vraagt plus
+      // geboortedatum en geslacht. Dat is precies het scherm waar dit hele
+      // eerste-droom-pad omheen gebouwd is. Geboortedatum wordt pas gevraagd
+      // bij een aankoop, en de introductie staat bij Je gegevens.
+      el("intro").hidden = introAlGezien() || startteMetDroom;
     }).catch(function () { el("intro").hidden = introAlGezien(); });
   }
 
@@ -3695,6 +3704,228 @@
     el("p-vergeten").hidden = nieuw;
     el("poort-door").textContent = nieuw ? t("Account maken") : t("Inloggen");
     el("poort-fout").hidden = true;
+  }
+
+  /* Eerst de droom, dan pas het account.
+   *
+   * Het eerste scherm was naam, e-mail en wachtwoord - gevraagd aan iemand die
+   * nog niet weet wat hij ervoor terugkrijgt. Nu vertelt hij eerst zijn droom;
+   * dat is waarvoor hij kwam, en daarna is er ook een reden om een account te
+   * maken: hij wil zien wat ermee gebeurt.
+   *
+   * De tekst blijft tot dat moment alleen in deze browser. Een droom is een
+   * bijzonder persoonsgegeven en er is nog geen account om hem aan te hangen,
+   * dus hij gaat pas naar de server als de gebruiker bestaat. Een dag is de
+   * grens: daarna is het geen "net gedroomd" meer en zou een oude tekst in een
+   * nieuwe ochtend opduiken.
+   */
+  var EERSTE_DROOM = "dreamverse_eerste_droom";
+  var EERSTE_DROOM_UUR = 24;
+  // Of deze sessie begon met een droom die vóór het account verteld is.
+  // toonIntro() haalt eerst het profiel op en is dus later klaar dan
+  // eersteDroomOverzetten(), die de opslag leegmaakt; zonder deze vlag zou de
+  // introductie alsnog opengaan omdat er tegen die tijd niets meer staat.
+  var startteMetDroom = false;
+
+  /* De taal van de poort komt niet uit het profiel, want dat is er nog niet.
+   *
+   * Zolang de poort een inlogvenster was viel dat nauwelijks op. Nu is het het
+   * eerste scherm van het product: iemand komt van de Engelse landingspagina,
+   * drukt op "Start for free", en kreeg dan een Nederlandse vraag. Dezelfde
+   * sleutel als welkom.html en privacy.html, dus de keuze die daar gemaakt is
+   * geldt hier ook - en anders wat de browser zegt, met Engels als standaard.
+   */
+  function poortTaal() {
+    var opgeslagen = null;
+    try { opgeslagen = localStorage.getItem("dreamverse_taal"); } catch (e) { /* niets */ }
+    if (opgeslagen === "nl" || opgeslagen === "en") { return opgeslagen; }
+    return /^nl\b/i.test(navigator.language || "") ? "nl" : "en";
+  }
+
+  function poortOpenen() {
+    el("poort").hidden = false;
+    var taal = poortTaal();
+    document.documentElement.lang = taal;
+    // Alleen de pagina vertalen: zetVlaggen() haalt er ook het account en het
+    // spectrum bij, en die bestaan zonder sessie niet.
+    if (window.vertaalPagina) { window.vertaalPagina(taal); }
+    document.querySelectorAll(".vlag").forEach(function (b) {
+      b.setAttribute("aria-pressed", b.dataset.taal === taal ? "true" : "false");
+    });
+    poortStap(eersteDroomLezen() ? "account" : "vertel");
+  }
+
+  function eersteDroomLezen() {
+    try {
+      var rauw = localStorage.getItem(EERSTE_DROOM);
+      if (!rauw) { return ""; }
+      var d = JSON.parse(rauw);
+      if (!d || !d.tekst) { return ""; }
+      if (Date.now() - (d.wanneer || 0) > EERSTE_DROOM_UUR * 3600000) {
+        localStorage.removeItem(EERSTE_DROOM);
+        return "";
+      }
+      return d.tekst;
+    } catch (e) { return ""; }
+  }
+
+  function eersteDroomBewaren(tekst) {
+    try {
+      localStorage.setItem(EERSTE_DROOM,
+                           JSON.stringify({ tekst: tekst, wanneer: Date.now() }));
+    } catch (e) { /* privévenster: dan leeft hij alleen in dit tabblad */ }
+  }
+
+  function eersteDroomWissen() {
+    try { localStorage.removeItem(EERSTE_DROOM); } catch (e) { /* niets */ }
+  }
+
+  /* Welke van de drie stappen de poort laat zien.
+   *
+   * "vertel"   het droomveld, geen account in beeld
+   * "account"  je droom staat klaar, maak er een aan
+   * "inloggen" de gewone poort, voor wie er al een heeft
+   */
+  function poortStap(naam) {
+    var vertel = el("poort-vertel");
+    var klaar = el("poort-klaar");
+    var tabs = document.querySelector(".poort-tabs");
+    var form = el("poort-form");
+    if (!vertel || !klaar || !tabs || !form) { return; }
+
+    vertel.hidden = naam !== "vertel";
+    klaar.hidden = naam !== "account";
+    tabs.hidden = naam === "vertel";
+    form.hidden = naam === "vertel";
+    // De belofte bovenaan zegt waar dit over gaat; bij het droomveld is dat de
+    // vraag zelf, en dan staan er twee koppen boven elkaar.
+    var belofte = document.querySelector(".poort-belofte");
+    var sub = document.querySelector(".poort-sub");
+    if (belofte) { belofte.hidden = naam !== "vertel"; }
+    if (sub) { sub.hidden = naam === "vertel"; }
+
+    if (naam === "account") {
+      zetPoortModus("nieuw");
+      setTimeout(function () { el("p-naam").focus(); }, 60);
+    } else if (naam === "inloggen") {
+      zetPoortModus("inloggen");
+      setTimeout(function () { el("p-email").focus(); }, 60);
+    } else {
+      el("poort-droom").value = eersteDroomLezen();
+      setTimeout(function () { el("poort-droom").focus(); }, 60);
+    }
+  }
+
+  /* Inspreken op het eerste scherm.
+   *
+   * Bewust niet setupMic(): die schrijft in het invoerveld van de app en praat
+   * tegen Vera's regel en de statusbalk, en geen van drieën bestaat hier. Wat de
+   * twee wél delen is de taalkeuze, de vertaling van de foutcodes en de
+   * niveaumeter.
+   */
+  function poortMic() {
+    var knop = el("poort-mic");
+    var veld = el("poort-droom");
+    var fout = el("poort-vertel-fout");
+    if (!knop || !veld) { return; }
+    if (!Recognition) {
+      knop.disabled = true;
+      var hint = el("poort-vertel").querySelector(".invoer-hint");
+      if (hint) {
+        hint.classList.add("kan-niet");
+        hint.textContent = t("Inspreken kan alleen in Chrome en Edge. Typ je droom hierboven.");
+      }
+      return;
+    }
+    knop.addEventListener("click", function () {
+      if (listening) { recogniser.stop(); return; }
+      recogniser = new Recognition();
+      recogniser.lang = taalcode();
+      recogniser.continuous = true;
+      recogniser.interimResults = true;
+      var settled = veld.value ? veld.value + " " : "";
+
+      recogniser.onstart = function () {
+        listening = true;
+        knop.classList.add("rec");
+        knop.textContent = t("Stop met opnemen");
+        meterStarten("poort-mic-meter");
+      };
+      recogniser.onresult = function (e) {
+        var live = "";
+        for (var i = e.resultIndex; i < e.results.length; i++) {
+          if (e.results[i].isFinal) { settled += e.results[i][0].transcript + " "; }
+          else { live += e.results[i][0].transcript; }
+        }
+        veld.value = (settled + live).replace(/\s+/g, " ").trimStart();
+      };
+      recogniser.onerror = function (e) {
+        fout.textContent = t(spraakfout(e.error));
+        fout.hidden = false;
+      };
+      recogniser.onend = function () {
+        listening = false;
+        meterStoppen();
+        knop.classList.remove("rec");
+        knop.textContent = t("Inspreken");
+      };
+      recogniser.start();
+    });
+  }
+  poortMic();
+
+  if (el("poort-verder")) {
+    el("poort-verder").addEventListener("click", function () {
+      var veld = el("poort-droom");
+      var fout = el("poort-vertel-fout");
+      var tekst = veld.value.trim();
+      // Twintig tekens is geen kwaliteitseis maar een vergissingsdrempel: onder
+      // dat aantal heeft iemand op Verder gedrukt zonder iets te vertellen, en
+      // dan is een account maken zinloos.
+      if (tekst.length < 20) {
+        fout.textContent = t("Vertel er nog iets meer over, dan kan Vera er iets mee.");
+        fout.hidden = false;
+        veld.focus();
+        return;
+      }
+      fout.hidden = true;
+      eersteDroomBewaren(tekst);
+      poortStap("account");
+    });
+  }
+  if (el("poort-al-account")) {
+    el("poort-al-account").addEventListener("click", function () {
+      poortStap("inloggen");
+    });
+  }
+  if (el("poort-terug")) {
+    el("poort-terug").addEventListener("click", function () {
+      poortStap("vertel");
+    });
+  }
+
+  /* De droom die vóór het account verteld is, in de app zetten.
+   *
+   * Niet meteen versturen. Verbeelden kost geld en soms tokens, en de kwaliteit
+   * is een keuze die hij nog niet gemaakt heeft - dezelfde reden waarom een
+   * gesprek met Vera ook nooit vanzelf een verbeelding wordt. Dus: de tekst
+   * staat er, de knop licht op, en hij drukt.
+   */
+  function eersteDroomOverzetten() {
+    var tekst = eersteDroomLezen();
+    if (!tekst) { return; }
+    var veld = el("dream");
+    if (!veld) { return; }
+    if (!veld.value.trim()) { veld.value = tekst; }
+    eersteDroomWissen();
+    setTimeout(function () {
+      veld.scrollIntoView({ behavior: "smooth", block: "center" });
+      var go = el("go");
+      if (go) {
+        go.classList.add("wijs");
+        setTimeout(function () { go.classList.remove("wijs"); }, 3000);
+      }
+    }, 400);
   }
 
   // Laten zien wat je typt. Zonder dit is een wachtwoord op een telefoon
@@ -3749,7 +3980,11 @@
       body: JSON.stringify({
         email: el("p-email").value.trim(),
         wachtwoord: el("p-wachtwoord").value,
-        naam: el("p-naam").value.trim()
+        naam: el("p-naam").value.trim(),
+        // De taal waarin de poort staat is de taal waarin hij zijn droom net
+        // verteld heeft. De duiding wordt geschreven en niet vertaald, dus dit
+        // is de enige plek waar dat nog goed te zetten is.
+        taal: poortTaal()
       })
     })
       .then(lees)
@@ -3990,11 +4225,16 @@
       statusEl.textContent = t("Die bevestigingslink is niet geldig of al gebruikt.");
       history.replaceState(null, "", location.pathname);
     }
+    startteMetDroom = !!eersteDroomLezen();
     toonIntro();
     laadGids();
     loadArchive();
     laadVerbruik();
     laadAccount();
+    // Heeft hij zijn droom verteld voordat hij een account had, dan staat die
+    // hier klaar. Hier en niet in de poort: zo werkt het ook als de pagina
+    // tussendoor ververst is.
+    eersteDroomOverzetten();
   }
 
   /* --------------------------------------------------------------- starten */
@@ -4005,18 +4245,15 @@
   fetch("/api/profile")
     .then(function (r) {
       if (r.status === 401) {
-        el("poort").hidden = false;
-        zetPoortModus("inloggen");
-        el("p-email").focus();
+        // Staat er al een droom klaar, dan is het account de volgende stap; zo
+        // niet, dan begint het bij de vraag waarvoor hij kwam.
+        poortOpenen();
         return null;
       }
       return r.json();
     })
     .then(function (p) { if (p) { binnen(p); } })
-    .catch(function () {
-      el("poort").hidden = false;
-      zetPoortModus("inloggen");
-    });
+    .catch(function () { poortOpenen(); });
   fetch("/api/health")
     .then(function (r) { return r.json(); })
     .then(function (d) {

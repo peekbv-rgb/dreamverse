@@ -34,6 +34,38 @@
     <p class="poort-sub">Je vertelt je droom; je krijgt een verbeelding met een
       duiding en een vooruitblik. Elke eerdere droom telt mee.</p>
 
+    <!-- Eerst de droom, dan pas het account.
+         Hier stond naam/e-mail/wachtwoord als eerste scherm, en dat vraagt iets
+         van iemand die nog niet weet wat hij ervoor terugkrijgt. Nu vertelt hij
+         eerst zijn droom - dat is waarvoor hij kwam - en pas als die er staat is
+         er een reden om een account te maken. De tekst blijft tot dat moment
+         alleen in deze browser: dromen zijn gevoelige gegevens en er is nog geen
+         account om ze aan te hangen. -->
+    <div class="poort-stap" id="poort-vertel" hidden>
+      <label for="poort-droom">Wat droomde je vannacht?</label>
+      <textarea id="poort-droom" rows="5" maxlength="4000"
+                placeholder="Ik vloog over de bergen en zag een vriendin huilen aan het zwembad…"></textarea>
+      <div class="invoerwijze">
+        <button type="button" id="poort-mic">Inspreken</button>
+        <span class="mic-meter" id="poort-mic-meter" aria-hidden="true"></span>
+        <span class="invoer-hint">of typ het hierboven</span>
+      </div>
+      <p class="poort-fout" id="poort-vertel-fout" hidden></p>
+      <button type="button" class="primary" id="poort-verder">Verder</button>
+      <!-- De knop staat naast de <p> en niet erin: de vertaalslag vervangt de
+           hele innerHTML van elke <p>, en dan is de listener op die knop weg. -->
+      <p class="poort-uitleg">Je droom blijft zolang in deze browser en gaat
+        nergens heen. Heb je al een account?</p>
+      <button type="button" class="linkje" id="poort-al-account">Inloggen</button>
+    </div>
+
+    <div class="poort-stap" id="poort-klaar" hidden>
+      <p class="poort-klaar-kop">Je droom staat klaar voor Vera.</p>
+      <p class="poort-klaar-sub">Maak een gratis account om hem verbeeld te zien.
+        Drie dromen per maand, geen betaalgegevens.</p>
+      <button type="button" class="linkje" id="poort-terug">Eerst nog iets aanpassen</button>
+    </div>
+
     <div class="poort-tabs">
       <button type="button" id="tab-inloggen" aria-pressed="true">Inloggen</button>
       <button type="button" id="tab-nieuw" aria-pressed="false">Account maken</button>
