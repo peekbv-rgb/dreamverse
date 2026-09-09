@@ -28,7 +28,7 @@ import re
 import secrets
 import sqlite3
 import threading
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).parent
@@ -147,6 +147,20 @@ CREATE TABLE IF NOT EXISTS feedback (
     wanneer TEXT NOT NULL DEFAULT ''
 );
 CREATE INDEX IF NOT EXISTS feedback_user ON feedback(user_id);
+
+-- Hoeveel keer een pagina is opgevraagd, per dag. Meer niet.
+--
+-- Geen IP-adres, geen cookie, geen kenmerk waarmee iemand te herkennen is - dus
+-- ook geen banner en niets in de privacyverklaring. Dit is optellen, geen
+-- volgen. Dat betekent ook dat "unieke bezoekers" hier niet uit te halen is: om
+-- twee bezoeken aan dezelfde persoon toe te schrijven moet je die persoon
+-- herkennen, en precies dat doen we niet.
+CREATE TABLE IF NOT EXISTS weergaven (
+    datum   TEXT NOT NULL,
+    pagina  TEXT NOT NULL,
+    aantal  INTEGER NOT NULL DEFAULT 0,
+    PRIMARY KEY (datum, pagina)
+);
 """
 
 
@@ -571,6 +585,52 @@ def alles_van(user_id):
         "betalingen": betalingen,
         "feedback": feedback_van(user_id),
     }
+
+
+ROBOTS = ("bot", "crawl", "spider", "slurp", "curl", "wget", "python-",
+          "scan", "http-client", "headless", "monitor", "preview")
+
+
+def is_robot(agent):
+    """Ruwe zeef op de browsernaam.
+
+    De site wordt dagelijks afgestruind door scanners die op PHP-lekken zoeken -
+    honderden verzoeken per uur. Tellen we die mee, dan is het cijfer waardeloos
+    op precies de dag dat je wilt weten of er iemand van Instagram kwam.
+
+    Perfect wordt dit nooit: een scanner die zich als Chrome voordoet komt er
+    doorheen. Maar de meeste noemen zichzelf gewoon, en een lege browsernaam is
+    ook nooit een mens in een browser.
+    """
+    a = (agent or "").lower()
+    return not a or any(r in a for r in ROBOTS)
+
+
+def tel_weergave(pagina, agent=None):
+    """Eén weergave erbij. Faalt nooit hardop.
+
+    Een teller mag nooit een pagina kosten: gaat het schrijven mis - schijf vol,
+    database op slot - dan hoort de bezoeker daar niets van te merken.
+    """
+    if is_robot(agent):
+        return False
+    try:
+        with _lock:
+            db().execute(
+                "INSERT INTO weergaven (datum, pagina, aantal) VALUES (?, ?, 1)"
+                " ON CONFLICT(datum, pagina) DO UPDATE SET aantal = aantal + 1",
+                (date.today().isoformat(), pagina[:40]))
+        return True
+    except Exception:
+        return False
+
+
+def weergaven(dagen=30):
+    """Per dag en per pagina, nieuwste eerst."""
+    grens = (date.today() - timedelta(days=dagen)).isoformat()
+    return [dict(r) for r in db().execute(
+        "SELECT datum, pagina, aantal FROM weergaven WHERE datum >= ?"
+        " ORDER BY datum DESC, pagina", (grens,)).fetchall()]
 
 
 def bewaar_feedback(user_id, tekst, dromen=0):

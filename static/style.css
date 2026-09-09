@@ -656,6 +656,13 @@ section .entry { border-left-width: 3px; border-left-color: var(--tint); }
 /* Kan de browser het niet, dan is dit geen terzijde maar het antwoord. */
 .invoer-hint.kan-niet { color: var(--solar); }
 
+/* De ondertekening onder het stuk van Ruud. Een naam onder een tekst leest
+   anders dan dezelfde naam in een voettekst: hier staat een mens. */
+.ondertekening {
+  margin: -.4rem 0 1.2rem; font-family: var(--display);
+  font-size: 1.1rem; font-style: italic; color: var(--muted);
+}
+
 /* Terug naar de uitleg.
  *
  * Wie eenmaal ingelogd is, ziet welkom.html nooit meer: die pagina komt alleen

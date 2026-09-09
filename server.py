@@ -209,6 +209,20 @@ class Handler(SimpleHTTPRequestHandler):
         elif kaal in ("/app", "/app/"):
             self.path = "/index.html"
 
+        # Tellen dat er iemand langskwam. Alleen deze twee pagina's, en alleen
+        # het aantal - geen IP-adres, geen cookie, geen kenmerk waarmee iemand te
+        # herkennen is. Daarom is er ook geen banner nodig en staat er niets over
+        # in de privacyverklaring: dit is optellen, geen volgen.
+        #
+        # Hier en niet bij de statische bestanden, want dan tel je stylesheets en
+        # plaatjes mee. En de scanbots die dagelijks op PHP-lekken zoeken vragen
+        # paden op die hier nooit langskomen; wat er alsnog doorheen glipt vangt
+        # de zeef op de browsernaam.
+        if self.path in ("/welkom.html", "/index.html"):
+            accounts.tel_weergave(
+                "landing" if self.path == "/welkom.html" else "app",
+                self.headers.get("User-Agent"))
+
         if self.path == "/api/profile":
             return self.send_json(dreamverse.public_profile())
         if self.path == "/api/mijn-gegevens":

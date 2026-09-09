@@ -98,8 +98,29 @@ def cijfers(dagen=30):
     # waarom iemand wegblijft in plaats van dat hij wegblijft.
     terugkoppeling = accounts.alle_feedback()
 
+    # De trechter ervoor. Zonder dit zie je pas iets zodra iemand een account
+    # maakt, en weet je nooit of er honderd mensen keken en afhaakten of dat er
+    # simpelweg niemand langskwam. Dat zijn twee heel verschillende problemen.
+    tellingen = accounts.weergaven(dagen)
+    landing = Counter()
+    appview = Counter()
+    for r in tellingen:
+        (landing if r["pagina"] == "landing" else appview)[r["datum"]] += r["aantal"]
+    nieuw_per_dag = Counter(
+        u["sinds"].isoformat() for u in gebruikers.values() if u["sinds"])
+    dromen_per_dag = Counter()
+    for u in gebruikers.values():
+        for d in u["dagen"]:
+            dromen_per_dag[d.isoformat()] += 1
+
     return {
         "feedback": terugkoppeling,
+        "trechter": [
+            {"datum": d, "landing": landing.get(d, 0), "app": appview.get(d, 0),
+             "nieuw": nieuw_per_dag.get(d, 0), "dromen": dromen_per_dag.get(d, 0)}
+            for d in sorted(set(landing) | set(appview) | set(nieuw_per_dag)
+                            | set(dromen_per_dag), reverse=True)
+        ],
         "gebruikers": len(gebruikers),
         "met_droom": sum(1 for u in gebruikers.values() if u["dromen"]),
         "dromen": sum(u["dromen"] for u in gebruikers.values()),
@@ -151,9 +172,35 @@ def main():
     print("  pakketten       %s" % c["pakketten"])
     print("  betalingen      %s, samen EUR %.2f" % (c["betalingen"], c["omzet"]))
     print("")
-    print("  laatste dagen:")
-    for r in c["per_dag"][:10]:
-        print("    %s  %d nieuw, %d dromen" % (r["datum"], r["nieuw"], r["dromen"]))
+    print("  DE TRECHTER  (bezoek -> account -> droom)")
+    print("    %-12s %8s %8s %8s %8s" % ("datum", "landing", "app", "nieuw", "dromen"))
+    tot = {"landing": 0, "app": 0, "nieuw": 0, "dromen": 0}
+    # Alleen dagen waarop er ook echt geteld is. Het tellen begon later dan de
+    # eerste accounts, en dan deel je twee getallen op elkaar die over
+    # verschillende weken gaan - dat leest als een percentage en is het niet.
+    gemeten = {"landing": 0, "nieuw": 0}
+    for r in c["trechter"][:14]:
+        print("    %-12s %8d %8d %8d %8d" % (
+            r["datum"], r["landing"], r["app"], r["nieuw"], r["dromen"]))
+        for k in tot:
+            tot[k] += r[k]
+        if r["landing"] or r["app"]:
+            gemeten["landing"] += r["landing"]
+            gemeten["nieuw"] += r["nieuw"]
+    print("    %-12s %8d %8d %8d %8d" % (
+        "samen", tot["landing"], tot["app"], tot["nieuw"], tot["dromen"]))
+    if gemeten["landing"] >= 10:
+        print("")
+        print("    Van %d bezoeken aan de landingspagina werden er %d een account: %.0f%%."
+              % (gemeten["landing"], gemeten["nieuw"],
+                 100 * gemeten["nieuw"] / gemeten["landing"]))
+    elif gemeten["landing"]:
+        print("")
+        print("    Nog te weinig bezoek (%d) om er een percentage van te maken."
+              % gemeten["landing"])
+    print("")
+    print("  Bezoeken zijn weergaven, geen personen: er wordt niets bewaard")
+    print("  waarmee twee bezoeken aan dezelfde mens zijn toe te schrijven.")
 
     if c["feedback"]:
         print("")

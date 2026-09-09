@@ -429,6 +429,28 @@ per gebruiker.
 "Terug" is bewust streng: een **droom** op dag vier of later, geen bezoek. Wie
 alleen even kijkt is geen gebruiker.
 
+**De trechter staat bovenaan: bezoek -> account -> droom.** Zonder dat zie je
+pas iets zodra iemand een account maakt, en weet je nooit of er honderd mensen
+keken en afhaakten of dat er simpelweg niemand kwam — twee heel verschillende
+problemen. De tabel `weergaven` telt per dag per pagina hoe vaak `welkom.html`
+en `index.html` geserveerd zijn. **Geen IP-adres, geen cookie, geen kenmerk
+waarmee iemand te herkennen is**, dus geen banner en niets in de
+privacyverklaring: dit is optellen, geen volgen. Daarom staat er ook geen
+"unieke bezoekers" — om twee bezoeken aan dezelfde mens toe te schrijven moet je
+die mens herkennen, en precies dat doen we niet.
+
+Geteld wordt op de plek waar de **pagina** wordt geserveerd, niet bij de
+statische bestanden: anders tel je stylesheets en plaatjes mee. De scanbots die
+dagelijks op PHP-lekken zoeken vragen paden op die daar nooit langskomen, en wat
+er alsnog doorheen glipt vangt `is_robot()` op de browsernaam. Nagemeten: drie
+bezoeken als Chrome tellen, vijf als AhrefsBot niet, PHP-scans niet, de
+stylesheet niet. `tel_weergave()` faalt nooit hardop — een teller mag geen
+pagina kosten.
+
+Het percentage verschijnt pas vanaf tien gemeten bezoeken, en alleen over dagen
+waarop er ook echt geteld is. Het tellen begon later dan de eerste accounts, en
+anders deel je twee getallen op elkaar die over verschillende weken gaan.
+
 **Geen derde partij, geen cookies, geen banner.** Alles komt uit gegevens die er
 al waren — `users.gemaakt`, `dromen.wanneer`, de vragen in de bewaarde
 verbeelding, de tabel `betalingen` — plus `usage.checkout()` voor het begin van
