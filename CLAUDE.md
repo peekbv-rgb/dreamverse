@@ -382,9 +382,31 @@ Hij staat op de pagina tussen *Je dromen samen* en *Je droomarchief*, en
 verschijnt **vanaf de eerste droom**. Daar stond eerst een drempel van drie, met
 het argument dat minder alleen ruis geeft. Dat klopte voor de tijdlijn maar niet
 voor de pilaar: één droom is al vijf panelen met vijf gekozen velden, en dat is
-een echte verdeling. De kosten van verbergen bleken hoger — wie hem niet ziet
-weet niet dat hij bestaat, en dit is precies het deel waar mensen voor
-terugkomen. Onder de drie nachten staat er een regel bij dat het nog vroeg is.
+een echte verdeling. Onder de drie nachten staat er een regel bij dat het nog
+vroeg is.
+
+**Maar hij staat dicht.** Zeven lotussen midden in de pagina zeggen tegen iemand
+die hier voor een duiding komt dat dit een spiritueel product is, en dat is een
+keuze die de dromer hoort te maken en niet wij. Tegelijk gold het oude bezwaar
+nog steeds — wie hem niet ziet weet niet dat hij bestaat, en dit is een deel
+waar mensen voor terugkomen. Dus: **de kop blijft staan met een knop ernaast, de
+inhoud niet.** Wie hem eenmaal opent houdt hem open; dat onthoudt de browser in
+`dreamverse_spectrum_open`. Niet in het profiel — het is geen eigenschap van de
+dromer maar van hoe hij vanochtend kijkt, en een serververzoek voor het
+open- en dichtklappen van een paneel is te veel.
+
+Let op bij het opschrift van die knop: `taal.js` onthoudt de `data-nl` van elke
+`<button>` bij de eerste vertaalslag, en dat is hier *Bekijken*. Zet JavaScript
+er daarna *Verbergen* neer, dan draait een taalwissel dat terug en klopt het
+opschrift niet meer met wat er open staat. Daarom roept `zetVlaggen()`
+`spectrumUitklap()` opnieuw aan.
+
+**Wat hier nog niet af is:** de namen. Het veld heet nu `root` tot `crown`, en
+in de legenda staan de chakranamen. Ruud wil neutrale kleurveldnamen als
+standaard, met de Sanskrietnamen als iets waar je zelf voor kiest. Dat is een
+tekstwijziging in `VELDEN` in `static/app.js` plus een schakelaar, en het raakt
+`PALETTES` in `dreamverse.py` niet — die sleutels blijven zoals ze zijn, anders
+moet elke bewaarde verbeelding mee.
 
 
 `static/chakra-pilaar.jpg` is een gegenereerde plaat: zeven lotussen in een

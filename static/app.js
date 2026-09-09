@@ -1014,6 +1014,48 @@
       .catch(function () { /* het spectrum is een extraatje */ });
   }
 
+  /* De chakralaag staat dicht tot je hem opent.
+   *
+   * Hij was mooi maar te aanwezig: een pilaar met zeven lotussen midden in de
+   * pagina zegt tegen iemand die hier voor een duiding komt dat dit een
+   * spiritueel product is, en dat is een keuze die de dromer hoort te maken.
+   * Tegelijk gold het oude bezwaar nog: wie hem niet ziet weet niet dat hij
+   * bestaat, en dit is een deel waar mensen voor terugkomen. Dus blijft de kop
+   * staan en gaat alleen de inhoud dicht.
+   *
+   * De keuze blijft in deze browser staan. Niet in het profiel: het is geen
+   * eigenschap van de dromer maar van hoe hij vanochtend kijkt, en een
+   * serververzoek voor het open- en dichtklappen van een paneel is te veel.
+   */
+  var SPECTRUM_OPEN = "dreamverse_spectrum_open";
+
+  function spectrumStaatOpen() {
+    try { return localStorage.getItem(SPECTRUM_OPEN) === "1"; } catch (e) { return false; }
+  }
+
+  function spectrumUitklap(open) {
+    var doos = el("spectrum-inhoud");
+    var knop = el("spectrum-knop");
+    if (!doos || !knop) { return; }
+    doos.hidden = !open;
+    knop.setAttribute("aria-expanded", open ? "true" : "false");
+    knop.textContent = open ? t("Verbergen") : t("Bekijken");
+    try { localStorage.setItem(SPECTRUM_OPEN, open ? "1" : "0"); } catch (e) { /* niets */ }
+  }
+
+  if (el("spectrum-knop")) {
+    spectrumUitklap(spectrumStaatOpen());
+    el("spectrum-knop").addEventListener("click", function () {
+      var open = el("spectrum-inhoud").hidden;
+      spectrumUitklap(open);
+      // Bij het openen even laten zien waar je heen kijkt; anders klapt er
+      // ergens onder je scherm iets uit.
+      if (open) {
+        el("spectrum-inhoud").scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
+    });
+  }
+
   /* -------------------------------------------------------------- archief */
 
   function renderArchive(dreams) {
@@ -2970,6 +3012,10 @@
     // De legenda van het spectrum wordt in JavaScript gebouwd, dus die moet
     // opnieuw getekend worden; de woordenlijst komt er niet vanzelf langs.
     laadSpectrum();
+    // En de knop van de uitklap: taal.js heeft "Bekijken" als data-nl onthouden
+    // en zet die bij een taalwissel terug, ook als er "Verbergen" stond. Dan
+    // klopt het opschrift niet meer met wat er open staat.
+    spectrumUitklap(!el("spectrum-inhoud") || !el("spectrum-inhoud").hidden);
     // Zelfde verhaal voor de gidslinks: die bestonden nog niet toen taal.js
     // keek, dus die blijven anders in de oude taal staan naast een vertaalde
     // placeholder. En de adressen wisselen mee: /dream-meaning of /nl daarvoor.

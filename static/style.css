@@ -2018,6 +2018,25 @@ body.beheerpagina .beheerrij { margin-top: 0; }
 .gids-kaart-titel { font-family: var(--display); font-size: 1.35rem; color: var(--ink); }
 .gids-kaart-regel { font-size: .86rem; color: var(--muted); line-height: 1.5; }
 .gids-leeg { color: var(--muted); font-size: .9rem; }
+/* De knop die een sectie open- en dichtklapt.
+
+   Nu alleen voor de chakralaag. Die was mooi maar te aanwezig: zeven lotussen
+   midden in de pagina zeggen tegen iemand die voor een duiding komt dat dit een
+   spiritueel product is, en dat is een keuze van de dromer. De kop blijft staan
+   zodat hij weet dat het bestaat; de inhoud gaat dicht. */
+.uitklap-knop {
+  margin-top: .6rem;
+  padding: .35rem 1.1rem; border-radius: 100px;
+  font-family: var(--body); font-size: .7rem; font-weight: 600;
+  letter-spacing: .18em; text-transform: uppercase;
+  color: var(--muted); background: rgba(13, 7, 26, .92);
+  border: 1px solid var(--line); cursor: pointer;
+  backdrop-filter: blur(10px);
+  transition: color .15s, border-color .15s;
+}
+.uitklap-knop:hover { color: var(--ink); border-color: var(--crown); }
+.uitklap-knop[aria-expanded="true"] { color: var(--crown); border-color: var(--crown); }
+
 /* De gidslinks in de app. Zonder dit staan het kale blauwe browserlinks met
    een streep eronder, midden in een pagina die verder geen enkele zo heeft.
 

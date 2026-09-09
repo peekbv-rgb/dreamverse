@@ -405,24 +405,37 @@
       Vertel het aan Vera — zij leest de droom, niet het zoekwoord.</p>
   </section>
 
+  <!-- De chakralaag staat dicht.
+
+       Hij was mooi maar te aanwezig: een pilaar met zeven lotussen midden in de
+       pagina zegt tegen iemand die hier voor een duiding komt dat dit een
+       spiritueel product is, en dat is een keuze die de dromer hoort te maken en
+       niet wij. Tegelijk gold het oude bezwaar nog steeds - wie hem niet ziet
+       weet niet dat hij bestaat, en dit is een deel waar mensen voor terugkomen.
+       Vandaar dit: de kop blijft staan met een knop ernaast, de inhoud niet. Wie
+       hem eenmaal opent houdt hem open; dat onthoudt de browser. -->
   <section id="spectrum-section" hidden>
     <div class="head-rule">
       <h2>Het spectrum van je dromen</h2>
       <p>Welk kleurveld je nachten kozen. Elke kolom is een droom, van links naar rechts in de tijd.</p>
       <p class="spectrum-noot" id="spectrum-noot" hidden></p>
+      <button type="button" class="uitklap-knop" id="spectrum-knop"
+              aria-expanded="false" aria-controls="spectrum-inhoud">Bekijken</button>
     </div>
-    <div class="pilaar-wrap">
-      <div class="pilaar" id="pilaar"></div>
-      <div class="pilaar-naast">
-        <p class="pilaar-wie" id="pilaar-wie"></p>
-        <div class="spectrum-legenda" id="spectrum-legenda"></div>
+    <div id="spectrum-inhoud" hidden>
+      <div class="pilaar-wrap">
+        <div class="pilaar" id="pilaar"></div>
+        <div class="pilaar-naast">
+          <p class="pilaar-wie" id="pilaar-wie"></p>
+          <div class="spectrum-legenda" id="spectrum-legenda"></div>
+        </div>
       </div>
+      <div class="tijdlijn">
+        <button type="button" class="tijd-alles" id="tijd-alles">Alle dromen</button>
+        <div class="spectrum" id="spectrum"></div>
+      </div>
+      <div class="brilspectrum" id="brilspectrum" hidden></div>
     </div>
-    <div class="tijdlijn">
-      <button type="button" class="tijd-alles" id="tijd-alles">Alle dromen</button>
-      <div class="spectrum" id="spectrum"></div>
-    </div>
-    <div class="brilspectrum" id="brilspectrum" hidden></div>
   </section>
 
   <section>

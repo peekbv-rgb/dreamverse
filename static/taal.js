@@ -187,6 +187,9 @@
 
     ["Het lichaam en de nacht", "The body and the night"],
     ["Als deze droom een opdracht was", "If this dream were an instruction"],
+    // De uitklap van de chakralaag.
+    ["Bekijken", "View"],
+    ["Verbergen", "Hide"],
     ["Het spectrum van je dromen", "The spectrum of your dreams"],
     ["Welk kleurveld je nachten kozen. Elke kolom is een droom, van links naar rechts in de tijd.",
      "Which colour field your nights chose. Each column is a dream, left to right in time."],
