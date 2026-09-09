@@ -322,8 +322,13 @@ def latest_together():
         if (episode.get("together") or "").strip():
             return {"number": n,
                     "together": episode["together"],
-                    "threads": episode.get("threads") or []}
-    return {"number": None, "together": "", "threads": []}
+                    "threads": episode.get("threads") or [],
+                    # De tekens gaan mee omdat "Vera zag iets" ze nodig heeft.
+                    # Het veld noemt alleen wat in meer dan een droom voorkwam,
+                    # dus het is precies het bewijs dat er een lijn is - en dat
+                    # is wat er op het betaalmoment te zien hoort te zijn.
+                    "symbols": episode.get("symbols") or []}
+    return {"number": None, "together": "", "threads": [], "symbols": []}
 
 
 def spectrum():

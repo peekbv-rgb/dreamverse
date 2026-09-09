@@ -431,10 +431,90 @@
    */
   var samenVan = 0;
 
-  function toonSamen(nummer, tekst, draden) {
+  // Twee dingen die elkaar nodig hebben en op verschillende momenten binnenkomen:
+  // het pakket komt van /api/account, de tekens van /api/archive. Wie het laatst
+  // aankomt tekent de kaart, dus allebei worden ze hier onthouden.
+  var rekeningPlan = "";
+  var laatsteSamen = null;
+
+  /* "Vera zag iets" - het moment waarop een gratis gebruiker gaat betalen.
+   *
+   * Eén gratis droom liet iemand droom -> duiding -> beeld zien en daar stopte
+   * het. Wat hij nooit meemaakte is droom 1 + 2 + 3 -> hier loopt iets
+   * doorheen, en dat is precies wat het abonnement verkoopt. Vandaar drie
+   * gratis dromen, en vandaar deze kaart op de derde.
+   *
+   * Er staat niets in dat we verzinnen. `symbols` noemt alleen tekens die in
+   * meer dan één droom voorkwamen - dat is de regel in de prompt - en een draad
+   * verwijst naar een droom die er echt is. Is er geen van beide, dan blijft de
+   * kaart weg: beweren dat er een patroon is terwijl er niets te noemen valt,
+   * is de snelste manier om dit hele onderdeel ongeloofwaardig te maken.
+   */
+  function toonVeraZag(gegevens) {
+    var kaart = el("verazag");
+    if (!kaart) { return; }
+    var tekens = (gegevens && gegevens.symbols) || [];
+    var draden = (gegevens && gegevens.threads) || [];
+
+    // Alleen bij wie er nog niet voor betaalt, en alleen vanaf drie nachten.
+    var mag = rekeningPlan === "gratis" && aantalDromen >= 3;
+    if (!mag || (!tekens.length && !draden.length)) { kaart.hidden = true; return; }
+
+    // Hoogstens drie regels: tekens eerst, draden vullen aan. Meer leest als
+    // de duiding zelf, en die staat er hieronder al.
+    var regels = [];
+    tekens.slice(0, 2).forEach(function (k) {
+      regels.push([k.sign, k.meaning || ""]);
+    });
+    draden.forEach(function (d) {
+      if (regels.length < 3) { regels.push([d.ref, d.now || d.was || ""]); }
+    });
+
+    var doos = el("verazag-regels");
+    doos.innerHTML = "";
+    if (tekens.length) {
+      // Eén keer boven de lijst en niet achter elk teken: dezelfde zin twee keer
+      // onder elkaar leest als een sjabloon in plaats van als een vondst. Geen
+      // aantal erbij - het veld garandeert "meer dan één", niet hoeveel.
+      var lead = document.createElement("p");
+      lead.className = "verazag-lead";
+      lead.textContent = t("Dit kwam in meer dan één van je dromen terug:");
+      doos.appendChild(lead);
+    }
+    regels.forEach(function (paar) {
+      var p = document.createElement("p");
+      var tag = document.createElement("span");
+      tag.className = "tag";
+      tag.textContent = paar[0];
+      p.appendChild(tag);
+      p.appendChild(document.createTextNode(" " + paar[1]));
+      doos.appendChild(p);
+    });
+    kaart.hidden = false;
+  }
+
+  // De knop wijst naar de pakketten. Niet naar Stripe: eerst zien wat er te
+  // kiezen valt, dan pas betalen.
+  if (el("verazag-knop")) {
+    el("verazag-knop").addEventListener("click", function () {
+      var doel = document.querySelector(".tiers");
+      var sectie = doel ? doel.closest("section") : null;
+      if (!sectie) { return; }
+      sectie.scrollIntoView({ behavior: "smooth", block: "center" });
+      if (doel) {
+        doel.classList.add("wijs");
+        setTimeout(function () { doel.classList.remove("wijs"); }, 2400);
+      }
+    });
+  }
+
+  function toonSamen(nummer, tekst, draden, tekens) {
     nummer = nummer || 0;
     if (nummer && nummer < samenVan) { return; }
     samenVan = nummer || samenVan;
+
+    laatsteSamen = { symbols: tekens || [], threads: draden || [] };
+    toonVeraZag(laatsteSamen);
 
     // De gezamenlijke duiding komt nu in alinea's terug in plaats van in twee
     // zinnen. Met textContent op een enkele <p> vallen die lege regels weg en
@@ -641,7 +721,7 @@
     ep.panels.forEach(function () { bar.appendChild(document.createElement("span")); });
     show(0);
 
-    toonSamen(ep.number, ep.together, ep.threads);
+    toonSamen(ep.number, ep.together, ep.threads, ep.symbols);
 
     el("extras").hidden = !ep.number;
     el("extras").dataset.dream = ep.number || "";
@@ -1123,7 +1203,7 @@
         vulKeuzelijst(d.dreams || []);
         laadSpectrum();
         var samen = d.samen || {};
-        toonSamen(samen.number, samen.together, samen.threads);
+        toonSamen(samen.number, samen.together, samen.threads, samen.symbols);
       })
       .catch(function () { /* archief is bijzaak; de app werkt zonder */ });
   }
@@ -2778,6 +2858,10 @@
   }
 
   function toonAccount(a) {
+    // Welk pakket het is bepaalt of "Vera zag iets" verschijnt. Die kaart is
+    // het betaalmoment, dus wie al betaalt hoeft hem niet te zien.
+    rekeningPlan = a.plan || rekeningPlan;
+    toonVeraZag(laatsteSamen);
     toonTegoed(a);
     toonKwaliteiten(a);
     var op = a.dromen_over === 0 ? " op" : "";
@@ -3731,7 +3815,7 @@
         if (m) {
           m.className = "koop-melding err";
           m.textContent = t("Geen probleem. Dreamverse blijft gewoon werken; je "
-                            + "kunt elke maand één droom laten verbeelden.");
+                            + "kunt elke maand drie dromen laten duiden.");
         }
         return;
       }

@@ -101,8 +101,15 @@ def nu(btw=BTW):
                            p["avatar_minuten"] * 0.6, btw))
     toon(rijen, "REALISTISCHER - de meeste mensen maken hun pakket niet op")
 
-    gratis_kost = kostprijs(GRATIS["dromen"], rangen["gratis"])
-    print("\nEen gratis gebruiker kost EUR %.2f per maand." % gratis_kost)
+    # Gratis is een trap en geen vlak tarief: de eerste droom krijgt panelen, de
+    # rest is duiding. Rekenen alsof alle drie panelen krijgen maakt de gratis
+    # laag bijna drie keer zo duur als hij is, en dat is precies het cijfer waar
+    # het besluit "één of drie gratis dromen" op genomen wordt.
+    met_beeld = min(plans.GRATIS_MET_BEELD, GRATIS["dromen"])
+    gratis_kost = (kostprijs(met_beeld, rangen["gratis"])
+                   + kostprijs(GRATIS["dromen"] - met_beeld, 0))
+    print("\nEen gratis gebruiker kost EUR %.2f per maand: %d droom met panelen, "
+          "%d als duiding." % (gratis_kost, met_beeld, GRATIS["dromen"] - met_beeld))
     for sleutel in ("plus", "ultra"):
         p = plans.PLANS[sleutel]
         r = regel("", p["prijs"], p["dromen"], rangen[sleutel], p["avatar_minuten"], btw)

@@ -99,14 +99,56 @@ DEFAULT_KWALITEIT = "standaard"
 # anders begrijpt hij het product niet. Bewegend beeld begint bij het abonnement.
 PLAN_RANG = {"gratis": 1, "lite": 1, "plus": 2, "ultra": 3}
 
+# Gratis geeft drie dromen, en alleen de eerste krijgt beeld.
+#
+# Eén gratis droom was commercieel de verkeerde hoeveelheid. Wie er één krijgt
+# ziet droom -> duiding -> beeld, en dat is mooi. Wat hij niet ziet is
+# droom 1 + 2 + 3 -> hier loopt iets doorheen, en dát is wat het abonnement
+# verkoopt. Bij één droom staat er in "together" met opzet nog niets, want doen
+# alsof er al een patroon is, is niet eerlijk.
+#
+# Drie volledige dromen weggeven kan niet: dan heeft Lite - drie dromen voor
+# EUR 2,99 - geen reden meer om te bestaan. Vandaar de trap: de eerste droom met
+# vijf panelen, de tweede en derde als duiding. Kostprijs van een gratis
+# gebruiker gaat daarmee van EUR 0,15 naar EUR 0,31; een Plus-abonnee die een
+# half jaar blijft laat EUR 29 over en betaalt er dus negentig.
+#
+# Wie op droom twee tóch beeld wil, koopt het met een token. Dat is dezelfde
+# knop die er al was en dus geen nieuwe uitleg.
+GRATIS_MET_BEELD = 1
+
+
+def plan_rang(plan, droomnummer=None):
+    """Tot welke kwaliteit dit pakket gratis reikt, voor déze droom.
+
+    Bij alles behalve gratis hangt dat niet van het droomnummer af. Bij gratis
+    wel: de eerste droom krijgt panelen, de rest is duiding.
+    """
+    rang = PLAN_RANG.get(plan, 0)
+    if plan == "gratis" and droomnummer is not None and droomnummer > GRATIS_MET_BEELD:
+        return 0
+    return rang
+
+
+def _droomnummer():
+    """Het nummer dat de volgende droom van deze gebruiker krijgt."""
+    import accounts
+    u = accounts.huidige_of_none()
+    if not u:
+        return 1
+    return accounts.volgend_nummer(u["id"])
+
 PLANS = {
     "gratis": {
         "naam": "Gratis",
         "prijs": 0.00,
-        # Eén droom, niet drie. Gratis is een proefje en geen abonnement: bij drie
-        # dromen kostte een gratis gebruiker EUR 0,42 per maand, en vier van hen
-        # aten één betalende op. Nu EUR 0,14.
-        "dromen": 1,            # per maand
+        # Drie dromen, waarvan alleen de eerste met beeld - zie GRATIS_MET_BEELD.
+        # Het was er één, met het argument dat drie volledige dromen EUR 0,42 per
+        # maand kosten en vier gratis gebruikers dan één betalende opeten. Dat
+        # klopte, maar het kocht die besparing met het enige wat het abonnement
+        # verkoopt: bij één droom is er geen tweede en geen derde, en dus nooit
+        # een verband om te laten zien.
+        "dromen": 3,            # per maand
         "panelen": True,
         "video": "geen",
         "kernmomenten": 0,
@@ -199,6 +241,10 @@ def account():
         "kern_inbegrepen": plan.get("kernmomenten", 0),
         "kern_over": max(0, plan.get("kernmomenten", 0) - u["kern_op"]),
         "panelen_inbegrepen": plan["panelen"],
+        # Het nummer dat de volgende droom krijgt, en of daar bij gratis nog
+        # beeld bij zit. De app zegt dat vóór de knop, niet in de weigering erna.
+        "droomnummer": _droomnummer(),
+        "beeld_inbegrepen": plan_rang(key, _droomnummer()) >= 1,
         "video": plan["video"],
         "video_omschrijving": {
             "geen": "stilstaande panelen",
@@ -258,7 +304,7 @@ def kwaliteiten(taal="nl"):
     """Alle keuzes met wat ze deze gebruiker kosten, in zijn eigen taal."""
     a = account()
     eng = taal == "en"
-    grens = PLAN_RANG.get(a["plan"], 0)
+    grens = plan_rang(a["plan"], _droomnummer())
     saldo = a["tokens"]
     uit = []
     for sleutel, k in sorted(KWALITEIT.items(), key=lambda kv: kv[1]["rang"]):
@@ -301,7 +347,7 @@ def check_kwaliteit(sleutel):
         raise Refused("Die kwaliteit bestaat niet.")
     k = KWALITEIT[sleutel]
     a = account()
-    binnen_pakket = k["rang"] <= PLAN_RANG.get(a["plan"], 0)
+    binnen_pakket = k["rang"] <= plan_rang(a["plan"], _droomnummer())
 
     if binnen_pakket and not k["video"]:
         return k, 0                       # tekst of stilstaande panelen: altijd
@@ -315,6 +361,13 @@ def check_kwaliteit(sleutel):
         reden = ("Je {} kernmomenten van deze maand zijn op. Nog een {} kost {} "
                  "tokens en je hebt er {}.").format(
                      a["kern_inbegrepen"], k["naam"], k["tokens"], a["tokens"])
+    elif a["plan"] == "gratis" and k["rang"] <= PLAN_RANG["gratis"]:
+        # Gratis geeft beeld bij de eerste droom en daarna de duiding. Zeggen dat
+        # panelen "niet in je pakket zitten" klopt dan niet - hij heeft ze net
+        # gehad - en dat leest als een fout in plaats van als een keuze.
+        reden = ("Bij gratis krijgt je eerste droom vijf panelen; daarna komt de "
+                 "duiding. {} bij deze droom kost {} tokens en je hebt er {}.").format(
+                     k["naam"], k["tokens"], a["tokens"])
     else:
         reden = "{} kost {} tokens en je hebt er {}. In je pakket {} zit {} inbegrepen.".format(
             k["naam"], k["tokens"], a["tokens"], a["plan_naam"], a["video_omschrijving"])
