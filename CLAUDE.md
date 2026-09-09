@@ -485,6 +485,14 @@ blijven.
   dat eerst bij Stripe opgezegd** — anders blijft iemand betalen voor een account
   dat niet meer bestaat. Lukt dat opzeggen niet, dan gaat de verwijdering niet
   door.
+- **`static/privacy.html` is tweetalig**, op dezelfde manier als `welkom.html`:
+  `data-en` en `data-nl` naast elkaar, Engels als standaard, en dezelfde
+  opgeslagen keuze (`dreamverse_taal`) — wie op de landingspagina Engels koos
+  krijgt hier ook Engels. Het script zet `textContent`, dus de keuze staat op
+  elementen die **alleen tekst** bevatten; een alinea met een `<strong>` erin is
+  daarom opgesplitst in `<strong>` plus `<span>`. Onderaan staat dat de
+  Nederlandse tekst geldt waar de twee verschillen: Dreamverse wordt vanuit
+  Nederland gevoerd.
 - **`static/privacy.html`** noemt de verwerkers met naam: Anthropic (de tekst),
   Kling (de panelen), Runway (beeld, stem en Vera), Stripe (het afrekenen) en
   Render (waar het draait). Verandert er een leverancier, dan verandert die
