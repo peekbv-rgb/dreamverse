@@ -1745,7 +1745,10 @@
 
   function gidsTonen(woord) {
     var doos = el("gids-woorden"), geen = el("gids-geen");
-    if (!doos) { return; }
+    // Nog niets opgehaald? Dan niets doen - anders staat er "daar staat nog
+    // niets over" bij iemand die alleen van taal wisselde terwijl het verzoek
+    // nog liep.
+    if (!doos || !gidsLijst.length) { return; }
     woord = (woord || "").trim().toLowerCase();
     var raak = woord
       ? gidsLijst.filter(function (o) { return o.woorden.indexOf(woord) !== -1; })
@@ -3284,6 +3287,10 @@
     // De legenda van het spectrum wordt in JavaScript gebouwd, dus die moet
     // opnieuw getekend worden; de woordenlijst komt er niet vanzelf langs.
     laadSpectrum();
+    // Zelfde verhaal voor de gidslinks: die bestonden nog niet toen taal.js
+    // keek, dus die blijven anders in de oude taal staan naast een vertaalde
+    // placeholder. En de adressen wisselen mee: /dream-meaning of /nl daarvoor.
+    gidsTonen(el("gids-veld") ? el("gids-veld").value : "");
     // De brilknoppen worden in JavaScript gemaakt, dus die komen niet langs de
     // vertaalslag van de pagina.
     toonBrillen();

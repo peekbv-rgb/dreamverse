@@ -1884,6 +1884,16 @@ body.tekstpagina .end a { color: var(--throat); }
 .gids-kaart-titel { font-family: var(--display); font-size: 1.35rem; color: var(--ink); }
 .gids-kaart-regel { font-size: .86rem; color: var(--muted); line-height: 1.5; }
 .gids-leeg { color: var(--muted); font-size: .9rem; }
+/* De gidslinks in de app. Zonder dit staan het kale blauwe browserlinks met
+   een streep eronder, midden in een pagina die verder geen enkele zo heeft. */
+.gids-woorden { margin: .6rem 0 0; line-height: 2; color: var(--line); }
+.gids-woorden a {
+  color: var(--crown); text-decoration: none;
+  border-bottom: 1px solid rgba(179, 105, 222, .35);
+}
+.gids-woorden a:hover { color: var(--ink); border-bottom-color: var(--ink); }
+.gids-geen { margin: .6rem 0 0; font-size: .88rem; color: var(--muted); }
+
 .gids-groep {
   margin: 1.6rem 0 .2rem; font-size: 1.5rem; color: var(--muted);
   letter-spacing: .02em;
