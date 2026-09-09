@@ -548,6 +548,12 @@ op de erfelijke basismaat blijft staan (16,5px Karla). Zo gebeurde het twee keer
 - **De woordenlijst van de gids in de app** stond in Karla op de basismaat,
   terwijl diezelfde titels op `/dream-meaning/` als `.gids-kaart-titel` in
   Cormorant staan. Dezelfde woorden, twee lettertypes.
+- **`.lead` bestond alleen in `welkom.html`, niet in `style.css`.** Drie
+  alinea's op de landingspagina — het stuk van Ruud en de uitnodiging naar de
+  Dream Guide — hadden dus geen letter, geen maat en geen grond, terwijl alles
+  eromheen een kaart is. Daardoor stond juist de Dream Guide daar als los
+  zwevend leesvoer. Nu Cormorant op een eigen grond, met de ondertekening
+  eraan vast.
 
 Zoek zulke gevallen zo, in de console van de app:
 
@@ -580,9 +586,28 @@ rekensom staat hieronder zodat je hem kunt herhalen):
 | `rgba(8,6,17,.55)` | 5,5:1 | 2,5:1 |
 | `rgba(8,6,17,.50)` | 4,8:1 | **2,1:1** |
 
-Dus: `footer.end`, `.gids-woorden`, `.gids-geen` en `.meta` staan op `.92`.
-`.sub` en `.head-rule p` mogen op `.55` blijven omdat ze in diezelfde regel hun
-kleur naar `#F6F2FF` zetten en daarmee boven de 5:1 uitkomen.
+Dus: `footer.end`, `.gids-woorden`, `.gids-geen`, `.meta`, en op de
+landingspagina `.lead`, `.ondertekening`, `.waaraan-kop` en `.gegevens-voet`
+staan op `.92`. `.sub` en `.head-rule p` mogen op `.55` blijven omdat ze in
+diezelfde regel hun kleur naar `#F6F2FF` zetten en daarmee boven de 5:1
+uitkomen. De `h2`'s van een sectie liggen bewust los op de achtergrond: 30px
+Cormorant met een schaduw houdt zich daar wél.
+
+**`welkom.html` heeft geen canvas maar wel felle verlopen.** Daar zit geen
+bewegend doek achter, maar `body::before` legt er radiale verlopen tot
+`rgba(214,150,255,.85)` overheen. Dezelfde eis geldt er dus.
+
+Zo controleer je een pagina in één keer — dit zoekt tekst waar tússen hem en de
+`body` niets met een vulling zit:
+
+```js
+function heeftGrond(e){let n=e;while(n&&n!==document.body){const c=getComputedStyle(n);
+  if(c.backgroundColor!=="rgba(0, 0, 0, 0)")return true;n=n.parentElement;}return false;}
+document.querySelectorAll("p,h2,h3,li,.lbl").forEach(e=>{
+  if(!e.textContent.trim()||!e.getBoundingClientRect().height||heeftGrond(e))return;
+  console.log(e.className||e.tagName, getComputedStyle(e).fontSize, e.textContent.trim().slice(0,34));
+});
+```
 
 **En een link is strenger dan tekst.** `.gids-woorden a` en `.voet-links a`
 stonden op `var(--crown)` en `var(--muted)`; die moeten niet alleen leesbaar zijn

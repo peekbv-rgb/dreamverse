@@ -664,12 +664,45 @@ section .entry { border-left-width: 3px; border-left-color: var(--tint); }
 /* Kan de browser het niet, dan is dit geen terzijde maar het antwoord. */
 .invoer-hint.kan-niet { color: var(--solar); }
 
+/* De leesalinea's van de landingspagina: het stuk van Ruud, en de uitnodiging
+   naar de Dream Guide.
+
+   `.lead` stond wel in welkom.html maar had hier gééń enkele regel. Dat is
+   dezelfde soort fout als `.block .lbl`: een klasse in de opmaak waar niets
+   achter zit. Gevolg: die alinea's bleven op de erfelijke basismaat staan, in
+   Karla, zonder grond - terwijl er op die pagina radiale verlopen tot
+   rgba(214,150,255,.85) achter liggen, en alles eromheen (de pakketten, de
+   gegevensblokken) wél een kaart is. Vandaar dat de Dream Guide daar als los
+   zwevend leesvoer stond.
+
+   Zelfde grond als de rest (.92, zie *Leesbaar boven een bewegende
+   achtergrond*) en Cormorant, want dit is leestekst. */
+.lead {
+  margin: 0; padding: 1.1rem 1.3rem; border-radius: 16px;
+  font-family: var(--display); font-weight: 300; font-size: 1.2rem; line-height: 1.6;
+  color: var(--ink);
+  background: rgba(13, 7, 26, .92);
+  border: 1px solid rgba(179, 105, 222, .24);
+  backdrop-filter: blur(10px);
+}
+/* Twee alinea's onder elkaar horen bij elkaar te horen, niet als twee kaarten
+   uit elkaar te vallen. */
+.lead + .lead { margin-top: -.4rem; }
+
 /* De ondertekening onder het stuk van Ruud. Een naam onder een tekst leest
    anders dan dezelfde naam in een voettekst: hier staat een mens. */
 .ondertekening {
-  margin: -.4rem 0 1.2rem; font-family: var(--display);
-  font-size: 1.1rem; font-style: italic; color: var(--muted);
+  margin: -.4rem 0 1.2rem; padding: .6rem 1.3rem 1rem;
+  font-family: var(--display);
+  font-size: 1.1rem; font-style: italic; color: #CFC4E4;
+  /* Hoort bij de alinea erboven, dus geen eigen kaart maar dezelfde grond met
+     alleen de onderkant afgerond. Los eronder lag hij op de achtergrond, en
+     cursief in --muted is daar het slechtst leesbare wat er is. */
+  background: rgba(13, 7, 26, .92); border: 1px solid rgba(179, 105, 222, .24);
+  border-top: none; border-radius: 0 0 16px 16px;
+  backdrop-filter: blur(10px);
 }
+.lead + .ondertekening { margin-top: -1.2rem; }
 
 /* Terug naar de uitleg.
  *
@@ -1469,8 +1502,15 @@ body::after { opacity: .34; }
 .gevaar-knop:hover { box-shadow: 0 0 18px rgba(245, 160, 143, .3); }
 .verwijder-melding { margin: 0; font-size: .85rem; color: var(--muted); }
 .verwijder-melding.err { color: #F5A08F; }
-.gegevens-voet { margin: 1rem 0 0; font-size: .85rem; color: #CFC4E4; }
-.gegevens-voet a { color: var(--throat); }
+/* Zelfde geval als de voetregel van de app: twee links op de achtergrond. */
+.gegevens-voet {
+  margin: 1rem 0 0; padding: .8rem 1.1rem; border-radius: 14px;
+  font-size: .85rem; color: #CFC4E4;
+  background: rgba(13, 7, 26, .92); border: 1px solid var(--line);
+  backdrop-filter: blur(10px);
+}
+.gegevens-voet a { color: var(--ink); border-bottom: 1px solid rgba(179, 105, 222, .55); text-decoration: none; }
+.gegevens-voet a:hover { color: var(--heart); border-bottom-color: var(--heart); }
 
 .afscheid {
   min-height: 100vh; display: flex; flex-direction: column;
@@ -1510,9 +1550,16 @@ body.tekstpagina .end a { color: var(--throat); }
   display: block; max-width: 15rem;
 }
 
+/* Dit is een label, dus laat het er ook een zijn in plaats van bijna. */
+/* Dit is een label, dus laat het er ook een zijn in plaats van bijna. En het
+   staat los in de sectie in plaats van in een kaart, dus het krijgt zijn eigen
+   pilletje - net als de regel bovenaan de app. */
 .waaraan-kop {
-  margin: 0 0 .8rem; font-size: .64rem; font-weight: 600;
-  letter-spacing: .2em; text-transform: uppercase; color: var(--muted);
+  margin: 0 0 .8rem; padding: .35rem 1rem; align-self: center;
+  font-size: .65rem; font-weight: 600;
+  letter-spacing: .22em; text-transform: uppercase; color: var(--muted);
+  background: rgba(13, 7, 26, .92); border-radius: 100px;
+  backdrop-filter: blur(10px);
 }
 
 /* Je tegoed, op de plek waar je het uitgeeft. */
