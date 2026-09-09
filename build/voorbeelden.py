@@ -33,6 +33,12 @@ DOEL = WORTEL / "static" / "voorbeelden"
 
 # Welke dromen, en hoe ze heten voor de bezoeker. De titel van de dromer zelf
 # gebruiken we niet: dat is zijn droom, niet ons reclamemateriaal.
+# De raceauto staat er niet bij, en dat is met opzet: die droom is op de live
+# server gemaakt, dus zijn panelen staan op de schijf van Render en niet hier.
+# Dit script leest `data/panels/` van deze machine. De clip is met de hand
+# opgehaald en het posterbeeldje is uit de video zelf gesneden met imageio.
+# Draai je dit script, dan blijft raceauto.mp4 en .jpg gewoon staan - er wordt
+# niets weggegooid wat er niet in deze lijst staat.
 VOORBEELDEN = [
     {"droom": 6, "bestand": "vuurvogel",
      "nl": "De brandende vogel boven de jacuzzi",
