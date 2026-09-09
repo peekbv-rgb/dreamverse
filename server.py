@@ -887,7 +887,9 @@ class Handler(SimpleHTTPRequestHandler):
             soort = payload.get("kind", "")
             try:
                 nummer = int(payload.get("dream", 0))
-                plans.check_extra(soort)
+                # Wat het kost: 0 betekent uit het maandtegoed, niet gratis.
+                # Dat moet mee naar charge_extra, anders is het tegoed oneindig.
+                kosten = plans.check_extra(soort)
             except plans.Refused as e:
                 return self.send_json({"error": str(e), "need_tokens": e.need_tokens}, 402)
             except (ValueError, TypeError):
@@ -916,7 +918,7 @@ class Handler(SimpleHTTPRequestHandler):
                 gestart = kling.render_async(dreamverse.sleutel(nummer), episode["panels"])
                 if not gestart:
                     return self.send_json({"error": "Dit kon niet gestart worden."}, 500)
-                plans.charge_extra(soort)
+                plans.charge_extra(soort, kosten)
                 return self.send_json({"ok": True, "kind": soort, "account": plans.account()})
 
             if not beelden:
@@ -928,9 +930,10 @@ class Handler(SimpleHTTPRequestHandler):
                 }, 409)
 
             import video
-            if soort == "kernmoment_top":
+            if soort in ("kernmoment_snel", "kernmoment_top"):
+                model = "top" if soort == "kernmoment_top" else "snel"
                 gestart = video.render_async(dreamverse.sleutel(nummer), episode["panels"],
-                                             episode.get("key_panel"), plans.VIDEO["top"])
+                                             episode.get("key_panel"), plans.VIDEO[model])
             elif soort == "film_snel":
                 gestart = video.film_async(dreamverse.sleutel(nummer), episode["panels"],
                                            plans.VIDEO["snel"])
@@ -942,7 +945,7 @@ class Handler(SimpleHTTPRequestHandler):
 
             if not gestart:
                 return self.send_json({"error": "Dit kon niet gestart worden."}, 500)
-            plans.charge_extra(soort)
+            plans.charge_extra(soort, kosten)
             return self.send_json({"ok": True, "kind": soort, "account": plans.account()})
 
         if self.path == "/api/vraag":

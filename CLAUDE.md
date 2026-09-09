@@ -1009,6 +1009,33 @@ het is precies die knop die de marge opat. Het maandtegoed staat in
 iemand er zo een, dan gaat zijn maandtegoed **niet** ook nog omlaag — anders
 betaalt hij twee keer.
 
+**En dat tegoed geldt ook als je het kernmoment achteraf bijkoopt.** Dat was
+niet zo: `/api/extra` keek alleen naar het tokensaldo, dus een Plus-gebruiker
+met drie ongebruikte kernmomenten betaalde er tien tokens voor terwijl zijn
+tegoed onaangeroerd bleef staan. Het pakket belooft "drie bewegende
+kernmomenten per maand", niet "drie, maar alleen op het moment dat je de droom
+vertelt". `EXTRA_ALS_KWALITEIT` legt de losse aankoop naast de kwaliteit waar
+hij bij hoort, en `check_extra()` stelt dan dezelfde twee vragen als bij het
+maken: hoort dit bij je pakket, en heb je er deze maand nog een. Geeft hij 0
+terug, dan boekt `charge_extra()` de teller op in plaats van tokens af — zonder
+dat onderscheid is het maandtegoed oneindig.
+
+**Er was ook geen goedkope losse animatie.** Bij een bestaande droom kon je
+alleen `kernmoment_top` kopen (10 tokens, € 1,47), terwijl het Plus-tegoed juist
+over het snelle model gaat. Wie er achteraf beeld bij wilde, kocht dus
+noodgedwongen de duurste knop die er is. `kernmoment_snel` staat er nu naast
+voor 4 tokens — dezelfde prijs als *standaard*, want het is dezelfde animatie.
+Het dure model blijft 10 tokens en zit alleen bij Ultra in het tegoed.
+
+Op de knop staat wat het werkelijk kost: zit het in je tegoed, dan blijft de
+tokenprijs staan maar doorgestreept, met *in je pakket* ernaast. Welke aankopen
+inbegrepen zijn komt uit `extra_inbegrepen` in `/api/account`, zodat die regel
+niet ook nog eens in JavaScript staat. **Let op hoe dat getekend wordt:** de
+tekst komt uit een `data`-attribuut op de knop en een `::after` in de CSS, en
+niet uit de knop zelf. `taal.js` gebruikt de `innerHTML` van een `<button>` als
+vertaalsleutel — schrijf je daarin, al is het maar een `data`-attribuut binnen
+de `<b>`, dan matcht de sleutel niet meer en blijft de hele knop Nederlands.
+
 **Gratis geeft drie dromen, en alleen de eerste krijgt beeld.** Het was er één,
 met het argument dat drie volledige dromen € 0,42 per maand kosten en vier
 gratis gebruikers dan één betalende opeten. Dat klopte, maar het kocht die

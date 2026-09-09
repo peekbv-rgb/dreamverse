@@ -769,10 +769,20 @@ section .entry { border-left-width: 3px; border-left-color: var(--tint); }
 .sub, .head-rule p, .meta, .meter-noot, footer.end, .antwoord-uitleg {
   text-shadow: 0 1px 2px rgba(0,0,0,.9), 0 2px 18px rgba(0,0,0,.75);
 }
+/* De sectiekoppen dragen de kleur van hun veld (var(--tint)), en dat is boven
+   een felle plek in de achtergrond te licht - "Zo ziet een kernmoment eruit" in
+   lichtpaars op cyaan verdwijnt gewoon. Ik dacht eerder dat een schaduw hier
+   genoeg was; op een schermafdruk bleek van niet.
+
+   Geen kaart eromheen: dat zou van elke kop een blok maken en de pagina
+   dichttimmeren. Wel een sterkere sluier eronder (zie .head-rule::after) en een
+   kop die niet in de tint zwemt maar erin gloeit: de letter zelf wordt licht,
+   de tint blijft als schijnsel eromheen. */
 section h2 {
   font-weight: 400;
-  text-shadow: 0 1px 3px rgba(4, 2, 10, .95), 0 3px 16px rgba(4, 2, 10, .9),
-               0 0 34px rgba(4, 2, 10, .7);
+  color: #F6F2FF;
+  text-shadow: 0 0 26px var(--tint), 0 1px 3px rgba(4, 2, 10, .95),
+               0 3px 16px rgba(4, 2, 10, .9), 0 0 34px rgba(4, 2, 10, .8);
 }
 h1 { filter: drop-shadow(0 2px 10px rgba(0,0,0,.55)); }
 
@@ -780,7 +790,9 @@ h1 { filter: drop-shadow(0 2px 10px rgba(0,0,0,.55)); }
    spectrum eromheen fel mag blijven. */
 header.top::before, .head-rule::after {
   content: ""; position: absolute; z-index: -1;
-  background: radial-gradient(closest-side, rgba(8,6,17,.82), transparent 78%);
+  /* Was .82 en liep op 78% al uit. Boven een oranje of cyane wolk bleef daar te
+     weinig van over; nu vol tot 55% en pas daarna uit. */
+  background: radial-gradient(closest-side, rgba(8,6,17,.94) 55%, transparent 88%);
 }
 header.top { position: relative; }
 header.top::before { inset: -8% -14%; }
@@ -1882,9 +1894,18 @@ body.beheerpagina .beheerrij { margin-top: 0; }
    Poster nu, animatie pas bij een klik: de drie clips zijn samen ruim 8 MB en
    dat wil je niet op iemands telefoonbundel zetten voor iets wat hij misschien
    niet eens aanklikt. */
+/* Twee kolommen, en niet auto-fit.
+
+   Met minmax(15rem, 1fr) werden het er drie, en vier voorbeelden staan dan als
+   3 + 1: eentje blijft alleen op de tweede rij achter. Bij twee kolommen klopt
+   elk even aantal - vier wordt 2x2, zes wordt 3x2 - en de clips worden meteen
+   groter, wat bij bewegend beeld geen verlies is. */
 .voorbeelden {
   display: grid; gap: .9rem; margin: .8rem 0 1.4rem;
-  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  grid-template-columns: 1fr;
+}
+@media (min-width: 40rem) {
+  .voorbeelden { grid-template-columns: repeat(2, 1fr); }
 }
 .voorbeeld {
   position: relative; cursor: pointer; border-radius: 14px; overflow: hidden;
@@ -2018,6 +2039,21 @@ body.beheerpagina .beheerrij { margin-top: 0; }
 .gids-kaart-titel { font-family: var(--display); font-size: 1.35rem; color: var(--ink); }
 .gids-kaart-regel { font-size: .86rem; color: var(--muted); line-height: 1.5; }
 .gids-leeg { color: var(--muted); font-size: .9rem; }
+/* Een losse aankoop die nog in je maandtegoed zit.
+
+   De tokenprijs blijft staan maar doorgestreept, met ernaast wat er werkelijk
+   gebeurt. Dat is eerlijker dan de prijs vervangen: je ziet wat het zou kosten
+   én dat je het al betaald hebt. De tekst komt uit een attribuut en niet uit de
+   knop, want taal.js gebruikt de innerHTML van een knop als vertaalsleutel -
+   schrijf je daarin, dan blijft de hele knop in het Nederlands staan. */
+.koop.inbegrepen b { text-decoration: line-through; opacity: .45; font-weight: 400; }
+.koop.inbegrepen::after {
+  content: attr(data-inbegrepen);
+  margin-left: .45rem; padding: .05rem .5rem; border-radius: 100px;
+  font-size: .68rem; font-weight: 600; letter-spacing: .06em;
+  color: var(--heart); background: rgba(79, 191, 134, .16);
+}
+
 /* De knop die een sectie open- en dichtklapt.
 
    Nu alleen voor de chakralaag. Die was mooi maar te aanwezig: zeven lotussen

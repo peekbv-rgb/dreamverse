@@ -44,8 +44,24 @@ EXTRAS = {
     # kost een droom uit je maandtegoed en levert een andere verbeelding op,
     # want het model schrijft dan opnieuw.
     "panelen": {"naam": "Vijf panelen bij deze droom", "tokens": 1, "kost": 0.10},
+    # Het kernmoment op het gewone model, los bij een droom die er al staat.
+    # Dit ontbrak: wie er achteraf beeld bij wilde kon alleen het dure model
+    # kopen, terwijl zijn Plus-tegoed juist over het snelle model gaat. Dan koop
+    # je noodgedwongen de duurste knop die er is. Zelfde prijs als "standaard",
+    # want dat is dezelfde animatie.
+    "kernmoment_snel": {"naam": "Het belangrijkste moment, bewegend", "tokens": 4, "kost": 0.55},
     "kernmoment_top": {"naam": "Het belangrijkste moment, op het beste model", "tokens": 10, "kost": 1.47},
 }
+
+# Welk maandtegoed hoort bij welke losse aankoop.
+#
+# Een kernmoment uit je pakket is hetzelfde kernmoment, of je het nu bij het
+# maken van de droom kiest of er later bij koopt. Toch keek /api/extra alleen
+# naar het tokensaldo: een Plus-gebruiker met drie ongebruikte kernmomenten
+# betaalde er tien tokens voor, terwijl zijn tegoed onaangeroerd bleef staan.
+# Het pakket belooft "drie bewegende kernmomenten per maand" en niet "drie, maar
+# alleen op het moment dat je de droom vertelt".
+EXTRA_ALS_KWALITEIT = {"kernmoment_snel": "standaard", "kernmoment_top": "supreme"}
 
 # Welk videomodel hoort bij welk pakket. gen4_turbo laten we links liggen: dat is
 # het model dat eruitzag als een bewegend plaatje.
@@ -254,6 +270,15 @@ def account():
         "avatar_seconden_gebruikt": avatar_seconden,
         "avatar_seconden_inbegrepen": inbegrepen_seconden,
         "avatar_seconden_over": max(0, inbegrepen_seconden - avatar_seconden),
+        # Welke losse aankopen op dit moment uit het maandtegoed komen. De app
+        # zet daar het prijskaartje op de knop mee - niet op een kopie van de
+        # regel hierboven, want dan staan er twee waarheden in de code en klopt
+        # er op een dag een van de twee niet meer.
+        "extra_inbegrepen": {
+            soort: (KWALITEIT[sleutel]["rang"] <= plan_rang(key)
+                    and max(0, plan.get("kernmomenten", 0) - u["kern_op"]) > 0)
+            for soort, sleutel in EXTRA_ALS_KWALITEIT.items()
+        },
         "tokens_per_minuut": TOKENS_PER_AVATAR_MINUTE,
         "tokens_per_extra_droom": TOKENS_PER_EXTRA_DREAM,
         "euro_per_token": EUR_PER_TOKEN,
@@ -443,23 +468,54 @@ def charge_vraag(kosten):
         _verversen()
 
 
+def extra_uit_tegoed(soort, a=None):
+    """Zit deze losse aankoop nog in het maandtegoed van dit pakket?
+
+    Dezelfde twee vragen als bij het maken van een droom: hoort dit kernmoment
+    bij je pakket, en heb je er deze maand nog een. Het droomnummer telt hier
+    niet mee - de trap in de gratis laag gaat over beeld bij een nieuwe droom,
+    en hier staat de droom er al.
+    """
+    sleutel = EXTRA_ALS_KWALITEIT.get(soort)
+    if not sleutel:
+        return False
+    a = a or account()
+    binnen_pakket = KWALITEIT[sleutel]["rang"] <= plan_rang(a["plan"])
+    return binnen_pakket and a["kern_over"] > 0
+
+
 def check_extra(soort):
-    """Mag deze losse aankoop? Geeft het aantal tokens terug dat het kost."""
+    """Mag deze losse aankoop? Geeft het aantal tokens terug dat het kost.
+
+    Nul betekent: uit het maandtegoed, niet gratis. charge_extra() telt dan de
+    teller op in plaats van tokens af te boeken.
+    """
     if soort not in EXTRAS:
         raise Refused("Dat is niet te koop.")
+    a = account()
+    if extra_uit_tegoed(soort, a):
+        return 0
     prijs = EXTRAS[soort]["tokens"]
-    saldo = account()["tokens"]
-    if saldo < prijs:
+    if a["tokens"] < prijs:
         raise Refused(
-            "{} kost {} tokens en je hebt er {}.".format(EXTRAS[soort]["naam"], prijs, saldo),
-            need_tokens=prijs - saldo)
+            "{} kost {} tokens en je hebt er {}.".format(EXTRAS[soort]["naam"], prijs, a["tokens"]),
+            need_tokens=prijs - a["tokens"])
     return prijs
 
 
-def charge_extra(soort):
-    prijs = EXTRAS[soort]["tokens"]
-    add_tokens(-prijs)
-    return prijs
+def charge_extra(soort, tokens=None):
+    """Afboeken. `tokens` is wat check_extra teruggaf; 0 is uit het maandtegoed.
+
+    Zonder dat onderscheid zou een kernmoment uit het tegoed alsnog nul tokens
+    kosten en de teller niet ophogen - dan is het maandtegoed oneindig.
+    """
+    if tokens is None:
+        tokens = EXTRAS[soort]["tokens"]
+    import accounts
+    kern = 1 if (not tokens and soort in EXTRA_ALS_KWALITEIT) else 0
+    accounts.tel_op(accounts.huidige()["id"], tokens=-int(tokens), kern=kern)
+    _verversen()
+    return tokens
 
 
 def charge_dream(tokens, kern=0):

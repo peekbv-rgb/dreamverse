@@ -2898,7 +2898,30 @@
     doos.classList.toggle("op", a.dromen_over === 0 && a.tokens < a.tokens_per_extra_droom);
   }
 
+  /* Wat een kernmoment kost, op de knop zelf.
+   *
+   * Zit het nog in je maandtegoed, dan hoort daar geen tokenprijs te staan -
+   * anders lijkt iets geld te kosten wat je al betaald hebt, en dan gebruikt
+   * niemand zijn tegoed. Welke aankopen inbegrepen zijn zegt de server
+   * (`extra_inbegrepen`), zodat die regel op één plek staat.
+   */
+  function toonKernPrijzen(a) {
+    var inbegrepen = a.extra_inbegrepen || {};
+    document.querySelectorAll(".koop[data-kind]").forEach(function (knop) {
+      var soort = knop.dataset.kind;
+      if (!(soort in inbegrepen)) { return; }
+      // Niets aan de innerHTML van de knop veranderen. taal.js onthoudt die als
+      // sleutel, dus zodra hier de prijs wordt overschreven - of er zelfs maar
+      // een data-attribuut in de <b> bijkomt - matcht de sleutel niet meer en
+      // blijft de hele knop Nederlands. Vandaar een attribuut op de knop zelf
+      // en een ::after in de CSS: de opmaak verandert, de tekst niet.
+      knop.dataset.inbegrepen = t("in je pakket");
+      knop.classList.toggle("inbegrepen", !!inbegrepen[soort]);
+    });
+  }
+
   function toonAccount(a) {
+    toonKernPrijzen(a);
     // Welk pakket het is bepaalt of "Vera zag iets" verschijnt. Die kaart is
     // het betaalmoment, dus wie al betaalt hoeft hem niet te zien.
     rekeningPlan = a.plan || rekeningPlan;

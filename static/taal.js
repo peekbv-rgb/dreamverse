@@ -123,6 +123,7 @@
 
     // -- de speler ---------------------------------------------------------
     ["Meer van deze droom", "More from this dream"],
+    ["Kernmoment, bewegend <b>4 tokens</b>", "Key moment, moving <b>4 tokens</b>"],
     ["Kernmoment op het beste model <b>10 tokens</b>", "Key moment on the best model <b>10 tokens</b>"],
     ["Hele verbeelding als animatie <b>30 tokens</b>", "The whole imagining as an animation <b>30 tokens</b>"],
     ["Als animatie, beste model <b>60 tokens</b>", "As an animation, best model <b>60 tokens</b>"],
@@ -188,6 +189,7 @@
     ["Het lichaam en de nacht", "The body and the night"],
     ["Als deze droom een opdracht was", "If this dream were an instruction"],
     // De uitklap van de chakralaag.
+    ["in je pakket", "in your plan"],
     ["Bekijken", "View"],
     ["Verbergen", "Hide"],
     ["Het spectrum van je dromen", "The spectrum of your dreams"],
@@ -419,6 +421,7 @@
 
     // -- los te koop -------------------------------------------------------
     ["Los te koop", "Sold separately"],
+    ["Kernmoment, bewegend <b>4</b>", "Key moment, moving <b>4</b>"],
     ["Kernmoment, beste model <b>10</b>", "Key moment, best model <b>10</b>"],
     ["Als animatie <b>30</b>", "As an animation <b>30</b>"],
     ["Als animatie, beste model <b>60</b>", "As an animation, best model <b>60</b>"],
