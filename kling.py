@@ -56,10 +56,33 @@ POLL_EVERY = 3
 POLL_MAX = 40  # ~2 minuten; daarna geven we het op en blijft de tekening staan
 
 # De stijl is per gebruiker vast: dat is precies wat een reeks tot een reeks maakt.
+#
+# Hier stond "sacred geometry faintly in the background", en dat is precies het
+# recept voor hexagrammen, pentagrammen en Metatrons kubus - dat zijn de vormen
+# die een beeldmodel bij die term maakt. Op een droom over een boerderij kwam een
+# davidster in de lucht te staan. Niemand vroeg erom, en in een app over iemands
+# binnenwereld is een religieus symbool dat je niet bedoeld hebt geen sfeer maar
+# een uitspraak.
+#
+# Concentrische ringen en bogen geven dezelfde zachte structuur zonder ooit een
+# teken te worden.
 STYLE = os.environ.get(
     "KLING_STYLE",
     "dreamlike illustration, flowing ink and watercolour, soft luminous glow, "
-    "sacred geometry faintly in the background, painterly, no text, no letters, no logos",
+    "faint concentric rings and soft flowing arcs in the background, painterly, "
+    "no text, no letters, no logos",
+)
+
+# En hetzelfde nog eens van de andere kant. Een verbod werkt bij een beeldmodel
+# beter dan het weglaten van een woord: laat je "sacred geometry" alleen maar
+# weg, dan komt zo'n figuur er alsnog uit zodra de droom over iets plechtigs
+# gaat. Nationale en politieke tekens staan er om dezelfde reden bij.
+NEGATIVE = os.environ.get(
+    "KLING_NEGATIVE",
+    "pentagram, pentacle, hexagram, six-pointed star, Star of David, menorah, "
+    "crucifix, cross, crescent moon and star, om symbol, swastika, runes, "
+    "occult sigil, religious symbol, national flag, political symbol, "
+    "text, letters, numbers, watermark, signature, logo",
 )
 
 FIELD_LIGHT = {
@@ -162,6 +185,8 @@ def submit(prompt, aspect_ratio="16:9"):
         "resolution": RESOLUTION,
         "n": 1,
     }
+    if NEGATIVE:
+        body["negative_prompt"] = NEGATIVE[:2500]
     payload = _call("POST", "/v1/images/generations", body)
     task_id = (payload.get("data") or {}).get("task_id")
     if not task_id:

@@ -132,6 +132,19 @@ en het scheelt direct in de kostprijs per verbeelding.
   staat voor emotie" kan iedereen opzoeken en is bij deze dromer misschien niet
   eens waar. Het veld `symbols` mag alleen tekens noemen die in de meegegeven
   geschiedenis meer dan een keer voorkwamen.
+- **Geen "sacred geometry" in de beeldprompt.** Die term stond in `STYLE` in
+  `kling.py` en is het recept voor hexagrammen, pentagrammen en Metatrons kubus
+  — dat zijn de vormen die een beeldmodel eruit haalt. Op een droom over een
+  boerderij kwam een davidster in de lucht te staan. Niemand vroeg erom, en in
+  een app over iemands binnenwereld is een religieus teken dat je niet bedoeld
+  hebt geen sfeer maar een uitspraak. Nu staan er **concentrische ringen en
+  bogen**: dezelfde zachte structuur, nooit een teken. Van de andere kant houdt
+  `NEGATIVE` het tegen — alleen het woord weglaten is niet genoeg, want zodra de
+  droom over iets plechtigs gaat komt zo'n figuur er alsnog uit. Nationale en
+  politieke tekens staan er om dezelfde reden bij. Nagemeten met
+  `python kling.py --check`: Kling accepteert `negative_prompt`, en het beeld
+  kwam terug met ringen in plaats van een ster. **Panelen die er al zijn
+  veranderen niet** — die zijn getekend met de oude prompt.
 - **De kleurvelden zijn de chakra's** (`root` tot `crown`). Dat is geen sfeer maar
   betekenis: het model kiest per paneel het veld dat bij het gevoel past, en de
   kijker ziet die keuze terug in de kleur van het beeld.
