@@ -25,6 +25,7 @@ stuk staat: dat getal is niet het product.
 | De chakrapilaar | `static/chakra-pilaar.jpg` | staand, 576 × 1008 |
 | Vera zelf | `static/vera.png`, `vera-intro-nl.mp4` | een gezicht dat niet van een derde is |
 | Het beeld bij een link | `static/og-beeld.jpg` | 1200 × 630, uit `build/og_beeld.py` |
+| Negen gidsbeelden | `static/gids/` | 1200 × 678, dus ook liggend |
 
 **Alles wat de app maakt is liggend, en Instagram is staand.** Panelen komen als
 16:9 uit Kling (`submit(prompt, aspect_ratio="16:9")`) en de animaties nemen die
@@ -169,11 +170,11 @@ dat is de enige post-soort die echt geld kost: drie Reels per maand van nieuw
 werk is € 2 tot € 4,50. Doe dat dus met wat er al ligt zolang dat er is — er
 staan vier animaties op schijf en meer in het archief.
 
-**Het Kling-tegoed verloopt 18 september 2026.** Dat is over een week, en er
-liggen twee dingen klaar die het waard zijn: het beeld per gidsonderwerp (het
-veld `"image"` in de JSON bestaat al en wordt overal gebruikt zodra het gevuld
-is) en een reeks stills in de kaartvorm voor het account. Vier eenheden per
-beeld. Wat er op 19 september nog over is, is weg.
+**Het Kling-tegoed verloopt 18 september 2026.** Het eerste van de twee dingen
+die dat waard waren is op 10 september gedaan: alle negen gidsonderwerpen hebben
+nu een beeld (`python build/gids_beelden.py --ja`, vier eenheden per stuk, dus
+36). Wat er nog ligt is een reeks stills in de kaartvorm voor het account zelf.
+Wat er op 19 september over is, is weg.
 
 ## Waar je aan ziet of het werkt
 
@@ -464,14 +465,21 @@ archief.
   handwerk in Canva. Een script dat een clip of een still in dezelfde kaart zet
   (`build/instagram_kaart.py`, met de maten uit `kaartMaken`) scheelt dat, en
   houdt de vorm gelijk aan wat de app zelf deelt.
-- **Geen enkel gidsonderwerp heeft een eigen beeld.** Tot dan valt elke
-  gidspagina terug op het vaste og-beeld, en dat is bij tien onderwerpen tien
-  keer dezelfde vuurvogel in een tijdlijn.
+- ~~Geen enkel gidsonderwerp heeft een eigen beeld.~~ **Gedaan op 10 september.**
+  Alle negen hebben er een, dus een gedeelde gidspagina laat zijn eigen beeld
+  zien in plaats van tien keer dezelfde vuurvogel in een tijdlijn. Het vaste
+  og-beeld dekt nu alleen de overzichtspagina en de app. Voor Instagram zijn die
+  negen meteen de eerste plaat van de carrousel bij dat onderwerp — mits ze door
+  de kaartvorm gaan, want ze zijn liggend.
 - **Merknaam niet nagekeken.** Er staat sinds juni 2026 een app *The DreamVerse*
   in de App Store. *Vera Dreamverse* is de veiliger naam en staat al op het
   domein en op het account, maar een echte check bij BOIP, EUIPO en USPTO is
   niet gedaan. Zolang dat zo is: geen geld in advertenties, en geen naam op
   gedrukt materiaal.
-- **Twaalf gidsonderwerpen te gaan.** Elk onderwerp is twee teksten (Engels en
-  Nederlands) en levert één carrousel op. Dat is de goedkoopste inhoud die dit
-  account heeft; als er iets ingehaald moet worden, dan dat.
+- **De gids staat op negen onderwerpen.** Elk nieuw onderwerp is twee teksten
+  (Engels en Nederlands) plus een prompt in `PROMPTS` in
+  `build/gids_beelden.py`, en levert één carrousel op. Dat is de goedkoopste
+  inhoud die dit account heeft; als er iets ingehaald moet worden, dan dat.
+  **Hoeveel er nog komen staat er twee keer verschillend in**: `CLAUDE.md` zegt
+  achttien, hier stond twaalf. Dat getal hoort op één plek te staan — kies er
+  een en haal het andere weg.
