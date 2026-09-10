@@ -52,6 +52,8 @@ Geen framework — dat houdt de deploy op één bestand, net als de andere proje
 | HTTP en routes | `server.py` |
 | Speler, invoer, spraak | `static/` |
 | De chakrapilaar, vaste plaat | `static/chakra-pilaar.jpg` |
+| Het beeld bij een gedeelde link | `static/og-beeld.jpg`, uit `build/og_beeld.py` |
+| Wat er op Instagram komt | [instagram.md](instagram.md) |
 | Tweede taal (Amerikaans Engels) | `static/taal.js` |
 | Persona van de gids | `persona/vera.txt` |
 | Vera's welkomstboodschap, bronnen | `bronnen/vera/` (met `LEESMIJ.md`) |
@@ -361,6 +363,27 @@ Twee dingen die goed moeten. `document.fonts.ready` wordt afgewacht, anders
 tekent het doek in Times New Roman en ziet de kaart er niet uit als de app. En
 `AbortError` is geen fout: dat is iemand die het deelmenu wegklikt.
 
+**Boven en onder blijft 285 pixels leeg, en dat is een gemeten maat.** In een
+verhaal legt Instagram zijn eigen bediening over het beeld: bovenaan het profiel
+met het kruisje, onderaan het antwoordveld — Instagram vraagt zelf om 250 pixels
+rust aan beide kanten. En zet iemand de kaart in zijn feed in plaats van in een
+verhaal, dan snijdt Instagram hem naar 4:5, de hoogste verhouding die de feed
+aanneemt, en dat is precies de middelste 1350 pixels: 285 eraf aan beide kanten.
+De strengste van die twee is 285. Daar viel het merk **buiten**: dat stond op
+1770 en het adres op 1828, dus in een verhaal lag de antwoordbalk eroverheen en
+in de feed werd het weggesneden — precies de twee regels waarvoor de kaart
+bestaat, want de kaart is de advertentie. Nu staat de kop op 400, het paneel van
+470 tot 1450, het merk op 1548 en het adres op 1610. Nagemeten met
+`measureText`: de kop begint op 327 (en dat is met Georgia, de terugvalletter,
+die een hogere stok heeft dan Cormorant) en het adres eindigt op 1610.
+**Verander je een van die vijf getallen, meet dan opnieuw** — een letter met
+andere maten schuift de bovenkant van de kop mee.
+
+Op de kaart staat **VERA DREAMVERSE** en niet DREAMVERSE. Dat is de regel uit
+*Domeinen*: naar buiten heet het Vera Dreamverse, binnen de app blijft het
+Dreamverse. Deze kaart is het meest naar buiten wat de app maakt, en het adres
+eronder zegt hetzelfde.
+
 - **Vera's introductie komt één keer, niet elke keer.** `el("intro").hidden`
   stond onvoorwaardelijk op `false`, dus Vera stelde zich opnieuw voor aan iemand
   die zijn negende droom kwam vertellen. Een begroeting die je elke ochtend
@@ -375,6 +398,126 @@ tekent het doek in Times New Roman en ziet de kaart er niet uit als de app. En
   voetnootregel van de app onvertaald terwijl de sleutel er wél stond.
   `python build/controle.py` let er nu op. Zet in de HTML dus gewoon `·` en niet
   `&middot;`.
+
+## Van Instagram naar de app
+
+Het Instagram-account *Veradreamverse* is het enige kanaal dat er is, en de weg
+loopt via één link in de bio. Vier dingen stonden die weg in de weg; ze zijn
+allemaal gemeten, en het zijn allemaal fouten van de soort die zich niet melden.
+
+**Een gedeelde link had geen beeld.** `welkom.html` had geen enkele `og:`-tag,
+dus het adres in een bio-link, een DM, een WhatsApp-bericht of een
+Slack-kanaal was een grijze regel tekst — terwijl beeld het sterkste is wat dit
+product heeft. Nu staat er een blok in `welkom.html` en in `index.html`, en
+`static/og-beeld.jpg` (1200 × 630, de maat die Facebook, Instagram, WhatsApp en
+LinkedIn allemaal aanhouden) komt uit `python build/og_beeld.py`. Dat is de
+vuurvogel met de tekst op een **eigen donkere grond**, want een voorvertoning
+wordt ook als duimnagel van 200 pixels getoond en dan geldt dezelfde regel als
+in de app. De tags zijn **vast Engels**: een crawler haalt de pagina één keer op
+en voert geen JavaScript uit, dus ze kunnen niet meebewegen met de taalknop.
+En `/og-beeld.jpg` staat in `ZONDER_BASIC`, want de crawler die dat beeld
+ophaalt stuurt geen wachtwoord mee — dan is de pagina leesbaar en blijft alleen
+de voorvertoning leeg, de kant die het minst opvalt en het meest kost.
+
+Ook de gidspagina's hadden alleen een beeld als het onderwerp er zelf een had,
+en dat heeft er nog geen enkele. `_ogbeeld()` in `droomgids.py` valt nu terug op
+hetzelfde vaste beeld. Komt het beeld per onderwerp er, dan wint dat vanzelf.
+
+**Er was niet te zien of er iemand van Instagram kwam.** Instagram stuurt geen
+referrer mee, dus zonder maatregel blijft het bij "er kwam iemand". Twee wegen
+nu, in `accounts.herkomst()`:
+
+- `?van=ig` achter de link. Alleen woorden uit de vaste lijst `HERKOMST` worden
+  geteld — `weergaven` heeft (datum, pagina) als sleutel, dus een vrij veld laat
+  iemand die tabel met duizenden regels per dag vullen.
+- **De browsernaam.** Instagram opent een link in zijn eigen browser en zet
+  zichzelf in de `User-Agent`; dat wordt `ig-app` en werkt ook als de link niet
+  getagd is. Dit is de betrouwbaarste van de twee.
+
+Wat er bewaard wordt is één woord bij een dagteller, **naast** de gewone
+telling en niet in plaats daarvan — anders is het aantal bezoeken aan de
+landingspagina niet meer met zichzelf te vergelijken. Geen IP-adres, geen
+cookie: de browsernaam wordt gelezen en weggegooid, net als bij de zeef op
+robots. Dus nog steeds geen banner en niets in de privacyverklaring.
+
+In `rapport.py` staat het onder *WAAR ZE VANDAAN KWAMEN*. Daar zat en passant
+een fout: de trechter deed "landing, of anders app", en daarmee kwamen de
+gidspagina's (die als `gids` en `gids:<slug>` geteld worden) in de kolom van de
+app terecht. Op 9 september waren dat 36 app-weergaven waarvan er 2 van een
+publieke pagina kwamen. De gids heeft nu zijn eigen kolom, want het is een
+ingang en hoort in de trechter.
+
+**In de browser van Instagram werkt inspreken niet, en de app zei het
+verkeerde.** Instagram opent een link niet in Safari of Chrome maar in een
+browser in de app zelf, en op een iPhone bestaat `webkitSpeechRecognition`
+daarbuiten niet. De app zei "Inspreken kan alleen in Chrome en Edge" — tegen
+iemand die Chrome misschien op zijn telefoon heeft staan, terwijl er een
+oplossing van twee tikken achter zit. `instagramBrowser()` kijkt naar de
+browsernaam, en dat verandert vier dingen: de hint bij *Inspreken* op het
+eerste scherm (dat is het scherm waar iedereen van de bio-link op landt), die
+in de app zelf, de titel op de knop, en drie foutcodes in `spraakfout()`
+(`not-allowed`, `service-not-allowed`, `network`) — want op Android bestaat
+`SpeechRecognition` in die browser wél en komt het probleem er als code uit in
+plaats van als ontbrekende functie. Bij de knop van Vera staat er een regel
+**vóór** de klik: een gesprek wordt ná afloop op werkelijk gesproken tijd
+afgerekend, dus wie daar begint en niet gehoord wordt heeft betaald voor een
+minuut waarin hij tegen niets praatte.
+
+Alleen Instagram, met opzet. De browser van Facebook (`FBAN`, `FBAV`, `FB_IAB`)
+doet precies hetzelfde en is één regexp erbij, maar zolang de bio-link het
+enige kanaal is hoort er niet meer te staan dan we gemeten hebben.
+
+Nagemeten op een tijdelijke kopie van de app die zich als de Instagram-browser
+voordeed: de hint wordt vervangen, de knop gaat op grijs, de regel bij Vera
+verschijnt, en een klik op EN/NL houdt alle drie overeind — die laatste is niet
+vanzelfsprekend, want de vertaalslag legt de begintekst van elk element vast in
+`data-nl` en herstelt daaruit. Daarom zet `hintVervangen()` `data-nl` mee, en
+staat daar de **Nederlandse** zin en niet de vertaalde: dat veld is de bron.
+
+**De poort is doorgelopen als het scherm dat het is: de landingspagina van
+Instagram.** De retentie-prompt uit [instagram.md](instagram.md) is niet op een
+caption gelegd maar op het echte scherm, en dat leverde vier dingen op.
+
+- **"Tonight is one dream" ging over de verkeerde nacht.** *Vannacht* kijkt in
+  het Nederlands terug én vooruit; het Engels moet kiezen, en koos vooruit.
+  Iemand die om zeven uur 's ochtends met een droom van vannacht binnenkomt las
+  dus een regel over vanavond — twee regels boven *What did you dream last
+  night?*, en op de DreamCard staat *Last night I dreamed…* voor dezelfde bron.
+- **En die regel zei niet wat je terugkrijgt.** Dat staat in `.poort-sub`, en
+  `poortStap()` verbergt die op de eerste stap — met goede reden, twee koppen
+  boven elkaar is erger. Maar dan is de belofte het enige wat iemand leest vóór
+  hij gaat typen, en die ging alleen over de derde nacht. Nu: **Eén nacht is
+  vijf panelen en een duiding. Na drie nachten begint jouw Dreamverse.** Vijf
+  panelen is telbaar, "je Dreamverse" niet, en op een gratis eerste droom is het
+  waar (`GRATIS_MET_BEELD = 1`). **Dit is de enige van de vier die ook in het
+  Nederlands veranderd is**, want hier ging het niet om een vertaling maar om
+  wat de regel zegt.
+- **"You get an imagining" stond op de zin die een account waard moet zijn.**
+  *Verbeelding* is in het Nederlands het woord van het product en werkt; *an
+  imagining* bestaat in het Engels zo niet en moet uitgelegd worden. `welkom.html`
+  zei het al beter, en die formulering staat er nu: *Tell it, and get it back as
+  five panels, a reading and a look ahead.* Ook *to see it imagined* op de
+  aanmeldknop is nu *to see the five panels*.
+- **"And goes nowhere" was te lezen als "het leidt tot niets"** — precies op de
+  plek waar iemand een droom gaat intypen die hij aan niemand vertelt. Nu: *Your
+  dream stays in this browser until you make an account. It is not sent
+  anywhere.* En het blijft **in this browser** en niet *on this device*: het is
+  `localStorage`, dus in Safari opslaan en in Chrome terugkomen werkt niet.
+
+Nagemeten in beide talen op beide stappen. **Let op bij het meten met de
+console:** een `var t = …` in een losse consoleregel overschrijft `window.t`,
+en dan valt élke `t()` in `app.js` stil — inclusief de knoptekst in
+`zetPoortModus()`, die daarna op *Inloggen* blijft staan boven een
+aanmeldformulier. Dat lijkt precies op een echte fout en is het niet. Zet zulke
+regels dus in een `(function(){ … })()`.
+
+**Wat de controle hier niet ziet.** `build/controle.py` zoekt naar een `t` met
+de hele zin er letterlijk in. Een zin die eerst uit stukken wordt samengesteld
+of via een variabele binnenkomt — zoals wat `geenSpraakUitleg()` en
+`spraakfout()` teruggeven — valt daarbuiten. Die zinnen zijn met de hand
+nageteld tegen `taal.js`. Schrijf een nieuwe melding dus liever als één
+complete aanroep per taalvariant, zoals bij het meeschrijven, dan als één
+aanroep om een keuze heen.
 
 ## De chakrapilaar
 

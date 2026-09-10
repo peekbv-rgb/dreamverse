@@ -104,8 +104,22 @@ def cijfers(dagen=30):
     tellingen = accounts.weergaven(dagen)
     landing = Counter()
     appview = Counter()
+    gidsview = Counter()
+    bronnen = Counter()
+    # Elke soort in zijn eigen bak. Dit stond eerst als "landing of anders app",
+    # en daarmee kwamen de gidspagina's - die met "gids" en "gids:<slug>" ook
+    # geteld worden - in de kolom van de app terecht. Dan lijkt het alsof er
+    # mensen in de app zijn die op een publieke pagina van Google stonden.
     for r in tellingen:
-        (landing if r["pagina"] == "landing" else appview)[r["datum"]] += r["aantal"]
+        naam = r["pagina"]
+        if naam == "landing":
+            landing[r["datum"]] += r["aantal"]
+        elif naam == "app":
+            appview[r["datum"]] += r["aantal"]
+        elif naam.startswith("bron:"):
+            bronnen[naam[5:]] += r["aantal"]
+        elif naam == "gids" or naam.startswith("gids:"):
+            gidsview[r["datum"]] += r["aantal"]
     nieuw_per_dag = Counter(
         u["sinds"].isoformat() for u in gebruikers.values() if u["sinds"])
     dromen_per_dag = Counter()
@@ -116,11 +130,14 @@ def cijfers(dagen=30):
     return {
         "feedback": terugkoppeling,
         "trechter": [
-            {"datum": d, "landing": landing.get(d, 0), "app": appview.get(d, 0),
+            {"datum": d, "landing": landing.get(d, 0), "gids": gidsview.get(d, 0),
+             "app": appview.get(d, 0),
              "nieuw": nieuw_per_dag.get(d, 0), "dromen": dromen_per_dag.get(d, 0)}
-            for d in sorted(set(landing) | set(appview) | set(nieuw_per_dag)
-                            | set(dromen_per_dag), reverse=True)
+            for d in sorted(set(landing) | set(appview) | set(gidsview)
+                            | set(nieuw_per_dag) | set(dromen_per_dag),
+                            reverse=True)
         ],
+        "bronnen": dict(bronnen.most_common()),
         "gebruikers": len(gebruikers),
         "met_droom": sum(1 for u in gebruikers.values() if u["dromen"]),
         "dromen": sum(u["dromen"] for u in gebruikers.values()),
@@ -173,22 +190,25 @@ def main():
     print("  betalingen      %s, samen EUR %.2f" % (c["betalingen"], c["omzet"]))
     print("")
     print("  DE TRECHTER  (bezoek -> account -> droom)")
-    print("    %-12s %8s %8s %8s %8s" % ("datum", "landing", "app", "nieuw", "dromen"))
-    tot = {"landing": 0, "app": 0, "nieuw": 0, "dromen": 0}
+    print("    %-12s %8s %8s %8s %8s %8s" % (
+        "datum", "landing", "gids", "app", "nieuw", "dromen"))
+    tot = {"landing": 0, "gids": 0, "app": 0, "nieuw": 0, "dromen": 0}
     # Alleen dagen waarop er ook echt geteld is. Het tellen begon later dan de
     # eerste accounts, en dan deel je twee getallen op elkaar die over
     # verschillende weken gaan - dat leest als een percentage en is het niet.
     gemeten = {"landing": 0, "nieuw": 0}
     for r in c["trechter"][:14]:
-        print("    %-12s %8d %8d %8d %8d" % (
-            r["datum"], r["landing"], r["app"], r["nieuw"], r["dromen"]))
+        print("    %-12s %8d %8d %8d %8d %8d" % (
+            r["datum"], r["landing"], r["gids"], r["app"], r["nieuw"],
+            r["dromen"]))
         for k in tot:
             tot[k] += r[k]
         if r["landing"] or r["app"]:
             gemeten["landing"] += r["landing"]
             gemeten["nieuw"] += r["nieuw"]
-    print("    %-12s %8d %8d %8d %8d" % (
-        "samen", tot["landing"], tot["app"], tot["nieuw"], tot["dromen"]))
+    print("    %-12s %8d %8d %8d %8d %8d" % (
+        "samen", tot["landing"], tot["gids"], tot["app"], tot["nieuw"],
+        tot["dromen"]))
     if gemeten["landing"] >= 10:
         print("")
         print("    Van %d bezoeken aan de landingspagina werden er %d een account: %.0f%%."
@@ -198,6 +218,19 @@ def main():
         print("")
         print("    Nog te weinig bezoek (%d) om er een percentage van te maken."
               % gemeten["landing"])
+    if c["bronnen"]:
+        print("")
+        print("  WAAR ZE VANDAAN KWAMEN")
+        for naam, aantal in c["bronnen"].items():
+            print("    %-12s %8d" % (naam, aantal))
+        print("")
+        print("    ig-app is de eigen browser van Instagram, ook zonder tag in")
+        print("    de link. De rest komt van ?van=... achter het adres.")
+    else:
+        print("")
+        print("  WAAR ZE VANDAAN KWAMEN: nog niets gemeten. Zet ?van=ig achter")
+        print("  het adres in de Instagram-bio; de eigen browser van Instagram")
+        print("  wordt ook zonder dat herkend.")
     print("")
     print("  Bezoeken zijn weergaven, geen personen: er wordt niets bewaard")
     print("  waarmee twee bezoeken aan dezelfde mens zijn toe te schrijven.")

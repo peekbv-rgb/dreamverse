@@ -5,6 +5,22 @@
 <meta name="google" content="notranslate">
 <title>Vera Dreamverse</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- Dezelfde voorvertoning als de landingspagina. Iemand die de app open heeft
+     en het adres uit zijn adresbalk doorstuurt, stuurt dít pad door; zonder
+     deze tags is dat een kale regel tekst. Wat er te zien is hoort hetzelfde te
+     zijn, dus wijzen ze naar dezelfde pagina en hetzelfde beeld. -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Vera Dreamverse">
+<meta property="og:title" content="Vera Dreamverse — your dream, imagined">
+<meta property="og:description" content="Tell your dream in the morning and get it back as five panels, a reading and a look ahead. Every earlier dream counts.">
+<meta property="og:url" content="https://vera-dreamverse.com/">
+<meta property="og:image" content="https://vera-dreamverse.com/og-beeld.jpg">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=Karla:wght@400;500;600&display=swap">
@@ -29,8 +45,13 @@
 <div class="poort" id="poort" hidden>
   <div class="poort-kaart">
     <h1 class="poort-titel">Dreamverse</h1>
-    <p class="poort-belofte">Vannacht is één droom.<br>Na drie nachten begint
-      jouw Dreamverse.</p>
+    <!-- Deze regel staat alleen op de eerste stap; daar is `.poort-sub`
+         verborgen, want twee koppen boven elkaar is erger. Dat betekent wel dat
+         dit het enige is wat iemand van de bio-link leest vóór hij gaat typen,
+         en dan hoort er te staan wat hij terugkrijgt en niet alleen wat er over
+         drie nachten gebeurt. -->
+    <p class="poort-belofte">Eén nacht is vijf panelen en een duiding.<br>Na
+      drie nachten begint jouw Dreamverse.</p>
     <p class="poort-sub">Je vertelt je droom; je krijgt een verbeelding met een
       duiding en een vooruitblik. Elke eerdere droom telt mee.</p>
 

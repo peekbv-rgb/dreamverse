@@ -1255,6 +1255,46 @@
   var Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   var recogniser = null, listening = false;
 
+  /* Kijkt iemand mee vanuit de app van Instagram?
+   *
+   * Instagram opent een link niet in Safari of Chrome maar in een browser die
+   * hij zelf in de app heeft zitten, en dat is precies de weg waarlangs
+   * iedereen van de bio-link binnenkomt. In die browser bestaat de Web Speech
+   * API niet: op een iPhone zit `webkitSpeechRecognition` alleen in Safari
+   * zelf. Dus zeggen we "Inspreken kan alleen in Chrome en Edge" tegen iemand
+   * die Chrome misschien wel op zijn telefoon heeft staan - en er staat een
+   * oplossing van twee tikken achter.
+   *
+   * Alleen Instagram, met opzet. De browser van Facebook (FBAN, FBAV, FB_IAB)
+   * doet precies hetzelfde en is één regexp erbij, maar zolang de bio-link het
+   * enige kanaal is hoort er niet meer te staan dan we gemeten hebben.
+   */
+  function instagramBrowser() {
+    return /Instagram/i.test(navigator.userAgent || "");
+  }
+
+  /* Waarom inspreken hier niet kan, met wat je eraan doet. Nederlands, want dit
+   * is de brontekst waar de vertaalslag op zoekt. */
+  function geenSpraakUitleg() {
+    return instagramBrowser()
+      ? "Je bekijkt Dreamverse in de browser van Instagram, en inspreken kan"
+        + " daar niet. Tik op de drie puntjes en kies Openen in Safari of"
+        + " Openen in Chrome. Of typ je droom hierboven."
+      : "Inspreken kan alleen in Chrome en Edge. Typ je droom hierboven.";
+  }
+
+  /* De hint onder het invoerveld. Ook `data-nl` zetten, want de vertaalslag
+   * legt de begintekst van elk element vast en herstelt daaruit bij een
+   * taalwissel - zonder deze regel stond er na een klik op EN/NL weer "of typ
+   * het hierboven" en was de uitleg weg. In `data-nl` hoort de Nederlandse
+   * zin, niet de vertaalde: dat veld is de bron en niet wat er staat. */
+  function hintVervangen(hint, bron) {
+    if (!hint) { return; }
+    hint.classList.add("kan-niet");
+    hint.dataset.nl = bron;
+    hint.textContent = t(bron);
+  }
+
   /* Het balkje: laat zien dat de microfoon je hoort.
    *
    * SpeechRecognition geeft geen geluidsniveau terug - alleen woorden, en pas
@@ -1364,12 +1404,10 @@
       // te missen op een laptop. Wat je overhoudt is een grijze knop die niets
       // doet zonder te zeggen waarom - en dan denk je dat de app stuk is.
       mic.disabled = true;
-      mic.title = t("Inspreken werkt in Chrome en Edge");
-      var hint = document.querySelector(".invoer-hint");
-      if (hint) {
-        hint.classList.add("kan-niet");
-        hint.textContent = t("Inspreken kan alleen in Chrome en Edge. Typ je droom hierboven.");
-      }
+      mic.title = instagramBrowser()
+        ? t("Inspreken kan niet in de browser van Instagram")
+        : t("Inspreken werkt in Chrome en Edge");
+      hintVervangen(document.querySelector(".invoer-hint"), geenSpraakUitleg());
       return;
     }
     mic.addEventListener("click", function () {
@@ -1450,6 +1488,18 @@
    * privévenster of van dictaat dat uitstaat, en dat kun je gewoon zeggen.
    */
   function spraakfout(code) {
+    // In de browser van Instagram is dit geen storing maar de browser zelf: die
+    // komt niet bij de microfoon en niet bij de spraakdienst. Op Android
+    // bestaat SpeechRecognition daar wél, dus komt het daar niet naar buiten
+    // als een ontbrekende functie maar als een van deze drie codes - en dan
+    // stond er "zet de microfoon aan bij je site-instellingen", wat in die
+    // browser niet bestaat.
+    if (instagramBrowser() && (code === "not-allowed"
+                               || code === "service-not-allowed"
+                               || code === "network")) {
+      return ("Inspreken kan niet in de browser van Instagram. Tik op de drie "
+              + "puntjes en kies Openen in Safari of Openen in Chrome.");
+    }
     return {
       "service-not-allowed":
         "De spraakdienst van je toestel doet niet mee. Op een iPhone komt dat "
@@ -1471,8 +1521,16 @@
   function meeschrijvenStarten() {
     if (!Recognition) {
       // Firefox en Safari kunnen dit niet. Dat eerlijk zeggen is beter dan een
-      // gesprek dat stil verdwijnt.
-      meeschrijfMelding(t("Meeschrijven kan alleen in Chrome en Edge."), true);
+      // gesprek dat stil verdwijnt. In de browser van Instagram is het niet de
+      // browser van de dromer maar die van de app, en dat is iets anders om te
+      // zeggen: daar kan hij er zelf uit stappen.
+      // Twee losse aanroepen met de zin er compleet in, en niet één aanroep om
+      // een keuze heen: build/controle.py zoekt naar een t met de hele zin er
+      // letterlijk in, dus een zin die eerst wordt samengesteld valt buiten
+      // die controle.
+      meeschrijfMelding(instagramBrowser()
+        ? t("In de browser van Instagram schrijft Dreamverse niet mee.")
+        : t("Meeschrijven kan alleen in Chrome en Edge."), true);
       return;
     }
     if (listening && recogniser) { try { recogniser.stop(); } catch (e) { /* al gestopt */ } }
@@ -1935,6 +1993,24 @@
    */
   var KAART_B = 1080, KAART_H = 1920;
 
+  /* Boven en onder blijft 285 pixels leeg. Dat is geen smaak maar de maat van
+   * twee dingen die Instagram met deze kaart doet.
+   *
+   * In een verhaal legt Instagram zijn eigen bediening over je beeld heen:
+   * bovenaan het profiel met het kruisje, onderaan het antwoordveld en de
+   * knoppen om te delen. Instagram vraagt zelf om 250 pixels rust aan beide
+   * kanten. En zet iemand de kaart in zijn feed in plaats van in een verhaal,
+   * dan snijdt Instagram hem naar 4:5 - de hoogste verhouding die de feed
+   * aanneemt - en dat is precies de middelste 1350 pixels, ofwel 285 eraf aan
+   * beide kanten.
+   *
+   * De strengste van die twee is 285, en daar valt alles binnen. Dat was niet
+   * zo: de merknaam stond op 1770 en het adres op 1828, dus in een verhaal lag
+   * het antwoordveld eroverheen en in de feed werden ze weggesneden. Precies
+   * de twee regels waarvoor de kaart bestaat - de kaart is de advertentie.
+   */
+  var VEILIG = 285;
+
   function kaartTekst() {
     return (window.TAAL === "en") ? "Last night I dreamed…" : "Vannacht droomde ik…";
   }
@@ -1975,8 +2051,8 @@
     ctx.fillStyle = gloed;
     ctx.fillRect(0, 0, KAART_B, KAART_H);
 
-    // Het paneel, groot en vierkant in het midden.
-    var vakY = 520, vakH = 1120;
+    // Het paneel, groot en bijna vierkant, binnen de veilige strook.
+    var vakY = 470, vakH = 980;
     var im = await beeldLaden(bron);
     ctx.save();
     ctx.beginPath();
@@ -1988,27 +2064,27 @@
 
     // Naar onderen laten wegvloeien, zodat het beeld in de kaart zakt in
     // plaats van er als een plakker op te liggen.
-    var vaag = ctx.createLinearGradient(0, vakY + vakH - 220, 0, vakY + vakH);
+    var vaag = ctx.createLinearGradient(0, vakY + vakH - 200, 0, vakY + vakH);
     vaag.addColorStop(0, "rgba(8, 6, 17, 0)");
     vaag.addColorStop(1, "rgba(8, 6, 17, .96)");
     ctx.fillStyle = vaag;
-    ctx.fillRect(60, vakY + vakH - 220, KAART_B - 120, 220);
+    ctx.fillRect(60, vakY + vakH - 200, KAART_B - 120, 200);
 
     ctx.textAlign = "center";
     ctx.fillStyle = "#F2EEFB";
     ctx.font = 'italic 300 96px "Cormorant Garamond", Georgia, serif';
-    ctx.fillText(kaartTekst(), KAART_B / 2, 350);
+    ctx.fillText(kaartTekst(), KAART_B / 2, 400);
 
     // Het merk: klein, onderaan, en niet schreeuwen. Wie de kaart mooi vindt
     // zoekt de naam wel op; wie hem opgedrongen krijgt deelt hem niet.
     ctx.font = '600 34px Karla, "Segoe UI", Helvetica, Arial, sans-serif';
     ctx.fillStyle = "rgba(167, 154, 203, .95)";
     ctx.letterSpacing = "6px";
-    ctx.fillText("DREAMVERSE", KAART_B / 2, KAART_H - 150);
+    ctx.fillText("VERA DREAMVERSE", KAART_B / 2, 1548);
     ctx.letterSpacing = "0px";
     ctx.font = '400 30px Karla, "Segoe UI", Helvetica, Arial, sans-serif';
     ctx.fillStyle = "rgba(167, 154, 203, .65)";
-    ctx.fillText("vera-dreamverse.com", KAART_B / 2, KAART_H - 92);
+    ctx.fillText("vera-dreamverse.com", KAART_B / 2, 1610);
 
     // JPEG en geen PNG: het beeld is geschilderd, niet een schermafdruk met
     // scherpe lijnen. PNG maakte er 2,5 MB van, wat op een telefoonbundel
@@ -3457,11 +3533,9 @@
     if (!knop || !veld) { return; }
     if (!Recognition) {
       knop.disabled = true;
-      var hint = el("poort-vertel").querySelector(".invoer-hint");
-      if (hint) {
-        hint.classList.add("kan-niet");
-        hint.textContent = t("Inspreken kan alleen in Chrome en Edge. Typ je droom hierboven.");
-      }
+      // Dit is het eerste scherm, en dus wat iemand van de bio-link ziet.
+      hintVervangen(el("poort-vertel").querySelector(".invoer-hint"),
+                    geenSpraakUitleg());
       return;
     }
     knop.addEventListener("click", function () {
@@ -3500,6 +3574,26 @@
     });
   }
   poortMic();
+
+  /* Eén regel bij de knop van Vera, als we in de browser van Instagram staan.
+   *
+   * Een gesprek wordt ná afloop afgerekend op werkelijk gesproken tijd. Wie
+   * hier begint en niet gehoord wordt omdat de app-browser niet bij de
+   * microfoon komt, heeft dus wél betaald voor de minuut waarin hij tegen niets
+   * praatte. Vóór de klik waarschuwen is daarom geen vriendelijkheid maar het
+   * verschil tussen een mislukte poging en een mislukte poging met een rekening.
+   */
+  function instagramWaarschuwing() {
+    var doos = el("call-melding");
+    if (!instagramBrowser() || !doos) { return; }
+    var bron = "Je bekijkt Dreamverse in de browser van Instagram. Praten met"
+      + " Vera werkt daar niet altijd: tik op de drie puntjes en kies Openen in"
+      + " Safari of Openen in Chrome.";
+    doos.hidden = false;
+    doos.dataset.nl = bron;
+    doos.textContent = t(bron);
+  }
+  instagramWaarschuwing();
 
   if (el("poort-verder")) {
     el("poort-verder").addEventListener("click", function () {

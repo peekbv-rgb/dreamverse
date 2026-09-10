@@ -76,6 +76,17 @@
     ["Deze taal kent de spraakherkenning niet.", "Speech recognition does not know this language."],
     ["Inspreken kan alleen in Chrome en Edge. Typ je droom hierboven.",
      "Speaking it in only works in Chrome and Edge. Type your dream above."],
+    // De browser van Instagram. Iedereen die van de bio-link komt zit daarin, en
+    // daar bestaat spraak naar tekst niet - dus is "Chrome en Edge" daar het
+    // verkeerde antwoord: er staat een oplossing van twee tikken achter.
+    ["Je bekijkt Dreamverse in de browser van Instagram, en inspreken kan daar niet. Tik op de drie puntjes en kies Openen in Safari of Openen in Chrome. Of typ je droom hierboven.",
+     "You are looking at Dreamverse inside Instagram's own browser, and speaking it in cannot work there. Tap the three dots and choose Open in Safari or Open in Chrome. Or type your dream above."],
+    ["Inspreken kan niet in de browser van Instagram",
+     "Speaking it in does not work in Instagram's browser"],
+    ["Inspreken kan niet in de browser van Instagram. Tik op de drie puntjes en kies Openen in Safari of Openen in Chrome.",
+     "Speaking it in does not work in Instagram's browser. Tap the three dots and choose Open in Safari or Open in Chrome."],
+    ["Je bekijkt Dreamverse in de browser van Instagram. Praten met Vera werkt daar niet altijd: tik op de drie puntjes en kies Openen in Safari of Openen in Chrome.",
+     "You are looking at Dreamverse inside Instagram's own browser. Talking with Vera does not always work there: tap the three dots and choose Open in Safari or Open in Chrome."],
     // De voetnootregel is één sleutel, want de vertaalslag vervangt de hele
     // innerHTML van de <p> en niet de <a>'s erbinnen. Drie losse linkteksten
     // pasten daarom nergens op. Enkele aanhalingstekens, want er staan dubbele
@@ -173,11 +184,19 @@
     ["Vertel er nog iets meer over, dan kan Vera er iets mee.",
      "Tell a little more about it, then Vera has something to work with."],
     ["Verder", "Continue"],
+    // "and goes nowhere" is te lezen als "het leidt tot niets", en dat staat
+    // precies op de plek waar iemand een droom gaat intypen die hij aan niemand
+    // vertelt. Bedoeld is dat hij niet verstuurd wordt, dus staat dat er nu.
+    // "In this browser" blijft: het is localStorage, dus in Safari opslaan en in
+    // Chrome terugkomen werkt niet - "on this device" zou dat verhullen.
     ["Je droom blijft zolang in deze browser en gaat nergens heen. Heb je al een account?",
-     "Your dream stays in this browser for now and goes nowhere. Already have an account?"],
+     "Your dream stays in this browser until you make an account. It is not sent anywhere. Already have an account?"],
     ["Je droom staat klaar voor Vera.", "Your dream is ready for Vera."],
+    // "to see it imagined" is dezelfde constructie als "an imagining", op de
+    // knop waar het om gaat. Vijf panelen: dat is wat een gratis eerste droom
+    // krijgt (GRATIS_MET_BEELD = 1), dus het is hier ook waar.
     ["Maak een gratis account om hem verbeeld te zien. Drie dromen per maand, geen betaalgegevens.",
-     "Create a free account to see it imagined. Three dreams a month, no payment details."],
+     "Create a free account to see the five panels. Three dreams a month, no payment details."],
     ["Eerst nog iets aanpassen", "Change something first"],
 
     // -- Vera zag iets: het betaalmoment op de derde nacht ------------------
@@ -317,6 +336,8 @@
      "This was left from your conversation with Vera. I kept it for you."],
     ["woord", "word"],
     ["woorden", "words"],
+    ["In de browser van Instagram schrijft Dreamverse niet mee.",
+     "Inside Instagram's browser Dreamverse cannot write along."],
     ["Meeschrijven kan alleen in Chrome en Edge.",
      "Writing along only works in Chrome and Edge."],
     ["Meeschrijven kwam niet op gang.", "Writing along did not start."],
@@ -392,10 +413,29 @@
      "Fill in your email address first, then we will send you a new link."],
     ["Verstuurd.", "Sent."],
     ["Dreamverse", "Dreamverse"],
-    ['Vannacht is één droom.<br>Na drie nachten begint jouw Dreamverse.',
-     'Tonight is one dream.<br>After three nights your Dreamverse begins.'],
+    // De belofte op de eerste stap van de poort, en dus de eerste regel van het
+    // product voor wie van de bio-link komt.
+    //
+    // Hier stond "Vannacht is één droom" met als vertaling "Tonight is one
+    // dream": *vannacht* kijkt in het Nederlands terug én vooruit, het Engels
+    // moest kiezen en koos vooruit. Iemand die om zeven uur 's ochtends met een
+    // droom van vannacht binnenkwam, las dus een regel over vanavond - twee
+    // regels boven "What did you dream last night?".
+    //
+    // En de regel zei niet wat je terugkrijgt. Dat stond in `.poort-sub`, en die
+    // is op deze stap verborgen; wie hier afhaakt heeft alleen een belofte over
+    // de derde nacht gelezen terwijl hij zich afvroeg wat er ná deze ene
+    // gebeurt. Vijf panelen is telbaar, "je Dreamverse" niet.
+    ['Eén nacht is vijf panelen en een duiding.<br>Na drie nachten begint jouw Dreamverse.',
+     'One night is five panels and a reading.<br>After three, your Dreamverse begins.'],
+    // Dit is de zin op de tweede stap, en dus de zin die een account waard moet
+    // zijn. Er stond "you get an imagining": *verbeelding* is in het Nederlands
+    // het woord van het product, maar "an imagining" bestaat in het Engels zo
+    // niet en moet uitgelegd worden - en uitleggen is waar iemand wegklikt.
+    // welkom.html zegt precies hetzelfde al beter: vijf panelen is concreet en
+    // telbaar. Het Nederlands blijft, daar was niets mis.
     ["Je vertelt je droom; je krijgt een verbeelding met een duiding en een vooruitblik. Elke eerdere droom telt mee.",
-     "You tell your dream; you get an imagining with a reading and a look ahead. Every earlier dream counts."],
+     "Tell it, and get it back as five panels, a reading and a look ahead. Every earlier dream counts."],
     ["voorbeeldmodus", "example mode"],
     ["Vera is niet aangesloten", "Vera is not connected"],
 

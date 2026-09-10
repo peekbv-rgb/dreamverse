@@ -181,8 +181,13 @@ BEHEER_PADEN = "/api/beheer/"
 #
 # De privacyverklaring: die moet leesbaar zijn zonder account. Een verklaring
 # achter een wachtwoord beschermt niemand.
+# Het og-beeld: de crawler van Instagram, Facebook of WhatsApp haalt dat als
+# tweede verzoek op en stuurt daarbij geen wachtwoord mee. Staat basic auth
+# ervoor, dan is de pagina wél te lezen maar blijft de voorvertoning leeg -
+# precies de kant die het minst opvalt en het meest kost.
 ZONDER_BASIC = ("/api/stripe/webhook", "/privacy.html", "/herstel.html",
-                "/welkom.html", "/sitemap.xml", "/robots.txt")
+                "/welkom.html", "/sitemap.xml", "/robots.txt",
+                "/og-beeld.jpg")
 
 
 class Handler(SimpleHTTPRequestHandler):
@@ -417,6 +422,10 @@ class Handler(SimpleHTTPRequestHandler):
         # /app blijft altijd de app zelf, ook uitgelogd - anders stuurt de knop
         # op de welkomstpagina je in een kringetje terug.
         kaal = self.path.split("?")[0]
+        # De vraagtekst nu vastpakken, want de herschrijving hieronder vervangt
+        # het hele pad: `/?van=ig` wordt `/welkom.html` en dan is er geen `van`
+        # meer om te tellen.
+        vraag = self.path.split("?", 1)[1] if "?" in self.path else ""
         if kaal in ("/", "/index.html") and not self.gebruiker:
             self.path = "/welkom.html"
         elif kaal in ("/app", "/app/"):
@@ -437,10 +446,21 @@ class Handler(SimpleHTTPRequestHandler):
         # plaatjes mee. En de scanbots die dagelijks op PHP-lekken zoeken vragen
         # paden op die hier nooit langskomen; wat er alsnog doorheen glipt vangt
         # de zeef op de browsernaam.
-        if self.path in ("/welkom.html", "/index.html"):
+        #
+        # En waar hij vandaan kwam, als dat te zien is: één woord bij een
+        # dagteller, naast de gewone telling en niet in plaats daarvan - anders
+        # is het aantal bezoeken aan de landingspagina niet meer met zichzelf te
+        # vergelijken. Dit is de enige manier om te weten of Instagram iets
+        # oplevert: Instagram stuurt geen referrer mee, dus zonder dit blijft
+        # het bij "er kwam iemand".
+        gezien = self.path.split("?")[0]
+        if gezien in ("/welkom.html", "/index.html"):
+            agent = self.headers.get("User-Agent")
             accounts.tel_weergave(
-                "landing" if self.path == "/welkom.html" else "app",
-                self.headers.get("User-Agent"))
+                "landing" if gezien == "/welkom.html" else "app", agent)
+            bron = accounts.herkomst(vraag, agent)
+            if bron:
+                accounts.tel_weergave("bron:" + bron, agent)
 
         # Vera's Dream Guide. Openbaar en zonder inlog: dit is de laag waar
         # Google op landt en vanwaar iemand de app in loopt.

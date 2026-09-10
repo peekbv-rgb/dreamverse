@@ -606,6 +606,43 @@ def is_robot(agent):
     return not a or any(r in a for r in ROBOTS)
 
 
+# Waar iemand vandaan kwam, in vaste woorden.
+#
+# Een vaste lijst en geen vrij veld: `weergaven` heeft (datum, pagina) als
+# sleutel, dus wie een eigen waarde mag verzinnen kan die tabel met duizenden
+# regels per dag vullen. Deze namen zijn de enige die geteld worden; al het
+# andere is geen bron maar ruis.
+#
+# Kort en zonder streepjes in de link zelf: `?van=ig` is wat er in de bio staat.
+HERKOMST = ("ig", "ig-bio", "ig-story", "ig-reel", "fb", "tiktok", "mail",
+            "kaart")
+
+
+def herkomst(query, agent=None):
+    """Uit welke hoek dit bezoek komt, of None.
+
+    Twee wegen, en de tweede is de betrouwbaarste. `?van=ig` achter de link
+    werkt alleen als de link getagd is - dat is de bio en een verhaal. Maar
+    Instagram opent een link in zijn *eigen* browser, en die zet zichzelf in de
+    browsernaam ("Instagram 300.0.0..."). Dat is er ook als er niets getagd is,
+    en Instagram stuurt geen referrer mee - dus zonder deze tweede weg is de
+    vraag "kwam er iemand van Instagram" gewoon niet te beantwoorden.
+
+    Wat er bewaard wordt is één woord bij een dagteller. Geen IP-adres, geen
+    cookie, geen browsernaam: die wordt gelezen en weggegooid, net als bij de
+    zeef op robots.
+    """
+    a = (agent or "").lower()
+    if "instagram" in a:
+        return "ig-app"
+    for stuk in (query or "").split("&"):
+        if stuk.startswith("van="):
+            waarde = stuk[4:].lower()
+            if waarde in HERKOMST:
+                return waarde
+    return None
+
+
 def tel_weergave(pagina, agent=None):
     """Eén weergave erbij. Faalt nooit hardop.
 

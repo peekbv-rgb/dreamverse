@@ -35,6 +35,16 @@ BASIS = "/dream-meaning"
 # zonder dit concurreren het kale domein en www met elkaar om dezelfde tekst.
 SITE = "https://vera-dreamverse.com"
 
+# Het beeld dat een gedeelde link laat zien. Heeft een onderwerp er zelf een,
+# dan wint die; anders het vaste beeld van de site.
+#
+# Dit was leeg zolang een onderwerp geen eigen beeld had - en dat heeft er nog
+# geen enkele. Een gidspagina in een Instagram-verhaal, een DM of een
+# WhatsApp-bericht was daarmee een grijze regel tekst, terwijl dit juist de
+# pagina's zijn die bedoeld zijn om te delen. Komt het beeld per onderwerp er,
+# dan valt deze regel vanzelf weg.
+OG_STANDAARD = "/og-beeld.jpg"
+
 # "Terug naar Dreamverse" wijst naar de landingspagina en niet naar "/".
 #
 # De gids hoort bij de publieke laag, en de publieke laag begint bij
@@ -199,6 +209,26 @@ CTA_TEKST = {
 }
 
 
+def _ogbeeld(pad=None):
+    """De beeldtags voor een gedeelde link.
+
+    De maten staan er alleen bij het vaste beeld: die kennen we (1200 x 630), en
+    Facebook en LinkedIn tonen het kaartje daarmee meteen groot in plaats van
+    eerst klein en dan verspringend. Van een eigen beeld per onderwerp weten we
+    de maat hier niet, dus dan laten we ze weg.
+    """
+    if pad:
+        return ('<meta property="og:image" content="{}{}">\n'
+                '<meta name="twitter:card" content="summary_large_image">'
+                .format(SITE, _e(pad)))
+    return ('<meta property="og:image" content="{}{}">\n'
+            '<meta property="og:image:type" content="image/jpeg">\n'
+            '<meta property="og:image:width" content="1200">\n'
+            '<meta property="og:image:height" content="630">\n'
+            '<meta name="twitter:card" content="summary_large_image">'
+            .format(SITE, OG_STANDAARD))
+
+
 def _taalstukken(taal, slug, talen):
     """De hreflang-regels en de EN/NL-knoppen.
 
@@ -334,7 +364,7 @@ def overzicht(taal="en"):
     return (KOP.format(
         titel=w["titel"], beschrijving=_e(w["meta"]),
         canoniek=SITE + pad_voor(taal), alternatief=alternatief,
-        ogbeeld="", schema=_schema_lijst(lijst, taal),
+        ogbeeld=_ogbeeld(), schema=_schema_lijst(lijst, taal),
         taalknoppen=knoppen, taal=taal,
         terug_href="/welkom.html", terug_tekst=_e(w["terug"]))
         + body + VOET.format(basis=pad_voor(taal), taal=taal, **VOET_TEKST[taal]))
@@ -467,8 +497,7 @@ def artikel(slug, taal="en"):
         beschrijving=_e(veld(d, "meta", taal)),
         canoniek=SITE + pad_voor(taal, d["slug"]),
         alternatief=alternatief,
-        ogbeeld=('<meta property="og:image" content="{}{}">'.format(SITE, _e(d["image"]))
-                 if d.get("image") else ""),
+        ogbeeld=_ogbeeld(d.get("image")),
         schema=_schema_artikel(d, taal),
         taalknoppen=knoppen, taal=taal,
         terug_href=pad_voor(taal), terug_tekst=_e(k["terug"]))
