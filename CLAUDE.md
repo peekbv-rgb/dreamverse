@@ -649,7 +649,7 @@ verhuizen.
 Het veld `"image"` in de JSON wordt op drie plekken gebruikt: als kaartbeeld op
 het overzicht, als hero boven het artikel, en als `og:image` bij een gedeelde
 link (waar het het vaste beeld verslaat). Vier Kling-eenheden per stuk, dus
-negen onderwerpen was 36 van de ruim 600 die er nog staan.
+zevenentwintig onderwerpen is 108 eenheden.
 
 Drie regels zitten er bewust in dat script:
 
@@ -665,15 +665,39 @@ Drie regels zitten er bewust in dat script:
   dauw. Wie 's ochtends zoekt op *dromen over spinnen* is er meestal van
   geschrokken, en dan helpt een harige close-up niemand.
 
-En ze worden **verkleind naar JPEG van 1200 breed** voordat ze in `static/gids/`
-belanden. Kling levert PNG's van rond de 1,7 MB; negen daarvan is 15 MB op een
-pagina die iemand vanaf zijn telefoon opent. Nu is de hele set 938 kB, en de
-kaarten laden bovendien `lazy`.
+Bij een onderwerp dat over een mens gaat vallen die twee regels samen, en dat
+is bij *stranger* het duidelijkst: in het artikel is de onbekende de bode — de
+figuur die van buiten komt en iets brengt in plaats van weghaalt — en een
+gestalte in een lichte deuropening is per constructie gezichtsloos, want het
+tegenlicht doet het werk. De open hand is dat brengen; het ochtendlicht houdt
+het van een indringer af. Zelfde truc bij *mother* (een stoel, een warme kop,
+een jas over de rugleuning) en bij *being-naked* (een lege stoel in een zaal):
+het onderwerp is een mens, het beeld is de plek die hij net verliet.
 
-**Nog te doen:** de overige achttien onderwerpen. Elk nieuw onderwerp heeft een
-prompt nodig in `PROMPTS` in `build/gids_beelden.py`; zonder prompt weigert dat
-script te draaien in plaats van het onderwerp stil over te slaan. Het
-Kling-tegoed verloopt **18 september 2026** en rolt niet door.
+En ze worden **verkleind naar JPEG van 1200 breed** voordat ze in `static/gids/`
+belanden. Kling levert PNG's van rond de 1,7 MB; zevenentwintig daarvan is 45 MB
+op een pagina die iemand vanaf zijn telefoon opent. Nu is de hele set 3,0 MB bij
+gemiddeld 110 kB per stuk, en de kaarten laden bovendien `lazy` — dus wie het
+overzicht opent haalt alleen wat er in beeld staat.
+
+**De achttien die nog te gaan waren zijn er, op 10 september 2026: de gids staat
+op zevenentwintig onderwerpen en ze hebben allemaal een beeld.** Elk nieuw
+onderwerp heeft nog steeds een prompt nodig in `PROMPTS` in
+`build/gids_beelden.py`; zonder prompt weigert dat script te draaien in plaats
+van het onderwerp stil over te slaan. Het Kling-tegoed verloopt
+**18 september 2026** en rolt niet door.
+
+**Drie onderwerpen raken de grens uit de regels, en die grens gaat over de
+claim en niet over het onderwerp.** *pregnancy*, *dying* en *deceased-person*
+staan er, terwijl er hierboven staat: nooit over gezondheid, ziekte, geld of
+iemands dood. Dat blijft gelden voor wat een pagina *beweert* — en juist bij
+deze drie is het onderwerp zelf wat mensen 's ochtends intikken, dus wegblijven
+betekent dat ze het antwoord ergens anders halen. Ze doen het daarom omgekeerd:
+de ontkenning staat in de **eerste zin**, niet in de kleine lettertjes. Dromen
+over zwanger zijn is *"not a sign that you are, and not a sign that you will
+be"*; dromen over doodgaan *"carries no information about anybody's health,
+safety or lifespan"*. Wie een van deze drie herschrijft: die eerste zin is niet
+de inleiding, die is de reden dat de pagina mag bestaan.
 
 ## Eerst de droom, dan pas het account
 

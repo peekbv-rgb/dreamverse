@@ -89,6 +89,91 @@ PROMPTS = {
     "baby":
         "a small bundle of soft light held in cupped hands, seen from above, "
         "surrounded by deep warm dark, no faces, tender and quiet",
+    # Het enige onderwerp dat over een persoon gaat terwijl er geen gezicht mag
+    # staan. Dat valt hier samen: in het artikel is de onbekende de bode - de
+    # figuur die van buiten komt en iets brengt in plaats van iets weghaalt - en
+    # een gestalte in een lichte deuropening is per constructie gezichtsloos.
+    # De open hand is dat "brengen", het ochtendlicht houdt het van een
+    # indringer af.
+    "stranger":
+        "a still silhouette standing in an open doorway, seen from inside a "
+        "dim room, warm morning light behind them so no face is visible, one "
+        "hand slightly open as if offering something, welcoming rather than "
+        "unsettling, long soft light falling across the floor",
+
+    # -- de tweede ronde ---------------------------------------------------- #
+    "cat":
+        "a cat sitting on a windowsill at night, seen from behind, looking out "
+        "at a dark garden, one ear turned back toward the room, calm and "
+        "unhurried, cool moonlight and a warm lamp behind it",
+    "house":
+        "a quiet house at dusk seen from the garden, one upstairs window lit "
+        "warm gold and the rest dark, a door standing slightly open, nobody "
+        "visible, soft mist along the ground",
+    "flying":
+        "a small figure far above a sleeping landscape at dawn, arms out, seen "
+        "from behind and very small against the sky, layered clouds catching "
+        "first light, weightless rather than falling",
+    "cant-move":
+        "a dim bedroom at the blue hour, an empty bed with the covers thrown "
+        "back, long still shadows across the floor, the door ajar, nothing "
+        "moving, no figure",
+    "school":
+        "a long empty school corridor in afternoon light, lockers on one side, "
+        "an open classroom door at the far end with light spilling out, dust in "
+        "the air, nobody there",
+    "being-late":
+        "an empty station platform at dusk, the last carriage of a train "
+        "already far down the track, a large clock with no hands, one suitcase "
+        "standing alone, nobody on the platform",
+    "being-naked":
+        "a single empty chair in the middle of a large bright hall, a coat "
+        "fallen on the floor beside it, rows of empty seats facing it, warm "
+        "light from high windows, nobody present",
+    "getting-lost":
+        "a maze of narrow streets seen from above at night, warm windows here "
+        "and there, one tiny figure at a crossing far below, the streets folding "
+        "into each other, no landmark",
+    "car":
+        "an empty road at night seen through a windscreen from inside a car, "
+        "headlights on wet asphalt, the steering wheel in soft focus in the "
+        "foreground, nobody in the seat, quiet rather than tense",
+    "fire":
+        "a single fire burning in an open landscape at night, seen from a "
+        "distance, sparks rising into a deep sky, the ground around it warm "
+        "gold and the horizon calm, nothing damaged",
+    "mother":
+        "a kitchen at early morning, one chair pulled out, a cup still warm on "
+        "the table, low golden light through a window, a coat over the chair "
+        "back, nobody in the room",
+    "horse":
+        "a horse standing alone in an open field at first light, seen from a "
+        "distance in profile, mist to the knees, wide pale sky, no rider and no "
+        "fence in sight",
+    "birds":
+        "a flock of birds turning together against a wide dawn sky, seen from "
+        "below, their shapes catching the light, one bird lower and apart from "
+        "the rest, calm and open",
+    "pregnancy":
+        "a seed of soft light held inside a curved shell of dark water, seen "
+        "close, faint concentric rings spreading outward from it, warm glow "
+        "against deep blue, abstract and tender, no figure",
+    # De drie gevoelige. Hier geldt de regel uit het artikel ook voor het beeld:
+    # niets grafisch, niets dat schrikt, en niets dat een uitspraak doet. Wie om
+    # zeven uur 's ochtends zoekt op "dromen dat ik doodga" is bang, en dan is
+    # het beeld het eerste wat hem geruststelt of niet.
+    "dying":
+        "a doorway of soft light standing open in a dark field at night, warm "
+        "and quiet, a path leading toward it through long grass, stars above, "
+        "peaceful and entirely gentle, no figure",
+    "deceased-person":
+        "a single lit candle on a windowsill at night, its reflection doubled "
+        "in the dark glass, a wide calm sky beyond, warm and still, nothing "
+        "sombre, no figure",
+    "cheating":
+        "two cups on a table at dusk, one still steaming and one cold and "
+        "pushed aside, a chair turned slightly away, soft blue evening light, "
+        "quiet rather than dramatic, nobody present",
 }
 
 

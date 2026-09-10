@@ -21,11 +21,11 @@ stuk staat: dat getal is niet het product.
 |---|---|---|
 | Vier bewegende kernmomenten | `static/voorbeelden/*.mp4` | 720 × 407, dus **liggend** |
 | Panelen uit het archief | `data/panels/` (op deze machine) | 1360 × 768, ook liggend |
-| Negen gidsartikelen | `knowledge/droomgids/` | elk drie brillen + vragen |
+| 27 gidsartikelen | `knowledge/droomgids/` | elk drie brillen + vragen |
 | De chakrapilaar | `static/chakra-pilaar.jpg` | staand, 576 × 1008 |
 | Vera zelf | `static/vera.png`, `vera-intro-nl.mp4` | een gezicht dat niet van een derde is |
 | Het beeld bij een link | `static/og-beeld.jpg` | 1200 × 630, uit `build/og_beeld.py` |
-| Negen gidsbeelden | `static/gids/` | 1200 × 678, dus ook liggend |
+| 27 gidsbeelden | `static/gids/` | 1200 × 678, dus ook liggend |
 
 **Alles wat de app maakt is liggend, en Instagram is staand.** Panelen komen als
 16:9 uit Kling (`submit(prompt, aspect_ratio="16:9")`) en de animaties nemen die
@@ -57,10 +57,19 @@ veel een uitspraak als een duiding, en op Instagram staat hij voor iedereen.
   afkomt". Dezelfde reden als in de app: het is vermaak, en de kop erboven zegt
   dat ook. *Waar deze droom je aandacht op kan vestigen* — niet iets om op te
   wachten.
-- **Nooit over gezondheid, ziekte, geld, zwangerschap of iemands dood.** Ook
-  niet als vraag ("Droomde jij ooit dat je tanden uitvielen vlak voordat je ziek
-  werd?"). Dat is precies de post die iemand echte angst bezorgt, en je kunt het
-  niet terugnemen.
+- **Nooit een claim over gezondheid, ziekte, geld, zwangerschap of iemands
+  dood.** Ook niet als vraag ("Droomde jij ooit dat je tanden uitvielen vlak
+  voordat je ziek werd?"). Dat is precies de post die iemand echte angst
+  bezorgt, en je kunt het niet terugnemen.
+  **Het onderwerp mag wel, de claim niet** — en dat verschil is sinds
+  10 september scherp, want de gids heeft nu pagina's over *pregnancy*, *dying*
+  en *deceased-person*. Die bestaan omdat iemand 's ochtends precies dat
+  intikt, en ze doen het door de ontkenning in de **eerste zin** te zetten:
+  *"not a sign that you are, and not a sign that you will be"*. Post je een van
+  die drie als carrousel, dan staat die zin op **plaat 1** en niet ergens
+  achteraan. Kan dat niet in één plaat, dan post je hem niet — een carrousel
+  waarvan iemand alleen de eerste plaat ziet mag nooit de indruk achterlaten
+  dat een droom iets voorspelt over een lichaam.
 - **Geen droomwoordenboek.** "Water staat voor emotie" kan iedereen opzoeken en
   is bij deze dromer misschien niet eens waar. De gids doet het goed: dit is wat
   tradities en de psychologie erover zeggen, en dan de vraag die het persoonlijk
@@ -80,9 +89,10 @@ kaartvorm, met één regel eronder. Dit is het enige wat het verschil tussen
 dat kun je niet uitleggen, dat moet je laten zien. Caption: wat er te zien is,
 niet wat het betekent. Geen duiding onder een Reel.
 
-**2. Het gidsonderwerp (carrousel van vier).** Er liggen negen artikelen klaar
-en ze hebben allemaal dezelfde vorm, dus dit is de goedkoopste inhoud die er is:
-overtypen wat er al staat.
+**2. Het gidsonderwerp (carrousel van vier).** Er liggen zevenentwintig artikelen
+klaar, elk met een eigen beeld, en ze hebben allemaal dezelfde vorm — dus dit is
+de goedkoopste inhoud die er is: overtypen wat er al staat. Het gidsbeeld is
+plaat 1.
 
 - Plaat 1: het onderwerp. *Dreaming about snakes*
 - Plaat 2: psychologisch
@@ -171,10 +181,11 @@ werk is € 2 tot € 4,50. Doe dat dus met wat er al ligt zolang dat er is — 
 staan vier animaties op schijf en meer in het archief.
 
 **Het Kling-tegoed verloopt 18 september 2026.** Het eerste van de twee dingen
-die dat waard waren is op 10 september gedaan: alle negen gidsonderwerpen hebben
-nu een beeld (`python build/gids_beelden.py --ja`, vier eenheden per stuk, dus
-36). Wat er nog ligt is een reeks stills in de kaartvorm voor het account zelf.
-Wat er op 19 september over is, is weg.
+die dat waard waren is op 10 september gedaan, en meteen helemaal: alle
+**zevenentwintig** gidsonderwerpen hebben een beeld
+(`python build/gids_beelden.py --ja`, vier eenheden per stuk, dus 108). Wat er
+nog ligt is een reeks stills in de kaartvorm voor het account zelf. Wat er op
+19 september over is, is weg.
 
 ## Waar je aan ziet of het werkt
 
@@ -466,20 +477,20 @@ archief.
   (`build/instagram_kaart.py`, met de maten uit `kaartMaken`) scheelt dat, en
   houdt de vorm gelijk aan wat de app zelf deelt.
 - ~~Geen enkel gidsonderwerp heeft een eigen beeld.~~ **Gedaan op 10 september.**
-  Alle negen hebben er een, dus een gedeelde gidspagina laat zijn eigen beeld
-  zien in plaats van tien keer dezelfde vuurvogel in een tijdlijn. Het vaste
-  og-beeld dekt nu alleen de overzichtspagina en de app. Voor Instagram zijn die
-  negen meteen de eerste plaat van de carrousel bij dat onderwerp — mits ze door
-  de kaartvorm gaan, want ze zijn liggend.
+  Alle zevenentwintig hebben er een, dus een gedeelde gidspagina laat zijn eigen
+  beeld zien in plaats van zevenentwintig keer dezelfde vuurvogel in een
+  tijdlijn. Het vaste og-beeld dekt nu alleen de overzichtspagina en de app.
+  Voor Instagram is dat beeld meteen plaat 1 van de carrousel bij dat onderwerp
+  — mits het door de kaartvorm gaat, want ze zijn liggend (1200 × 678).
 - **Merknaam niet nagekeken.** Er staat sinds juni 2026 een app *The DreamVerse*
   in de App Store. *Vera Dreamverse* is de veiliger naam en staat al op het
   domein en op het account, maar een echte check bij BOIP, EUIPO en USPTO is
   niet gedaan. Zolang dat zo is: geen geld in advertenties, en geen naam op
   gedrukt materiaal.
-- **De gids staat op negen onderwerpen.** Elk nieuw onderwerp is twee teksten
-  (Engels en Nederlands) plus een prompt in `PROMPTS` in
-  `build/gids_beelden.py`, en levert één carrousel op. Dat is de goedkoopste
-  inhoud die dit account heeft; als er iets ingehaald moet worden, dan dat.
-  **Hoeveel er nog komen staat er twee keer verschillend in**: `CLAUDE.md` zegt
-  achttien, hier stond twaalf. Dat getal hoort op één plek te staan — kies er
-  een en haal het andere weg.
+- ~~De gids staat op negen onderwerpen.~~ **Zevenentwintig, sinds 10 september,
+  allemaal met beeld.** Daarmee is de vraag hoeveel er nog komen ook weg: de
+  achttien die `CLAUDE.md` noemde zijn er. Er liggen dus **27 carrousels** klaar
+  waarvan de tekst al geschreven is, en dat is negen weken inhoud op één
+  carrousel per week. Als er iets níet meer ingehaald hoeft te worden, is het
+  dit. Een volgend onderwerp is nog steeds twee teksten (Engels en Nederlands)
+  plus een prompt in `PROMPTS` in `build/gids_beelden.py`.
