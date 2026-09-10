@@ -570,11 +570,17 @@ en in de app bij *Los te koop* — want het verschil tussen "vijf tekeningen" en
 "vijf tekeningen plus een bewegend kernmoment" kun je niet uitleggen, dat moet je
 laten zien.
 
-**De clips laden pas bij een klik.** Samen zijn ze 8,3 MB en er is hier geen
-ffmpeg om ze te verkleinen; vooraf laden kost een halve minuut op een telefoon
-voor iets wat de meeste bezoekers niet aanklikken. De pagina toont dus posters
-van samen 154 kB, en `static/voorbeelden.js` maakt het `<video>`-element pas aan
-zodra iemand erop drukt.
+**De clips laden pas bij een klik.** Samen zijn ze 8,3 MB, en vooraf laden kost
+een halve minuut op een telefoon voor iets wat de meeste bezoekers niet
+aanklikken. De pagina toont dus posters van samen 154 kB, en
+`static/voorbeelden.js` maakt het `<video>`-element pas aan zodra iemand erop
+drukt.
+
+Hier stond dat er geen ffmpeg is om ze te verkleinen, en **dat klopte niet**:
+`imageio_ffmpeg` heeft een eigen ffmpeg 7.1 aan boord, ook al staat er niets in
+PATH (zie *Van de gids naar een Reel*). Verkleinen kan dus alsnog — het laden bij
+een klik blijft daarnaast gewoon goed, want ook een kleinere clip hoeft niemand
+te downloaden die er niet op drukt.
 
 Ze staan in `static/` en niet in `data/`: dat laatste is git-ignored en verdwijnt
 bij elke deploy. Opnieuw klaarzetten na een nieuwe animatie:
@@ -698,6 +704,79 @@ over zwanger zijn is *"not a sign that you are, and not a sign that you will
 be"*; dromen over doodgaan *"carries no information about anybody's health,
 safety or lifespan"*. Wie een van deze drie herschrijft: die eerste zin is niet
 de inleiding, die is de reden dat de pagina mag bestaan.
+
+## Van de gids naar een Reel
+
+`python build/reels.py --ja` maakt van elk gidsonderwerp een staande video met de
+tekst erbij: `data/reels/<slug>.mp4` (1080 × 1920, acht seconden, ~1 MB) plus
+`<slug>.txt` met de caption. Zevenentwintig onderwerpen is bijna vier weken
+dagelijks posten zonder dat er nog iets bedacht hoeft te worden. `--tekst`
+schrijft alleen de captions opnieuw — die zijn los van de video, en 27 keer acht
+seconden coderen om één regel te wijzigen is zonde. `--taal nl` doet het
+Nederlands.
+
+**Er is hier wél ffmpeg.** `imageio_ffmpeg` heeft een eigen ffmpeg 7.1 aan boord
+(`imageio_ffmpeg.get_ffmpeg_exe()`), ook al staat er niets in PATH. De regel bij
+*Voorbeelden van een kernmoment* dat er geen ffmpeg is, klopte dus niet — en dat
+was de reden dat die clips als 8,3 MB blijven staan met een posterplaatje ervoor.
+Verkleinen kan alsnog.
+
+Vijf dingen die in dat script bewust zo zijn:
+
+- **Staand, met het beeld in een kader.** Alles wat de app maakt is 16:9 en
+  Instagram is 9:16. Een liggend beeld dat je vult door in te zoomen verliest
+  driekwart van zijn compositie, dus ligt het in een kader midden op een donkere
+  grond — dezelfde vorm als de DreamCard. Het kader is 960 × 600 en niet
+  960 × 680: dat laatste sneed 29% van de zijkanten af en bij *spiders* verdween
+  dan de helft van het web. Nu is het 10%.
+- **De onderste 420 pixels blijven leeg.** Bij een Reel legt Instagram daar de
+  caption, de audioregel en de knoppen over je beeld, en rechts staan liken en
+  delen. Alles staat dus tussen 285 en 1500, en niets tegen de rechterrand. Dat
+  is strenger dan de 285/1635 van de DreamCard: een verhaal en een Reel bedekken
+  niet hetzelfde.
+- **Beweging zonder beeldmodel.** Een langzame zoom (1,00 → 1,12 over acht
+  seconden) laat een stilstaand beeld leven en kost niets. Een echte animatie bij
+  Runway is € 0,55 tot € 1,47 per stuk, dus € 15 tot € 40 voor deze reeks — voor
+  een beeld dat acht seconden stilstaat koopt die zoom hetzelfde effect.
+- **Geen geluid, en dat is geen gebrek.** Muziek uit de bibliotheek van Instagram
+  mag je alleen in Instagram zelf toevoegen; daar geldt die licentie voor. Een
+  eigen bestand eronder plakken kan technisch wel, maar dan draait de Reel niet
+  mee in de zoekresultaten op dat nummer, en dat is juist waar bereik zit.
+- **Onder het beeld staat de gids, niet het merk.** Op de DreamCard staat VERA
+  DREAMVERSE met het domein, want die kaart ís de advertentie. Hier is het beeld
+  de advertentie en is de vraag net gesteld, dus staat er waar het antwoord ligt:
+  *VERA'S DREAM GUIDE* met `vera-dreamverse.com/dream-meaning`. Het
+  overzichtsadres en niet de diepe link — dat laatste is 43 tekens die niemand
+  overtypt. De diepe link staat wél in de caption.
+
+**Kleiner in plaats van korter.** Past een titel niet in twee regels, dan gaat de
+letter omlaag (84 → 54 punten) en wordt er niets weggelaten. Er stond eerst
+`[:2]`, en dan verliest *Dreaming about being naked in public* zijn laatste
+woorden zonder dat iets het meldt — een fout die je pas ziet als hij al op
+Instagram staat. Zelfde regel voor de vraag eronder, met drie regels als grens.
+
+**De caption is een uittreksel, geen artikel.** Vera's regel als haak, de opening
+van het artikel, de drie brillen met elk hun eerste zin, dan de vragen die de
+betekenis kantelen, dan de link. Alle 27 komen tussen 1100 en 1500 tekens uit;
+Instagram kapt af op 2200 en `main()` waarschuwt als een onderwerp daarboven
+komt — afgekapt betekent hier dat juist de link en de hashtags wegvallen.
+
+**Van de opening worden minstens twee zinnen genomen, en dat is geen smaak.** Bij
+*dying* staat de ontkenning in de **tweede** zin (*"a dream about dying carries
+no information about anybody's health, safety or lifespan"*), bij *pregnancy* in
+de eerste. Eén zin pakken zou dus per onderwerp verschillen, en juist bij deze
+twee mag dat niet.
+
+**De hashtags zijn klein gehouden.** De slug plus hoogstens twee uit `also`, dan
+zes vaste. `also` bestaat voor de zoekwoorden van de gids en die zijn voor Google
+geschreven: als zoekvraag is *someone I love dying* normaal, als hashtag iets
+anders — en Instagram beperkt de zichtbaarheid van een deel van dat soort tags,
+waarna een post in stilte verdwijnt. Welke dat zijn is hier niet na te kijken.
+**Kijk bij `dying` en `deceased-person` zelf naar de tags voordat je plaatst.**
+
+De bestanden staan in `data/reels/` en dat is git-ignored: 27 video's is ~27 MB
+en die horen niet in de repo. Ze staan dus alleen op de machine die ze maakte, en
+moeten naar je telefoon om geplaatst te worden.
 
 ## Eerst de droom, dan pas het account
 

@@ -7,10 +7,15 @@ vuurvogel voorop.
 
 Twee dingen die hier moeten kloppen:
 
-**Ze mogen de pagina niet zwaar maken.** De drie clips zijn samen 8,2 MB en er
-is hier geen ffmpeg om ze te verkleinen. Dus krijgt elke clip een posterplaatje
-van een paar tientallen kB, en staat de video op `preload="none"`: er wordt niets
-gedownload tot iemand op play drukt.
+**Ze mogen de pagina niet zwaar maken.** De drie clips zijn samen 8,2 MB. Dus
+krijgt elke clip een posterplaatje van een paar tientallen kB, en staat de video
+op `preload="none"`: er wordt niets gedownload tot iemand op play drukt.
+
+Hier stond dat er geen ffmpeg is om ze te verkleinen, en dat klopte niet:
+`imageio_ffmpeg` heeft een eigen ffmpeg aan boord (`get_ffmpeg_exe()`), ook al
+staat er niets in PATH - `build/reels.py` maakt daar zijn video's mee. Kleiner
+maken kan dus, maar het posterplaatje en `preload="none"` blijven nuttig: ook een
+kleinere clip hoeft niemand te downloaden die er niet op drukt.
 
 **Ze horen niet in data/.** Dat is git-ignored en verdwijnt bij elke deploy. Deze
 horen bij de app, dus ze gaan naar static/voorbeelden/.

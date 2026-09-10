@@ -34,14 +34,15 @@ zomaar in een Reel, dan staat het als een postzegel in het midden met twee
 zwarte balken, en dat leest als een geleend plaatje in plaats van als een
 product.
 
-De DreamCard lost dat al op: donkere grond, het beeld bijna vierkant in het
-midden, tekst erboven en het merk eronder. **Doe voor Instagram hetzelfde.** Dat
-is meteen de reden om het niet met de hand in een ontwerpprogramma te doen: de
-kaart bestaat al in code (`kaartMaken` in `static/app.js`), en een clip in
-diezelfde vorm zetten is dezelfde ingreep op een video in plaats van op een
-still. Zolang dat er niet is: één donkere staande achtergrond in Canva, clip in
-het midden, en boven en onder 285 pixels leeg houden — dezelfde maat en om
-dezelfde reden als bij de kaart.
+De DreamCard lost dat al op: donkere grond, het beeld in een kader in het
+midden, tekst erboven. **Voor de gidsbeelden doet `build/reels.py` nu hetzelfde**
+— staand, met een langzame zoom eroverheen, en de onderste 420 pixels leeg voor
+de bediening van Instagram.
+
+Wat er nog niet in zit is de **bewegende** bron: een kernmoment uit het archief
+is al video, en die in dezelfde vorm zetten is een andere ingreep. Tot dat er is:
+één donkere staande achtergrond in Canva, clip in het midden, en boven en onder
+ruimte laten — dezelfde maat en om dezelfde reden als bij de kaart.
 
 ## De harde grenzen
 
@@ -66,10 +67,12 @@ veel een uitspraak als een duiding, en op Instagram staat hij voor iedereen.
   en *deceased-person*. Die bestaan omdat iemand 's ochtends precies dat
   intikt, en ze doen het door de ontkenning in de **eerste zin** te zetten:
   *"not a sign that you are, and not a sign that you will be"*. Post je een van
-  die drie als carrousel, dan staat die zin op **plaat 1** en niet ergens
-  achteraan. Kan dat niet in één plaat, dan post je hem niet — een carrousel
-  waarvan iemand alleen de eerste plaat ziet mag nooit de indruk achterlaten
-  dat een droom iets voorspelt over een lichaam.
+  die drie, dan staat die ontkenning in de **eerste regels** van de caption en
+  niet ergens achteraan. `build/reels.py` doet dat vanzelf — het neemt minstens
+  twee zinnen van de opening mee, juist omdat bij *dying* de ontkenning in de
+  tweede zin staat. Nagemeten op beide. Wat je zelf typt valt daarbuiten: iemand
+  die alleen de eerste twee regels leest mag nooit de indruk overhouden dat een
+  droom iets voorspelt over een lichaam.
 - **Geen droomwoordenboek.** "Water staat voor emotie" kan iedereen opzoeken en
   is bij deze dromer misschien niet eens waar. De gids doet het goed: dit is wat
   tradities en de psychologie erover zeggen, en dan de vraag die het persoonlijk
@@ -89,21 +92,26 @@ kaartvorm, met één regel eronder. Dit is het enige wat het verschil tussen
 dat kun je niet uitleggen, dat moet je laten zien. Caption: wat er te zien is,
 niet wat het betekent. Geen duiding onder een Reel.
 
-**2. Het gidsonderwerp (carrousel van vier).** Er liggen zevenentwintig artikelen
-klaar, elk met een eigen beeld, en ze hebben allemaal dezelfde vorm — dus dit is
-de goedkoopste inhoud die er is: overtypen wat er al staat. Het gidsbeeld is
-plaat 1.
+**2. Het gidsonderwerp (Reel).** Dit is de motor van het account geworden, en
+het is nu een script: `python build/reels.py --ja` maakt van alle zevenentwintig
+onderwerpen een staande video van acht seconden met de titel erboven, het
+gidsbeeld met een langzame zoom, de vraag eronder en de weg naar de gids
+onderaan — plus een caption met een uittreksel uit het artikel en de hashtags.
+Klaar om te plaatsen, op het muziekje na: dat kies je in Instagram zelf, want
+die bibliotheek mag alleen daar gebruikt worden. Zie *Van de gids naar een Reel*
+in `CLAUDE.md` voor wat er in dat script vastligt.
 
-- Plaat 1: het onderwerp. *Dreaming about snakes*
-- Plaat 2: psychologisch
-- Plaat 3: symbolisch
-- Plaat 4: spiritueel
-- Plaat 5 (optioneel): *The details change everything* — wat deed die slang, en
-  hoe voelde jij je?
+**Besloten op 10 september 2026: een carrousel was het plan, een Reel is het
+geworden.** Dezelfde inhoud, maar een carrousel van vier platen is handwerk per
+stuk en een Reel rolt uit een script. Bereik ligt bij Instagram bovendien bij
+video, en de drie brillen passen prima in de caption in plaats van op losse
+platen.
 
-Caption eindigt op de vraag, niet op een antwoord. Link in bio naar
-`/dream-meaning/snakes`. Dat is dezelfde pagina die Google al moet vinden, dus
-elke deling doet twee dingen tegelijk.
+De link in de caption is niet aanklikbaar — dat kan bij Instagram alleen vanuit
+je bio of met een sticker in een verhaal. Het adres staat er dus wel, met "link
+in bio" erachter. **Zolang deze reeks loopt hoort de bio-link naar
+`/dream-meaning/?van=ig-bio` te wijzen** en niet naar de landingspagina: dan
+komt iemand precies waar de Reel over ging.
 
 **3. Eén paneel, één regel.** Een still uit het archief, in de kaartvorm, met
 één zin. Geen uitleg, geen vraag, geen link. Dit is het beeldmerk: iemand die
@@ -116,10 +124,18 @@ posten. Het enige wat dit account heeft en niemand anders, is de verbeelding.
 
 ## Cadans
 
-**Drie keer per week, en niet dagelijks.** Eén Reel, één carrousel, één still.
-Dagelijks posten kost je de tijd die in de app hoort te zitten, en het is niet
-te volhouden zonder de eerste twee soorten op te rekken tot vulling — en vulling
-is precies waar dit account zijn enige voordeel weggooit.
+**Besloten op 10 september 2026: elke dag één, en niet drie keer per week.**
+Hier stond drie per week, met het argument dat dagelijks niet te volhouden is
+zonder vulling te gaan posten. Dat argument is weg nu de Reels uit een script
+komen: er staan zevenentwintig klaar, dus er valt vier weken niets te bedenken
+en niets op te rekken.
+
+Twee dingen om in de gaten te houden. **Na die zevenentwintig is de voorraad
+op** — dan is het een nieuw onderwerp schrijven (twee teksten plus een prompt)
+of stoppen met dagelijks; op de dag dat de laatste geplaatst is, is het te laat
+om daar over na te denken. En **de vragen onder een Reel blijven werk**: wie
+dagelijks post en niet antwoordt, post tegen een muur. Dat is de tijd die
+dagelijks posten wél kost.
 
 Verhalen wel vaker, maar alleen als er iets is: een nieuw kernmoment, een
 gidsonderwerp erbij, iets dat misging. Met een **linksticker naar
@@ -472,10 +488,15 @@ archief.
 
 ## Wat hier nog niet is
 
-- **De staande kaartvorm bestaat alleen in de app.** Voor Instagram is er nu
-  handwerk in Canva. Een script dat een clip of een still in dezelfde kaart zet
-  (`build/instagram_kaart.py`, met de maten uit `kaartMaken`) scheelt dat, en
-  houdt de vorm gelijk aan wat de app zelf deelt.
+- ~~De staande kaartvorm bestaat alleen in de app.~~ **Gedaan op 10 september
+  voor een stilstaand beeld:** `build/reels.py` zet een gidsbeeld in de staande
+  vorm met een zoom eroverheen, en levert de caption erbij. **Wat er nog niet is,
+  is de bewegende bron** — een kernmoment uit het archief is al video, en dat in
+  dezelfde vorm zetten is een andere ingreep dan een still inzoomen. Tot die er
+  is blijft dat handwerk in Canva. En de video's staan in `data/reels/`, dat is
+  git-ignored: 27 stuks is 21 MB en die horen niet in de repo, dus ze staan
+  alleen op de machine die ze maakte en moeten naar je telefoon om geplaatst te
+  worden.
 - ~~Geen enkel gidsonderwerp heeft een eigen beeld.~~ **Gedaan op 10 september.**
   Alle zevenentwintig hebben er een, dus een gedeelde gidspagina laat zijn eigen
   beeld zien in plaats van zevenentwintig keer dezelfde vuurvogel in een
