@@ -2006,6 +2006,12 @@ body.beheerpagina .beheerrij { margin-top: 0; }
   padding: .3rem .5rem; color: #CFC4E4;
   border-top: 1px solid rgba(216, 205, 234, .1);
 }
+/* Het rapport heeft nu vier blokken onder elkaar - de trechter, de bronnen, wie
+   er is - en `.lbl` zelf brengt geen ruimte mee. Zonder dit plakken een tabel
+   en het kopje van het volgende blok tegen elkaar. */
+.rapport .lbl { display: block; margin: 1.15rem 0 .45rem; }
+.rapport .lbl:first-child { margin-top: 0; }
+.rapport .rapport-tabel + .meter-noot { margin-top: .5rem; }
 
 
 /* ---------------------------------------------------- Vera's Dream Guide -- */

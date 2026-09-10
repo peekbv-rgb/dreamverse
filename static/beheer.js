@@ -194,13 +194,39 @@
    * geen cookies, geen banner - en dus ook geen klikgedrag, want dat zou
    * clientmeting vragen.
    */
+  /* Alles wat uit de database komt gaat hier langs voordat het in innerHTML
+   * belandt.
+   *
+   * Een e-mailadres is door de gebruiker getypt, en de controle in
+   * `accounts.EMAIL` laat alles toe wat geen apenstaartje of witruimte is -
+   * dus ook punthaken. Onbeschermd is dit paneel daarmee de gevaarlijkste
+   * plek van de app om script binnen te krijgen: het cookie is wel HttpOnly,
+   * maar script dat híer draait hoeft die sleutel niet te lezen om hem te
+   * gebruiken. Het kan gewoon /api/beheer/account aanroepen en zichzelf Ultra
+   * geven.
+   */
+  function esc(waarde) {
+    return String(waarde === undefined || waarde === null ? "" : waarde)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
   function laadRapport() {
     var doos = el("rapport");
     if (!doos) { return; }
     fetch("/api/beheer/rapport")
       .then(lees)
       .then(function (res) {
-        if (!res.ok) { doos.hidden = true; return; }
+        // Niet stil verbergen. Ging dit mis, dan zag je een lege pagina en geen
+        // reden - en dan ga je zoeken naar cijfers die er niet zijn in plaats
+        // van naar een verzoek dat niet lukte.
+        if (!res.ok) {
+          doos.hidden = false;
+          doos.innerHTML = '<p class="beheerrij-melding mis">Het rapport kon niet '
+            + "geladen worden: " + esc((res.body && res.body.error) || res.status)
+            + ".</p>";
+          return;
+        }
         var c = res.body;
         doos.hidden = false;
         var deel = c.oud_genoeg
@@ -217,18 +243,87 @@
         });
         html += "</div>";
 
+        /* De trechter, en dit is het stuk dat hier niet stond.
+         *
+         * "Mensen" hierboven is een totaal, en de tabel eronder gaat over wie
+         * er al is. Wat er niet stond is wanneer er iemand bijkwam, en of er
+         * überhaupt iemand langs de deur liep - en dat is precies wat je wil
+         * weten als je je afvraagt of er aanmeldingen zijn. Het stond wél in
+         * het antwoord van de server; alleen tekende deze pagina het niet, dus
+         * was het alleen te zien met `python rapport.py` op de eigen machine.
+         */
+        if ((c.trechter || []).length) {
+          html += '<p class="lbl">Per dag: bezoek, account, droom</p>';
+          html += '<table class="rapport-tabel"><thead><tr>' +
+            ["datum", "landing", "gids", "app", "nieuw", "dromen"]
+              .map(function (k) { return "<th>" + k + "</th>"; }).join("") +
+            "</tr></thead><tbody>";
+          var tot = { landing: 0, gids: 0, app: 0, nieuw: 0, dromen: 0 };
+          // Alleen dagen waarop er ook echt geteld is. Het tellen begon later
+          // dan de eerste accounts, en anders deel je twee getallen op elkaar
+          // die over verschillende weken gaan.
+          var gemeten = { landing: 0, nieuw: 0 };
+          c.trechter.slice(0, 14).forEach(function (r) {
+            html += "<tr><td>" + esc(r.datum) + "</td>";
+            Object.keys(tot).forEach(function (k) {
+              html += "<td>" + (r[k] || 0) + "</td>";
+              tot[k] += r[k] || 0;
+            });
+            html += "</tr>";
+            if (r.landing || r.app) {
+              gemeten.landing += r.landing || 0;
+              gemeten.nieuw += r.nieuw || 0;
+            }
+          });
+          html += "<tr><td><b>samen</b></td>";
+          Object.keys(tot).forEach(function (k) {
+            html += "<td><b>" + tot[k] + "</b></td>";
+          });
+          html += "</tr></tbody></table>";
+          if (gemeten.landing >= 10) {
+            html += '<p class="meter-noot">Van ' + gemeten.landing +
+              " bezoeken aan de landingspagina werden er " + gemeten.nieuw +
+              " een account: " +
+              Math.round(100 * gemeten.nieuw / gemeten.landing) + "%.</p>";
+          } else if (gemeten.landing) {
+            html += '<p class="meter-noot">Nog te weinig bezoek (' +
+              gemeten.landing + ") om er een percentage van te maken.</p>";
+          }
+        }
+
+        /* Waar ze vandaan kwamen. `ig-app` is de eigen browser van Instagram en
+         * werkt ook zonder tag in de link; de rest komt van ?van=... erachter. */
+        html += '<p class="lbl">Waar ze vandaan kwamen</p>';
+        var bronnen = Object.keys(c.bronnen || {});
+        if (bronnen.length) {
+          html += '<table class="rapport-tabel"><tbody>';
+          bronnen.forEach(function (naam) {
+            html += "<tr><td>" + esc(naam) + "</td><td>" +
+              (c.bronnen[naam] || 0) + "</td></tr>";
+          });
+          html += "</tbody></table>";
+        } else {
+          html += '<p class="meter-noot">Nog niets gemeten. Zet <b>?van=ig</b> ' +
+            "achter het adres in de Instagram-bio; de eigen browser van " +
+            "Instagram wordt ook zonder dat herkend.</p>";
+        }
+
         if ((c.mensen || []).length) {
+          html += '<p class="lbl">Wie er is</p>';
           html += '<table class="rapport-tabel"><thead><tr>' +
             ["", "pakket", "sinds", "dromen", "dagen", "vragen", "terug"]
               .map(function (k) { return "<th>" + k + "</th>"; }).join("") +
             "</tr></thead><tbody>";
           c.mensen.forEach(function (m) {
-            html += "<tr><td>" + m.email + "</td><td>" + m.pakket + "</td><td>" +
-              m.sinds + "</td><td>" + m.dromen + "</td><td>" + m.actieve_dagen +
-              "</td><td>" + m.vragen + "</td><td>" + (m.terug ? "ja" : "—") +
+            html += "<tr><td>" + esc(m.email) + "</td><td>" + esc(m.pakket) +
+              "</td><td>" + esc(m.sinds) + "</td><td>" + (m.dromen || 0) +
+              "</td><td>" + (m.actieve_dagen || 0) + "</td><td>" +
+              (m.vragen || 0) + "</td><td>" + (m.terug ? "ja" : "—") +
               "</td></tr>";
           });
           html += "</tbody></table>";
+        } else {
+          html += '<p class="meter-noot">Nog geen enkel account.</p>';
         }
         doos.innerHTML = html;
       })

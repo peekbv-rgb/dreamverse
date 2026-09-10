@@ -1011,6 +1011,34 @@ shell, dus zonder dat veld is "zet mij op 500 tokens" niet te doen. Dat pad zet
 alleen; er komt geen droom en geen duiding van een ander langs, en na afloop
 gaat de gebruikerslaag in een `finally` terug naar wie er echt aan de lijn is.
 
+**Het paneel tekende niet wat het rapport wist.** `laadRapport()` gebruikte negen
+van de zestien velden die `GET /api/beheer/rapport` teruggeeft: het cijfer van
+dag vier, de tegels en de tabel met wie er is. Wat er níet stond was
+`trechter` — bezoek, account en droom **per dag** — en dat is precies wat je
+opzoekt als je je afvraagt of er aanmeldingen zijn. Antwoord op die vraag was
+alleen te krijgen met `python rapport.py` op de eigen machine, en op Render is
+geen shell. Nu staan er drie blokken in: *Per dag: bezoek, account, droom* (met
+een samen-regel en dezelfde drempel van tien gemeten bezoeken voordat er een
+percentage komt), *Waar ze vandaan kwamen* uit `bronnen`, en *Wie er is*. Nog
+steeds niet getekend: `feedback`, `pakketten`, `per_dag` en `betalingen` — die
+staan wel in `python rapport.py`.
+
+**En het rapport verborg zich stil.** Ging het verzoek mis, dan zette
+`laadRapport()` het hele blok op `hidden` zonder een woord. Dan zoek je naar
+cijfers die er niet zijn in plaats van naar een verzoek dat niet lukte. Nu komt
+er een regel met de reden.
+
+**Alles uit de database gaat door `esc()` voordat het in `innerHTML` belandt.**
+Dat was niet zo, en dit is de gevaarlijkste plek van de app om dat te vergeten.
+`accounts.EMAIL` laat alles toe wat geen apenstaartje of witruimte is — dus ook
+punthaken — dus kon iemand zich aanmelden met een adres waar een `<img
+onerror=…>` in staat en wachten tot de beheerder zijn eigen ledenlijst opent.
+Het cookie is HttpOnly, maar script dat op deze pagina draait hoeft die sleutel
+niet te lézen om hem te gebruiken: het kan `POST /api/beheer/account` aanroepen
+en zichzelf Ultra en tokens geven. Nagemeten met een account met precies zo'n
+adres: het komt er als tekst uit, er staat geen enkele `<img>` in het rapport en
+`document.title` blijft staan.
+
 **Wat er nog niet is:** een tweede beheerder, en daarmee ook geen reden voor een
 beheerdersaccount met MFA. Zolang er één operator is, is een sleutel die je
 inruilt voor een HttpOnly sessie het eerlijke antwoord.
