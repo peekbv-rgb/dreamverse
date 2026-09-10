@@ -645,10 +645,35 @@ verzoek naar de server. Bij tientallen onderwerpen is dat sneller dan wat dan
 ook; worden het er vijfhonderd, dan hoort het zoeken naar de server te
 verhuizen.
 
-**Nog te doen:** beeld per onderwerp (`"image"` in de JSON — het veld is er al en
-wordt overal gebruikt zodra het gevuld is), en de overige achttien onderwerpen.
-Het Kling-tegoed verloopt 18 september; die beelden zijn er een goede besteding
-van, want vier eenheden per stuk.
+**Elk onderwerp heeft een beeld**, uit `python build/gids_beelden.py --ja`.
+Het veld `"image"` in de JSON wordt op drie plekken gebruikt: als kaartbeeld op
+het overzicht, als hero boven het artikel, en als `og:image` bij een gedeelde
+link (waar het het vaste beeld verslaat). Vier Kling-eenheden per stuk, dus
+negen onderwerpen was 36 van de ruim 600 die er nog staan.
+
+Drie regels zitten er bewust in dat script:
+
+- **Dezelfde stijl als de panelen.** `kling.STYLE` en `kling.NEGATIVE` worden
+  niet overgeschreven. Wie op een gidspagina landt en daarna de app opent, hoort
+  dezelfde hand te zien.
+- **Geen gezichten.** Deze beelden staan op een openbare pagina en gaan mee als
+  voorvertoning bij elke gedeelde link. Een herkenbaar gezicht bij *dromen over
+  je ex* suggereert een persoon, en dat is precies wat een droom niet is. Dus
+  silhouetten, van veraf, of geen figuur.
+- **Niet letterlijk, en niet eng.** Bij tanden geen mond en geen bloed maar
+  parels die door donker water zakken; bij spinnen geen spin maar een web vol
+  dauw. Wie 's ochtends zoekt op *dromen over spinnen* is er meestal van
+  geschrokken, en dan helpt een harige close-up niemand.
+
+En ze worden **verkleind naar JPEG van 1200 breed** voordat ze in `static/gids/`
+belanden. Kling levert PNG's van rond de 1,7 MB; negen daarvan is 15 MB op een
+pagina die iemand vanaf zijn telefoon opent. Nu is de hele set 938 kB, en de
+kaarten laden bovendien `lazy`.
+
+**Nog te doen:** de overige achttien onderwerpen. Elk nieuw onderwerp heeft een
+prompt nodig in `PROMPTS` in `build/gids_beelden.py`; zonder prompt weigert dat
+script te draaien in plaats van het onderwerp stil over te slaan. Het
+Kling-tegoed verloopt **18 september 2026** en rolt niet door.
 
 ## Eerst de droom, dan pas het account
 
