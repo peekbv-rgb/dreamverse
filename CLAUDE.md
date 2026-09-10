@@ -1190,6 +1190,22 @@ eindpunt **bestond eerder helemaal niet**: het stond wel in `VRIJ` maar er was
 geen afhandeling voor, dus `VERIFICATIE_NODIG=1` zou iedere nieuwe gebruiker
 buitengesloten hebben. Nu kan die vlag veilig aan.
 
+**Een aanmeldtest op deze machine verstuurt een echte mail.** `.env` bevat de
+Vera-Gmail met app-wachtwoord, dus `mail.enabled()` is hier `True` en elke
+registratie stuurt de welkomstmail werkelijk vanaf `vera.dreamverse@gmail.com`.
+Bij een verzonnen adres komt de bounce in diezelfde inbox, en dat is precies wat
+er op 9 september acht keer gebeurde: het live-rapport laat op die dag nul
+aanmeldingen zien, dus die mails kwamen van hier. **Haal `SMTP_HOST` uit `.env`
+voordat je dat pad test** — dan schrijft `mail.py` de link naar de log en
+verstuurt hij niets, en dat is precies waar die tak voor gemaakt is.
+
+Twee dingen om te weten bij het lezen van zo'n bounce. Het adres waar het
+naartoe ging staat in de `To`-regel van het teruggestuurde origineel. En de
+**bevestigingslink verklapt de afzender**: `basis_url()` leest `PUBLIEKE_URL` en
+valt anders terug op `http://127.0.0.1:8000`. Die variabele staat niet in de
+lokale `.env` en wel op Render, dus een link naar 127.0.0.1 komt van een lokale
+run en een link naar het echte domein van de live server.
+
 ## Vera bij Runway
 
 Avatar-id `43e6b2b0-29ea-4125-8e2f-3ebed04f65d1`, stem **Violet** (Gentle),

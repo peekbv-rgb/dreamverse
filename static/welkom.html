@@ -60,6 +60,27 @@
        data-en="Tell or type what you dreamt last night. You get it back as five panels, a reading and a look ahead — and everything you dreamt before counts."
        data-nl="Vertel of typ wat je vannacht droomde. Je krijgt een verbeelding in vijf panelen, een duiding en een vooruitblik — en alles wat je eerder droomde telt mee.">
       Tell or type what you dreamt last night. You get it back as five panels, a reading and a look ahead — and everything you dreamt before counts.</p>
+    <!-- Eén beeld boven de vouw, en dat is hier het belangrijkste element van
+         de pagina.
+         Het eerste beeld stond op 1517 pixels - anderhalf schermlengte naar
+         beneden, voorbij "Hoe het werkt". Dit product ís beeld, en wie via het
+         og-beeld van Instagram komt heeft net een vuurvogel gezien; die landde
+         dan op eenenzeventig woorden proza. Geen `loading="lazy"`: dat is voor
+         wat onder de vouw staat, en dit staat er juist boven. Breedte en hoogte
+         staan erbij zodat de knop niet verspringt terwijl het beeld binnenkomt. -->
+    <p class="welkom-beeld">
+      <img src="/voorbeelden/vuurvogel.jpg" width="720" height="407"
+           alt="A panel from a real dream: a burning bird above misty hills."
+           decoding="async">
+    </p>
+    <p class="welkom-knoppen">
+      <a class="knop-als-link" href="/app" data-en="Start with your first dream" data-nl="Begin met je eerste droom">Start with your first dream</a>
+    </p>
+    <!-- De belofte staat ná de knop, niet ervoor. Deze twee regels zeggen in
+         het abstracte wat `.sub` er twee alinea's hoger al concreet zei, en
+         duwden de knop tweehonderd pixels naar beneden. Ze zijn niet weg - wie
+         doorleest komt ze tegen - maar wie al overtuigd is hoeft er niet meer
+         langs. -->
     <p class="belofte"
        data-en="Together we are building your own personal universe of dreams."
        data-nl="Wij bouwen samen aan jouw persoonlijk universum van dromen.">
@@ -68,9 +89,6 @@
        data-en="In the Dreamverse all your dreams are visualised and analysed; what grows is a diary of unforgettable dreams."
        data-nl="In de Dreamverse worden al jouw dromen gevisualiseerd en geanalyseerd; zo ontstaat er een dagboek aan onvergetelijke dromen.">
       In the Dreamverse all your dreams are visualised and analysed; what grows is a diary of unforgettable dreams.</p>
-    <p class="welkom-knoppen">
-      <a class="knop-als-link" href="/app" data-en="Start with your first dream" data-nl="Begin met je eerste droom">Start with your first dream</a>
-    </p>
   </header>
 
   <section>

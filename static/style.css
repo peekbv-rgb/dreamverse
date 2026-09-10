@@ -1883,7 +1883,19 @@ body.beheerpagina .beheerrij { margin-top: 0; }
   border-color: var(--third-eye); color: var(--ink);
   background: rgba(110, 98, 218, .22);
 }
+/* Het beeld boven de vouw op de landingspagina. Eén paneel uit een echte droom,
+   direct onder de belofte die zegt wat je krijgt - want dit product ís beeld en
+   het eerste plaatje stond anderhalf schermlengte naar beneden. */
+.welkom-beeld { margin: 1.3rem 0 0; }
+.welkom-beeld img {
+  display: block; width: 100%; height: auto; border-radius: 14px;
+  border: 1px solid rgba(179, 105, 222, .28);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, .55);
+}
 .welkom-knoppen { margin: 1.2rem 0 0; }
+/* Na het beeld staat de knop, en daarna pas de belofte in het abstracte. Zonder
+   deze regel plakt die tekst tegen de knop aan. */
+.welkom-knoppen + .belofte { margin-top: 1.9rem; }
 .poort-uitleg {
   margin: .9rem 0 0; font-size: .82rem; line-height: 1.55;
   color: rgba(216, 205, 234, .75);
