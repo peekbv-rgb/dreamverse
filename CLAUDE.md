@@ -738,10 +738,15 @@ Vijf dingen die in dat script bewust zo zijn:
   seconden) laat een stilstaand beeld leven en kost niets. Een echte animatie bij
   Runway is € 0,55 tot € 1,47 per stuk, dus € 15 tot € 40 voor deze reeks — voor
   een beeld dat acht seconden stilstaat koopt die zoom hetzelfde effect.
-- **Geen geluid, en dat is geen gebrek.** Muziek uit de bibliotheek van Instagram
-  mag je alleen in Instagram zelf toevoegen; daar geldt die licentie voor. Een
-  eigen bestand eronder plakken kan technisch wel, maar dan draait de Reel niet
-  mee in de zoekresultaten op dat nummer, en dat is juist waar bereik zit.
+- **De muziek zit in het bestand, en dat is een besluit van 10 september.** Eerst
+  kwamen ze er stil uit, met het argument dat je muziek in Instagram zelf kiest
+  en zo op de pagina van een populair nummer komt. Twee dingen maakten dat
+  onhoudbaar: **de Planner van Meta plant geen Reels** (in dat menu staat drie
+  keer *plannen* en bij Reel alleen *maken*), en waar je wél kunt inplannen — als
+  bericht — kun je geen muziek kiezen. Dus was het: muziek óf vooruit kunnen
+  plannen. Nu zit het geluid in de mp4, blijft inplannen mogelijk, en krijgt het
+  account een eigen klank in plaats van 27 keer een geleend nummer. Wie tóch een
+  populair nummer wil, kan er in de app alsnog een over heen zetten.
 - **Onder het beeld staat de gids, niet het merk.** Op de DreamCard staat VERA
   DREAMVERSE met het domein, want die kaart ís de advertentie. Hier is het beeld
   de advertentie en is de vraag net gesteld, dus staat er waar het antwoord ligt:
@@ -766,6 +771,33 @@ komt — afgekapt betekent hier dat juist de link en de hashtags wegvallen.
 no information about anybody's health, safety or lifespan"*), bij *pregnancy* in
 de eerste. Eén zin pakken zou dus per onderwerp verschillen, en juist bij deze
 twee mag dat niet.
+
+**Vier stemmingen, en dat is redactie en geen techniek.**
+`python build/reels.py --verdeel --ja` zet per onderwerp het nummer dat bij de
+stemming hoort: `rustig` onder alles wat over verlies, lichaam of verraad gaat
+(dying, deceased-person, pregnancy, mother, ex, cheating, baby), `midden` onder
+het onrustige, `licht` onder dieren en beweging, `puls` onder het alledaagse. Eén
+nummer onder alle 27 klinkt als één account, maar dan staat er ook een beat van
+130 onder *dromen over iemand die overleden is*, en dat leest als ongevoelig.
+`rustig` is met opzet ruim: **bij twijfel niet de beat** — een te kalme track
+onder een lichte droom valt niemand op, het omgekeerde wel. De nummers staan in
+`data/muziek/` (Mixkit, vrij voor commercieel gebruik, git-ignored) en de
+toewijzing in `MUZIEK` en `STEMMING`.
+
+**Het startpunt wordt gemeten, niet gekozen.** `beste_start()` meet zeven
+vensters van acht seconden en pakt het eerste dat binnen 1,5 dB van het luidste
+zit. Bijna elk nummer begint met een kale opbouw: `mixkit-peace` staat de eerste
+dertig seconden op -21 dB en daarna op -9, en dat is geen nuance maar een ander
+nummer. Het eerste venster en niet het luidste, want verderop zit vaak een
+climax die onder een rustig beeld te veel is. Bij een reeks van 27 wordt dat één
+keer per nummer gemeten en niet per video.
+
+**Muziek is een aparte stap.** `--muziek <mp3>` en `--verdeel` werken op de al
+gerenderde video's en coderen het beeld niet opnieuw (`-c:v copy`), dus een ander
+nummer proberen kost seconden in plaats van een halve minuut per video. De stille
+versie in `data/reels/` blijft de bron; met muziek komt het in
+`data/reels/muziek/`. Zo is auditeren één regel per kandidaat:
+`python build/reels.py --muziek "<pad>" --ja being-chased`.
 
 **De hashtags zijn klein gehouden.** De slug plus hoogstens twee uit `also`, dan
 zes vaste. `also` bestaat voor de zoekwoorden van de gids en die zijn voor Google

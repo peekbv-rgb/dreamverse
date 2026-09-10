@@ -82,6 +82,47 @@ MERK = (167, 154, 203)
 SITE = "vera-dreamverse.com"
 BASIS = "/dream-meaning/"
 
+MUZIEKMAP = WORTEL / "data" / "muziek"
+
+# Welk nummer onder welk onderwerp, en dat is een redactionele keuze en geen
+# techniek.
+#
+# Eén nummer onder alle zevenentwintig klinkt als één account, maar dan staat er
+# ook een beat van 130 onder "dromen over iemand die overleden is" - en dat leest
+# als ongevoelig. Dus vier stemmingen, met het rustige stuk onder alles wat over
+# verlies, lichaam of verraad gaat.
+#
+# `rustig` is met opzet ruim genomen: bij twijfel het rustige nummer. Een te
+# kalme track onder een lichte droom valt niemand op; het omgekeerde wel.
+MUZIEK = {
+    "rustig": "mixkit-peace-487.mp3",
+    "midden": "mixkit-hazy-after-hours-132.mp3",
+    "licht": "mixkit-house-vibes-129.mp3",
+    "puls": "mixkit-deep-techno-ambience-134.mp3",
+}
+
+STEMMING = {
+    # Verlies, lichaam, verraad, en het tedere.
+    "rustig": ("dying", "deceased-person", "pregnancy", "mother", "ex",
+               "cheating", "baby"),
+    # Onrustig of raadselachtig: het beeld doet het werk, de muziek draagt.
+    "midden": ("being-chased", "cant-move", "being-naked", "teeth-falling-out",
+               "snakes", "spiders", "stranger", "getting-lost", "water",
+               "house"),
+    # Beweging en dieren: hier mag energie bij.
+    "licht": ("flying", "birds", "falling", "horse", "dogs", "cat"),
+    # Alledaags en stedelijk.
+    "puls": ("fire", "car", "school", "being-late"),
+}
+
+
+def stemming_van(slug):
+    for naam, slugs in STEMMING.items():
+        if slug in slugs:
+            return naam
+    # Onbekend onderwerp: het rustige nummer. Bij twijfel niet de beat.
+    return "rustig"
+
 
 def veld(d, sleutel, taal):
     """Het veld in de gevraagde taal, met het Engels als terugval."""
@@ -345,6 +386,83 @@ def caption(d, taal):
     return "\n".join(stukken).strip() + "\n"
 
 
+def beste_start(muziek, stappen=(0, 8, 16, 24, 32, 40, 48)):
+    """Waar in het nummer het stuk van acht seconden begonnen moet worden.
+
+    Bijna elk nummer begint met een kale opbouw en gaat pas na een halve minuut
+    open. `mixkit-peace` staat de eerste dertig seconden op -21 dB en daarna op
+    -9 - dat is geen nuance maar een ander nummer. Bij acht seconden video wil je
+    het stuk waar de arrangement al staat, anders lijkt het alsof er geen muziek
+    onder zit.
+
+    Dus meten in plaats van gokken: het eerste venster dat binnen anderhalve
+    decibel van het luidste zit. Het eerste en niet het luidste, want verderop in
+    een nummer zit vaak een climax die onder een rustig beeld te veel is.
+    """
+    import re
+    import subprocess
+    import imageio_ffmpeg
+
+    ff = imageio_ffmpeg.get_ffmpeg_exe()
+    gemeten = []
+    for start in stappen:
+        r = subprocess.run(
+            [ff, "-hide_banner", "-ss", str(start), "-t", str(SECONDEN),
+             "-i", str(muziek), "-af", "volumedetect", "-f", "null", "-"],
+            capture_output=True, text=True, errors="replace")
+        m = re.search(r"mean_volume: (-?[\d.]+)", r.stderr)
+        if m:
+            gemeten.append((start, float(m.group(1))))
+    if not gemeten:
+        return 20.0
+    luidst = max(v for _, v in gemeten)
+    for start, v in gemeten:
+        if v >= luidst - 1.5:
+            return float(start)
+    return float(gemeten[0][0])
+
+
+def muziek_eronder(slug, muziek, vanaf=20.0, luider=-3.0):
+    """Een muziekstuk onder een al gemaakte Reel.
+
+    Dit is een aparte stap en geen onderdeel van het renderen, om twee redenen.
+    De stille versie blijft de bron - een ander nummer proberen kost dan geen
+    nieuwe render maar een paar seconden. En het beeld wordt hier niet opnieuw
+    gecodeerd (`-c:v copy`), dus er gaat geen kwaliteit verloren en het is klaar
+    voor je het gezien hebt.
+
+    `vanaf` pakt het stuk niet bij nul: de eerste seconden van een nummer zijn
+    meestal een kale opbouw, en bij acht seconden wil je de groove die er al
+    staat. Er komt een fade in en een langere fade uit, want een track die
+    midden in een maat afkapt klinkt als een fout.
+
+    Instagram normaliseert het volume alsnog, maar iets zachter dan het origineel
+    houdt de tekst leesbaar in plaats van dat het beeld tegen de muziek vecht.
+    """
+    import subprocess
+    import imageio_ffmpeg
+
+    bron = DOEL / (slug + ".mp4")
+    if not bron.exists():
+        raise SystemExit("Geen stille versie voor {}. Draai eerst --ja.".format(slug))
+    uit_map = DOEL / "muziek"
+    uit_map.mkdir(parents=True, exist_ok=True)
+    doel = uit_map / (slug + ".mp4")
+
+    fade_uit = max(SECONDEN - 1.2, 0.1)
+    filter_ = ("afade=t=in:st=0:d=0.6,"
+               "afade=t=out:st={:.2f}:d=1.2,volume={:.1f}dB".format(fade_uit, luider))
+    opdracht = [
+        imageio_ffmpeg.get_ffmpeg_exe(), "-hide_banner", "-loglevel", "error", "-y",
+        "-i", str(bron),
+        "-ss", "{:.2f}".format(vanaf), "-t", "{:.2f}".format(SECONDEN), "-i", str(muziek),
+        "-c:v", "copy", "-c:a", "aac", "-b:a", "128k", "-ac", "2",
+        "-af", filter_, "-shortest", "-movflags", "+faststart", str(doel),
+    ]
+    subprocess.run(opdracht, check=True, capture_output=True)
+    return doel
+
+
 def onderwerpen(alleen=None):
     for pad in sorted(ONDERWERPEN.glob("*.json")):
         d = json.loads(pad.read_text(encoding="utf-8"))
@@ -395,6 +513,15 @@ def main(argv=None):
     ap.add_argument("--taal", default="en", choices=("en", "nl"))
     ap.add_argument("--tekst", action="store_true",
                     help="alleen de captions opnieuw schrijven, geen video")
+    ap.add_argument("--muziek", metavar="MP3",
+                    help="één nummer onder de al gemaakte video's zetten; "
+                         "het resultaat komt in data/reels/muziek/")
+    ap.add_argument("--verdeel", action="store_true",
+                    help="per onderwerp het nummer dat bij de stemming hoort, "
+                         "uit data/muziek/")
+    ap.add_argument("--vanaf", type=float, default=None,
+                    help="op welke seconde van het nummer het stuk begint; "
+                         "zonder dit wordt het gemeten")
     args = ap.parse_args(argv)
 
     rijen = list(onderwerpen(set(args.slugs) or None))
@@ -407,6 +534,48 @@ def main(argv=None):
         print("Draai met --ja om ze te maken.\n")
         for d, slug in rijen:
             print("  {:<20} {}".format(slug, veld(d, "title", args.taal)))
+        return 0
+
+    if args.verdeel:
+        # Het startpunt wordt per nummer één keer gemeten en niet per video:
+        # zeven metingen maal zevenentwintig is zonde van de tijd, en het
+        # antwoord is voor elk onderwerp hetzelfde.
+        starts, ontbreekt = {}, []
+        for naam, bestand in MUZIEK.items():
+            pad = MUZIEKMAP / bestand
+            if not pad.exists():
+                ontbreekt.append(str(pad.relative_to(WORTEL)))
+                continue
+            starts[naam] = (pad, beste_start(pad))
+        if ontbreekt:
+            raise SystemExit("Ontbrekende nummers:\n  " + "\n  ".join(ontbreekt))
+        for naam, (pad, vanaf) in starts.items():
+            print("  {:<8} {:<38} vanaf {:.0f}s".format(naam, pad.name, vanaf))
+        print("")
+        for d, slug in rijen:
+            naam = stemming_van(slug)
+            pad, vanaf = starts[naam]
+            uit = muziek_eronder(slug, pad, vanaf)
+            print("  {:<20} {:<8} {:>6.1f} MB".format(
+                slug, naam, uit.stat().st_size / 1e6))
+        print("")
+        print("Klaar: {}".format((DOEL / "muziek").relative_to(WORTEL)))
+        return 0
+
+    if args.muziek:
+        muziek = Path(args.muziek)
+        if not muziek.exists():
+            raise SystemExit("Muziekbestand niet gevonden: {}".format(muziek))
+        vanaf = args.vanaf if args.vanaf is not None else beste_start(muziek)
+        print("{} onder {} video's, vanaf seconde {:.0f}{}.".format(
+            muziek.name, len(rijen), vanaf,
+            "" if args.vanaf is not None else " (gemeten)"))
+        print("")
+        for d, slug in rijen:
+            uit = muziek_eronder(slug, muziek, vanaf)
+            print("  {:<20} {:>6.1f} MB".format(slug, uit.stat().st_size / 1e6))
+        print("")
+        print("Klaar: {}".format((DOEL / "muziek").relative_to(WORTEL)))
         return 0
 
     if args.tekst:
