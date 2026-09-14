@@ -1167,6 +1167,24 @@ document.querySelectorAll("p,h2,h3,li,.lbl").forEach(e=>{
 });
 ```
 
+**Het verhaal in tekstmodus lag er ook op, en dat was de derde keer.**
+`.verhaal` verschijnt alleen als er géén panelen zijn — en juist dan verbergt
+`.player.alleen-tekst` de `.stage`, precies het element dat de donkere grond
+(`#06040D`) leverde. `.player` zelf heeft er geen. Dus stonden vijf alinea's
+Cormorant van 1,22rem rechtstreeks op het bewegende doek, en boven de felle
+plekken was er niets van te lezen; Ruud zag het op zijn telefoon over 5G.
+
+Dit raakt uitgerekend de mensen die we willen winnen: bij Gratis krijgt alleen
+de eerste droom beeld (`GRATIS_MET_BEELD = 1`), dus droom twee en drie komen
+allebéí in deze modus binnen. `.verhaal` staat nu op dezelfde
+`rgba(13, 7, 26, .92)` met een rand en 20px hoeken. Nagemeten met het script
+hieronder: daarna zijn alleen de sectie-`h2`'s nog los, en dat is de bedoelde
+uitzondering.
+
+**De les onder deze drie keer:** kijk niet of een element een grond heeft, maar
+of het er een houdt in élke stand waarin het getoond wordt. `.verhaal` erfde
+zijn grond van een buurelement dat in precies die ene stand verdwijnt.
+
 **En een link is strenger dan tekst.** `.gids-woorden a` en `.voet-links a`
 stonden op `var(--crown)` en `var(--muted)`; die moeten niet alleen leesbaar zijn
 maar ook nog van gewone tekst te onderscheiden. Ze zijn nu `var(--ink)` met een

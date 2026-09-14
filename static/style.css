@@ -1359,9 +1359,26 @@ body::after { opacity: .34; }
 .player.alleen-tekst #next,
 .player.alleen-tekst .counter,
 .player.alleen-tekst .narration { display: none; }
+/* Het verhaal in tekstmodus heeft een eigen grond nodig, en dat was vergeten.
+
+   `.verhaal` verschijnt alleen als er geen panelen zijn, en juist dan wordt
+   `.stage` verborgen - precies het element dat de donkere grond (#06040D)
+   leverde. `.player` zelf heeft er geen, dus stonden vijf alinea's Cormorant
+   rechtstreeks op het bewegende doek. Op de plekken waar dat doek fel paars,
+   cyaan of geel is, is dat onleesbaar; Ruud zag het op zijn telefoon.
+
+   Dit raakt juist de mensen die we willen winnen: bij Gratis krijgt alleen de
+   eerste droom beeld (GRATIS_MET_BEELD = 1), dus droom twee en drie komen
+   allebei in deze modus binnen.
+
+   Zelfde waarde als overal: rgba(13, 7, 26, .92). Zie *Leesbaar boven een
+   bewegende achtergrond*; op .55 schijnt een felle plek er dwars doorheen. */
 .verhaal {
   padding: 1.8rem 2rem 1.4rem;
   font-family: var(--display); font-size: 1.22rem; line-height: 1.7;
+  background: rgba(13, 7, 26, .92);
+  border: 1px solid var(--line);
+  border-radius: 20px;
 }
 .verhaal p { margin: 0 0 1rem; }
 .verhaal p:last-child { margin-bottom: 0; }
