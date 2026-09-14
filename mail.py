@@ -306,6 +306,13 @@ def main():
 
     ap = argparse.ArgumentParser(description="Controleer of e-mail versturen werkt.")
     ap.add_argument("--test", metavar="ADRES", help="een proefbericht sturen")
+    # Het feedbackkaartje in de app komt één keer en daarna nooit meer - dat is
+    # opzet, want nog eens vragen leest als "we hebben het niet gelezen". Maar
+    # daardoor is de feedbackmail via de app precies één keer te testen, en dat
+    # is te weinig om te controleren of hij aankomt. Deze vlag stuurt hem in de
+    # vorm waarin de server hem ook stuurt, zonder een account of een droom.
+    ap.add_argument("--feedback", action="store_true",
+                    help="een proef-feedbackmail sturen naar FEEDBACK_MAIL")
     args = ap.parse_args()
 
     geheim = wachtwoord()
@@ -324,9 +331,28 @@ def main():
 
     _waarschuw_afzender()
 
+    if args.feedback:
+        doel = beheerder()
+        print("")
+        print("FEEDBACK_MAIL : %s" % (os.environ.get("FEEDBACK_MAIL")
+                                      or "niet gezet, dus SMTP_USER"))
+        print("gaat naar     : %s" % (doel or "NERGENS"))
+        if not doel:
+            print("")
+            print("Zet FEEDBACK_MAIL, anders komt feedback nergens aan.")
+            return 1
+        print("")
+        ok = feedbackbericht(
+            "Dit is een proefbericht. Zo ziet het eruit als een dromer "
+            "iets instuurt via het kaartje Wat kan er beter.",
+            "proef@voorbeeld.test", 3, "nl")
+        print("verstuurd" if ok else "niet verstuurd")
+        return 0 if ok else 1
+
     if not args.test:
         print("")
-        print("Geef --test jij@voorbeeld.nl om echt een bericht te sturen.")
+        print("Geef --test jij@voorbeeld.nl om echt een bericht te sturen,")
+        print("of --feedback om de feedbackmail te proberen.")
         return 0
 
     print("")
