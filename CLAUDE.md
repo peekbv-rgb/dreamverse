@@ -1016,6 +1016,36 @@ Drie dingen die hier stuk waren en meelopen:
   `send_json` met een foutcode toe zonder `error`, dan krijgt de gebruiker daar
   een melding over zijn netwerk te zien die nergens op slaat.
 
+- **Elke `fetch` hoort door `lees()` te gaan, en twee deden dat niet.** Dat is
+  geen netheid: `lees()` is de enige plek die weet wat een antwoord betekent dat
+  geen JSON is, dat 502 geeft tijdens een deploy, of dat wel JSON is maar niet
+  van ons komt. Wie eromheen gaat, gooit dat allemaal weg.
+
+  - **`p-vergeten`, de knop *Wachtwoord vergeten?*.** Deed `r.json()`
+    rechtstreeks, las `r.ok` niet eens, en ving daarna élke fout af in één zin:
+    *"Dat lukte niet."* Een blokkeerpagina in plaats van JSON gaf die zin, een
+    verzoek dat nooit aankwam gaf die zin, en een 500 van onszelf ook. Op
+    14 september kreeg Ruud hem en kon hij zijn wachtwoord niet herstellen —
+    terwijl `POST /api/wachtwoord-vergeten` op de live server gewoon 200 met een
+    melding teruggaf, hier nagemeten met curl. Dit is de slechtst denkbare plek
+    voor zo'n zin: het is het herstelpad, dus wie hem leest zit al vast.
+  - **`naarPortaal()`, de knop naar het klantportaal van Stripe.** Zelfde fout,
+    en bij een mislukking gebeurde er letterlijk niets: geen melding, geen
+    nieuwe pagina. Dat is de knop waarmee iemand zijn abonnement opzegt — wie
+    denkt dat opzeggen niet kan, belt of blokkeert de incasso. Er staat nu een
+    `#account-melding` onder de knoppen in de accountkaart.
+
+  De andere stille `catch`-en in `app.js` zijn bewust stil en horen dat te
+  blijven: het beeld bij een verbeelding, een oordeel over een vooruitblik, het
+  spectrum, het profiel bij het laden. Die staan er met een reden erbij
+  geschreven. **De regel is: een `catch` mag alleen stil zijn als de gebruiker
+  er niet op heeft gedrukt.**
+
+  Vier gevallen nagemeten door `fetch` te vervangen: een blokkeerpagina (403 met
+  HTML), een deploy (503), een antwoord dat JSON is maar niet van ons, en een
+  verzoek dat helemaal niet aankomt. Alle vier geven nu een andere en bruikbare
+  zin.
+
 ## Twee letters, en waarvoor ze zijn
 
 `--display` is Cormorant Garamond, `--body` is Karla. De verdeling is niet

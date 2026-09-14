@@ -1748,13 +1748,19 @@
         }
         return { ok: r.ok, body: body };
       } catch (e) {
+        // Geen JSON. Onze server antwoordt altijd in JSON, dus dit komt ergens
+        // anders vandaan - op 502/503/504 na, want die komen van de proxy van
+        // Render terwijl de dienst opnieuw opstart. Al het andere is een
+        // blokkeerpagina, een proxy of een wifi-portaal.
         return {
           ok: false,
           body: {
             error: r.status === 502 || r.status === 503 || r.status === 504
               ? t("De server is even niet bereikbaar — hij start opnieuw op. "
                   + "Probeer het over een minuut nog eens.")
-              : t("De server gaf een onverwacht antwoord.") + " (" + r.status + ")"
+              : t("Er kwam een antwoord terug dat niet van Dreamverse is")
+                + " (" + r.status + "). "
+                + t("Zit je op een bedrijfsnetwerk? Probeer het op 4G of een ander netwerk.")
           }
         };
       }
@@ -2939,6 +2945,10 @@
     html += "<button type='button' class='ghost uitloggen' data-uit='1'>" +
             t("uitloggen") + "</button>";
     html += "</div>";
+    // Een plek om te zeggen dat er iets misging. Zonder dit doet de knop naar
+    // het klantportaal bij een fout precies niets - en dat is de knop waarmee
+    // iemand zijn abonnement opzegt.
+    html += "<p class='koop-melding' id='account-melding' hidden></p>";
     el("account").innerHTML = html;
 
     el("account").querySelectorAll("[data-opwaarderen]").forEach(function (b) {
@@ -3578,14 +3588,37 @@
     fout.className = "poort-fout";
     fout.textContent = t("Bezig…");
     fout.hidden = false;
+    /* Deze knop deed `r.json()` rechtstreeks en ving daarna élke fout af in één
+     * zin: "Dat lukte niet." Daarmee zag Ruud op 14 september precies niets.
+     * Kwam er een blokkeerpagina van een firewall terug in plaats van JSON, dan
+     * klapte het ontleden en verscheen diezelfde zin; kwam het verzoek helemaal
+     * niet aan, ook. En `r.ok` werd niet eens gelezen, dus een 500 van onze
+     * eigen server was er ook niet van te onderscheiden.
+     *
+     * Nu door `lees()`, net als de rest van de app. Die weet raad met een
+     * antwoord dat geen JSON is, met 502 tijdens een deploy, en met een
+     * antwoord dat wél JSON is maar niet van ons komt.
+     */
     fetch("/api/wachtwoord-vergeten", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email: adres })
     })
-      .then(function (r) { return r.json(); })
-      .then(function (d) { fout.textContent = d.melding || t("Verstuurd."); })
-      .catch(function () { fout.textContent = t("Dat lukte niet."); });
+      .then(lees)
+      .then(function (res) {
+        if (!res.ok) { throw new Error(res.body.error || t("Dat lukte niet.")); }
+        fout.textContent = res.body.melding || t("Verstuurd.");
+      })
+      .catch(function (err) {
+        // Hier komt alleen nog een verzoek dat de server nooit bereikt heeft:
+        // geen verbinding, of iets onderweg dat hem tegenhield. Dat is iets
+        // anders dan een server die nee zegt, en het hoort er ook anders te
+        // staan - anders zoekt iemand een half uur naar zijn e-mailadres.
+        fout.textContent = (err && err.message && err.message !== "Failed to fetch")
+          ? err.message
+          : t("Het verzoek kwam niet aan. Zit je op een bedrijfsnetwerk? "
+              + "Probeer het op 4G of een ander netwerk.");
+      });
   });
 
   el("tab-inloggen").addEventListener("click", function () { zetPoortModus("inloggen"); });
@@ -3757,13 +3790,37 @@
     if (aan) { setTimeout(naarPakket, 400); }
   }
 
+  /* Naar het klantportaal van Stripe: opzeggen, betaalwijze wijzigen, facturen.
+   *
+   * Dit deed `r.json()` rechtstreeks en gooide daarna elke fout weg. Lukte het
+   * niet, dan gebeurde er dus niets: geen melding, geen nieuwe pagina, niets.
+   * Bij de knop waarmee iemand zijn abonnement opzegt is dat het slechtst
+   * denkbare gedrag - dan denkt hij dat opzeggen niet kan en belt hij, of hij
+   * blokkeert de incasso. Zelfde behandeling als de herstelknop: door `lees()`,
+   * en zeg wat er aan de hand is.
+   */
   function naarPortaal() {
+    var melding = el("account-melding");
+    function zeg(tekst) {
+      if (!melding) { return; }
+      melding.className = "koop-melding err";
+      melding.textContent = tekst;
+      melding.hidden = false;
+    }
     fetch("/api/portaal", { method: "POST" })
-      .then(function (r) { return r.json(); })
-      .then(function (d) {
-        if (d.url) { window.location.href = d.url; }
+      .then(lees)
+      .then(function (res) {
+        if (!res.ok || !res.body.url) {
+          throw new Error(res.body.error || t("Dat lukte niet."));
+        }
+        window.location.href = res.body.url;
       })
-      .catch(function () { /* niets */ });
+      .catch(function (err) {
+        zeg((err && err.message && err.message !== "Failed to fetch")
+            ? err.message
+            : t("Het verzoek kwam niet aan. Zit je op een bedrijfsnetwerk? "
+                + "Probeer het op 4G of een ander netwerk."));
+      });
   }
 
   /* -------------------------------------------------- je gegevens weghalen */

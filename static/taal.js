@@ -294,6 +294,8 @@
      "An answer came back that is not from Dreamverse"],
     ["Zit je op een bedrijfsnetwerk? Probeer het op 4G of een ander netwerk.",
      "Are you on a company network? Try it on mobile data or another network."],
+    ["Het verzoek kwam niet aan. Zit je op een bedrijfsnetwerk? Probeer het op 4G of een ander netwerk.",
+     "The request never arrived. Are you on a company network? Try it on mobile data or another network."],
     ["Panelen erbij <b>1</b>", "Add the panels <b>1</b>"],
     ["Vijf panelen erbij <b>1 token</b>", "Add five panels <b>1 token</b>"],
     ["Maak de panelen", "Draw the panels"],
