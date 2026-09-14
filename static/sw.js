@@ -8,11 +8,40 @@
  * Wat hij nooit aanraakt:
  *   /api/      antwoorden per gebruiker, en dromen die net geschreven zijn
  *   /panels/   beeld van een specifieke dromer, met zijn nummer in de naam
+ *   navigaties  het opvragen van een pagina - zie hieronder
  * Die gaan onaangeroerd naar het net. Een gecachet antwoord van iemand anders
  * is het ergste wat een cache in deze app kan doen.
+ *
+ * ---------------------------------------------------------------------------
+ * 14 september 2026: HIJ RAAKT PAGINA'S NIET MEER AAN, EN DAT IS DE BELANGRIJKSTE
+ * REGEL IN DIT BESTAND.
+ *
+ * Ruud klikte op de link in de Instagram-bio en kreeg een zwarte pagina met
+ * "Je bent offline" - terwijl hij online was en de server draaide. Dat kwam
+ * hiervandaan: `fetch()` verwerpt bij elke hapering, en de browser in de
+ * Instagram-app hapert. Eén blip op een navigatie en er stond een doodlopende
+ * pagina zonder knop om het opnieuw te proberen.
+ *
+ * Dat is de verklaring voor nul aanmeldingen bij honderden bezoeken. Al het
+ * verkeer komt uit die browser, en een deel daarvan kreeg dus nooit de site te
+ * zien maar een bericht dat zij iets fout deden.
+ *
+ * De afweging is niet dicht: **offline is voor deze app waardeloos.** Er is geen
+ * enkel scherm dat iets doet zonder net - duiden, panelen, Vera, inloggen, alles
+ * gaat over de lijn. De winst van een gecachete pagina was dus nul, en de prijs
+ * was een zwarte pagina bij de eerste hapering. Een navigatie gaat nu
+ * rechtstreeks naar het net, en hapert die, dan krijgt de bezoeker het
+ * foutscherm van zijn eigen browser - mét een knop om het opnieuw te proberen,
+ * wat de onze niet had.
+ *
+ * Wat blijft is het caching van stylesheet, script en iconen. Dat versnelt een
+ * tweede bezoek en kan niemand buitensluiten.
+ * ---------------------------------------------------------------------------
  */
 
-var CACHE = "dreamverse-v1";
+// Nieuwe naam, want de oude cache bevat pagina's die er niet meer in horen. Een
+// oude cache wordt bij `activate` weggegooid, dus dit ruimt zichzelf op.
+var CACHE = "dreamverse-v2";
 
 // De schil: wat nodig is om iets te laten zien zonder net. Geen HTML met
 // gegevens erin - alleen de onderdelen die voor iedereen hetzelfde zijn.
@@ -51,6 +80,11 @@ self.addEventListener("fetch", function (e) {
   var req = e.request;
   if (req.method !== "GET") { return; }
 
+  // Een paginaverzoek gaat buiten ons om. Zie de uitleg bovenaan: dit is de
+  // regel die voorkomt dat iemand uit de Instagram-browser een zwarte pagina
+  // krijgt in plaats van de site.
+  if (req.mode === "navigate") { return; }
+
   var url = new URL(req.url);
   if (url.origin !== self.location.origin) { return; }
   if (url.pathname.indexOf("/api/") === 0) { return; }
@@ -67,21 +101,10 @@ self.addEventListener("fetch", function (e) {
     }).catch(function () {
       return caches.match(req).then(function (hit) {
         if (hit) { return hit; }
-        // Geen net en niets in de cache. Bij een paginaverzoek een eerlijk
-        // bericht in plaats van de foutpagina van de browser; verder een 504.
-        if (req.mode === "navigate") {
-          return new Response(
-            "<!doctype html><meta charset=utf-8>" +
-            "<meta name=viewport content='width=device-width,initial-scale=1'>" +
-            "<title>Dreamverse</title>" +
-            "<body style=\"margin:0;display:grid;place-items:center;height:100vh;" +
-            "background:#0A0714;color:#F2EEFB;font:16px system-ui,sans-serif\">" +
-            "<p style=\"max-width:22rem;text-align:center;line-height:1.6\">" +
-            "Je bent offline. Dreamverse heeft internet nodig om je droom te " +
-            "verbeelden.<br><br>Your device is offline. Dreamverse needs a " +
-            "connection to imagine your dream.</p>",
-            { status: 503, headers: { "Content-Type": "text/html; charset=utf-8" } });
-        }
+        // Geen net en niets in de cache. Hier komt alleen nog een stylesheet,
+        // een script of een icoon langs - nooit een pagina - dus een kale 504
+        // is genoeg. De offline-pagina die hier stond is weg: die kon alleen
+        // nog verschijnen waar hij niet hoorde.
         return new Response("", { status: 504, statusText: "offline" });
       });
     })
