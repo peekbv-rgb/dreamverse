@@ -53,6 +53,20 @@ WEBPAD = "/gids/{}.jpg"
 # snijdt naar max 22rem hoog) en op een gedeelde link (1200 x 630 is 1,90:1).
 VERHOUDING = "16:9"
 
+# De staande set, alleen voor de Reels.
+#
+# De gidspagina's hebben 16:9 nodig: dat is de vorm van een kaart, van de hero
+# boven een artikel en van een og:image. Instagram is 9:16, en een liggend beeld
+# daarin tonen kan maar op twee manieren - in een kader met randen eromheen, of
+# inzoomen en driekwart van de compositie weggooien. Een eigen staande set lost
+# dat op zonder een van beide.
+#
+# Ze gaan naar `data/` en niet naar `static/`: ze worden nergens geserveerd,
+# alleen door build/reels.py gelezen. In `static/` zouden ze bij elke deploy
+# meegaan zonder dat iemand ze opvraagt.
+DOEL_STAAND = WORTEL / "data" / "gids-staand"
+VERHOUDING_STAAND = "9:16"
+
 PROMPTS = {
     # Tien onderwerpen erbij op 14 september, tweede ronde. Dezelfde drie regels:
     # geen gezichten, niet letterlijk, niet eng.
@@ -276,29 +290,40 @@ BREEDTE = 1200
 KWALITEIT = 82
 
 
-def verklein(bron, slug):
+def verklein(bron, slug, map_=None, breedte=None):
     """Van wat Kling stuurt naar een JPEG die op een telefoon te laden is."""
     from PIL import Image
+    map_ = map_ or DOEL
+    breedte = breedte or BREEDTE
     with Image.open(bron) as im:
         im = im.convert("RGB")
-        if im.width > BREEDTE:
-            hoogte = round(im.height * BREEDTE / im.width)
-            im = im.resize((BREEDTE, hoogte), Image.LANCZOS)
-        doel = DOEL / (slug + ".jpg")
+        if im.width > breedte:
+            hoogte = round(im.height * breedte / im.width)
+            im = im.resize((breedte, hoogte), Image.LANCZOS)
+        doel = map_ / (slug + ".jpg")
         im.save(doel, "JPEG", quality=KWALITEIT, optimize=True, progressive=True)
     if bron != doel:
         bron.unlink()
     return doel
 
 
-def maak(slug):
-    """Eén beeld. Geeft het webpad terug, of gooit."""
-    taak = kling.submit(volle_prompt(slug), aspect_ratio=VERHOUDING)
+def maak(slug, staand=False):
+    """Eén beeld. Geeft het webpad terug, of gooit.
+
+    Staand gaat naar data/gids-staand/ en wordt 1080 breed gehouden: dat is de
+    breedte van een Reel, dus verkleinen tot 1200 zou hem eerst groter en dan
+    weer kleiner maken.
+    """
+    map_ = DOEL_STAAND if staand else DOEL
+    map_.mkdir(parents=True, exist_ok=True)
+    taak = kling.submit(volle_prompt(slug),
+                        aspect_ratio=VERHOUDING_STAAND if staand else VERHOUDING)
     for _ in range(kling.POLL_MAX):
         url = kling.result(taak)
         if url:
-            rauw = kling.download(url, DOEL / (slug + "-rauw"))
-            return "/gids/" + verklein(rauw, slug).name
+            rauw = kling.download(url, map_ / (slug + "-rauw"))
+            naam = verklein(rauw, slug, map_, 1080 if staand else None).name
+            return str(map_ / naam) if staand else "/gids/" + naam
         time.sleep(kling.POLL_EVERY)
     raise kling.KlingError("Kling was na {} seconden nog niet klaar.".format(
         kling.POLL_MAX * kling.POLL_EVERY))
@@ -306,6 +331,9 @@ def maak(slug):
 
 def main(argv):
     doen = "--ja" in argv
+    # De staande set voor de Reels. Die schrijft niet in de JSON: het veld
+    # `image` is het webpad voor de gidspagina en dat blijft 16:9.
+    staand = "--staand" in argv
     alleen = {a for a in argv[1:] if not a.startswith("-")} or None
 
     if not kling.enabled():
@@ -326,6 +354,10 @@ def main(argv):
     # plaatje toont. Precies dat gebeurde met de zes onderwerpen van
     # 14 september.
     def af(d):
+        # Staand kijkt alleen naar het bestand: er is geen veld in de JSON dat
+        # ernaar wijst, en dat hoort ook niet - de gidspagina gebruikt 16:9.
+        if staand:
+            return (DOEL_STAAND / ((d.get("slug") or "") + ".jpg")).exists()
         naam = (d.get("image") or "").strip()
         # Het veld is een webpad ("/gids/x.jpg"); op schijf staat dat
         # onder static/.
@@ -351,16 +383,21 @@ def main(argv):
     for pad, d, slug in te_doen:
         print("  {:<20} ".format(slug), end="", flush=True)
         try:
-            web = maak(slug)
+            web = maak(slug, staand)
         except Exception as e:                      # noqa: BLE001 - alles melden
             print("MISLUKT: {}".format(e))
             mislukt.append(slug)
             continue
-        d["image"] = web
-        pad.write_text(json.dumps(d, ensure_ascii=False, indent=2) + "\n",
-                       encoding="utf-8")
-        grootte = (WORTEL / "static" / web.lstrip("/")).stat().st_size
-        print("{}  {} kB".format(web, round(grootte / 1024)))
+        if staand:
+            # Niets in de JSON: die wijst naar het liggende beeld voor de
+            # gidspagina, en dat moet zo blijven.
+            grootte = Path(web).stat().st_size
+        else:
+            d["image"] = web
+            pad.write_text(json.dumps(d, ensure_ascii=False, indent=2) + "\n",
+                           encoding="utf-8")
+            grootte = (WORTEL / "static" / web.lstrip("/")).stat().st_size
+        print("{}  {} kB".format(Path(web).name, round(grootte / 1024)))
 
     if mislukt:
         print("\nNiet gelukt: {}. Draai nog eens; wat er al staat wordt "

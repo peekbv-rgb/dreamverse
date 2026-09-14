@@ -163,14 +163,21 @@ def omslaan(tekenen, tekst, font, breedte):
     return regels
 
 
-def gespreid(tekenen, tekst, font, midden, y, kleur, spatie=6):
+def gespreid(tekenen, tekst, font, midden, y, kleur, spatie=6, contour=0):
     """Tekst met ruimte tussen de letters. PIL kent geen letter-spacing, en het
-    merk hoort er net zo uit te zien als op de DreamCard."""
+    merk hoort er net zo uit te zien als op de DreamCard.
+
+    `contour` zet er een donkere rand omheen, voor de schermvullende Reel waar
+    deze regel op het beeld ligt in plaats van op een donkere grond."""
     breedtes = [tekenen.textlength(c, font=font) for c in tekst]
     totaal = sum(breedtes) + spatie * (len(tekst) - 1)
     x = midden - totaal / 2
     for c, b in zip(tekst, breedtes):
-        tekenen.text((x, y), c, font=font, fill=kleur)
+        if contour:
+            tekenen.text((x, y), c, font=font, fill=kleur,
+                         stroke_width=contour, stroke_fill=VOID)
+        else:
+            tekenen.text((x, y), c, font=font, fill=kleur)
         x += b + spatie
 
 
@@ -246,6 +253,156 @@ def achtergrond(titel, vraag, link):
     tekenen.text((BREEDTE / 2, VEILIG_ONDER - 44), SITE + link, font=adres,
                  fill=(150, 138, 182), anchor="ma")
     return kaart
+
+
+# De staande animaties uit `build/gids_animaties.py --staand`.
+ANIMATIES_STAAND = DOEL.parent / "gids-animatie-staand"
+
+# Gezet door main(); maak() leest hem.
+STAAND = False
+
+
+def verloop(van_y, tot_y, van_alfa, tot_alfa):
+    """Een verticaal verloop als alfamasker, van boven naar beneden."""
+    m = Image.new("L", (BREEDTE, HOOGTE), 0)
+    tek = ImageDraw.Draw(m)
+    hoogte = max(tot_y - van_y, 1)
+    for y in range(van_y, tot_y):
+        deel = (y - van_y) / hoogte
+        tek.line([(0, y), (BREEDTE, y)],
+                 fill=int(van_alfa + (tot_alfa - van_alfa) * deel))
+    # Alles buiten het verloop houdt de eindwaarde vast, anders komt er een
+    # harde rand waar het masker ophoudt.
+    if van_y > 0 and van_alfa:
+        tek.rectangle([0, 0, BREEDTE, van_y], fill=van_alfa)
+    if tot_y < HOOGTE and tot_alfa:
+        tek.rectangle([0, tot_y, BREEDTE, HOOGTE], fill=tot_alfa)
+    return m
+
+
+def overlaag_staand(titel, vraag, link):
+    """De tekstlaag voor een schermvullende Reel, met doorzichtige achtergrond.
+
+    Bij de gekaderde versie staat alle tekst op een donkere grond en is
+    leesbaarheid gratis. Hier ligt ze op het beeld, en dan is ze soms leesbaar
+    en soms niet - en "soms" bestaat hier niet als eis, net als in de app. Dus
+    twee verlopen: een donkere kap bovenaan achter de titel en een donkere voet
+    onderaan achter de vraag en het merk. Het beeld blijft in het midden
+    onaangeroerd, en dat is precies het stuk waar de beweging zit.
+
+    Geen egale waas over het hele beeld: dat dooft de kleuren die de hele reden
+    zijn om schermvullend te gaan.
+    """
+    laag = Image.new("RGBA", (BREEDTE, HOOGTE), (0, 0, 0, 0))
+
+    # Leesbaarheid komt van de contour om de letters, niet van het verloop.
+    #
+    # Dat is in twee stappen geleerd. De eerste versie had zachte verlopen en
+    # las prima op het slangenbeeld - en dat was precies het probleem: waar de
+    # vraag begint (rond y=1234) zat het verloop op alfa 77, dertig procent
+    # dekking. Bij een donker beeld valt dat niet op; bij `fire`, `flying` of
+    # een lichte ochtendlucht staat er witte tekst op wit. "Leesbaar bij dit
+    # beeld" is niet hetzelfde als leesbaar bij alle drieënveertig.
+    #
+    # De tweede versie maakte de verlopen vol en dekkend tot voorbij de tekst.
+    # Toen was de tekst overal leesbaar en was het beeld gedoofd - en die
+    # kleuren zijn de hele reden om schermvullend te gaan. Twee keer de
+    # verkeerde knop.
+    #
+    # De goede knop is de tekst zelf: een donkere contour van drie pixels om
+    # witte letters is leesbaar op vrijwel alles, en raakt het beeld nergens
+    # anders aan. Zo doen ondertitels het ook. De verlopen blijven, maar nu
+    # alleen om boven- en onderkant van het midden te scheiden - niet om het
+    # werk te doen.
+    kap = Image.new("RGBA", (BREEDTE, HOOGTE), VOID + (255,))
+    kap.putalpha(verloop(340, 900, 186, 0))
+    laag = Image.alpha_composite(laag, kap)
+
+    # Onder: begint op 820 en is vol op 1240, ruim voordat de vraag begint.
+    # Daaronder blijft hij vol - dat kost niets, want alles beneden 1500 ligt
+    # toch onder de bediening van Instagram.
+    voet = Image.new("RGBA", (BREEDTE, HOOGTE), VOID + (255,))
+    voet.putalpha(verloop(980, 1300, 0, 196))
+    laag = Image.alpha_composite(laag, voet)
+
+    tekenen = ImageDraw.Draw(laag)
+    ruimte = BREEDTE - 2 * KANTLIJN
+
+    # De titel binnen de veilige strook. Kleiner in plaats van korter, net als
+    # in de gekaderde versie: een afgekapte titel merk je pas op Instagram.
+    for punten in (84, 76, 68, 60, 54):
+        kop = letter(("georgiai.ttf", "Georgia Italic.ttf",
+                      "DejaVuSerif-Italic.ttf"), punten)
+        regels = omslaan(tekenen, titel, kop, ruimte)
+        if len(regels) <= 3:
+            break
+    hoog = round(punten * 1.14)
+    y = VEILIG_BOVEN + 40
+    for r in regels:
+        tekenen.text((BREEDTE / 2, y), r, font=kop, fill=INK, anchor="ma",
+                     stroke_width=3, stroke_fill=VOID)
+        y += hoog
+
+    # De vraag onderaan, boven het merk. Van onderen naar boven opgebouwd,
+    # zodat een vraag van drie regels het merk niet wegduwt.
+    for punten in (44, 40, 36, 32):
+        body = letter(("segoeui.ttf", "DejaVuSans.ttf"), punten)
+        regels = omslaan(tekenen, vraag, body, ruimte)
+        if len(regels) <= 3:
+            break
+    regelhoog = round(punten * 1.32)
+    y = VEILIG_ONDER - 150 - len(regels) * regelhoog
+    for r in regels:
+        tekenen.text((BREEDTE / 2, y), r, font=body, fill=ZACHT, anchor="ma",
+                     stroke_width=3, stroke_fill=VOID)
+        y += regelhoog
+
+    klein = letter(("segoeuisb.ttf", "segoeuib.ttf", "DejaVuSans-Bold.ttf"), 32)
+    gespreid(tekenen, "VERA'S DREAM GUIDE", klein, BREEDTE / 2,
+             VEILIG_ONDER - 96, (196, 186, 224), contour=2)
+    adres = letter(("segoeui.ttf", "DejaVuSans.ttf"), 30)
+    tekenen.text((BREEDTE / 2, VEILIG_ONDER - 44), SITE + link, font=adres,
+                 fill=(178, 168, 204), anchor="ma",
+                 stroke_width=2, stroke_fill=VOID)
+    return laag
+
+
+def _vullend(beeld):
+    """Het beeld schermvullend, midden uitgesneden."""
+    verhouding = BREEDTE / HOOGTE
+    if beeld.width / beeld.height > verhouding:
+        h = beeld.height
+        b = round(h * verhouding)
+    else:
+        b = beeld.width
+        h = round(b / verhouding)
+    x = (beeld.width - b) // 2
+    y = (beeld.height - h) // 2
+    return beeld.crop((x, y, x + b, y + h)).resize((BREEDTE, HOOGTE),
+                                                   Image.LANCZOS)
+
+
+def frames_staand(pad, titel, vraag, link):
+    """Elk beeldje van de staande animatie, schermvullend, met de tekst erover.
+
+    Heen en terug, om dezelfde reden als bij de gekaderde versie: de animatie is
+    vijf seconden en de Reel acht, en herhalen geeft een sprong op het naadje.
+    """
+    laag = overlaag_staand(titel, vraag, link)
+
+    lezer = imageio.get_reader(str(pad))
+    try:
+        ruw = [Image.fromarray(b).convert("RGB") for b in lezer]
+    finally:
+        lezer.close()
+    if not ruw:
+        raise SystemExit("De animatie {} bevat geen beeldjes.".format(pad.name))
+
+    reeks = ruw + ruw[-2:0:-1]
+    totaal = FPS * SECONDEN
+    for i in range(totaal):
+        doek = _vullend(reeks[i % len(reeks)]).convert("RGBA")
+        yield np.asarray(Image.alpha_composite(doek, laag).convert("RGB"))
 
 
 def masker(breedte, hoogte, hoek=36):
@@ -567,10 +724,19 @@ def maak(d, slug, taal):
     # verliep 18 september 2026, dus de zevenentwintig die er nu liggen zijn er
     # en er komen er voorlopig geen bij: een nieuw onderwerp krijgt de zoom tot
     # er tegoed is om het te animeren.
+    staande = ANIMATIES_STAAND / (slug + ".mp4")
     animatie = ANIMATIES / (slug + ".mp4")
-    beeldjes = (frames_uit_animatie(animatie, titel, vraag, link)
-                if animatie.exists()
-                else frames(bron, titel, vraag, link))
+    if STAAND and staande.exists():
+        beeldjes = frames_staand(staande, titel, vraag, link)
+    elif STAAND:
+        raise SystemExit(
+            "Geen staande animatie voor {}. Draai eerst:\n"
+            "  python build/gids_beelden.py --staand --ja\n"
+            "  python build/gids_animaties.py --staand --ja".format(slug))
+    elif animatie.exists():
+        beeldjes = frames_uit_animatie(animatie, titel, vraag, link)
+    else:
+        beeldjes = frames(bron, titel, vraag, link)
     try:
         for beeldje in beeldjes:
             schrijver.append_data(beeldje)
@@ -588,6 +754,10 @@ def main(argv=None):
     ap.add_argument("--ja", action="store_true", help="echt maken")
     ap.add_argument("--check", action="store_true", help="alleen laten zien")
     ap.add_argument("--taal", default="en", choices=("en", "nl"))
+    # Schermvullend in plaats van een liggend beeld in een kader. Vraagt een
+    # eigen staande set; zie build/gids_beelden.py --staand.
+    ap.add_argument("--staand", action="store_true",
+                    help="het beeld schermvullend, met de tekst erover")
     ap.add_argument("--tekst", action="store_true",
                     help="alleen de captions opnieuw schrijven, geen video")
     ap.add_argument("--muziek", metavar="MP3",
@@ -607,7 +777,14 @@ def main(argv=None):
     # dezelfde caption, en overschrijft de tweede run stilletjes de eerste. Dat
     # merk je pas als er al iets geplaatst is. Eén keer omzetten bij de start is
     # genoeg; de rest van het script kent alleen DOEL en STIL.
-    global DOEL, STIL
+    global DOEL, STIL, STAAND
+    STAAND = args.staand
+    if STAAND:
+        # Een eigen map, want dit is een andere opmaak van hetzelfde onderwerp.
+        # In dezelfde map zou de tweede run de eerste overschrijven, net als bij
+        # de talen.
+        DOEL = DOEL.parent / (DOEL.name + "-staand")
+        STIL = DOEL / "stil"
     if args.taal == "nl":
         DOEL = DOEL.parent / (DOEL.name + "-nl")
         STIL = DOEL / "stil"

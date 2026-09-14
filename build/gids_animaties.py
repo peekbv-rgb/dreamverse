@@ -50,6 +50,9 @@ import kling                                                     # noqa: E402
 ONDERWERPEN = WORTEL / "knowledge" / "droomgids"
 BEELDEN = WORTEL / "static" / "gids"
 UIT = WORTEL / "data" / "gids-animatie"
+# De staande set, voor de schermvullende Reels. Zie gids_beelden.py --staand.
+BEELDEN_STAAND = WORTEL / "data" / "gids-staand"
+UIT_STAAND = WORTEL / "data" / "gids-animatie-staand"
 
 MODEL = "kling-v2-1"
 MODUS = "pro"
@@ -190,8 +193,14 @@ def onderwerpen():
     return sorted(p.stem for p in ONDERWERPEN.glob("*.json"))
 
 
-def beeld_van(slug):
-    """Het bestand achter het veld `image` van dit onderwerp."""
+def beeld_van(slug, staand=False):
+    """Het bestand achter het veld `image` van dit onderwerp.
+
+    Staand staat niet in de JSON: dat veld is het webpad voor de gidspagina en
+    blijft 16:9. De staande set ligt onder zijn eigen naam in data/.
+    """
+    if staand:
+        return BEELDEN_STAAND / (slug + ".jpg")
     data = json.loads((ONDERWERPEN / (slug + ".json")).read_text(encoding="utf-8"))
     naam = (data.get("image") or "").strip()
     if not naam:
@@ -254,6 +263,8 @@ def main():
     ap.add_argument("--ja", action="store_true", help="echt versturen")
     ap.add_argument("--opnieuw", action="store_true",
                     help="ook onderwerpen die al een animatie hebben")
+    ap.add_argument("--staand", action="store_true",
+                    help="de staande (9:16) set animeren")
     args = ap.parse_args()
 
     if not kling.enabled():
@@ -272,13 +283,14 @@ def main():
         print("Vul die eerst aan; zonder opdracht verzint het model zelf iets.")
         return 1
 
-    UIT.mkdir(parents=True, exist_ok=True)
+    uit = UIT_STAAND if args.staand else UIT
+    uit.mkdir(parents=True, exist_ok=True)
     te_doen = []
     for slug in lijst:
-        doel = UIT / (slug + ".mp4")
+        doel = uit / (slug + ".mp4")
         if doel.exists() and not args.opnieuw:
             continue
-        beeld = beeld_van(slug)
+        beeld = beeld_van(slug, args.staand)
         if not beeld or not beeld.exists():
             print("%-18s geen beeld op schijf, overgeslagen" % slug)
             continue
