@@ -709,7 +709,7 @@ section .entry { border-left-width: 3px; border-left-color: var(--tint); }
   text-transform: uppercase; color: var(--muted);
 }
 #w-droom {
-  font-family: var(--body); font-size: 1rem; line-height: 1.5;
+  font-family: var(--display); font-size: 1.1rem; line-height: 1.5;
   padding: .7rem .8rem; border-radius: 10px; resize: vertical;
   background: rgba(43, 28, 74, .6); color: var(--ink);
   border: 1px solid var(--line);
@@ -721,6 +721,84 @@ section .entry { border-left-width: 3px; border-left-color: var(--tint); }
   color: #F5A08F; font-size: .88rem;
 }
 .welkom-vertel-noot { margin: 0; font-size: .78rem; color: var(--muted); }
+/* De gratis duiding, op de landingspagina zelf.
+
+   Iemand die hier leest heeft geen account en heeft nog niets betaald, dus dit
+   is het enige stuk van het product dat hij te zien krijgt voordat hij kiest.
+   Het is daarom opgemaakt als het echte werk en niet als een voorproefje:
+   dezelfde letters, dezelfde grond, dezelfde maten als de duiding in de app.
+
+   De vijf panelen staan er als tekst, genummerd. Dat is met opzet het stuk dat
+   het meest naar beeld verlangt - je leest wát er te zien zou zijn - en het is
+   precies wat een account oplevert. */
+.proef-uit { margin: 1.2rem 0 0; display: grid; gap: 1rem; text-align: left; }
+.proef-titel {
+  font-family: var(--display); font-size: 1.9rem; line-height: 1.15;
+  margin: 0; color: var(--ink); font-weight: 400;
+}
+.proef-blok {
+  padding: 1.1rem 1.2rem; border-radius: 14px;
+  background: rgba(13, 7, 26, .92); border: 1px solid var(--line);
+}
+.proef-blok h3 {
+  margin: 0 0 .6rem; font-family: var(--body); font-size: .65rem;
+  font-weight: 600; letter-spacing: .22em; text-transform: uppercase;
+  color: var(--muted);
+}
+.proef-blok p {
+  margin: 0 0 .7rem; font-family: var(--display); font-size: 1.12rem;
+  line-height: 1.65; color: var(--ink);
+}
+.proef-blok p:last-child { margin-bottom: 0; }
+
+/* De vijf panelen. Het cijfer staat in de kleur van het veld dat het model voor
+   dat paneel koos - hetzelfde signaal als in de app, waar die kleur het beeld
+   zelf kleurt. Hier is het het enige spoor van de chakralaag, en dat is genoeg:
+   wie er niets van weet ziet vijf gekleurde cijfers. */
+.proef-panelen { margin: 0; padding: 0; list-style: none; display: grid; gap: .9rem; }
+.proef-panelen li {
+  display: grid; grid-template-columns: 1.6rem 1fr; gap: .8rem; align-items: baseline;
+}
+.proef-panelen b {
+  font-family: var(--body); font-size: .8rem; font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.proef-panelen span {
+  font-family: var(--display); font-size: 1.12rem; line-height: 1.6; color: var(--ink);
+}
+
+/* De uitnodiging onderaan. Dit is het enige punt op de pagina waar om een
+   account gevraagd wordt, en het staat ná de duiding: eerst geven, dan pas
+   vragen. */
+.proef-verder {
+  padding: 1.1rem 1.2rem; border-radius: 14px; text-align: left;
+  background: rgba(13, 7, 26, .92);
+  border: 1px solid rgba(179, 105, 222, .45);
+  box-shadow: 0 0 40px rgba(110, 98, 218, .16);
+  display: grid; gap: .7rem; justify-items: start;
+}
+.proef-verder-kop {
+  margin: 0; font-family: var(--body); font-size: .65rem; font-weight: 600;
+  letter-spacing: .22em; text-transform: uppercase; color: var(--muted);
+}
+.proef-verder p { margin: 0; font-family: var(--display); font-size: 1.12rem;
+                  line-height: 1.6; color: var(--ink); }
+.proef-verder .proef-klein { font-family: var(--body); font-size: .78rem;
+                             line-height: 1.5; color: var(--muted); }
+
+/* Wachten. Het schrijven duurt tot een minuut, en een knop die niets doet leest
+   als een kapotte knop - dus staat er wat er gebeurt en hoe lang het duurt. */
+.proef-wacht {
+  margin: .2rem 0 0; font-family: var(--body); font-size: .88rem; color: var(--muted);
+  display: flex; align-items: center; gap: .6rem;
+}
+.proef-wacht i {
+  width: 9px; height: 9px; border-radius: 50%; background: var(--crown);
+  box-shadow: 0 0 12px var(--crown); animation: proefpuls 1.4s ease-in-out infinite;
+}
+@keyframes proefpuls { 0%, 100% { opacity: .25; } 50% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .proef-wacht i { animation: none; opacity: .8; } }
+
 /* De weg eromheen mag bestaan, maar hoeft niet te concurreren met het veld. */
 .ghost-link { background: none !important; box-shadow: none !important;
               border: 1px solid var(--line) !important; }

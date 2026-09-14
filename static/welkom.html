@@ -99,12 +99,29 @@
          data-en="Tell a little more about it, then Vera has something to work with."
          data-nl="Vertel er nog iets meer over, dan kan Vera er iets mee.">Tell a little more about it, then Vera has something to work with.</p>
       <button type="button" class="primary" id="w-door"
-              data-en="Imagine this dream" data-nl="Verbeeld deze droom">Imagine this dream</button>
+              data-en="Read this dream" data-nl="Lees deze droom">Read this dream</button>
+      <p class="proef-wacht" id="w-wacht" hidden><i></i><span
+         data-en="Vera is reading your dream. This takes about a minute."
+         data-nl="Vera leest je droom. Dit duurt ongeveer een minuut."
+         >Vera is reading your dream. This takes about a minute.</span></p>
       <p class="welkom-vertel-noot"
-         data-en="Your dream stays in this browser until you make an account. It is not sent anywhere."
-         data-nl="Je droom blijft in deze browser tot je een account maakt. Hij gaat nergens heen.">
-        Your dream stays in this browser until you make an account. It is not sent anywhere.</p>
+         data-en="Free, no account. Your dream is read and not stored."
+         data-nl="Gratis, zonder account. Je droom wordt gelezen en niet bewaard.">
+        Free, no account. Your dream is read and not stored.</p>
     </div>
+
+    <!-- Hier komt de duiding te staan. Leeg tot er een is.
+
+         Dit is de hele reden dat de gratis duiding bestaat: op 14 september
+         stonden er honderden bezoeken tegenover nul aanmeldingen, en achter de
+         knop zat nog steeds een wachtwoordveld. Je vraagt iemand om een account
+         voordat hij weet of het goed is wat je maakt. Nu krijgt hij eerst de
+         duiding en pas daarna de vraag.
+
+         Er wordt niets bewaard: `/api/proef` schrijft geen regel in de database
+         en geen bestand op schijf. Wil de bezoeker deze droom houden, dan reist
+         de tekst mee naar /app in localStorage, net als voorheen. -->
+    <div class="proef-uit" id="w-uit" hidden></div>
     <p class="welkom-knoppen">
       <a class="knop-als-link ghost-link" href="/app" data-en="Or go straight to the app" data-nl="Of ga meteen naar de app">Or go straight to the app</a>
     </p>
@@ -344,6 +361,8 @@
 </div>
 
 <script src="/voorbeelden.js"></script>
+<!-- De hulpnummers. Dezelfde lijst als de app gebruikt; zie zorg.js. -->
+<script src="/zorg.js"></script>
 <script>
 /* Deze pagina staat los van de app: hij moet leesbaar zijn zonder account, en
  * dus ook zonder app.js en zonder taal.js. Vandaar de vertaling in de pagina
@@ -400,6 +419,157 @@
   var veld = document.getElementById("w-droom");
   var door = document.getElementById("w-door");
   var fout = document.getElementById("w-fout");
+  var wacht = document.getElementById("w-wacht");
+  var uit = document.getElementById("w-uit");
+
+  function bewaarLokaal(tekst) {
+    // Dezelfde sleutel en dezelfde vorm als in app.js. Dit is het enige wat er
+    // van de droom bewaard wordt, en het staat in de browser van de bezoeker.
+    try {
+      localStorage.setItem("dreamverse_eerste_droom",
+                           JSON.stringify({ tekst: tekst, wanneer: Date.now() }));
+    } catch (e) { /* privévenster: dan vraagt de app het opnieuw */ }
+  }
+
+  function esc(s) {
+    return String(s == null ? "" : s)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  /* Elke zin die wij zelf schrijven staat hier in twee talen.
+   *
+   * De duiding zelf niet: die wordt geschreven en niet vertaald, in de taal die
+   * meeging in het verzoek. Daarom staan de koppen in `data-en`/`data-nl` en de
+   * inhoud niet - schakelt iemand achteraf van taal, dan draaien de koppen mee
+   * en blijft de duiding staan zoals Vera hem schreef.
+   */
+  var W = {
+    verbeelding: { en: "What Vera saw", nl: "Wat Vera zag" },
+    waarom:      { en: "What this dream is about", nl: "Waar deze droom over gaat" },
+    betekenis:   { en: "What it may mean", nl: "Wat het kan betekenen" },
+    vooruit:     { en: "What this dream may be pointing toward",
+                   nl: "Waar deze droom je aandacht op kan vestigen" },
+    vandaag:     { en: "A small suggestion for today", nl: "Een klein voorstel voor vandaag" },
+    vraag:       { en: "Vera asks", nl: "Vera vraagt" },
+    houkop:      { en: "Keep this dream", nl: "Bewaar deze droom" },
+    hou:         { en: "This reading was not stored anywhere. Make an account and "
+                     + "Vera draws it as five panels — and from the third night on, "
+                     + "she starts seeing what runs through all of them.",
+                   nl: "Deze duiding is nergens bewaard. Maak een account, dan tekent "
+                     + "Vera hem als vijf panelen — en vanaf de derde nacht ziet ze "
+                     + "wat er door al je dromen heen loopt." },
+    houknop:     { en: "Make an account and keep it", nl: "Maak een account en bewaar hem" },
+    houklein:    { en: "Free. Three dreams a month, the first one with five panels.",
+                   nl: "Gratis. Drie dromen per maand, de eerste met vijf panelen." },
+    bereikkop:   { en: "Not for me to imagine", nl: "Hier ga ik niet over" },
+    bereik:      { en: "Vera does not imagine this dream. Nothing was stored and it "
+                     + "cost you nothing. Tell her another one, and she will.",
+                   nl: "Deze droom verbeeldt Vera niet. Er is niets bewaard en het "
+                     + "heeft je niets gekost. Vertel er gerust een andere." },
+    stuk:        { en: "That did not work. Try again in a moment.",
+                   nl: "Dat lukte niet. Probeer het zo nog eens." }
+  };
+
+  function w(sleutel) { return W[sleutel][gekozen() === "nl" ? "nl" : "en"]; }
+
+  function blok(kop, alineas) {
+    var tekst = (alineas || []).filter(function (a) { return String(a || "").trim(); });
+    if (!tekst.length) { return ""; }
+    return '<section class="proef-blok"><h3 data-en="' + esc(W[kop].en) +
+      '" data-nl="' + esc(W[kop].nl) + '">' + esc(w(kop)) + "</h3>" +
+      tekst.map(function (a) { return "<p>" + esc(a) + "</p>"; }).join("") +
+      "</section>";
+  }
+
+  function toon(d) {
+    var html = "";
+
+    // Het hulpkader bovenaan, vóór de duiding: wie dit nodig heeft moet het zien
+    // voordat hij begint te lezen. De nummers komen uit zorg.js, dezelfde lijst
+    // die de app gebruikt - één lijst, want twee lijsten lopen uiteen.
+    if (window.Zorg) {
+      var kader = Zorg.kaderHtml(d.zorg || [], gekozen());
+      if (kader) { html += '<div class="zorg-kader">' + kader + "</div>"; }
+    }
+
+    if (d.title) { html += '<h2 class="proef-titel">' + esc(d.title) + "</h2>"; }
+
+    // De vijf panelen als tekst. Dit is wat er te zien zou zijn, en juist dat
+    // maakt het verschil tussen lezen en een account tastbaar.
+    if (d.panels && d.panels.length) {
+      html += '<section class="proef-blok"><h3 data-en="' + esc(W.verbeelding.en) +
+        '" data-nl="' + esc(W.verbeelding.nl) + '">' + esc(w("verbeelding")) +
+        '</h3><ol class="proef-panelen">';
+      d.panels.forEach(function (p, i) {
+        var kleur = "var(--" + String(p.palette || "crown").replace(/_/g, "-") + ")";
+        html += '<li><b style="color:' + kleur + '">' + (i + 1) + "</b><span>" +
+                esc(p.narration) + "</span></li>";
+      });
+      html += "</ol></section>";
+    }
+
+    html += blok("waarom", [d.why]);
+    html += blok("betekenis", [d.meaning]);
+    html += blok("vooruit", [d.future]);
+    html += blok("vandaag", [d.today]);
+    html += blok("vraag", [d.question]);
+
+    // En pas hier de vraag om een account. Eerst geven, dan pas vragen.
+    html += '<div class="proef-verder">' +
+      '<h3 data-en="' + esc(W.houkop.en) + '" data-nl="' + esc(W.houkop.nl) + '" ' +
+      'class="proef-verder-kop">' + esc(w("houkop")) + "</h3>" +
+      '<p data-en="' + esc(W.hou.en) + '" data-nl="' + esc(W.hou.nl) + '">' +
+      esc(w("hou")) + "</p>" +
+      '<button type="button" class="primary" id="w-bewaar" data-en="' +
+      esc(W.houknop.en) + '" data-nl="' + esc(W.houknop.nl) + '">' +
+      esc(w("houknop")) + "</button>" +
+      '<p class="proef-klein" data-en="' + esc(W.houklein.en) + '" data-nl="' +
+      esc(W.houklein.nl) + '">' + esc(w("houklein")) + "</p></div>";
+
+    uit.innerHTML = html;
+    uit.hidden = false;
+    // De koppen die wij schreven moeten een taalwissel overleven; de duiding
+    // zelf heeft geen data-attributen en blijft dus staan zoals hij geschreven is.
+    zet(gekozen());
+
+    var bewaar = document.getElementById("w-bewaar");
+    if (bewaar) {
+      bewaar.addEventListener("click", function () {
+        bewaarLokaal(veld.value.trim());
+        location.href = "/app";
+      });
+    }
+    uit.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  /* Het foutvakje doet twee dingen, en dat moet een taalwissel overleven.
+   *
+   * In de HTML staat er de vriendelijke duw in ("vertel er nog iets meer over"),
+   * in twee talen. Zet JavaScript daar een melding van de server overheen, dan
+   * draait `zet()` die bij de eerstvolgende klik op EN/NL gewoon terug naar de
+   * standaardzin - en dan leest iemand die net "vandaag zijn er al veel dromen
+   * geduid" kreeg, ineens dat zijn droom te kort was. Daarom schrijven we bij
+   * een servermelding ook de data-attributen, en zetten we de standaardzin
+   * terug uit wat er bij het laden stond.
+   */
+  var foutStandaard = { en: fout.getAttribute("data-en"),
+                        nl: fout.getAttribute("data-nl") };
+
+  function meldStandaard() {
+    fout.setAttribute("data-en", foutStandaard.en);
+    fout.setAttribute("data-nl", foutStandaard.nl);
+    fout.textContent = foutStandaard[gekozen() === "nl" ? "nl" : "en"];
+    fout.hidden = false;
+  }
+
+  function melding(tekst) {
+    // De server schrijft in een taal; die zin blijft staan bij een wissel.
+    fout.setAttribute("data-en", tekst);
+    fout.setAttribute("data-nl", tekst);
+    fout.textContent = tekst;
+    fout.hidden = false;
+  }
 
   if (veld && door) {
     door.addEventListener("click", function () {
@@ -407,16 +577,47 @@
       // Twintig tekens, net als in de app: onder dat aantal heeft iemand op de
       // knop gedrukt zonder iets te vertellen.
       if (tekst.length < 20) {
-        fout.hidden = false;
+        meldStandaard();
         veld.focus();
         return;
       }
       fout.hidden = true;
-      try {
-        localStorage.setItem("dreamverse_eerste_droom",
-                             JSON.stringify({ tekst: tekst, wanneer: Date.now() }));
-      } catch (e) { /* privévenster: dan vraagt de app het opnieuw */ }
-      location.href = "/app";
+      uit.hidden = true;
+      uit.innerHTML = "";
+      wacht.hidden = false;
+      door.disabled = true;
+
+      fetch("/api/proef", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ dream: tekst, taal: gekozen() })
+      }).then(function (r) {
+        return r.json().then(function (d) { return { ok: r.ok, d: d }; });
+      }).then(function (a) {
+        if (a.d && a.d.buiten_bereik) {
+          uit.innerHTML = '<div class="zorg-kader"><div class="zorg-blok zorg-bereik">' +
+            '<p class="zorg-kop" data-en="' + esc(W.bereikkop.en) + '" data-nl="' +
+            esc(W.bereikkop.nl) + '">' + esc(w("bereikkop")) + "</p>" +
+            '<p data-en="' + esc(W.bereik.en) + '" data-nl="' + esc(W.bereik.nl) +
+            '">' + esc(w("bereik")) + "</p></div></div>";
+          uit.hidden = false;
+          zet(gekozen());
+          return;
+        }
+        if (!a.ok || !a.d || !a.d.duiding) {
+          // Wat de server zegt is bruikbaarder dan wat wij kunnen verzinnen -
+          // "vandaag zijn er al veel dromen geduid" is een ander bericht dan
+          // "het lukte niet", en de bezoeker moet het verschil kunnen zien.
+          melding((a.d && a.d.error) || w("stuk"));
+          return;
+        }
+        toon(a.d.duiding);
+      }).catch(function () {
+        melding(w("stuk"));
+      }).then(function () {
+        wacht.hidden = true;
+        door.disabled = false;
+      });
     });
     veld.addEventListener("input", function () { fout.hidden = true; });
   }

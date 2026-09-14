@@ -23,6 +23,7 @@ from collections import Counter, defaultdict
 from datetime import date, datetime, timedelta
 
 import accounts
+import usage
 
 
 def _datum(waarde):
@@ -120,6 +121,28 @@ def cijfers(dagen=30):
             bronnen[naam[5:]] += r["aantal"]
         elif naam == "gids" or naam.startswith("gids:"):
             gidsview[r["datum"]] += r["aantal"]
+    # De gratis duidingen. Dit is de stap die sinds 14 september tussen bezoek
+    # en account zit, en de reden dat hij er is: iemand krijgt eerst een duiding
+    # te lezen en wordt pas daarna om een account gevraagd. Zonder deze kolom is
+    # niet te zien of dat werkt - je ziet dan alleen dat er bezoek is en of er
+    # accounts bij komen, en niet of wat ertussen zit iets doet.
+    #
+    # De telling komt uit `usage.jsonl` en niet uit de database: er wordt bij een
+    # gratis duiding met opzet niets in de database geschreven. In die regel
+    # staat de datum, het aantal tokens en verder niets - geen adres, geen
+    # droomtekst, geen duiding.
+    proef_per_dag = Counter()
+    proef_kosten = 0.0
+    tarieven = usage.rates()
+    for r in usage.read():
+        if r.get("kind") != "proef":
+            continue
+        dag = str(r.get("at", ""))[:10]
+        if dag:
+            proef_per_dag[dag] += 1
+        proef_kosten += (r.get("input_tokens", 0) / 1e6) * tarieven["eur_per_m_input"]
+        proef_kosten += (r.get("output_tokens", 0) / 1e6) * tarieven["eur_per_m_output"]
+
     nieuw_per_dag = Counter(
         u["sinds"].isoformat() for u in gebruikers.values() if u["sinds"])
     dromen_per_dag = Counter()
@@ -131,12 +154,15 @@ def cijfers(dagen=30):
         "feedback": terugkoppeling,
         "trechter": [
             {"datum": d, "landing": landing.get(d, 0), "gids": gidsview.get(d, 0),
-             "app": appview.get(d, 0),
+             "app": appview.get(d, 0), "proef": proef_per_dag.get(d, 0),
              "nieuw": nieuw_per_dag.get(d, 0), "dromen": dromen_per_dag.get(d, 0)}
             for d in sorted(set(landing) | set(appview) | set(gidsview)
+                            | set(proef_per_dag)
                             | set(nieuw_per_dag) | set(dromen_per_dag),
                             reverse=True)
         ],
+        "proef": sum(proef_per_dag.values()),
+        "proef_kosten": round(proef_kosten, 2),
         "bronnen": dict(bronnen.most_common()),
         "gebruikers": len(gebruikers),
         "met_droom": sum(1 for u in gebruikers.values() if u["dromen"]),
@@ -189,26 +215,33 @@ def main():
     print("  pakketten       %s" % c["pakketten"])
     print("  betalingen      %s, samen EUR %.2f" % (c["betalingen"], c["omzet"]))
     print("")
-    print("  DE TRECHTER  (bezoek -> account -> droom)")
-    print("    %-12s %8s %8s %8s %8s %8s" % (
-        "datum", "landing", "gids", "app", "nieuw", "dromen"))
-    tot = {"landing": 0, "gids": 0, "app": 0, "nieuw": 0, "dromen": 0}
+    print("  DE TRECHTER  (bezoek -> gratis duiding -> account -> droom)")
+    print("    %-12s %8s %8s %8s %8s %8s %8s" % (
+        "datum", "landing", "gids", "app", "duiding", "nieuw", "dromen"))
+    tot = {"landing": 0, "gids": 0, "app": 0, "proef": 0, "nieuw": 0, "dromen": 0}
     # Alleen dagen waarop er ook echt geteld is. Het tellen begon later dan de
     # eerste accounts, en dan deel je twee getallen op elkaar die over
     # verschillende weken gaan - dat leest als een percentage en is het niet.
     gemeten = {"landing": 0, "nieuw": 0}
     for r in c["trechter"][:14]:
-        print("    %-12s %8d %8d %8d %8d %8d" % (
-            r["datum"], r["landing"], r["gids"], r["app"], r["nieuw"],
-            r["dromen"]))
+        print("    %-12s %8d %8d %8d %8d %8d %8d" % (
+            r["datum"], r["landing"], r["gids"], r["app"], r["proef"],
+            r["nieuw"], r["dromen"]))
         for k in tot:
             tot[k] += r[k]
         if r["landing"] or r["app"]:
             gemeten["landing"] += r["landing"]
             gemeten["nieuw"] += r["nieuw"]
-    print("    %-12s %8d %8d %8d %8d %8d" % (
-        "samen", tot["landing"], tot["gids"], tot["app"], tot["nieuw"],
-        tot["dromen"]))
+    print("    %-12s %8d %8d %8d %8d %8d %8d" % (
+        "samen", tot["landing"], tot["gids"], tot["app"], tot["proef"],
+        tot["nieuw"], tot["dromen"]))
+    if c["proef"]:
+        # Wat de gratis duiding tot nu toe gekost heeft, en wat hij opleverde.
+        # Dit zijn de twee getallen waarop dit onderdeel beoordeeld hoort te
+        # worden: het is het enige eindpunt waar een vreemde geld laat uitgeven.
+        print("")
+        print("    %d gratis duidingen, samen EUR %.2f (EUR %.3f per stuk)."
+              % (c["proef"], c["proef_kosten"], c["proef_kosten"] / c["proef"]))
     if gemeten["landing"] >= 10:
         print("")
         print("    Van %d bezoeken aan de landingspagina werden er %d een account: %.0f%%."

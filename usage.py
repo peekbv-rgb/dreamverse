@@ -111,6 +111,23 @@ def episode(number, input_tokens=0, output_tokens=0, demo=False):
     })
 
 
+def proef(input_tokens=0, output_tokens=0, demo=False):
+    """Een gratis duiding op de landingspagina, zonder account.
+
+    Apart geteld en niet als `episode`, om twee redenen. Het is de enige plek
+    waar een vreemde geld kan laten uitgeven, dus wat dit per dag kost moet los
+    af te lezen zijn. En in de trechter is dit een stap tussen bezoek en
+    account: hoeveel mensen er een duiding lazen en hoeveel er daarna bleven is
+    de vraag waarvoor dit gebouwd is.
+
+    `who` is altijd "onbekend" - er is geen gebruiker en er komt er geen. Er
+    wordt hier niets bewaard waarmee iemand te herkennen is: geen IP-adres,
+    geen droomtekst, geen duiding. Alleen dat het gebeurde en wat het kostte.
+    """
+    return _append({"kind": "proef", "who": "onbekend", "demo": bool(demo),
+                    "input_tokens": int(input_tokens or 0),
+                    "output_tokens": int(output_tokens or 0)})
+
 def panel(number, index, ok=True):
     return _append({"kind": "panel", "who": _who(), "dream": number,
                     "index": index, "ok": bool(ok)})

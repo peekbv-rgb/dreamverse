@@ -1137,6 +1137,85 @@ def write_episode(dream, archive, number, name=None, language="nl", lens="vanzel
     return episode
 
 
+def proef(dream, language="nl", lens="vanzelf"):
+    """Eén duiding zonder account, zonder archief, zonder opslaan.
+
+    Dit is de gratis kennismaking op de landingspagina. Wat hier gebeurt en wat
+    hier met opzet níet gebeurt:
+
+    - **Er wordt niets bewaard.** Geen regel in de database, geen bestand op
+      schijf, geen nummer in het archief. De droom gaat naar het model en het
+      antwoord gaat terug naar de browser, en daarmee is hij weg. Dat is de
+      reden dat dit eindpunt zonder gebruiker kan draaien: er is niets om aan
+      iemand te hangen. Wil de dromer hem houden, dan maakt hij een account en
+      vertelt hij hem opnieuw - die tweede keer is de eerste keer dat wij hem
+      opslaan.
+    - **Geen panelen.** Vijf Kling-beelden kosten zes cent bovenop de vier van
+      de tekst, en de woorden zijn wat overtuigt. De verbeelding staat er wel
+      in - de vijf stukken `narration` - dus je leest wát de panelen zouden
+      tonen. Dat is precies het verschil dat een account waard is.
+    - **Geen archief in de prompt.** Er is er geen. `together` blijft daarmee
+      leeg, en dat hoort: doen alsof er een patroon is bij één droom is de
+      snelste manier om dit ongeloofwaardig te maken.
+    - **Dezelfde grenzen.** `ZORG_REGELS` zit in dezelfde prompt, dus een droom
+      over geweld of zelfdoding wordt net zo geclassificeerd als in de app, en
+      een expliciet seksuele droom geeft hier ook `BuitenBereik`. De
+      hulpnummers staan in `static/zorg.js`, dat beide pagina's inladen.
+
+    Het nummer is 1: voor het model is dit de eerste droom van deze dromer, en
+    dat is ook zo.
+    """
+    dream = (dream or "").strip()
+    if not dream:
+        raise DreamverseError("Schrijf eerst je droom op.")
+    # Een ondergrens, en die staat hier en niet alleen in de browser.
+    #
+    # In de app is twintig tekens een vriendelijkheid: wie op de knop drukt
+    # zonder iets te vertellen krijgt een duwtje terug. Hier is het een rem.
+    # Dit eindpunt is het enige dat geld uitgeeft zonder dat er iemand is
+    # ingelogd, en "a" kost net zoveel als een echte droom - dus een script dat
+    # driehonderd keer een letter instuurt eet het dagplafond op en levert
+    # driehonderd duidingen van niets op. Nagemeten: op "kort" schrijft het
+    # model netjes vijf panelen over hoe weinig er te zien was.
+    if len(dream) < 20:
+        raise DreamverseError("Vertel er nog iets meer over, dan kan Vera er iets mee.")
+    if len(dream) > 4000:
+        raise DreamverseError("Dat is een lange droom. Vat hem samen in maximaal 4000 tekens.")
+
+    taal = language if language in TALEN else "nl"
+    gekozen = (lens or "").strip().lower()
+    if gekozen not in LENZEN:
+        gekozen = "vanzelf"
+
+    episode = write_episode(dream, [], 1, None, taal, gekozen)
+
+    if "seksueel" in (episode.get("zorg") or []):
+        raise BuitenBereik()
+
+    usage.proef(episode.get("usage", {}).get("input_tokens", 0),
+                episode.get("usage", {}).get("output_tokens", 0),
+                episode.get("demo", False))
+
+    # Alleen wat op de pagina komt. `image` blijft hier weg - dat is een
+    # Engelse beeldprompt die niemand hoort te lezen - en `usage` ook, want
+    # wat een duiding ons kost gaat de bezoeker niets aan.
+    return {
+        "title": episode.get("title", ""),
+        "panels": [{"narration": p.get("narration", ""),
+                    "palette": p.get("palette", "crown")}
+                   for p in episode.get("panels", [])],
+        "why": episode.get("why", ""),
+        "meaning": episode.get("meaning", ""),
+        "future": episode.get("future", ""),
+        "today": episode.get("today", ""),
+        "question": episode.get("question", ""),
+        "night": episode.get("night", ""),
+        "lens": episode.get("lens", ""),
+        "zorg": episode.get("zorg", []),
+        "demo": bool(episode.get("demo")),
+    }
+
+
 def create(dream, kwaliteit=None, lens=None):
     """De hele stap: schrijven, opslaan, teruggeven."""
     dream = (dream or "").strip()

@@ -253,12 +253,16 @@
          * was het alleen te zien met `python rapport.py` op de eigen machine.
          */
         if ((c.trechter || []).length) {
-          html += '<p class="lbl">Per dag: bezoek, account, droom</p>';
+          html += '<p class="lbl">Per dag: bezoek, gratis duiding, account, droom</p>';
           html += '<table class="rapport-tabel"><thead><tr>' +
-            ["datum", "landing", "gids", "app", "nieuw", "dromen"]
+            ["datum", "landing", "gids", "app", "duiding", "nieuw", "dromen"]
               .map(function (k) { return "<th>" + k + "</th>"; }).join("") +
             "</tr></thead><tbody>";
-          var tot = { landing: 0, gids: 0, app: 0, nieuw: 0, dromen: 0 };
+          // De volgorde van deze sleutels is de volgorde van de kolommen: de
+          // rijen worden eruit opgebouwd met Object.keys. Zet "proef" dus op de
+          // plek waar "duiding" in de kop staat, anders schuiven de getallen
+          // een kolom op zonder dat iets het meldt.
+          var tot = { landing: 0, gids: 0, app: 0, proef: 0, nieuw: 0, dromen: 0 };
           // Alleen dagen waarop er ook echt geteld is. Het tellen begon later
           // dan de eerste accounts, en anders deel je twee getallen op elkaar
           // die over verschillende weken gaan.
@@ -280,6 +284,14 @@
             html += "<td><b>" + tot[k] + "</b></td>";
           });
           html += "</tr></tbody></table>";
+          // Wat de gratis duiding kostte. Dit is het enige eindpunt waar iemand
+          // zonder account geld laat uitgeven, dus het bedrag hoort zichtbaar
+          // te zijn op de plek waar je naar de cijfers kijkt.
+          if (c.proef) {
+            html += '<p class="meter-noot">' + c.proef +
+              " gratis duidingen, samen EUR " + (c.proef_kosten || 0).toFixed(2) +
+              " (EUR " + (c.proef_kosten / c.proef).toFixed(3) + " per stuk).</p>";
+          }
           if (gemeten.landing >= 10) {
             html += '<p class="meter-noot">Van ' + gemeten.landing +
               " bezoeken aan de landingspagina werden er " + gemeten.nieuw +

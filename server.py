@@ -131,6 +131,102 @@ def beheer_sessie_weg(token):
     with _beheer_slot:
         _beheer_sessies.pop(token, None)
 
+# --------------------------------------------------------------------------- #
+# De gratis duiding: één droom zonder account
+# --------------------------------------------------------------------------- #
+#
+# Op 14 september stond de teller op nul aanmeldingen bij honderden bezoeken. De
+# vraag staat inmiddels op de landingspagina zelf, maar daarachter zat nog steeds
+# een account vóór er iets te zien was - en je vraagt iemand om een wachtwoord
+# voordat hij weet of het goed is wat je maakt.
+#
+# Dus: één duiding, zonder account, zonder panelen. Alleen de woorden, want die
+# zijn wat overtuigt, en vijf Kling-panelen kosten zes cent bovenop de tekst.
+#
+# Er wordt **niets** bewaard. De droom gaat naar het model en het antwoord gaat
+# terug naar de browser; er komt geen regel in de database en geen bestand op
+# schijf. Dat is niet alleen privacy maar ook de reden dat dit eindpunt geen
+# gebruiker nodig heeft.
+#
+# En er zit een rem op, want dit is de enige plek in de app waar een vreemde geld
+# kan laten uitgeven. Twee grenzen:
+#
+#   - een dagplafond voor de hele installatie. Op is op, en dan zegt hij dat
+#     eerlijk en biedt een account aan.
+#
+#     **Wat dit kost is gemeten en niet geschat.** Drie echte duidingen op
+#     14 september: gemiddeld 5.076 tokens in en 1.485 uit, en met de tarieven
+#     uit usage.rates() (€ 4,60 en € 23,00 per miljoen) is dat **€ 0,058 per
+#     duiding**. De invoer is bijna vier keer de uitvoer omdat de hele prompt -
+#     regels, zorgregels, brillen - meegaat en er geen archief tegenover staat
+#     om het te verdunnen; bij een dromer met twintig dromen wordt dat aandeel
+#     kleiner, hier niet.
+#
+#     Op PROEF_PER_DAG = 200 is de bovengrens dus **€ 11,50 per dag**, ofwel
+#     € 345 in een maand waarin dat plafond elke dag gehaald wordt. Dat is de
+#     prijs van tweehonderd mensen per dag die een droom vertellen, en dat is
+#     een goed probleem - maar het is wel het bedrag dat hier op het spel staat.
+#     Het staat als omgevingsvariabele in Render, dus verlagen is één regel en
+#     geen deploy van code.
+#   - een korte rem per adres, alleen in het geheugen. Het IP-adres wordt niet
+#     bewaard en niet gelogd; het staat in een dictionary die bij elke deploy
+#     leeg is. Zonder dat kan één script het dagplafond in een minuut opmaken.
+PROEF_PER_DAG = int(os.environ.get("PROEF_PER_DAG", "200"))
+PROEF_PAUZE = 60          # seconden tussen twee pogingen van hetzelfde adres
+_proef = {"dag": "", "aantal": 0}
+_proef_laatst = {}
+_proef_slot = threading.Lock()
+
+
+def proef_ruimte():
+    """Is er vandaag nog ruimte? Rolt vanzelf om bij een nieuwe dag."""
+    vandaag = time.strftime("%Y-%m-%d")
+    with _proef_slot:
+        if _proef["dag"] != vandaag:
+            _proef.update(dag=vandaag, aantal=0)
+        return _proef["aantal"] < PROEF_PER_DAG
+
+
+def proef_geteld():
+    with _proef_slot:
+        _proef["aantal"] += 1
+        return _proef["aantal"]
+
+
+# De rem per adres is opgesplitst in kijken en zetten, en dat is geen netheid.
+#
+# Eerst deed proef_te_snel() allebei tegelijk. Daardoor zette een verzoek dat
+# **niets kostte** - een droom van vier tekens, die vóór het model al wordt
+# afgewezen - de rem alsnog een minuut vast. De bezoeker kreeg dan eerst "vertel
+# er nog iets meer over", deed dat, drukte opnieuw, en kreeg "even wachten".
+# Precies op het pad dat drempelloos moest zijn.
+#
+# De rem bestaat om uitgaven te beperken, dus hij hoort te staan op wat uitgeeft.
+# Zetten gebeurt daarom ná de goedkope controles en vóór de aanroep van het
+# model (zodat twee kliks tegelijk er niet allebei doorheen glippen), en wordt
+# teruggedraaid als het model er niet aan te pas is gekomen.
+def proef_te_snel(adres):
+    """Kijkt alleen. Zet niets."""
+    nu = time.time()
+    with _proef_slot:
+        # Opruimen wat ouder is dan de pauze; anders groeit dit onbeperkt.
+        for a in [a for a, w in _proef_laatst.items() if nu - w > PROEF_PAUZE]:
+            del _proef_laatst[a]
+        return nu - _proef_laatst.get(adres, 0) < PROEF_PAUZE
+
+
+def proef_zet(adres):
+    """Vanaf nu telt dit adres als bezig."""
+    with _proef_slot:
+        _proef_laatst[adres] = time.time()
+
+
+def proef_vrij(adres):
+    """Er is geen model aan te pas gekomen, dus er valt niets af te remmen."""
+    with _proef_slot:
+        _proef_laatst.pop(adres, None)
+
+
 # E-mailverificatie. Uit, tenzij je het aanzet. Het mechanisme staat er - een
 # code per account, een eindpunt om hem in te wisselen - maar versturen vraagt
 # SMTP-gegevens, en een extra stap tussen iemand en zijn eerste droom kost je
@@ -161,7 +257,10 @@ BASIS = droomgids.BASIS
 
 VRIJ = ("/api/health", "/api/registreren", "/api/inloggen", "/api/uitloggen",
         "/api/bevestigen", "/api/stripe/webhook", "/api/gids",
-        "/api/wachtwoord-vergeten", "/api/wachtwoord-herstellen")
+        "/api/wachtwoord-vergeten", "/api/wachtwoord-herstellen",
+        # De gratis duiding. Dit is het enige eindpunt dat geld uitgeeft zonder
+        # dat er iemand is ingelogd; wat het tegenhoudt staat bij PROEF_PER_DAG.
+        "/api/proef")
 
 # Beheer loopt buiten de gebruikerssessie om, en dat is het punt.
 #
@@ -185,9 +284,11 @@ BEHEER_PADEN = "/api/beheer/"
 # tweede verzoek op en stuurt daarbij geen wachtwoord mee. Staat basic auth
 # ervoor, dan is de pagina wél te lezen maar blijft de voorvertoning leeg -
 # precies de kant die het minst opvalt en het meest kost.
+# De gratis duiding hoort hier ook: welkom.html staat buiten basic auth, en een
+# knop op een vrije pagina die een 401 oplevert is erger dan geen knop.
 ZONDER_BASIC = ("/api/stripe/webhook", "/privacy.html", "/herstel.html",
                 "/welkom.html", "/sitemap.xml", "/robots.txt",
-                "/og-beeld.jpg")
+                "/og-beeld.jpg", "/api/proef")
 
 
 class Handler(SimpleHTTPRequestHandler):
@@ -338,6 +439,23 @@ class Handler(SimpleHTTPRequestHandler):
         else:
             self.send_json({"error": "Geen toegang."}, 403)
         return None
+
+    def proef_adres(self):
+        """Wie er aanklopt bij de gratis duiding, alleen om de rem te zetten.
+
+        Op Render staat de app achter een proxy, dus `client_address` is die
+        proxy en niet de bezoeker - zonder X-Forwarded-For zou iedereen samen
+        één rem delen en zou de tweede bezoeker van die minuut te horen krijgen
+        dat hij moet wachten. De eerste waarde in die lijst is de bezoeker.
+
+        Dit adres wordt **niet bewaard en niet gelogd**. Het gaat als sleutel in
+        een dictionary in het geheugen die na een minuut zichzelf opruimt en bij
+        elke deploy leeg is. Er staat niets in de database en niets op schijf.
+        """
+        doorgestuurd = self.headers.get("X-Forwarded-For", "")
+        if doorgestuurd:
+            return doorgestuurd.split(",")[0].strip()[:64]
+        return (self.client_address[0] if self.client_address else "?")
 
     def guard(self):
         kaal = self.path.split("?")[0]
@@ -997,6 +1115,57 @@ class Handler(SimpleHTTPRequestHandler):
             except accounts.AccountError as e:
                 return self.send_json({"error": str(e)}, 400)
             return self.send_json({"ok": True})
+
+        # -- de gratis duiding ----------------------------------------------- #
+        #
+        # Geen account, geen sessie, niets bewaard. Zie PROEF_PER_DAG bovenaan
+        # dit bestand voor waarom de remmen er zijn en wat ze tegenhouden.
+        if self.path == "/api/proef":
+            payload = self.read_json()
+            if payload is None:
+                return self.send_json({"error": "Ongeldige aanvraag."}, 400)
+
+            # Volgorde telt. Eerst de rem per adres, dan het dagplafond: anders
+            # kan één script het plafond opeten en krijgt iedereen daarna te
+            # horen dat het op is.
+            if proef_te_snel(self.proef_adres()):
+                return self.send_json(
+                    {"error": "Even wachten - je kunt hier één droom per minuut "
+                              "laten duiden.",
+                     "te_snel": True}, 429)
+
+            if not proef_ruimte():
+                return self.send_json(
+                    {"error": "Er zijn vandaag al veel dromen geduid. Maak een "
+                              "account aan, dan kan het meteen.",
+                     "op": True, "account": True}, 429)
+
+            adres = self.proef_adres()
+            proef_zet(adres)
+            try:
+                duiding = dreamverse.proef(payload.get("dream", ""),
+                                           payload.get("taal"),
+                                           payload.get("lens"))
+            except dreamverse.BuitenBereik:
+                # Geen fout maar een grens, net als in de app: 200, want er is
+                # niets stukgegaan en de bezoeker heeft niets verkeerd gedaan.
+                # Dit heeft het model wél gedraaid, dus het telt en de rem blijft.
+                proef_geteld()
+                return self.send_json({"buiten_bereik": True})
+            except dreamverse.DreamverseError as e:
+                # Te kort, te lang, of de API deed niet mee. In geen van die
+                # gevallen is er iets geschreven, dus geen rem en geen teller.
+                proef_vrij(adres)
+                return self.send_json({"error": str(e)}, 400)
+            except Exception as e:
+                # Nooit een stacktrace naar een onbekende bezoeker.
+                proef_vrij(adres)
+                self.log_message("gratis duiding mislukte: %s", e)
+                return self.send_json(
+                    {"error": "Het lukte even niet. Probeer het zo nog eens."}, 502)
+
+            proef_geteld()
+            return self.send_json({"duiding": duiding})
 
         if self.path == "/api/answer":
             payload = self.read_json() or {}

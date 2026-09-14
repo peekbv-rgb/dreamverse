@@ -55,6 +55,7 @@ Geen framework — dat houdt de deploy op één bestand, net als de andere proje
 | Het beeld bij een gedeelde link | `static/og-beeld.jpg`, uit `build/og_beeld.py` |
 | Wat er op Instagram komt | [instagram.md](instagram.md) |
 | Tweede taal (Amerikaans Engels) | `static/taal.js` |
+| Hulpnummers, gedeeld door app en landingspagina | `static/zorg.js` |
 | Persona van de gids | `persona/vera.txt` |
 | Vera's welkomstboodschap, bronnen | `bronnen/vera/` (met `LEESMIJ.md`) |
 | Droomarchief (git-ignored) | `data/archive.json` |
@@ -76,6 +77,7 @@ GET    /api/panels/<nr>                 -> stand van het tekenwerk
 GET    /panels/<bestand>.jpg            -> een gegenereerd paneel
 POST   /api/vera/session                -> WebRTC-gegevens voor een gesprek
 DELETE /api/vera/session/<id>           -> gesprek afsluiten
+POST   /api/proef     {"dream", "taal"} -> een duiding zonder account
 POST   /api/feedback                    {"tekst"} -> wat er beter kan
 GET    /api/health                      -> {"ok", "key", "kling", "vera"}
 ```
@@ -816,6 +818,130 @@ waarna een post in stilte verdwijnt. Welke dat zijn is hier niet na te kijken.
 De bestanden staan in `data/reels/` en dat is git-ignored: 27 video's is ~27 MB
 en die horen niet in de repo. Ze staan dus alleen op de machine die ze maakte, en
 moeten naar je telefoon om geplaatst te worden.
+
+## De gratis duiding
+
+Op `welkom.html` typt iemand zijn droom en krijgt hij de duiding **op die pagina
+terug, zonder account**. Pas daaronder staat de vraag om zich aan te melden.
+
+Waarom dit er is: van 9 tot 14 september stonden er 468 bezoeken aan de
+landingspagina tegenover **nul aanmeldingen**. Het veld stond er al sinds die
+ochtend, maar erachter zat nog steeds een wachtwoordveld — je vraagt iemand om
+een account voordat hij weet of het goed is wat je maakt. Nu is de volgorde om:
+eerst geven, dan pas vragen.
+
+`POST /api/proef` -> `dreamverse.proef()`. Zes dingen die daar met opzet zo zijn.
+
+- **Er wordt niets bewaard.** Geen regel in de database, geen bestand op schijf,
+  geen nummer in het archief. De droom gaat naar het model, het antwoord gaat
+  naar de browser, en daarmee is hij weg. Dát is de reden dat dit eindpunt
+  zonder gebruiker kan draaien: er is niets om aan iemand te hangen. Wil de
+  dromer hem houden, dan reist de tekst mee naar `/app` in dezelfde
+  `dreamverse_eerste_droom` als voorheen, en is zijn eerste opgeslagen droom die
+  hij daar vertelt.
+- **Geen panelen.** Vijf Kling-beelden kosten zes cent bovenop de tekst. De
+  verbeelding staat er wél in — de vijf stukken `narration`, genummerd, met het
+  cijfer in de kleur van het chakraveld dat het model koos. Je leest dus *wat*
+  er te zien zou zijn, en dat is precies het verschil dat een account waard is.
+- **Geen archief in de prompt**, want er is er geen. `together` blijft leeg, en
+  dat hoort: bij één droom doen alsof er een patroon is, is de snelste manier om
+  dit ongeloofwaardig te maken.
+- **Dezelfde grenzen.** `ZORG_REGELS` zit in dezelfde prompt, dus een droom over
+  geweld of zelfdoding wordt hier net zo geclassificeerd als in de app, met
+  hetzelfde hulpkader erboven; een expliciet seksuele droom geeft ook hier
+  `BuitenBereik`, met 200 en niet met een fout.
+- **`image` en `usage` gaan er niet in.** Het antwoord bevat alleen wat op de
+  pagina komt. De beeldprompt is Engels en niet voor de lezer bedoeld, en wat
+  een duiding ons kost gaat de bezoeker niets aan.
+- **Een ondergrens van twintig tekens staat op de server**, niet alleen in de
+  browser. In de app is die grens een vriendelijkheid; hier is het een rem. Op
+  `"kort"` schrijft het model namelijk gewoon vijf panelen over hoe weinig er te
+  zien was — nagemeten — en dat kost net zoveel als een echte droom.
+
+### Wat het kost, en wat het mag kosten
+
+**Gemeten, niet geschat.** Drie echte duidingen op 14 september: gemiddeld 5.076
+tokens in en 1.485 uit, tegen € 4,60 en € 23,00 per miljoen uit `usage.rates()`.
+Dat is **€ 0,058 per duiding**. De invoer is bijna vier keer de uitvoer omdat de
+hele prompt meegaat — regels, zorgregels, brillen — zonder archief ertegenover om
+het te verdunnen; bij een dromer met twintig dromen wordt dat aandeel kleiner,
+hier niet.
+
+Op `PROEF_PER_DAG = 200` is de bovengrens dus **€ 11,50 per dag**, ofwel € 345 in
+een maand waarin dat plafond elke dag gehaald wordt. Dat is de prijs van
+tweehonderd mensen per dag die een droom vertellen — een goed probleem — maar het
+is wel het bedrag dat hier op het spel staat. Het is een omgevingsvariabele op
+Render, dus verlagen is één regel en geen deploy.
+
+### De twee remmen, en waarom ze staan waar ze staan
+
+Dit is het enige eindpunt van de app waar een vreemde geld kan laten uitgeven.
+
+- **Een dagplafond voor de hele installatie** (`PROEF_PER_DAG`, standaard 200).
+  Op is op, en dan zegt de app dat eerlijk en biedt een account aan.
+- **Een pauze van een minuut per adres**, alleen in het geheugen. Het IP-adres
+  wordt gelezen en als sleutel in een dictionary gezet die zichzelf na een
+  minuut opruimt en bij elke deploy leeg is. Niets ervan gaat de database of de
+  log in. Achter de proxy van Render is `client_address` de proxy, dus de rem
+  leest `X-Forwarded-For` — zonder dat zou iedereen samen één rem delen.
+
+**Kijken en zetten zijn gescheiden, en dat is geen netheid.** Eerst deed
+`proef_te_snel()` allebei tegelijk, en dan zette een verzoek dat *niets kostte* —
+een droom van vier tekens, afgewezen vóór het model — de rem alsnog een minuut
+vast. De bezoeker kreeg "vertel er nog iets meer over", deed dat, drukte opnieuw
+en kreeg "even wachten". Precies op het pad dat drempelloos moest zijn. De rem
+bestaat om uitgaven te beperken, dus hij staat op wat uitgeeft: zetten gebeurt ná
+de goedkope controles en vóór de aanroep van het model (zodat twee kliks tegelijk
+er niet allebei doorheen glippen), en wordt teruggedraaid zodra blijkt dat het
+model er niet aan te pas is gekomen. `BuitenBereik` houdt de rem wél: daar heeft
+het model gedraaid.
+
+### De hulpnummers staan nu in `static/zorg.js`
+
+Ze stonden in `app.js`, binnen de IIFE, en daar kwam `welkom.html` niet bij. Nu
+de landingspagina ook duidt, is een droom over zelfdoding daar niet minder
+ernstig dan in de app. Twee lijsten bijhouden kan niet — dan loopt er een keer
+eentje achter, en dat is de fout die je hier het minst mag maken. `Zorg.kaderHtml(soorten, taal)`
+geeft de HTML; `app.js` en `welkom.html` laden allebei `zorg.js` **vóór** hun
+eigen script. De drie regels waaraan die lijst voldoet staan ongewijzigd in dat
+bestand. Nagemeten na de verhuizing: dezelfde negen regels met dezelfde nummers.
+
+### Wat er op de pagina zelf goed moet
+
+- **De koppen zijn tweetalig, de duiding niet.** Elke zin die wij schrijven
+  staat in `W` met `en` en `nl`, en wordt als `data-en`/`data-nl` op het element
+  gezet zodat `zet()` hem bij een taalwissel meeneemt. De duiding heeft die
+  attributen niet en blijft dus staan zoals Vera hem schreef — hij wordt
+  geschreven en niet vertaald, net als in de app.
+- **Het foutvakje doet twee dingen.** In de HTML staat de vriendelijke duw in
+  ("vertel er nog iets meer over"), in twee talen. Schrijft JavaScript daar een
+  melding van de server overheen, dan draait `zet()` die bij de eerstvolgende
+  taalklik terug naar de standaardzin — en dan leest iemand die net "vandaag
+  zijn er al veel dromen geduid" kreeg ineens dat zijn droom te kort was.
+  Daarom schrijft `melding()` ook de `data`-attributen, en zet `meldStandaard()`
+  ze terug uit wat er bij het laden stond.
+- **Er staat wat er gebeurt en hoe lang het duurt.** Het schrijven kost tot een
+  minuut, en een knop die niets doet leest als een kapotte knop.
+- **De titel ligt los op de achtergrond, de rest niet.** Nagemeten met het
+  script uit *Leesbaar boven een bewegende achtergrond*: alleen `.proef-titel`
+  staat zonder eigen grond, en dat is 30px Cormorant met een gloed — dezelfde
+  uitzondering als de `h2` van een sectie. Alles daaronder staat op `.92`.
+- **Nagemeten op mobiel** (375 breed): niets loopt buiten de pagina, geen
+  zijwaartse scroll, en de vijf cijfers krijgen vijf verschillende veldkleuren.
+
+### Hoe je ziet of het werkt
+
+`rapport.py` en het beheerpaneel hebben er een kolom bij: de trechter is nu
+**bezoek -> gratis duiding -> account -> droom**. Daaronder staat hoeveel gratis
+duidingen er waren en wat ze samen kostten. Dat komt uit `usage.jsonl` en niet
+uit de database, want daar wordt bij een gratis duiding met opzet niets
+geschreven; in zo'n regel staat de datum, het aantal tokens en verder niets —
+geen adres, geen droomtekst, geen duiding. `who` is altijd `onbekend`.
+
+**Let op bij het beheerpaneel:** de rijen van die tabel worden opgebouwd met
+`Object.keys(tot)`, dus de volgorde van de sleutels in `tot` is de volgorde van
+de kolommen. Zet `proef` daar op de plek waar `duiding` in de kop staat, anders
+schuiven alle getallen een kolom op zonder dat iets het meldt.
 
 ## Eerst de droom, dan pas het account
 
