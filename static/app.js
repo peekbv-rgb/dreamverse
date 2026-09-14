@@ -3141,7 +3141,7 @@
   // is de rondgang nauwelijks te zien, en het blijft één opname.
   var INTRO = {
     nl: { video: "vera-intro-nl.mp4", stilVanaf: 8.46,
-          tekst: "Hi, ik ben Vera, de digitale droom-annalist. Wil je je droom met mij delen?" },
+          tekst: "Hi, ik ben Vera, de digitale droomanalist. Wil je je droom met mij delen?" },
     en: { video: "vera-intro-en.mp4", stilVanaf: 5.4,
           tekst: "Hi, I'm Vera, your digital dream analyst. Would you like to share your dream with me?" }
   };
