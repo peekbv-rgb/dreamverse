@@ -1258,7 +1258,9 @@ body::after { opacity: .34; }
 .kwaliteit-melding.err { color: #F5A08F; }
 
 /* De naam is al bij de introductie gevraagd; hier alleen nog terugtonen. */
-.who-bekend { margin: 0; font-size: .85rem; color: var(--muted); }
+.who-bekend { margin: 0; font-size: .85rem; color: var(--muted);
+              display: flex; flex-wrap: wrap; align-items: baseline; gap: .4rem; }
+.who-bekend p { margin: 0; }
 .who-bekend b { color: var(--ink); font-weight: 600; }
 .linkje {
   padding: 0; border: 0; background: none; font-size: .85rem;

@@ -253,10 +253,21 @@
       <p class="guide-line" id="guide-line">Goedemorgen. Hier is Vera, heb je lekker geslapen?</p>
     </div>
     <div class="who" id="who">
-      <p class="who-bekend" id="who-bekend" hidden>
-        <span id="who-voor">Vera spreekt je aan als </span><b id="who-naam"></b>.
+      <!-- De knop staat naast de <p> en niet erin.
+
+           Hij stond erin, en dan werkt hij niet. `taal.js` vervangt de hele
+           innerHTML van elke <p>, dus bij een taalwissel wordt deze knop
+           opnieuw opgebouwd als een nieuw element - en de listener hing aan het
+           oude. Daarna doet "anders" niets meer: geen fout, geen melding, geen
+           venster. Nagemeten: na heen en weer schakelen is het niet meer
+           hetzelfde DOM-element.
+
+           Dit is dezelfde val als bij het zoekveld van de gids en bij
+           "Heb je al een account? Inloggen" in de poort. Derde keer. -->
+      <div class="who-bekend" id="who-bekend" hidden>
+        <p><span id="who-voor">Vera spreekt je aan als </span><b id="who-naam"></b>.</p>
         <button type="button" class="linkje" id="who-anders">anders</button>
-      </p>
+      </div>
       <div class="who-vraag" id="who-vraag">
         <label for="naam">Hoe heet je?</label>
         <input type="text" id="naam" maxlength="60" autocomplete="given-name" placeholder="je naam">

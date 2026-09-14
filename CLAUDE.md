@@ -192,6 +192,29 @@ en het scheelt direct in de kostprijs per verbeelding.
   streep op twee plekken, en werd `--water` nergens gezet — waardoor Vera's
   portret nooit oplichtte als ze luisterde. Zelfde soort fout als een stuurteken,
   dus zelfde controle.
+- **Een knop in een `<p>` doet niets, en `python build/controle.py` zoekt ze nu.**
+  `taal.js` vervangt de hele `innerHTML` van elke `<p>` bij een taalwissel. Staat
+  er een `<button>` of een invoerveld in, dan wordt dat opnieuw opgebouwd als een
+  nieuw element en hing de listener aan het oude. Daarna doet die knop niets
+  meer: geen fout in de console, geen melding, geen venster.
+
+  **Drie keer gebeurd voordat de controle er was.** Het zoekveld van de gids, de
+  regel *Heb je al een account? Inloggen* in de poort, en de knop **anders**
+  naast de naam van de dromer — die laatste stond er maanden, en Ruud vond hem
+  doordat er niets gebeurde als hij erop drukte. Nagemeten: na twee taalwissels
+  is `#who-anders` niet meer hetzelfde DOM-element.
+
+  De oplossing is altijd dezelfde: zet het interactieve element **naast** de
+  `<p>` en wikkel de twee in een `<div>`. De tekst in die `<p>` wordt dan gewoon
+  vertaald, de knop wordt met rust gelaten, en `button` staat toch al in
+  `TE_VERTALEN` dus het opschrift wisselt vanzelf mee. Let op dat de zin ernaast
+  in een **`<p>`** staat en niet in een `<span>`: `TE_VERTALEN` kent wel `p` maar
+  geen kale `span`, dus met een `<span>` blijft die zin Nederlands terwijl de
+  knop ernaast keurig Engels wordt.
+
+  De controle is nagemeten door de fout er tijdelijk weer in te zetten: hij
+  noemt bestand, regelnummer en de hele `<p>`, en geeft afsluitcode 1.
+
 - **Stuurtekens in de broncode: `python build/controle.py`.** Er stond een
   letterlijk backspace-teken (0x08) middenin `/[?&]beheer/` in `static/app.js`,
   waar een woordgrens bedoeld was. Die test matchte daardoor nooit, het

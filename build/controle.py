@@ -121,6 +121,40 @@ def entiteiten():
     return uit
 
 
+def knoppen_in_alineas():
+    """Een <button> of invoerveld binnen een <p> in index.html.
+
+    `taal.js` vervangt de hele `innerHTML` van elke `<p>` bij een taalwissel.
+    Staat er een knop in, dan wordt die opnieuw opgebouwd als een nieuw
+    element - en de listener hing aan het oude. Daarna doet die knop niets
+    meer: geen fout in de console, geen melding, geen venster. Precies het
+    soort fout dat zich niet meldt.
+
+    Drie keer gebeurd voordat deze controle er was. Het zoekveld van de gids
+    (opgelost met een <div>), "Heb je al een account? Inloggen" in de poort, en
+    "anders" naast de naam van de dromer - die laatste stond er maanden en
+    Ruud vond hem omdat de knop niets deed.
+
+    De oplossing is altijd dezelfde: zet het interactieve element **naast** de
+    <p> in plaats van erin, en wikkel de twee in een <div>. De tekst in die <p>
+    wordt dan gewoon vertaald en de knop blijft met rust gelaten.
+    """
+    import re
+    pad = WORTEL / "static" / "index.html"
+    if not pad.exists():
+        return []
+    tekst = pad.read_text(encoding="utf-8")
+    uit = []
+    for m in re.finditer(r"<p\b[^>]*>(.*?)</p>", tekst, re.S):
+        soorten = re.findall(r"<(button|input|select|textarea)\b", m.group(1))
+        if not soorten:
+            continue
+        regel = tekst[:m.start()].count("\n") + 1
+        uit.append((regel, ", ".join(sorted(set(soorten))),
+                    " ".join(m.group(0).split())[:110]))
+    return uit
+
+
 def main():
     gevonden = []
     for pad in bestanden():
@@ -145,11 +179,27 @@ def main():
     zwevend = css_variabelen()
     onvertaald = vertalingen()
     gecodeerd = entiteiten()
+    ingesloten = knoppen_in_alineas()
 
-    if not gevonden and not zwevend and not onvertaald and not gecodeerd:
+    if not gevonden and not zwevend and not onvertaald and not gecodeerd \
+            and not ingesloten:
         print("Geen stuurtekens, elke CSS-variabele bestaat, elke t()-zin heeft "
-              "een vertaling, geen entiteiten in de sleutels.")
+              "een vertaling, geen entiteiten in de sleutels, geen knoppen in "
+              "een <p>.")
         return 0
+
+    if ingesloten:
+        print("Een knop of invoerveld binnen een <p> in index.html. taal.js")
+        print("vervangt de innerHTML van elke <p>, dus bij een taalwissel is")
+        print("de listener weg en doet dat element niets meer - zonder fout")
+        print("en zonder melding. Zet het naast de <p>, in een <div>:")
+        print("")
+        for regel, soorten, inhoud in ingesloten:
+            print("  static/index.html:%d  bevat %s" % (regel, soorten))
+            print("    %s" % inhoud)
+        print("")
+        if not gevonden and not zwevend and not onvertaald and not gecodeerd:
+            return 1
 
     if gecodeerd:
         print("Sleutels in taal.js met een HTML-entiteit erin. De browser")
