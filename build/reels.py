@@ -502,7 +502,16 @@ def muziek_eronder(slug, muziek, vanaf=20.0, luider=-3.0):
 
     bron = STIL / (slug + ".mp4")
     if not bron.exists():
-        raise SystemExit("Geen stille versie voor {}. Draai eerst --ja.".format(slug))
+        # Overslaan en doorgaan, niet stoppen.
+        #
+        # Dit was een SystemExit, en dan valt de hele reeks stil op het eerste
+        # onderwerp dat nog geen stille versie heeft - terwijl de zesentwintig
+        # erachter gewoon klaar stonden. Dat gebeurde toen er zes onderwerpen
+        # bij kwamen waarvan de animatie nog liep: --verdeel stopte bij `blood`
+        # en de rest kreeg geen muziek. Wat ontbreekt hoort gemeld te worden,
+        # niet de rest tegen te houden.
+        print("  %-20s overgeslagen: nog geen stille versie" % slug)
+        return None
     DOEL.mkdir(parents=True, exist_ok=True)
     doel = DOEL / (slug + ".mp4")
 
@@ -624,6 +633,8 @@ def main(argv=None):
             naam = stemming_van(slug)
             pad, vanaf = starts[naam]
             uit = muziek_eronder(slug, pad, vanaf)
+            if uit is None:
+                continue
             print("  {:<20} {:<8} {:>6.1f} MB".format(
                 slug, naam, uit.stat().st_size / 1e6))
         print("")
@@ -641,6 +652,8 @@ def main(argv=None):
         print("")
         for d, slug in rijen:
             uit = muziek_eronder(slug, muziek, vanaf)
+            if uit is None:
+                continue
             print("  {:<20} {:>6.1f} MB".format(slug, uit.stat().st_size / 1e6))
         print("")
         print("Klaar: {}".format(DOEL.relative_to(WORTEL)))

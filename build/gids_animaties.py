@@ -124,6 +124,25 @@ BEWEGING = {
                          "small bubbles trailing upward",
     # water: een wateroppervlak.
     "water": "the surface ripples outward in slow rings, the reflections shift",
+    # --- de zes van 14 september ------------------------------------------ #
+    # father: een lege werkplaats bij eerste licht, jas over de stoel.
+    "father": "the morning light through the window slowly brightens, dust "
+              "drifts across the bench, the sleeve of the jacket stirs faintly",
+    # money: oude munten op een donkere tafel, een vangt het licht.
+    "money": "the light shifts slowly across the coins so the glints travel "
+             "from one to the next, the shadows lengthen a little",
+    # blood: een druppel die oplost in helder water.
+    "blood": "the red drop keeps unfurling very slowly into soft ribbons, "
+             "drifting outward and thinning, nothing else moves",
+    # drowning: het oppervlak van onderaf, licht dat erdoorheen breekt.
+    "drowning": "the shafts of light sway gently as the surface above moves, "
+                "bubbles rise slowly toward it",
+    # wedding: twee ringen op linnen, droge blaadjes eromheen.
+    "wedding": "the warm light moves slowly across the rings so they catch it "
+               "in turn, one dried petal shifts a little",
+    # mirror: een staande spiegel in een lege kamer, alleen licht erin.
+    "mirror": "the light held in the mirror slowly brightens and dims again, "
+              "dust drifts through the room, nothing appears in the glass",
 }
 
 # "no new people ... enter the frame" en niet "no people": bij cat, dogs, horse,

@@ -826,6 +826,46 @@ Vijf dingen die in dat script bewust zo zijn:
   overzichtsadres en niet de diepe link — dat laatste is 43 tekens die niemand
   overtypt. De diepe link staat wél in de caption.
 
+**De Reels bewegen echt, sinds 14 september.** `build/gids_animaties.py` maakt
+van elk gidsbeeld een animatie van vijf seconden bij Kling (`kling-v2-1`, `pro`,
+3,5 eenheden per stuk), en `maak()` gebruikt die in plaats van de zoom zodra het
+bestand in `data/gids-animatie/` staat. De zoom blijft de terugval: een onderwerp
+zonder animatie rendert gewoon zoals eerst.
+
+Waarom nu wel: het argument tegen bewegen was altijd de prijs — een animatie bij
+Runway is € 0,55 tot € 1,47. Het Kling-videotegoed verliep **18 september 2026**
+en stond op 904 van de 1000 eenheden. Drieëndertig onderwerpen is 115 eenheden,
+ruim een tiende van wat er anders verdampte.
+
+Vier dingen die in dat script bewust zo zijn:
+
+- **Per onderwerp een eigen bewegingsopdracht**, in `BEWEGING`. Zonder opdracht
+  weigert het script te draaien in plaats van het onderwerp stil over te slaan —
+  dezelfde regel als bij `PROMPTS`. Bij *spiders* trillen de dauwdruppels en komt
+  er geen spin; bij *stranger* staat er letterlijk dat de gestalte niet naar
+  voren stapt, want dat is precies wat een model met vijf vrije seconden
+  verzint.
+- **Alleen de wereld beweegt, niet de camera.** Geen zwenk, geen zoom. Wat we
+  willen is een beeld dat ademt, geen filmpje.
+- **`no new people … enter the frame` en niet `no people`.** Bij *cat*, *dogs*,
+  *horse*, *birds* en *snakes* staat het dier er juist al; met de kortere
+  formulering leest het model het als "geen dieren" en houdt het het beest stil.
+- **Hervatbaar.** Wat al een bestand heeft wordt overgeslagen, dus een
+  afgebroken run kost geen tegoed. Dat telt hier dubbel.
+
+**En heen en terug in plaats van herhalen.** De animatie is vijf seconden, de
+Reel acht. Herhalen geeft een sprong op het naadje en het laatste beeldje
+vasthouden geeft drie seconden stilstand precies wanneer de kijker nog kijkt.
+Vooruit en dan achteruit is aan het keerpunt naadloos — de beweging is traag en
+omkeerbaar (mist, water, licht), dus achteruit ziet er niet achteruit uit.
+
+**`--verdeel` stopte op het eerste onderwerp zonder stille versie.** Dat was een
+`SystemExit`, en toen er zes onderwerpen bij kwamen waarvan de animatie nog liep,
+kreeg de hele reeks erachter geen muziek — terwijl die klaar stond. Nu meldt hij
+wat ontbreekt en gaat door. **Let op:** `muziek_eronder()` is een functie en geen
+lus, dus dat is `return None` en de twee aanroepers slaan de regel over; een
+`continue` daar is een SyntaxError.
+
 **Kleiner in plaats van korter.** Past een titel niet in twee regels, dan gaat de
 letter omlaag (84 → 54 punten) en wordt er niets weggelaten. Er stond eerst
 `[:2]`, en dan verliest *Dreaming about being naked in public* zijn laatste
