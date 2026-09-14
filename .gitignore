@@ -15,3 +15,9 @@ run.log
 # Het droomarchief en de accounts: andermans dromen en wachtwoorden zijn
 # niets voor een repo. data/ dekt ook dreamverse.db en de WAL-bestanden.
 data/
+
+# Een opgeslagen webpagina met al zijn assets. Die kwam op 14 september mee met
+# een `git add -A`: 229 bestanden en 39 MB aan JavaScript van iemand anders,
+# nergens in dit project gebruikt. De HTML zelf blijft staan - dat is iets wat
+# Ruud bewaard heeft - maar de map met assets ernaast hoort niet in de repo.
+persona/*_files/

@@ -1,5 +1,0 @@
-;/*FB_PKG_DELIM*/
-
-__d("FxcalSettingsProductFalcoEvent",["FalcoLoggerInternal","getFalcoLogPolicy_DO_NOT_USE"],(function(t,n,r,o,a,i,l){"use strict";var e=r("getFalcoLogPolicy_DO_NOT_USE")("117"),s=o("FalcoLoggerInternal").create("fxcal_settings_product",e),u=s;l.default=u}),98);
-__d("StandaloneDataFromPartnersUserGrainSeeExampleDialogQuery_instagramRelayOperation",[],(function(t,n,r,o,a,i){a.exports="26081929004823605"}),null);
-__d("StandaloneDataFromPartnersUserGrainSeeExampleDialogValidateTokenQuery_instagramRelayOperation",[],(function(t,n,r,o,a,i){a.exports="26285389114488679"}),null);
