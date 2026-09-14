@@ -830,6 +830,56 @@ be"*; dromen over doodgaan *"carries no information about anybody's health,
 safety or lifespan"*. Wie een van deze drie herschrijft: die eerste zin is niet
 de inleiding, die is de reden dat de pagina mag bestaan.
 
+## De promo met Vera, en wat text2video leerde
+
+`build/vera_vliegt.py` maakt shots **uit tekst** bij Kling, en dat is het eerste
+in dit project dat niet uit een bestaand beeld komt: `gids_animaties.py` laat een
+gidsbeeld bewegen, `video.py` een paneel. Dit komt uit niets.
+
+**`kling-v1` en niet `kling-v2-1`.** Dat tweede model weigert text2video met
+*"model is not supported"* — nagemeten op 14 september 2026. Het eindpunt is
+`/v1/videos/text2video`, verder dezelfde vorm als image2video.
+
+**Het gezicht is het probleem, en daarom staat ze er niet met haar gezicht op.**
+Kling verzint een gezicht, en dat wordt niet dat van de Runway-avatar
+(`43e6b2b0…`) die in de app staat. Twee verschillende Vera's is erger dan één.
+Dus is ze in elk shot van achteren, en staat `face` in de negative prompt. Haar
+herkenningstekens — lang donker golvend haar, het gouden hoofdstuk met muntjes,
+de donkere mantel — doen het werk.
+
+**Twee mislukkingen, allebei uit de opdracht zelf.** Dit is de les die meer waard
+is dan het script:
+
+- Er stond *"a dark cloak trailing behind her in one long line"*. Het model
+  tekende een **lijn**: ze hing aan een kabel. Bij een beeldmodel is een
+  beeldspraak geen beeldspraak.
+- Daarna werden *"gliding across the frame"* en *"horizontal"* genegeerd en
+  **liep** ze over een rotsrand. Wat ontbrak was de enige regel die geen keus
+  laat: **er mag geen grond in beeld zijn.** Zolang er ergens een rand is, zet
+  het model er iemand op. Nu staan `ground, rock, cliff, ledge, standing,
+  walking` in de negative prompt, naast `rope, cable, wire, kite, parachute`
+  uit de eerste ronde.
+
+**En die tweede mislukking werd het beste beeld van de reeks.** `rand.mp4` — ze
+loopt naar de rand boven een wolkenzee — paste beter bij het geslaagde zweefshot
+dan het oorspronkelijke plan, want die twee delen hetzelfde licht en dezelfde
+wolken. Nacht boven een mistvallei en zonsopgang boven de wolken snijden niet aan
+elkaar. **Lopen → zweven** is bovendien een beter verhaal dan opstijgen →
+overkomen, en dat was niet bedacht.
+
+`build/promo_vera.py` maakt daar tien seconden van, in twee talen, met de zin
+die over de knip doorloopt:
+
+    Every night you go somewhere.      (ze loopt naar de rand)
+    Dreamverse remembers where.        (ze zweeft)
+
+*Remembers* is de hele belofte: bij droom tien was droom drie allang vergeten.
+Het merk en de knop komen pas halverwege het tweede beeld — wie ze meteen ziet
+weet dat het reclame is voordat het beeld iets heeft kunnen doen. De muziek is
+`rustig` en geen beat: de gidsreels stellen een vraag en mogen onrustig zijn,
+deze doet een belofte. `--nummer` probeert een ander nummer zonder het beeld
+opnieuw te coderen.
+
 ## De Reel die zegt wat Dreamverse is
 
 `python build/reel_product.py --ja` maakt er één van negen seconden in drie
