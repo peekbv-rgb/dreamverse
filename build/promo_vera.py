@@ -208,25 +208,52 @@ MUZIEK = WORTEL / "data" / "muziek"
 STANDAARD_NUMMER = "mixkit-peace-487.mp3"
 
 
+# De caption. De eerste regel is wat er staat vóór "meer" - daar wordt besloten
+# of iemand doorleest, dus dat is de regel uit de video zelf.
+#
+# Elf hashtags, en dat is een bewuste bovengrens: Instagram staat er dertig toe
+# maar een muur leest als spam. Dezelfde afweging als bij de gidsreels, waar er
+# acht staan. Hier mogen het er iets meer zijn omdat dit de vastgepinde post is
+# en de enige die het hele product beschrijft - die hoeft niet één onderwerp te
+# raken maar een publiek.
+#
+# `#lucidwdreaming` staat er bewust **niet** tussen, hoe groot hij ook is: dat
+# is het publiek dat zijn dromen wil sturen, en dit product doet het
+# tegenovergestelde - het onthoudt wat er vanzelf gebeurde. Verkeerd publiek
+# aantrekken is duurder dan een kleiner bereik, want Instagram leert ervan wie
+# je volgende post te zien krijgt.
 CAPTION = {
     "en": """Every night you go somewhere. Dreamverse remembers where.
 
 Tell your dream in the morning and get it back as five panels, a reading and a
-look ahead. Every dream you tell counts in the next one — recurring places,
-people and animals slowly become one world.
+look ahead — psychological, symbolic or spiritual, whichever way you want to
+look at it.
 
-Free to start. Link in bio.
+And every dream you tell counts in the next one. Recurring places, people and
+animals slowly become one world, and after a while you can see what runs through
+all of them. That is the part you cannot do alone: by dream ten, dream three is
+long forgotten.
 
-#dreams #dreammeaning #dreaminterpretation #dreamjournal #veradreamverse""",
+Free to start. Three dreams a month, no card needed. Link in bio.
+
+#dreams #dreammeaning #dreaminterpretation #dreamjournal #dreamanalysis
+#dreamsymbols #dreamdiary #subconscious #whatdoesmydreammean #nightmares
+#veradreamverse""",
     "nl": """Elke nacht ga je ergens heen. Dreamverse onthoudt waar.
 
 Vertel 's ochtends je droom en krijg hem terug als vijf panelen, met een duiding
-en een vooruitblik. Elke droom die je vertelt telt mee in de volgende —
-terugkerende plaatsen, personen en dieren worden zo langzaam één wereld.
+en een vooruitblik — psychologisch, symbolisch of spiritueel, hoe je er ook naar
+wilt kijken.
 
-Gratis om te beginnen. Link in bio.
+En elke droom die je vertelt telt mee in de volgende. Terugkerende plaatsen,
+personen en dieren worden langzaam één wereld, en na een tijdje zie je wat er
+door al je nachten heen loopt. Dat is het deel dat je alleen niet kunt: bij
+droom tien is droom drie allang vergeten.
 
-#dromen #droombetekenis #droomuitleg #droomdagboek #veradreamverse""",
+Gratis om te beginnen. Drie dromen per maand, geen betaalgegevens. Link in bio.
+
+#dromen #droombetekenis #droomuitleg #droomdagboek #droomduiding #droomsymbolen
+#watbetekentmijndroom #onderbewuste #nachtmerrie #slapen #veradreamverse""",
 }
 
 
