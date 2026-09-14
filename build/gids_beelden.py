@@ -54,6 +54,37 @@ WEBPAD = "/gids/{}.jpg"
 VERHOUDING = "16:9"
 
 PROMPTS = {
+    # Zes onderwerpen erbij op 14 september. Dezelfde drie regels als de rest:
+    # geen gezichten, niet letterlijk, en niet eng. Bij de mensen-onderwerpen
+    # (father) is het beeld de plek die hij net verliet, zoals bij mother.
+    "father":
+        "an empty workshop at first light, a jacket over the back of a chair, "
+        "a pair of worn tools laid down on the bench, a window with the morning "
+        "behind it, no people and no faces, warm and quiet",
+    "money":
+        "a scattering of old coins on a dark table, one catching a single warm "
+        "light from above, the rest in shadow, seen from close but not "
+        "touching, no hands and no faces, still and unhurried",
+    # Bloed: geen wond, geen lichaam, niets medisch. Een druppel in water is
+    # het beeld dat mensen zelf beschrijven en het schrikt niemand af.
+    "blood":
+        "a single dark red drop dispersing slowly in clear water, unfurling "
+        "into soft ribbons, lit from one side, seen close up against a deep "
+        "blue ground, no body, no wound, no hands, quiet and weightless",
+    # Verdrinken: van onder naar het licht toe, niet iemand die kopje-onder
+    # gaat. Het beeld moet over water gaan en niet over paniek.
+    "drowning":
+        "the surface of water seen from below, pale light breaking through it "
+        "in wide slow shafts, bubbles rising toward it, deep blue-green fading "
+        "to dark underneath, no figure and no face, calm and vast",
+    "wedding":
+        "two rings resting side by side on pale linen, a scatter of dried "
+        "petals around them, low warm light from one side, an empty hall "
+        "softly out of focus behind, no people and no faces",
+    "mirror":
+        "an old standing mirror in an empty room at dusk, its surface holding "
+        "only light and the outline of a window, nothing else reflected, dust "
+        "drifting in the air, no figure and no face",
     "snakes":
         "a single serpent of light coiling through tall dark grass at night, "
         "its scales catching a low green glow, seen from a distance, calm and "
@@ -245,8 +276,21 @@ def main(argv):
         print("Geen prompt voor: {}. Zet er een in PROMPTS.".format(", ".join(zonder)))
         return 1
 
-    te_doen = [(p, d, s) for p, d, s in rijen if not d.get("image")]
-    klaar = [s for _, d, s in rijen if d.get("image")]
+    # Klaar is: het veld staat er **en** het bestand bestaat.
+    #
+    # Eerst keek dit alleen naar het veld, en dat gaat mis zodra je een nieuw
+    # onderwerp schrijft met `"image": "/gids/<slug>.jpg"` er alvast in - het
+    # script meldt dan "heeft al een beeld" terwijl de gidspagina een kapot
+    # plaatje toont. Precies dat gebeurde met de zes onderwerpen van
+    # 14 september.
+    def af(d):
+        naam = (d.get("image") or "").strip()
+        # Het veld is een webpad ("/gids/x.jpg"); op schijf staat dat
+        # onder static/.
+        return bool(naam) and (WORTEL / "static" / naam.lstrip("/")).exists()
+
+    te_doen = [(p, d, s) for p, d, s in rijen if not af(d)]
+    klaar = [s for _, d, s in rijen if af(d)]
     if klaar:
         print("Heeft al een beeld: {}".format(", ".join(klaar)))
     if not te_doen:
