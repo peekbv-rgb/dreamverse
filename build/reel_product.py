@@ -188,6 +188,15 @@ def maak(taal):
     return doel
 
 
+MUZIEK = WORTEL / "data" / "muziek"
+
+# `midden` en niet `rustig`. De promo doet een belofte boven een wolkenzee en
+# hoort stil te zijn; deze legt uit wat je krijgt, in drie tellen met een knop
+# aan het eind. Daar mag wat meer body onder. Nog steeds geen harde beat - zie
+# de verdeling in build/reels.py: bij twijfel niet de beat.
+STANDAARD_NUMMER = "mixkit-hazy-after-hours-132.mp3"
+
+
 CAPTION = {
     "en": """What Dreamverse does, in nine seconds.
 
@@ -214,6 +223,9 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--taal", default="en", choices=("en", "nl"))
     ap.add_argument("--ja", action="store_true", help="echt maken")
+    ap.add_argument("--nummer", default=STANDAARD_NUMMER,
+                    help="een ander nummer uit data/muziek/")
+    ap.add_argument("--stil", action="store_true", help="zonder geluid")
     args = ap.parse_args()
 
     ontbreekt = [c for c, _ in TELLEN if not (CLIPS / c).exists()]
@@ -231,6 +243,13 @@ def main():
         return 0
 
     doel = maak(args.taal)
+    if not args.stil:
+        nummer = MUZIEK / args.nummer
+        if not nummer.exists():
+            print("Dat nummer staat niet in data/muziek/: %s" % args.nummer)
+            return 1
+        print("  muziek: %s" % nummer.name)
+        reels.geluid_eronder(doel, nummer, SECONDEN)
     tekst = DOEL / ("dreamverse-" + args.taal + ".txt")
     tekst.write_text(CAPTION[args.taal], encoding="utf-8")
     print("\n  %s  %.1f MB" % (doel.name, doel.stat().st_size / 1e6))

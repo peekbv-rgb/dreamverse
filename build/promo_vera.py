@@ -61,6 +61,15 @@ DOEL = WORTEL / "data" / "promo-vera"
 
 SECONDEN_PER_BEELD = 5
 
+# Drie beelden, en het derde is het slotbeeld.
+#
+# Eerst waren het er twee en lagen het merk en de knop over het zweefshot heen.
+# Dat werkte, maar het beeld en de boodschap vochten om dezelfde ruimte. Met een
+# eigen slotbeeld krijgt elk van de drie één taak: vaststellen, antwoorden,
+# wijzen. En de boog toont de reis in plaats van de reiziger - dat idee komt uit
+# een montage die Ruud zelf in CapCut maakte.
+#
+# `None` als regel betekent: geen zin, alleen merk en knop.
 TELLEN = [
     ("rand.mp4", {
         "en": "Every night you go somewhere.",
@@ -70,6 +79,7 @@ TELLEN = [
         "en": "Dreamverse remembers where.",
         "nl": "Dreamverse onthoudt waar.",
     }),
+    ("boog.mp4", {"en": None, "nl": None}),
 ]
 
 KNOP = {"en": "Start free", "nl": "Gratis beginnen"}
@@ -104,18 +114,19 @@ def overlaag(regel, knop=None, merk=False):
     tekenen = ImageDraw.Draw(laag)
     ruimte = BREEDTE - 2 * KANTLIJN
 
-    for punten in (80, 72, 64, 58):
-        kop = reels.letter(("georgiai.ttf", "Georgia Italic.ttf",
-                            "DejaVuSerif-Italic.ttf"), punten)
-        regels = reels.omslaan(tekenen, regel, kop, ruimte)
-        if len(regels) <= 2:
-            break
-    hoog = round(punten * 1.2)
-    y = VEILIG_BOVEN + 70
-    for r in regels:
-        tekenen.text((BREEDTE / 2, y), r, font=kop, fill=INK, anchor="ma",
-                     stroke_width=3, stroke_fill=VOID)
-        y += hoog
+    if regel:
+        for punten in (80, 72, 64, 58):
+            kop = reels.letter(("georgiai.ttf", "Georgia Italic.ttf",
+                                "DejaVuSerif-Italic.ttf"), punten)
+            regels = reels.omslaan(tekenen, regel, kop, ruimte)
+            if len(regels) <= 2:
+                break
+        hoog = round(punten * 1.2)
+        y = VEILIG_BOVEN + 70
+        for r in regels:
+            tekenen.text((BREEDTE / 2, y), r, font=kop, fill=INK, anchor="ma",
+                         stroke_width=3, stroke_fill=VOID)
+            y += hoog
 
     if knop:
         body = reels.letter(("segoeuisb.ttf", "segoeuib.ttf",
@@ -168,14 +179,14 @@ def maak(taal):
         for i, (clip, regels) in enumerate(TELLEN):
             regel = regels[taal]
             laatste = i == len(TELLEN) - 1
-            kaal = overlaag(regel)
-            # In het laatste beeld komen knop en merk er halverwege bij. Wie ze
-            # meteen ziet, weet dat het reclame is voordat het beeld iets heeft
-            # kunnen doen.
-            met_merk = overlaag(regel, KNOP[taal], True) if laatste else None
+            # Het slotbeeld heeft geen zin en draagt alleen merk en knop; de
+            # twee ervoor dragen alleen de zin. Zo vecht niets om dezelfde
+            # ruimte, en staat het merk pas in beeld als het beeld zijn werk
+            # gedaan heeft.
+            kaal = overlaag(regel, KNOP[taal] if laatste else None, laatste)
             beeldjes = beeldjes_van(BRON / clip, per_beeld)
             for n, beeld in enumerate(beeldjes):
-                laag = met_merk if (laatste and n >= per_beeld // 2) else kaal
+                laag = kaal
                 doek = vullend(beeld).convert("RGBA")
                 schrijver.append_data(
                     np.asarray(Image.alpha_composite(doek, laag).convert("RGB")))
@@ -195,34 +206,6 @@ MUZIEK = WORTEL / "data" / "muziek"
 # staat hij er ook met reden: een te kalme track valt niemand op, het
 # omgekeerde wel.
 STANDAARD_NUMMER = "mixkit-peace-487.mp3"
-
-
-def muziek_eronder(video, nummer, luider=-4.0):
-    """Het geluid eronder zetten zonder het beeld opnieuw te coderen.
-
-    `-c:v copy`, dus een ander nummer proberen kost seconden in plaats van een
-    halve minuut. De stille versie blijft de bron.
-    """
-    import subprocess
-    import imageio_ffmpeg
-
-    duur = SECONDEN_PER_BEELD * len(TELLEN)
-    vanaf = reels.beste_start(nummer)
-    fade_uit = max(duur - 1.4, 0.1)
-    filter_ = ("afade=t=in:st=0:d=0.8,"
-               "afade=t=out:st={:.2f}:d=1.4,volume={:.1f}dB".format(
-                   fade_uit, luider))
-    doel = video.with_name(video.stem + "-muziek.mp4")
-    opdracht = [
-        imageio_ffmpeg.get_ffmpeg_exe(), "-hide_banner", "-loglevel", "error",
-        "-y", "-i", str(video), "-ss", str(vanaf), "-i", str(nummer),
-        "-c:v", "copy", "-c:a", "aac", "-b:a", "128k", "-ac", "2",
-        "-af", filter_, "-shortest", "-movflags", "+faststart", str(doel),
-    ]
-    subprocess.run(opdracht, check=True)
-    video.unlink()
-    doel.rename(video)
-    return video
 
 
 CAPTION = {
@@ -266,7 +249,7 @@ def main():
     print("Promo van %d seconden, %d beelden, taal %s."
           % (SECONDEN_PER_BEELD * len(TELLEN), len(TELLEN), args.taal))
     for clip, regels in TELLEN:
-        print("  %-16s %s" % (clip, regels[args.taal]))
+        print("  %-16s %s" % (clip, regels[args.taal] or "(slotbeeld: merk en knop)"))
     if not args.ja:
         print("\nNiets gedaan. Geef --ja mee om hem te maken.")
         return 0
@@ -278,7 +261,9 @@ def main():
             print("Dat nummer staat niet in data/muziek/: %s" % args.nummer)
             return 1
         print("  muziek: %s" % nummer.name)
-        muziek_eronder(doel, nummer)
+        reels.geluid_eronder(doel, nummer,
+                             SECONDEN_PER_BEELD * len(TELLEN),
+                             luider=-4.0)
     tekst = DOEL / ("vera-promo-" + args.taal + ".txt")
     tekst.write_text(CAPTION[args.taal], encoding="utf-8")
     print("\n  %s  %.1f MB" % (doel.name, doel.stat().st_size / 1e6))

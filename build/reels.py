@@ -637,6 +637,42 @@ def beste_start(muziek, stappen=(0, 8, 16, 24, 32, 40, 48)):
     return float(gemeten[0][0])
 
 
+def geluid_eronder(video, nummer, duur, luider=-3.0, vanaf=None):
+    """Muziek onder een willekeurige video zetten, zonder het beeld te hercoderen.
+
+    Dit stond drie keer los: hieronder voor de gidsreels, nog eens in
+    promo_vera.py, en het ontbrak in reel_product.py - en dat leverde de enige
+    video van de honderddertig op die stil de deur uit ging. Eén plek dus.
+
+    `-c:v copy`, dus een ander nummer proberen kost seconden in plaats van een
+    halve minuut per video. De in- en uitfade zitten erin omdat een track die
+    midden in een maat begint of ophoudt klinkt als een fout.
+
+    `vanaf` is het startpunt in de track; zonder opgave wordt dat gemeten met
+    `beste_start()` - bijna elk nummer begint met een kale opbouw, en die is
+    een ander nummer dan de rest.
+    """
+    import subprocess
+    import imageio_ffmpeg
+
+    if vanaf is None:
+        vanaf = beste_start(nummer)
+    fade_uit = max(duur - 1.4, 0.1)
+    filter_ = ("afade=t=in:st=0:d=0.8,"
+               "afade=t=out:st={:.2f}:d=1.4,volume={:.1f}dB".format(
+                   fade_uit, luider))
+    tijdelijk = video.with_name(video.stem + "-geluid.mp4")
+    subprocess.run([
+        imageio_ffmpeg.get_ffmpeg_exe(), "-hide_banner", "-loglevel", "error",
+        "-y", "-i", str(video), "-ss", str(vanaf), "-i", str(nummer),
+        "-c:v", "copy", "-c:a", "aac", "-b:a", "128k", "-ac", "2",
+        "-af", filter_, "-shortest", "-movflags", "+faststart", str(tijdelijk),
+    ], check=True)
+    video.unlink()
+    tijdelijk.rename(video)
+    return video
+
+
 def muziek_eronder(slug, muziek, vanaf=20.0, luider=-3.0):
     """Een muziekstuk onder een al gemaakte Reel.
 

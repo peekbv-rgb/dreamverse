@@ -84,6 +84,25 @@ SHOTS = {
     # zichzelf goed - maar het is geen vliegen. Wat ontbrak was de enige regel
     # die het model geen keus laat: **er mag geen grond in beeld zijn.** Zolang
     # er ergens een rand is, zet het er iemand op.
+    # Het slotbeeld, en het idee komt uit Ruuds eigen montage: een lange boog
+    # door de lucht. Sterk, want het toont de reis in plaats van de reiziger.
+    #
+    # Wel de val van de eerste poging omzeilen: een spoor dat "trailing" of
+    # "line" heet wordt een kabel. Hier staat er expliciet dat het uit licht en
+    # nevel bestaat, en `rope, cable, wire` staan al in de negative prompt. Zij
+    # is klein en ver weg - het spoor is het onderwerp, niet zij.
+    "boog": (
+        "A vast golden dawn sky above an unbroken sea of cloud. A long, slow, "
+        "luminous arc of light curves across the whole frame, like the trail of "
+        "a comet made of light and mist, softly glowing and gradually fading at "
+        "its far end. At the leading edge of the arc, very small and far away, "
+        "the silhouette of a woman gliding with a dark cloak, barely larger than "
+        "a bird. Warm amber and rose along the horizon, deep violet above. The "
+        "arc drifts and shimmers slowly; the camera does not move. Faint "
+        "concentric rings spread outward from the arc. Dreamlike illustration, "
+        "flowing ink and watercolour, soft luminous glow, painterly. No text, "
+        "no letters, no logos."
+    ),
     "overkomen": (
         "A woman flying high in the air, her whole body horizontal and level, "
         "lying flat on the air far above an unbroken sea of cloud. Nothing "
