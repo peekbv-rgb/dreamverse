@@ -787,17 +787,17 @@ section .entry { border-left-width: 3px; border-left-color: var(--tint); }
                              line-height: 1.5; color: var(--muted); }
 
 /* Wachten. Het schrijven duurt tot een minuut, en een knop die niets doet leest
-   als een kapotte knop - dus staat er wat er gebeurt en hoe lang het duurt. */
-.proef-wacht {
-  margin: .2rem 0 0; font-family: var(--body); font-size: .88rem; color: var(--muted);
-  display: flex; align-items: center; gap: .6rem;
-}
-.proef-wacht i {
-  width: 9px; height: 9px; border-radius: 50%; background: var(--crown);
-  box-shadow: 0 0 12px var(--crown); animation: proefpuls 1.4s ease-in-out infinite;
-}
-@keyframes proefpuls { 0%, 100% { opacity: .25; } 50% { opacity: 1; } }
-@media (prefers-reduced-motion: reduce) { .proef-wacht i { animation: none; opacity: .8; } }
+   als een kapotte knop.
+
+   Hier stond een pulserend stipje. Dat is te weinig: pulseren is niet hetzelfde
+   als vooruitgang, en een animatie loopt vrolijk door als er allang niets meer
+   gebeurt. Nu dezelfde `.voortgang` als in de app, met de zandloper en de
+   meelopende klok - één opmaak voor hetzelfde verschijnsel op twee pagina's.
+
+   Alleen niet sticky: in de app hangt die pil onderaan het scherm omdat je
+   daar door een lange pagina scrolt, hier staat hij direct onder de knop waar
+   je net op drukte en waar je dus al naar kijkt. */
+.w-voortgang { position: static; margin: .2rem 0 0; align-self: flex-start; }
 
 /* De weg eromheen mag bestaan, maar hoeft niet te concurreren met het veld. */
 .ghost-link { background: none !important; box-shadow: none !important;

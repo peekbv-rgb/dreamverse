@@ -100,10 +100,17 @@
          data-nl="Vertel er nog iets meer over, dan kan Vera er iets mee.">Tell a little more about it, then Vera has something to work with.</p>
       <button type="button" class="primary" id="w-door"
               data-en="Read this dream" data-nl="Lees deze droom">Read this dream</button>
-      <p class="proef-wacht" id="w-wacht" hidden><i></i><span
-         data-en="Vera is reading your dream. This takes about a minute."
-         data-nl="Vera leest je droom. Dit duurt ongeveer een minuut."
-         >Vera is reading your dream. This takes about a minute.</span></p>
+      <!-- Dezelfde zandloper met meelopende klok als in de app.
+
+           Hier stond een pulserend stipje, en dat was te weinig: het schrijven
+           duurt tot een minuut, en in die minuut is er niets dat verspringt.
+           Dan lijkt het stuk. De klok is het enige dat elke seconde verandert
+           en daarmee het bewijs dat er nog iets loopt - een draaiende zandloper
+           draait ook door als alles dood is.
+
+           De inhoud wordt in JavaScript gezet en niet in data-en/data-nl: `zet()`
+           schrijft textContent, en dat zou de klok en het icoon wegvagen. -->
+      <p class="voortgang w-voortgang" id="w-wacht" hidden></p>
       <p class="welkom-vertel-noot"
          data-en="Free, no account. Your dream is read and not stored."
          data-nl="Gratis, zonder account. Je droom wordt gelezen en niet bewaard.">
@@ -468,7 +475,9 @@
                    nl: "Deze droom verbeeldt Vera niet. Er is niets bewaard en het "
                      + "heeft je niets gekost. Vertel er gerust een andere." },
     stuk:        { en: "That did not work. Try again in a moment.",
-                   nl: "Dat lukte niet. Probeer het zo nog eens." }
+                   nl: "Dat lukte niet. Probeer het zo nog eens." },
+    bezig:       { en: "Vera is reading your dream", nl: "Vera leest je droom" },
+    bezigKnop:   { en: "Reading…", nl: "Bezig…" }
   };
 
   function w(sleutel) { return W[sleutel][gekozen() === "nl" ? "nl" : "en"]; }
@@ -563,6 +572,45 @@
     fout.hidden = false;
   }
 
+  /* De zandloper met de klok, precies zoals in de app.
+   *
+   * Het schrijven duurt tot een minuut. De klok is het enige dat elke seconde
+   * verspringt; zonder dat lijkt een stilstaand scherm een kapot scherm. De
+   * zandloper draait mee, maar die draait ook door als er niets meer gebeurt -
+   * vandaar dat de seconden er staan en niet alleen het plaatje.
+   */
+  var tikker = null;
+  var bezigSinds = 0;
+
+  function klok(ms) {
+    var s = Math.floor(ms / 1000);
+    return Math.floor(s / 60) + ":" + (s % 60 < 10 ? "0" : "") + (s % 60);
+  }
+
+  function verfWacht() {
+    wacht.innerHTML = '<span class="zandloper" aria-hidden="true">⧗</span>' +
+      "<span>" + esc(w("bezig")) + '</span><span class="klok">' +
+      klok(Date.now() - bezigSinds) + "</span>";
+  }
+
+  function startWacht() {
+    bezigSinds = Date.now();
+    wacht.hidden = false;
+    verfWacht();
+    if (tikker) { clearInterval(tikker); }
+    tikker = setInterval(verfWacht, 1000);
+    door.disabled = true;
+    door.textContent = w("bezigKnop");
+  }
+
+  function stopWacht() {
+    if (tikker) { clearInterval(tikker); tikker = null; }
+    wacht.hidden = true;
+    door.disabled = false;
+    // Het opschrift komt uit de HTML, in de taal die nu aanstaat.
+    door.textContent = door.getAttribute("data-" + gekozen()) || door.textContent;
+  }
+
   function melding(tekst) {
     // De server schrijft in een taal; die zin blijft staan bij een wissel.
     fout.setAttribute("data-en", tekst);
@@ -584,8 +632,7 @@
       fout.hidden = true;
       uit.hidden = true;
       uit.innerHTML = "";
-      wacht.hidden = false;
-      door.disabled = true;
+      startWacht();
 
       fetch("/api/proef", {
         method: "POST",
@@ -614,10 +661,7 @@
         toon(a.d.duiding);
       }).catch(function () {
         melding(w("stuk"));
-      }).then(function () {
-        wacht.hidden = true;
-        door.disabled = false;
-      });
+      }).then(stopWacht);
     });
     veld.addEventListener("input", function () { fout.hidden = true; });
   }

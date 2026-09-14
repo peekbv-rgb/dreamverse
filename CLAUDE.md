@@ -943,8 +943,19 @@ bestand. Nagemeten na de verhuizing: dezelfde negen regels met dezelfde nummers.
   zijn er al veel dromen geduid" kreeg ineens dat zijn droom te kort was.
   Daarom schrijft `melding()` ook de `data`-attributen, en zet `meldStandaard()`
   ze terug uit wat er bij het laden stond.
-- **Er staat wat er gebeurt en hoe lang het duurt.** Het schrijven kost tot een
-  minuut, en een knop die niets doet leest als een kapotte knop.
+- **Er staat een zandloper met een meelopende klok, dezelfde als in de app.**
+  Het schrijven kost tot een minuut, en een knop die niets doet leest als een
+  kapotte knop. Hier stond eerst een pulserend stipje, en dat is te weinig:
+  pulseren is niet hetzelfde als vooruitgang, en een animatie loopt vrolijk door
+  als er allang niets meer gebeurt. **De klok is het enige dat elke seconde
+  verspringt**, en daarmee het enige echte bewijs dat er nog iets loopt — precies
+  het argument dat al bij `.voortgang` in `style.css` staat. Nu dezelfde opmaak
+  voor hetzelfde verschijnsel op twee pagina's, alleen niet `sticky`: in de app
+  hangt die pil onderaan het scherm omdat je door een lange pagina scrolt, hier
+  staat hij onder de knop waar je net op drukte. De knop zelf zegt *Bezig…* en is
+  uitgeschakeld. De inhoud van die pil wordt in JavaScript gezet en niet met
+  `data-en`/`data-nl`: `zet()` schrijft `textContent` en zou de klok en het icoon
+  wegvagen.
 - **De titel ligt los op de achtergrond, de rest niet.** Nagemeten met het
   script uit *Leesbaar boven een bewegende achtergrond*: alleen `.proef-titel`
   staat zonder eigen grond, en dat is 30px Cormorant met een gloed — dezelfde
