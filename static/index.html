@@ -132,6 +132,25 @@
      dromer meekwam, verborgen achter hidden. Beheer heeft nu een eigen adres,
      /beheer, met een eigen script en een eigen sessie. In deze pagina zit er
      geen letter meer van. -->
+<!-- De kaart op het scherm, voor als delen niet kan.
+     Er stond hier een verborgen <a download> die het bestand moest
+     opslaan. Dat werkt niet overal: de browser in de Instagram-app
+     blokkeert downloads, en iOS negeert `download` op een blob. Dan
+     gebeurde er niets - geen menu, geen bestand, geen melding die klopte.
+     Een beeld op het scherm werkt in élke browser: ingedrukt houden en
+     bewaren kent iedereen met een telefoon. -->
+<div class="deelkaart" id="deelkaart" hidden>
+  <div class="deelkaart-kaart">
+    <img id="deelkaart-beeld" alt="">
+    <p class="deelkaart-uitleg">Houd het beeld ingedrukt om het te bewaren, en zet het daarna in je verhaal.</p>
+    <div class="row">
+      <a class="knop-als-link" id="deelkaart-op" download="dreamverse.jpg" href="#">Opslaan</a>
+      <span class="spacer"></span>
+      <button type="button" class="ghost" id="deelkaart-weg">Sluiten</button>
+    </div>
+  </div>
+</div>
+
 <div class="intro" id="intro" hidden>
   <div class="intro-kaart">
     <div class="intro-speler">
@@ -305,6 +324,7 @@
         <span class="counter" id="counter"></span>
       </div>
       <p class="deel-melding" id="deel-melding"></p>
+
     </div>
   </div>
 

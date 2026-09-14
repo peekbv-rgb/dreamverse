@@ -664,6 +664,31 @@ section .entry { border-left-width: 3px; border-left-color: var(--tint); }
 /* Kan de browser het niet, dan is dit geen terzijde maar het antwoord. */
 .invoer-hint.kan-niet { color: var(--solar); }
 
+/* De kaart op het scherm, als delen niet kan.
+
+   Boven alles, want dit is een antwoord op een klik en er hoort niets overheen
+   te liggen. Het beeld is het onderwerp, dus dat krijgt de ruimte en de rest is
+   twee knoppen. */
+.deelkaart {
+  position: fixed; inset: 0; z-index: 150;
+  display: flex; align-items: center; justify-content: center; padding: 1.2rem;
+  background: rgba(6, 4, 14, .88); backdrop-filter: blur(6px);
+}
+.deelkaart-kaart {
+  width: 100%; max-width: 22rem;
+  display: flex; flex-direction: column; gap: .8rem;
+}
+.deelkaart-kaart img {
+  /* De kaart is 1080 bij 1920. Op volle breedte duwt dat de twee knoppen van het
+     scherm af, en juist die vertellen wat je nu moet doen. Dus: hoogte eerst. */
+  max-width: 100%; max-height: 68vh; width: auto; height: auto;
+  margin: 0 auto; border-radius: 14px; display: block;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, .6);
+}
+.deelkaart-uitleg {
+  margin: 0; font-size: .88rem; line-height: 1.5; color: #D8CDEA; text-align: center;
+}
+
 /* Het droomveld op de landingspagina.
 
    Dit is het enige element op die pagina dat iets van de bezoeker vraagt, dus

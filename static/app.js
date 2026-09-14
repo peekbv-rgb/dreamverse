@@ -2115,43 +2115,98 @@
     knop.hidden = !kan;
   }
 
+  /* De kaart op het scherm, voor als delen niet kan.
+   *
+   * Hier stond een verborgen <a download>. Die werkt niet overal: de browser in
+   * de Instagram-app blokkeert downloads en iOS negeert `download` op een blob.
+   * Dan gebeurde er niets - geen menu, geen bestand - terwijl de app "opgeslagen
+   * als afbeelding" meldde. Een beeld op het scherm werkt in élke browser.
+   */
+  var deelUrl = null;
+
+  function deelkaartTonen(blob) {
+    var doos = el("deelkaart");
+    if (!doos) { return false; }
+    if (deelUrl) { URL.revokeObjectURL(deelUrl); }
+    deelUrl = URL.createObjectURL(blob);
+    el("deelkaart-beeld").src = deelUrl;
+    var op = el("deelkaart-op");
+    if (op) { op.href = deelUrl; }
+    doos.hidden = false;
+    return true;
+  }
+
+  function deelkaartSluiten() {
+    var doos = el("deelkaart");
+    if (doos) { doos.hidden = true; }
+    if (deelUrl) { URL.revokeObjectURL(deelUrl); deelUrl = null; }
+  }
+
+  if (el("deelkaart")) {
+    el("deelkaart-weg").addEventListener("click", deelkaartSluiten);
+    el("deelkaart").addEventListener("click", function (e) {
+      if (e.target === this) { deelkaartSluiten(); }
+    });
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && !el("deelkaart").hidden) { deelkaartSluiten(); }
+    });
+  }
+
   if (el("deel")) {
     el("deel").addEventListener("click", async function () {
       var knop = this, melding = el("deel-melding");
-      var bron = huidigPaneelBeeld();
       melding.className = "deel-melding";
       melding.textContent = "";
-      if (!bron) { return; }
+
+      // Geen enkele tak mag stil teruggeven. Hier stond `if (!bron) return;`,
+      // en dan lijkt de knop kapot terwijl hij precies doet wat er staat.
+      var bron = huidigPaneelBeeld();
+      if (!bron) {
+        melding.className = "deel-melding err";
+        melding.textContent = t("Er staat nog geen beeld bij deze droom om te delen.");
+        return;
+      }
 
       knop.disabled = true;
       var oudeTekst = knop.textContent;
       knop.textContent = t("Bezig…");
       try {
         // De letters moeten binnen zijn, anders tekent het doek in Times New
-        // Roman en ziet de kaart er niet uit als de app.
-        if (document.fonts && document.fonts.ready) { await document.fonts.ready; }
+        // Roman en ziet de kaart er niet uit als de app. Met een grens erop:
+        // blijft die belofte hangen, dan is een kaart in de verkeerde letter
+        // nog altijd beter dan een knop die niets doet.
+        if (document.fonts && document.fonts.ready) {
+          await Promise.race([
+            document.fonts.ready,
+            new Promise(function (r) { setTimeout(r, 3000); })
+          ]);
+        }
         var blob = await kaartMaken(bron);
+        if (!blob) { throw new Error("geen kaart"); }
         var bestand = new File([blob], "dreamverse.jpg", { type: "image/jpeg" });
 
+        var gedeeld = false;
         if (navigator.canShare && navigator.canShare({ files: [bestand] })) {
-          await navigator.share({ files: [bestand] });
-          melding.textContent = "";
-        } else {
-          // Geen deelmenu — op een laptop is dat de regel. Dan opslaan, en
-          // zeggen wat je er vervolgens mee doet.
-          var url = URL.createObjectURL(blob);
-          var a = document.createElement("a");
-          a.href = url; a.download = "dreamverse.jpg";
-          document.body.appendChild(a); a.click(); a.remove();
-          setTimeout(function () { URL.revokeObjectURL(url); }, 5000);
-          melding.textContent = t("Opgeslagen als afbeelding. Delen naar Instagram gaat het makkelijkst vanaf je telefoon.");
+          try {
+            await navigator.share({ files: [bestand] });
+            gedeeld = true;
+          } catch (deelFout) {
+            // Wegklikken is geen fout; dan is er ook niets meer te doen.
+            if (deelFout && deelFout.name === "AbortError") { gedeeld = true; }
+          }
+        }
+        if (!gedeeld) {
+          // Geen deelmenu, of het weigerde. Dan de kaart zelf laten zien.
+          if (deelkaartTonen(blob)) {
+            melding.textContent = "";
+          } else {
+            melding.className = "deel-melding err";
+            melding.textContent = t("De kaart kon niet gemaakt worden.");
+          }
         }
       } catch (e) {
-        // Wegklikken van het deelmenu is geen fout.
-        if (!(e && e.name === "AbortError")) {
-          melding.className = "deel-melding err";
-          melding.textContent = t("De kaart kon niet gemaakt worden.");
-        }
+        melding.className = "deel-melding err";
+        melding.textContent = t("De kaart kon niet gemaakt worden.");
       }
       knop.disabled = false;
       knop.textContent = oudeTekst;
