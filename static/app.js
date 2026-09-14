@@ -1871,19 +1871,29 @@
     }
   }
 
-  /* De service worker aanmelden.
+  /* De service worker gaat eruit, en wordt niet meer aangemeld.
    *
-   * Alleen op een beveiligde verbinding, want anders bestaat hij niet - en op
-   * http://192.168.x.x zou dit een fout in de console geven waar niemand iets
-   * aan heeft. Faalt het, dan werkt de app precies zoals hij nu werkt: dit is
-   * een extraatje voor het beginscherm, geen voorwaarde.
+   * Hij serveerde een zwarte "je bent offline"-pagina aan mensen die online
+   * waren: elke navigatie liep door een fetch die bij de minste hapering
+   * verwerpt, en de browser in de Instagram-app hapert. Zie de uitleg bovenaan
+   * static/sw.js. Offline is voor deze app waardeloos - er is geen scherm dat
+   * iets doet zonder net - dus het kostte bezoekers en leverde niets op.
+   *
+   * Hier wordt actief afgemeld in plaats van alleen niet meer aangemeld. Wie de
+   * oude worker heeft, houdt hem anders: een geïnstalleerde worker bedient het
+   * eerstvolgende bezoek nog, en dat ene bezoek is bij dit verkeer alles.
+   * sw.js meldt zichzelf ook af; dit is de tweede weg, voor het geval de browser
+   * dat bestand niet opnieuw ophaalt.
    */
-  if ("serviceWorker" in navigator && window.isSecureContext) {
-    window.addEventListener("load", function () {
-      navigator.serviceWorker.register("/sw.js").catch(function (e) {
-        console.warn("service worker niet aangemeld:", e && e.message);
-      });
-    });
+  if ("serviceWorker" in navigator && navigator.serviceWorker.getRegistrations) {
+    navigator.serviceWorker.getRegistrations().then(function (lijst) {
+      lijst.forEach(function (r) { r.unregister(); });
+    }).catch(function () { /* niets: dit mag nooit een pagina kosten */ });
+    if (window.caches && caches.keys) {
+      caches.keys().then(function (namen) {
+        namen.forEach(function (n) { caches.delete(n); });
+      }).catch(function () { /* niets */ });
+    }
   }
 
   /* Een antwoord uitpakken, ook als het geen JSON is.
