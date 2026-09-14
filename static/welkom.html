@@ -429,6 +429,35 @@
   var wacht = document.getElementById("w-wacht");
   var uit = document.getElementById("w-uit");
 
+  /* Eén stap in de trechter melden.
+   *
+   * `sendBeacon` en niet `fetch`, en dat is hier geen netheid: deze knop doet
+   * meteen `location.href = "/app"`, en een `fetch` die nog loopt wordt door
+   * die navigatie afgebroken. De browser levert een beacon juist wél af nadat
+   * de pagina weg is - daar is hij voor gemaakt. Zonder dit zou de enige stap
+   * die we willen meten precies de stap zijn die nooit aankomt.
+   *
+   * Er gaat niets mee behalve het woord. Geen adres, geen droom, geen
+   * kenmerk waarmee iemand te herkennen is - de server houdt er één getal per
+   * dag van bij, net als bij de paginatellers.
+   */
+  function tel(wat) {
+    try {
+      var body = JSON.stringify({ wat: wat });
+      if (navigator.sendBeacon) {
+        navigator.sendBeacon("/api/tel",
+          new Blob([body], { type: "application/json" }));
+        return;
+      }
+      fetch("/api/tel", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: body,
+        keepalive: true
+      }).catch(function () { });
+    } catch (e) { /* een teller mag nooit een klik kosten */ }
+  }
+
   function bewaarLokaal(tekst) {
     // Dezelfde sleutel en dezelfde vorm als in app.js. Dit is het enige wat er
     // van de droom bewaard wordt, en het staat in de browser van de bezoeker.
@@ -545,6 +574,7 @@
     var bewaar = document.getElementById("w-bewaar");
     if (bewaar) {
       bewaar.addEventListener("click", function () {
+        tel("proef:account");
         bewaarLokaal(veld.value.trim());
         location.href = "/app";
       });

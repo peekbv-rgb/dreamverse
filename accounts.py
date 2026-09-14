@@ -618,6 +618,35 @@ HERKOMST = ("ig", "ig-bio", "ig-story", "ig-reel", "fb", "tiktok", "mail",
             "kaart")
 
 
+# De stappen in de trechter die je niet aan de serverkant kunt zien.
+#
+# Bezoek, duiding, account en droom worden allemaal al geteld op de plek waar ze
+# gebeuren. Wat ontbreekt is het stuk ertussen: iemand die de knop indrukte en
+# halverwege wegging, of die de duiding las en dan tóch niet op "maak een
+# account" drukte. Dat gebeurt in de browser en nergens anders.
+#
+# **Een vaste lijst, net als bij HERKOMST.** `weergaven` heeft (datum, pagina)
+# als sleutel, dus een vrij veld laat iemand die tabel met duizenden regels per
+# dag vullen. Een naam die er niet in staat wordt weggegooid.
+#
+# Er wordt niets bewaard waarmee iemand te herkennen is: één getal per dag per
+# naam, precies zoals bij de paginatellers. Dus nog steeds geen cookie, geen
+# banner en niets in de privacyverklaring.
+GEBEURTENISSEN = (
+    "proef:start",      # op "Lees deze droom" gedrukt
+    "proef:klaar",      # er kwam een duiding terug
+    "proef:account",    # op "Maak een account en bewaar hem" gedrukt
+    "poort:account",    # het aanmeldformulier in de app bereikt
+)
+
+
+def tel_gebeurtenis(wat, agent=None, taal_header=None):
+    """Eén stap in de trechter erbij. Onbekende namen worden genegeerd."""
+    if wat not in GEBEURTENISSEN:
+        return False
+    return tel_weergave(wat, agent, taal_header)
+
+
 def herkomst(query, agent=None):
     """Uit welke hoek dit bezoek komt, of None.
 

@@ -1364,6 +1364,53 @@ Het percentage verschijnt pas vanaf tien gemeten bezoeken, en alleen over dagen
 waarop er ook echt geteld is. Het tellen begon later dan de eerste accounts, en
 anders deel je twee getallen op elkaar die over verschillende weken gaan.
 
+**Waar ze afhaken: vier tellers in dezelfde tabel.** Bezoek, duiding, account
+en droom worden geteld op de plek waar ze gebeuren. Wat daartussen zit — iemand
+die op *Lees deze droom* drukte en halverwege wegging — gebeurt in de browser en
+nergens anders. `GEBEURTENISSEN` in `accounts.py` is de vaste lijst
+(`proef:start`, `proef:klaar`, `proef:account`, `poort:account`) en
+`POST /api/tel` neemt ze aan. **Een vaste lijst en geen vrij veld**, om dezelfde
+reden als bij `HERKOMST`: `weergaven` heeft (datum, pagina) als sleutel, dus een
+vrij veld laat iemand die tabel met duizenden regels per dag vullen. Een naam
+die er niet in staat wordt weggegooid en het antwoord is altijd 204 — nagemeten.
+
+Twee daarvan (`proef:start`, `proef:klaar`) worden aan de serverkant gezet en
+zijn dus niet te blokkeren. De andere twee gaan met **`sendBeacon` en niet met
+`fetch`**, en dat is geen netheid: die knoppen doen meteen `location.href = …`,
+en een lopende `fetch` wordt door die navigatie afgebroken. Een beacon wordt
+juist wél afgeleverd nadat de pagina weg is. Zonder dat zou precies de stap die
+je wilt meten de stap zijn die nooit aankomt. Nagemeten in de browser: alle vier
+komen binnen, ook die ná de navigatie.
+
+**"Account gemaakt" hoort niet in dat blokje**, hoe verleidelijk ook. Dat cijfer
+komt uit `users.gemaakt` en loopt over de hele periode, terwijl deze tellers pas
+sinds hun invoering tellen. De eerste keer dat het blok draaide stond er **200%**,
+en dat is dezelfde fout als bij de trechter: twee getallen uit verschillende
+weken op elkaar delen.
+
+**Welk gidsonderwerp bezoek trekt** stond al maanden in de database — `gids:<slug>`
+wordt geteld sinds dag één — en werd alleen nooit uit elkaar gehaald: `rapport.py`
+telde alles op tot één kolom *gids*. Nu staat er per onderwerp een regel, plus
+welke onderwerpen nog nul bezoeken hadden. Dat is het cijfer waarop je besluit
+welke onderwerpen erbij moeten, en welke je niet nog eens hoeft te schrijven.
+
+**Waarom geen Plausible of Google Analytics, nog niet.** Google Analytics is
+gratis in geld en duur in gevolgen: het zet cookies, dus in de EU hoort er een
+toestemmingsvenster vóór het droomveld — precies de drempel die op 14 september
+is weggehaald — en wie weigert wordt niet gemeten, dus de gratis dienst levert
+het slechtste cijfer. Plausible is de betere keuze (cookieloos, in Duitsland
+gehost, geen banner nodig) maar kost $ 9 per maand en je 30 dagen proef zijn pas
+iets waard in een maand met echt verkeer. **Bij 46 gemeten bezoeken is de vraag
+niet hóe mensen klikken maar óf ze het doen**, en dat meten deze vier tellers
+gratis. Komt Plausible er later, dan blijven ze bruikbaar: een adblocker
+blokkeert een script, geen servertelling.
+
+Let op wat er dan wél moet veranderen: op `welkom.html` staat nu *geen
+meetscript* / *no analytics script*. Met welk script dan ook erop is die zin
+onwaar, en dan moet er staan wat Ruud zelf voorstelde: geen advertentietracking,
+geen verkoop van persoonsgegevens, geen cross-site tracking. En de dienst moet
+als verwerker in `privacy.html`, naast Anthropic, Kling, Runway, Stripe en Render.
+
 **Geen derde partij, geen cookies, geen banner.** Alles komt uit gegevens die er
 al waren — `users.gemaakt`, `dromen.wanneer`, de vragen in de bewaarde
 verbeelding, de tabel `betalingen` — plus `usage.checkout()` voor het begin van

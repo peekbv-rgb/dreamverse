@@ -303,6 +303,62 @@
           }
         }
 
+        /* Waar ze afhaken.
+         *
+         * De dagtabel hierboven laat zien hoeveel mensen er kwamen en hoeveel
+         * er een account maakten. Wat ertussen gebeurt - iemand die op de knop
+         * drukte en halverwege wegging - is aan de serverkant niet te zien, dus
+         * dat wordt in de browser geteld. Eén getal per dag per stap, zonder
+         * cookie en zonder iets waarmee iemand te herkennen is.
+         *
+         * Geen "account gemaakt" in deze lijst: dat cijfer loopt over de hele
+         * periode en deze tellers begonnen later, en dan krijg je percentages
+         * boven de honderd.
+         */
+        var st = c.stappen || {};
+        var stapNamen = [
+          ["proef:start", "op 'Lees deze droom' gedrukt"],
+          ["proef:klaar", "duiding gekregen"],
+          ["proef:account", "op 'Maak een account' gedrukt"],
+          ["poort:account", "aanmeldformulier bereikt"]
+        ];
+        if (stapNamen.some(function (r) { return (st[r[0]] || 0) > 0; })) {
+          html += '<p class="lbl">Waar ze afhaken</p>';
+          html += '<table class="rapport-tabel"><tbody>';
+          var eerste = st["proef:start"] || 0;
+          stapNamen.forEach(function (r) {
+            var aantal = st[r[0]] || 0;
+            var deel = eerste ? Math.round(100 * aantal / eerste) + "%" : "-";
+            html += "<tr><td>" + esc(r[1]) + "</td><td>" + aantal +
+                    "</td><td>" + deel + "</td></tr>";
+          });
+          html += "</tbody></table>";
+          html += '<p class="meter-noot">Ten opzichte van de eerste regel. ' +
+                  'Deze tellers begonnen later dan de tabel hierboven; ' +
+                  'vergelijk ze alleen met elkaar.</p>';
+        }
+
+        /* Welk gidsonderwerp bezoek trekt. Dit stond al in de database en werd
+         * alleen nooit uit elkaar gehaald - het is het cijfer waarop je besluit
+         * welke onderwerpen erbij moeten. */
+        var gp = c.gidspaginas || {};
+        var gpNamen = Object.keys(gp);
+        if (gpNamen.length) {
+          html += '<p class="lbl">Welk gidsonderwerp bezoek trekt</p>';
+          html += '<table class="rapport-tabel"><tbody>';
+          gpNamen.slice(0, 15).forEach(function (naam) {
+            html += "<tr><td>" + esc(naam) + "</td><td>" + gp[naam] + "</td></tr>";
+          });
+          html += "</tbody></table>";
+          var stil = (c.gids_alle || []).filter(function (s) { return !gp[s]; });
+          if (stil.length) {
+            html += '<p class="meter-noot">Nog geen enkel bezoek: ' +
+                    esc(stil.slice(0, 10).join(", ")) +
+                    (stil.length > 10 ? " (en " + (stil.length - 10) + " meer)" : "") +
+                    "</p>";
+          }
+        }
+
         /* Waar ze vandaan kwamen. `ig-app` is de eigen browser van Instagram en
          * werkt ook zonder tag in de link; de rest komt van ?van=... erachter. */
         html += '<p class="lbl">Waar ze vandaan kwamen</p>';

@@ -260,7 +260,10 @@ VRIJ = ("/api/health", "/api/registreren", "/api/inloggen", "/api/uitloggen",
         "/api/wachtwoord-vergeten", "/api/wachtwoord-herstellen",
         # De gratis duiding. Dit is het enige eindpunt dat geld uitgeeft zonder
         # dat er iemand is ingelogd; wat het tegenhoudt staat bij PROEF_PER_DAG.
-        "/api/proef")
+        "/api/proef",
+        # De trechtertellers. Kosten niets en horen bij pagina's die ook zonder
+        # account te zien zijn.
+        "/api/tel")
 
 # Beheer loopt buiten de gebruikerssessie om, en dat is het punt.
 #
@@ -288,7 +291,7 @@ BEHEER_PADEN = "/api/beheer/"
 # knop op een vrije pagina die een 401 oplevert is erger dan geen knop.
 ZONDER_BASIC = ("/api/stripe/webhook", "/privacy.html", "/herstel.html",
                 "/welkom.html", "/sitemap.xml", "/robots.txt",
-                "/og-beeld.jpg", "/api/proef")
+                "/og-beeld.jpg", "/api/proef", "/api/tel")
 
 
 class Handler(SimpleHTTPRequestHandler):
@@ -1116,6 +1119,30 @@ class Handler(SimpleHTTPRequestHandler):
                 return self.send_json({"error": str(e)}, 400)
             return self.send_json({"ok": True})
 
+        # -- de trechtertellers ----------------------------------------------- #
+        #
+        # Vier stappen die je aan de serverkant niet kunt zien, omdat ze in de
+        # browser gebeuren. Zie GEBEURTENISSEN in accounts.py voor welke, en
+        # waarom het een vaste lijst is.
+        #
+        # Antwoordt altijd 204 en nooit een fout, ook niet bij een naam die niet
+        # bestaat. Een teller mag geen pagina kosten, en dit verzoek wordt vaak
+        # met `sendBeacon` verstuurd terwijl de browser al aan het navigeren is -
+        # daar is geen plek meer om een foutmelding te laten zien.
+        if self.path == "/api/tel":
+            try:
+                payload = self.read_json() or {}
+                accounts.tel_gebeurtenis(
+                    str(payload.get("wat", ""))[:40],
+                    self.headers.get("User-Agent"),
+                    self.headers.get("Accept-Language"))
+            except Exception:
+                pass
+            self.send_response(204)
+            self.send_header("Content-Length", "0")
+            self.end_headers()
+            return
+
         # -- de gratis duiding ----------------------------------------------- #
         #
         # Geen account, geen sessie, niets bewaard. Zie PROEF_PER_DAG bovenaan
@@ -1140,6 +1167,12 @@ class Handler(SimpleHTTPRequestHandler):
                               "account aan, dan kan het meteen.",
                      "op": True, "account": True}, 429)
 
+            # Geteld zodra het verzoek de remmen voorbij is: dit is iemand die
+            # op de knop drukte. Het verschil met proef:klaar hieronder is
+            # precies waar je naar op zoek bent - wie begon en niets kreeg.
+            accounts.tel_gebeurtenis("proef:start",
+                                     self.headers.get("User-Agent"),
+                                     self.headers.get("Accept-Language"))
             adres = self.proef_adres()
             proef_zet(adres)
             try:
@@ -1165,6 +1198,9 @@ class Handler(SimpleHTTPRequestHandler):
                     {"error": "Het lukte even niet. Probeer het zo nog eens."}, 502)
 
             proef_geteld()
+            accounts.tel_gebeurtenis("proef:klaar",
+                                     self.headers.get("User-Agent"),
+                                     self.headers.get("Accept-Language"))
             return self.send_json({"duiding": duiding})
 
         if self.path == "/api/answer":

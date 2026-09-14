@@ -3597,6 +3597,34 @@
    * "account"  je droom staat klaar, maak er een aan
    * "inloggen" de gewone poort, voor wie er al een heeft
    */
+  /* Eén stap in de trechter melden. Zie GEBEURTENISSEN in accounts.py.
+   *
+   * `sendBeacon` waar die bestaat: sommige van deze stappen worden gevolgd door
+   * een navigatie, en een `fetch` die nog loopt wordt daar door afgebroken.
+   * Er gaat niets mee behalve het woord - geen adres, geen droom, geen kenmerk
+   * waarmee iemand te herkennen is.
+   */
+  function tel(wat) {
+    try {
+      var body = JSON.stringify({ wat: wat });
+      if (navigator.sendBeacon) {
+        navigator.sendBeacon("/api/tel",
+          new Blob([body], { type: "application/json" }));
+        return;
+      }
+      fetch("/api/tel", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: body,
+        keepalive: true
+      }).catch(function () { });
+    } catch (e) { /* een teller mag nooit een klik kosten */ }
+  }
+
+  // Eén keer per paginabezoek, niet bij elke keer heen en weer klikken tussen
+  // de stappen - anders telt iemand die twijfelt als vijf mensen.
+  var poortGemeld = false;
+
   function poortStap(naam) {
     var vertel = el("poort-vertel");
     var klaar = el("poort-klaar");
@@ -3616,6 +3644,7 @@
     if (sub) { sub.hidden = naam === "vertel"; }
 
     if (naam === "account") {
+      if (!poortGemeld) { poortGemeld = true; tel("poort:account"); }
       zetPoortModus("nieuw");
       setTimeout(function () { el("p-naam").focus(); }, 60);
     } else if (naam === "inloggen") {

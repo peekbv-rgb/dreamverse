@@ -22,6 +22,8 @@ import json
 from collections import Counter, defaultdict
 from datetime import date, datetime, timedelta
 
+from pathlib import Path
+
 import accounts
 import usage
 
@@ -106,6 +108,8 @@ def cijfers(dagen=30):
     landing = Counter()
     appview = Counter()
     gidsview = Counter()
+    gidspaginas = Counter()
+    stappen = Counter()
     bronnen = Counter()
     # Elke soort in zijn eigen bak. Dit stond eerst als "landing of anders app",
     # en daarmee kwamen de gidspagina's - die met "gids" en "gids:<slug>" ook
@@ -119,8 +123,18 @@ def cijfers(dagen=30):
             appview[r["datum"]] += r["aantal"]
         elif naam.startswith("bron:"):
             bronnen[naam[5:]] += r["aantal"]
+        elif naam in accounts.GEBEURTENISSEN:
+            # De stappen die alleen in de browser te zien zijn. Ze staan in
+            # dezelfde tabel als de paginatellers, met dezelfde soort inhoud:
+            # een naam en een aantal per dag, en verder niets.
+            stappen[naam] += r["aantal"]
         elif naam == "gids" or naam.startswith("gids:"):
             gidsview[r["datum"]] += r["aantal"]
+            # En apart per onderwerp. Dit stond er al in de database en werd
+            # alleen nooit uit elkaar gehaald; het is het enige cijfer dat
+            # zegt welk onderwerp bezoek trekt en dus welke erbij moeten.
+            if naam.startswith("gids:"):
+                gidspaginas[naam[5:]] += r["aantal"]
     # De gratis duidingen. Dit is de stap die sinds 14 september tussen bezoek
     # en account zit, en de reden dat hij er is: iemand krijgt eerst een duiding
     # te lezen en wordt pas daarna om een account gevraagd. Zonder deze kolom is
@@ -164,6 +178,14 @@ def cijfers(dagen=30):
         "proef": sum(proef_per_dag.values()),
         "proef_kosten": round(proef_kosten, 2),
         "bronnen": dict(bronnen.most_common()),
+        "gidspaginas": dict(gidspaginas.most_common()),
+        "stappen": {k: stappen.get(k, 0) for k in accounts.GEBEURTENISSEN},
+        # Alle onderwerpen die bestaan, zodat het rapport kan zeggen
+        # welke nog nul bezoeken hadden - dat is net zo bruikbaar als
+        # de lijst met wat het wél doet.
+        "gids_alle": sorted(
+            p.stem for p in (Path(__file__).resolve().parent
+                             / "knowledge" / "droomgids").glob("*.json")),
         "gebruikers": len(gebruikers),
         "met_droom": sum(1 for u in gebruikers.values() if u["dromen"]),
         "dromen": sum(u["dromen"] for u in gebruikers.values()),
@@ -251,6 +273,54 @@ def main():
         print("")
         print("    Nog te weinig bezoek (%d) om er een percentage van te maken."
               % gemeten["landing"])
+    # Waar ze afhaken. Dit is het stuk dat de dagtabel hierboven niet kan
+    # laten zien: wie begon en niet afmaakte.
+    st = c.get("stappen") or {}
+    if any(st.values()):
+        print("")
+        print("  WAAR ZE AFHAKEN")
+        # "account gemaakt" staat hier bewust **niet** bij, hoe verleidelijk ook.
+        # Dat cijfer komt uit `users.gemaakt` en loopt over de hele periode,
+        # terwijl deze stappen pas tellen sinds ze erin zitten. Die twee op
+        # elkaar delen geeft een percentage boven de honderd - gemeten, de
+        # eerste keer dat dit blok draaide - en dat is dezelfde fout als bij de
+        # trechter hierboven: twee getallen uit verschillende weken.
+        rijen = [
+            ("op 'Lees deze droom' gedrukt", st.get("proef:start", 0)),
+            ("duiding gekregen", st.get("proef:klaar", 0)),
+            ("op 'Maak een account' gedrukt", st.get("proef:account", 0)),
+            ("aanmeldformulier bereikt", st.get("poort:account", 0)),
+        ]
+        eerste = rijen[0][1] or 0
+        for naam, aantal in rijen:
+            deel = ("%3d%%" % round(100 * aantal / eerste)) if eerste else "   -"
+            print("    %-32s %5d  %s" % (naam, aantal, deel))
+        print("")
+        print("    Percentages ten opzichte van de eerste regel. Deze tellers")
+        print("    begonnen later dan de rest; vergelijk ze niet met de tabel")
+        print("    hierboven maar alleen met elkaar.")
+        if st.get("proef:start", 0) > st.get("proef:klaar", 0):
+            print("")
+            print("    %d begonnen zonder duiding te krijgen - te korte droom,"
+                  % (st["proef:start"] - st.get("proef:klaar", 0)))
+            print("    dagplafond bereikt, of het ging mis.")
+
+    # Welk onderwerp bezoek trekt. Dit stond al in de database en werd alleen
+    # nooit uit elkaar gehaald; het is het cijfer waarop je besluit welke
+    # onderwerpen erbij moeten - en welke je niet nog eens hoeft te schrijven.
+    if c.get("gidspaginas"):
+        print("")
+        print("  WELK GIDSONDERWERP BEZOEK TREKT")
+        for naam, aantal in list(c["gidspaginas"].items())[:15]:
+            print("    %-22s %5d" % (naam, aantal))
+        rest = len(c["gidspaginas"]) - 15
+        if rest > 0:
+            print("    (en %d onderwerpen met minder)" % rest)
+        stil = [s for s in c.get("gids_alle", []) if s not in c["gidspaginas"]]
+        if stil:
+            print("")
+            print("    Nog geen enkel bezoek: %s" % ", ".join(stil[:12]))
+
     if c["bronnen"]:
         print("")
         print("  WAAR ZE VANDAAN KWAMEN")

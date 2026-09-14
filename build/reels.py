@@ -67,6 +67,9 @@ DOEL = WORTEL / "data" / "reels"
 # goede zat een niveau dieper. Nu staat in `data/reels/` wat je post - video mét
 # muziek, plus de caption ernaast - en is `stil/` de werkmap.
 STIL = DOEL / "stil"
+# De animaties uit build/gids_animaties.py. Is er geen bestand voor een
+# onderwerp, dan valt maak() terug op de zoom over het stilstaande beeld.
+ANIMATIES = DOEL.parent / "gids-animatie"
 
 BREEDTE, HOOGTE = 1080, 1920
 FPS, SECONDEN = 30, 8
@@ -252,14 +255,8 @@ def masker(breedte, hoogte, hoek=36):
     return m
 
 
-def frames(bron, titel, vraag, link):
-    """Elk beeldje: de vaste laag met het ingezoomde beeld erin."""
-    grond = achtergrond(titel, vraag, link)
-    vak_b, vak_h = VAK[2] - VAK[0], VAK[3] - VAK[1]
-    vorm = masker(vak_b, vak_h)
-
-    beeld = Image.open(bron).convert("RGB")
-    # Het grootste stuk van de bron met de verhouding van het kader.
+def _binnen_kader(beeld, vak_b, vak_h, schaal=1.0):
+    """Het grootste stuk uit het midden, in de verhouding van het kader."""
     verhouding = vak_b / vak_h
     if beeld.width / beeld.height > verhouding:
         h = beeld.height
@@ -267,18 +264,68 @@ def frames(bron, titel, vraag, link):
     else:
         b = beeld.width
         h = round(b / verhouding)
+    snee_b, snee_h = round(b / schaal), round(h / schaal)
+    x = (beeld.width - snee_b) // 2
+    y = (beeld.height - snee_h) // 2
+    return beeld.crop((x, y, x + snee_b, y + snee_h)).resize(
+        (vak_b, vak_h), Image.LANCZOS)
+
+
+def frames(bron, titel, vraag, link):
+    """Elk beeldje: de vaste laag met het ingezoomde beeld erin.
+
+    Dit is de terugval. Zie `frames_uit_animatie` voor wat er gebeurt als het
+    onderwerp een echte animatie heeft.
+    """
+    grond = achtergrond(titel, vraag, link)
+    vak_b, vak_h = VAK[2] - VAK[0], VAK[3] - VAK[1]
+    vorm = masker(vak_b, vak_h)
+    beeld = Image.open(bron).convert("RGB")
 
     totaal = FPS * SECONDEN
     for i in range(totaal):
         deel = i / max(totaal - 1, 1)
-        schaal = 1 + (ZOOM - 1) * deel
-        snee_b, snee_h = round(b / schaal), round(h / schaal)
-        x = (beeld.width - snee_b) // 2
-        y = (beeld.height - snee_h) // 2
-        stuk = beeld.crop((x, y, x + snee_b, y + snee_h)).resize(
-            (vak_b, vak_h), Image.LANCZOS)
+        stuk = _binnen_kader(beeld, vak_b, vak_h, 1 + (ZOOM - 1) * deel)
         doek = grond.copy()
         doek.paste(stuk, (VAK[0], VAK[1]), vorm)
+        yield np.asarray(doek)
+
+
+def frames_uit_animatie(pad, titel, vraag, link):
+    """Elk beeldje uit de Kling-animatie, in hetzelfde kader.
+
+    De animatie is vijf seconden en de Reel acht. Dat gat vullen kan op drie
+    manieren, en twee daarvan zijn zichtbaar: herhalen geeft een sprong op het
+    naadje, en het laatste beeldje vasthouden geeft drie seconden stilstand
+    precies wanneer de kijker nog kijkt.
+
+    Dus **heen en terug**. Een clip die vooruit loopt en daarna achteruit is aan
+    het keerpunt naadloos - de beweging is traag en omkeerbaar (mist die drijft,
+    water dat rimpelt, licht dat verschuift), dus achteruit ziet er niet
+    achteruit uit. Vijf seconden heen en terug is tien, en daar knippen we er
+    acht uit; het keerpunt valt dan op vijf seconden en niemand ziet het.
+    """
+    grond = achtergrond(titel, vraag, link)
+    vak_b, vak_h = VAK[2] - VAK[0], VAK[3] - VAK[1]
+    vorm = masker(vak_b, vak_h)
+
+    lezer = imageio.get_reader(str(pad))
+    try:
+        ruw = [Image.fromarray(b).convert("RGB") for b in lezer]
+    finally:
+        lezer.close()
+    if not ruw:
+        raise SystemExit("De animatie {} bevat geen beeldjes.".format(pad.name))
+
+    # Heen en terug, zonder het eerste en laatste beeldje te verdubbelen.
+    reeks = ruw + ruw[-2:0:-1]
+    totaal = FPS * SECONDEN
+    for i in range(totaal):
+        # Modulo, zodat een kortere animatie dan verwacht nooit een IndexError
+        # geeft maar gewoon nog een keer heen en terug gaat.
+        beeld = reeks[i % len(reeks)]
+        doek = grond.copy()
+        doek.paste(_binnen_kader(beeld, vak_b, vak_h), (VAK[0], VAK[1]), vorm)
         yield np.asarray(doek)
 
 
@@ -507,8 +554,16 @@ def maak(d, slug, taal):
         # dezelfde optie levert een waarschuwing van ffmpeg op.
         ffmpeg_params=["-crf", "21", "-profile:v", "high",
                        "-movflags", "+faststart"])
+    # Een echte animatie als die er is, anders de zoom. Het Kling-videotegoed
+    # verliep 18 september 2026, dus de zevenentwintig die er nu liggen zijn er
+    # en er komen er voorlopig geen bij: een nieuw onderwerp krijgt de zoom tot
+    # er tegoed is om het te animeren.
+    animatie = ANIMATIES / (slug + ".mp4")
+    beeldjes = (frames_uit_animatie(animatie, titel, vraag, link)
+                if animatie.exists()
+                else frames(bron, titel, vraag, link))
     try:
-        for beeldje in frames(bron, titel, vraag, link):
+        for beeldje in beeldjes:
             schrijver.append_data(beeldje)
     finally:
         schrijver.close()
