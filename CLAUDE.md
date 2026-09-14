@@ -707,9 +707,10 @@ de inleiding, die is de reden dat de pagina mag bestaan.
 
 ## Van de gids naar een Reel
 
-`python build/reels.py --ja` maakt van elk gidsonderwerp een staande video met de
-tekst erbij: `data/reels/<slug>.mp4` (1080 × 1920, acht seconden, ~1 MB) plus
-`<slug>.txt` met de caption. Zevenentwintig onderwerpen is bijna vier weken
+`python build/reels.py --ja` gevolgd door `--verdeel --ja` maakt van elk
+gidsonderwerp een staande video met de tekst erbij: `data/reels/<slug>.mp4`
+(1080 × 1920, acht seconden, ~1 MB, mét muziek) plus `<slug>.txt` met de caption.
+Zevenentwintig onderwerpen is bijna vier weken
 dagelijks posten zonder dat er nog iets bedacht hoeft te worden. `--tekst`
 schrijft alleen de captions opnieuw — die zijn los van de video, en 27 keer acht
 seconden coderen om één regel te wijzigen is zonde. `--taal nl` doet het
@@ -794,10 +795,16 @@ keer per nummer gemeten en niet per video.
 
 **Muziek is een aparte stap.** `--muziek <mp3>` en `--verdeel` werken op de al
 gerenderde video's en coderen het beeld niet opnieuw (`-c:v copy`), dus een ander
-nummer proberen kost seconden in plaats van een halve minuut per video. De stille
-versie in `data/reels/` blijft de bron; met muziek komt het in
-`data/reels/muziek/`. Zo is auditeren één regel per kandidaat:
+nummer proberen kost seconden in plaats van een halve minuut per video. Zo is
+auditeren één regel per kandidaat:
 `python build/reels.py --muziek "<pad>" --ja being-chased`.
+
+**In `data/reels/` staat wat je post, in `data/reels/stil/` de werkmap.** Dat was
+omgekeerd — bron boven, resultaat in `muziek/` eronder — en dat is precies één
+keer misgegaan: wie de bovenste map opende pakte de stille versie, want de goede
+zat een niveau dieper. Logisch vanuit het script, verkeerd vanuit de map. De
+caption blijft wél boven staan, naast de video waar hij bij hoort. `--ja` schrijft
+de video dus in `stil/` en zegt erbij dat `--verdeel --ja` de volgende stap is.
 
 **De hashtags zijn klein gehouden.** De slug plus hoogstens twee uit `also`, dan
 zes vaste. `also` bestaat voor de zoekwoorden van de gids en die zijn voor Google

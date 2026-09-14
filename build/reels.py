@@ -5,13 +5,15 @@ tekst. Dat is bijna vier weken dagelijks posten zonder dat er nog iets bedacht
 hoeft te worden - en het is de enige inhoud die dit account heeft en niemand
 anders.
 
-    python build/reels.py --check                 # wat er gemaakt zou worden
-    python build/reels.py --ja                    # alles
+    python build/reels.py --ja                    # de video's, nog zonder geluid
+    python build/reels.py --verdeel --ja          # de muziek eronder
     python build/reels.py --ja snakes falling     # een paar
     python build/reels.py --ja --taal nl          # Nederlandse tekst
+    python build/reels.py --check                 # wat er gemaakt zou worden
 
-Levert per onderwerp `data/reels/<slug>.mp4` (1080 x 1920, 8 seconden) en
-`data/reels/<slug>.txt` met de caption om erbij te zetten.
+In `data/reels/` staat wat je post: `<slug>.mp4` (1080 x 1920, 8 seconden, mét
+muziek) en `<slug>.txt` met de caption ernaast. In `data/reels/stil/` staat
+hetzelfde beeld zonder geluid; dat is de werkmap waar de muziekstap uit leest.
 
 Vier dingen die hier bewust zo zijn.
 
@@ -56,6 +58,15 @@ from og_beeld import letter  # noqa: E402  - dezelfde letterzoeker als het og-be
 ONDERWERPEN = WORTEL / "knowledge" / "droomgids"
 BEELDEN = WORTEL / "static" / "gids"
 DOEL = WORTEL / "data" / "reels"
+
+# De stille versies staan een niveau dieper, en dat is met opzet omgedraaid.
+#
+# Eerst stond de bron in `data/reels/` en kwam het resultaat met muziek in
+# `data/reels/muziek/`. Logisch vanuit het script, maar verkeerd vanuit de map:
+# wie de bovenste map opende pakte de versie die hij níet wil hebben, en de
+# goede zat een niveau dieper. Nu staat in `data/reels/` wat je post - video mét
+# muziek, plus de caption ernaast - en is `stil/` de werkmap.
+STIL = DOEL / "stil"
 
 BREEDTE, HOOGTE = 1080, 1920
 FPS, SECONDEN = 30, 8
@@ -442,12 +453,11 @@ def muziek_eronder(slug, muziek, vanaf=20.0, luider=-3.0):
     import subprocess
     import imageio_ffmpeg
 
-    bron = DOEL / (slug + ".mp4")
+    bron = STIL / (slug + ".mp4")
     if not bron.exists():
         raise SystemExit("Geen stille versie voor {}. Draai eerst --ja.".format(slug))
-    uit_map = DOEL / "muziek"
-    uit_map.mkdir(parents=True, exist_ok=True)
-    doel = uit_map / (slug + ".mp4")
+    DOEL.mkdir(parents=True, exist_ok=True)
+    doel = DOEL / (slug + ".mp4")
 
     fade_uit = max(SECONDEN - 1.2, 0.1)
     filter_ = ("afade=t=in:st=0:d=0.6,"
@@ -478,7 +488,10 @@ def maak(d, slug, taal):
         raise SystemExit("Geen beeld voor {}. Draai eerst build/gids_beelden.py."
                          .format(slug))
     DOEL.mkdir(parents=True, exist_ok=True)
-    doel = DOEL / (slug + ".mp4")
+    STIL.mkdir(parents=True, exist_ok=True)
+    # De video komt stil in de werkmap; de caption hoort bij wat je post en
+    # staat dus wel in de bovenste map.
+    doel = STIL / (slug + ".mp4")
     titel = veld(d, "title", taal)
     vraag = veld(d, "card", taal)
     link = ("" if taal == "en" else "/nl") + BASIS.rstrip("/")
@@ -514,8 +527,8 @@ def main(argv=None):
     ap.add_argument("--tekst", action="store_true",
                     help="alleen de captions opnieuw schrijven, geen video")
     ap.add_argument("--muziek", metavar="MP3",
-                    help="één nummer onder de al gemaakte video's zetten; "
-                         "het resultaat komt in data/reels/muziek/")
+                    help="één nummer onder alle video's zetten; het resultaat "
+                         "komt in data/reels/")
     ap.add_argument("--verdeel", action="store_true",
                     help="per onderwerp het nummer dat bij de stemming hoort, "
                          "uit data/muziek/")
@@ -559,7 +572,7 @@ def main(argv=None):
             print("  {:<20} {:<8} {:>6.1f} MB".format(
                 slug, naam, uit.stat().st_size / 1e6))
         print("")
-        print("Klaar: {}".format((DOEL / "muziek").relative_to(WORTEL)))
+        print("Klaar: {}".format(DOEL.relative_to(WORTEL)))
         return 0
 
     if args.muziek:
@@ -575,7 +588,7 @@ def main(argv=None):
             uit = muziek_eronder(slug, muziek, vanaf)
             print("  {:<20} {:>6.1f} MB".format(slug, uit.stat().st_size / 1e6))
         print("")
-        print("Klaar: {}".format((DOEL / "muziek").relative_to(WORTEL)))
+        print("Klaar: {}".format(DOEL.relative_to(WORTEL)))
         return 0
 
     if args.tekst:
@@ -594,8 +607,10 @@ def main(argv=None):
         print("{:>6.1f} MB   caption {} regels".format(
             video.stat().st_size / 1e6,
             len(tekst.read_text(encoding="utf-8").splitlines())))
-    print("\nKlaar: {}".format(DOEL.relative_to(WORTEL)))
-    print("De muziek kies je in Instagram; deze bestanden zijn stil.")
+    print("")
+    print("Klaar: {} (stil) en de captions in {}".format(
+        STIL.relative_to(WORTEL), DOEL.relative_to(WORTEL)))
+    print("Nog geen geluid. Draai nu: python build/reels.py --verdeel --ja")
     return 0
 
 
