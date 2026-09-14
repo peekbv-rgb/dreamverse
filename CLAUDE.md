@@ -661,6 +661,29 @@ en in de app bij *Los te koop* — want het verschil tussen "vijf tekeningen" en
 "vijf tekeningen plus een bewegend kernmoment" kun je niet uitleggen, dat moet je
 laten zien.
 
+**Het beeld boven de vouw op de landingspagina beweegt, sinds 14 september.**
+Daar stond een stilstaande vuurvogel. Dit is het eerste wat iemand vanuit
+Instagram ziet, en het verschil tussen "vijf tekeningen" en "vijf tekeningen die
+bewegen" kun je niet uitleggen — dezelfde redenering als bij de voorbeeldclips
+zelf. Vier dingen die daar moeten kloppen:
+
+- **Een eigen, kleine versie.** `vuurvogel.mp4` is 5 MB en dat is te veel voor
+  iets dat vanzelf speelt boven de vouw op een telefoonbundel.
+  `vuurvogel-hero.mp4` is 720 breed zonder geluid: **490 kB**. De volle clip
+  blijft staan voor het voorbeeldenblok, waar iemand er zelf op drukt.
+- **`muted` en `playsinline`**, anders weigert iOS af te spelen.
+- **De poster is de bestaande JPEG**, dus als de video niet speelt staat er
+  precies het beeld dat er eerst stond. Nooit slechter dan wat er was.
+- **`prefers-reduced-motion` verbergt de video** en toont de poster.
+
+**En hij startte op mobiel niet vanzelf.** Nagemeten op een geëmuleerde telefoon:
+autoplay geweigerd terwijl `play()` met de hand meteen werkte, dus die weigering
+is echt en niet theoretisch — energiebesparing en databesparing doen dit. Daarom
+staat er een **tweede poging bij de eerste aanraking**, precies dezelfde regel
+als bij Vera's begroeting in de app: de browser blokkeert het *starten*, niet het
+afspelen. De poster blijft staan tot hij écht speelt, want een geladen video die
+stilstaat ziet eruit als een kapot beeld. De wachter gaat na één keer weg.
+
 **De clips laden pas bij een klik.** Samen zijn ze 8,3 MB, en vooraf laden kost
 een halve minuut op een telefoon voor iets wat de meeste bezoekers niet
 aanklikken. De pagina toont dus posters van samen 154 kB, en
@@ -806,6 +829,34 @@ over zwanger zijn is *"not a sign that you are, and not a sign that you will
 be"*; dromen over doodgaan *"carries no information about anybody's health,
 safety or lifespan"*. Wie een van deze drie herschrijft: die eerste zin is niet
 de inleiding, die is de reden dat de pagina mag bestaan.
+
+## De Reel die zegt wat Dreamverse is
+
+`python build/reel_product.py --ja` maakt er één van negen seconden in drie
+tellen: *wat droomde je vannacht* → *vijf panelen, een duiding en een
+vooruitblik* → *elke droom die je vertelt telt mee in de volgende*, met een knop
+en het merk. `--taal nl` doet het Nederlands.
+
+**Dit vult een gat in de trechter.** Er zijn drieënveertig Reels over
+droomonderwerpen en die brengen mensen naar het profiel — waar vervolgens geen
+enkele post staat die uitlegt wat je verkoopt. De bio-link is dan de enige
+aanwijzing, precies op de plek waar iemand al belangstelling toont. Deze hoort
+vastgepind te staan.
+
+**Kost geen Kling-eenheid.** De beelden zijn de animaties die al in
+`static/voorbeelden/` staan — echte kernmomenten uit het archief. Wat dit
+toevoegt is de volgorde en de tekst.
+
+Drie dingen die er bewust zo in zitten: dezelfde veilige stroken als de gewone
+Reels (285 tot 1500, want Instagram legt zijn bediening over de onderste 420);
+een contour om de letters in plaats van een waas over het beeld, dezelfde les
+als bij de schermvullende Reels; en **drie clips en niet één**, want een enkel
+beeld van negen seconden is een poster terwijl drie stukken er een belofte van
+maken die ergens heen gaat. De vuurvogel staat achteraan — dat is het sterkste
+beeld en het laatste wat iemand ziet voordat hij besluit.
+
+De knop is geen echte knop: in een Reel is niets aanklikbaar. Wel de vorm ervan,
+zodat het oog weet waar het heen moet, en dat is de bio.
 
 ## Van de gids naar een Reel
 

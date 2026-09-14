@@ -2045,10 +2045,23 @@ body.beheerpagina .beheerrij { margin-top: 0; }
    direct onder de belofte die zegt wat je krijgt - want dit product ís beeld en
    het eerste plaatje stond anderhalf schermlengte naar beneden. */
 .welkom-beeld { margin: 1.3rem 0 0; }
-.welkom-beeld img {
+.welkom-beeld img,
+.welkom-beeld video {
   display: block; width: 100%; height: auto; border-radius: 14px;
   border: 1px solid rgba(179, 105, 222, .28);
   box-shadow: 0 18px 50px rgba(0, 0, 0, .55);
+}
+/* De <img> staat er als terugval voor een browser die de video niet speelt.
+   Speelt hij wel, dan zou je ze allebei zien - dus standaard verbergen. */
+.welkom-beeld img { display: none; }
+
+/* Behalve als iemand geen beweging wil. Dan andersom: de poster blijft, de
+   video gaat weg. Dat is een instelling die mensen met goede reden aanzetten -
+   migraine, evenwichtsklachten - en een automatisch spelende lus is precies
+   waar die instelling voor bedoeld is. */
+@media (prefers-reduced-motion: reduce) {
+  .welkom-beeld video { display: none; }
+  .welkom-beeld img { display: block; }
 }
 .welkom-knoppen { margin: 1.2rem 0 0; }
 /* Na het beeld staat de knop, en daarna pas de belofte in het abstracte. Zonder

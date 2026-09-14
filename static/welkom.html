@@ -68,7 +68,35 @@
          dan op eenenzeventig woorden proza. Geen `loading="lazy"`: dat is voor
          wat onder de vouw staat, en dit staat er juist boven. Breedte en hoogte
          staan erbij zodat de knop niet verspringt terwijl het beeld binnenkomt. -->
+    <!-- Het beeld boven de vouw beweegt.
+
+         Hier stond een stilstaande vuurvogel. Dit is het eerste wat iemand van
+         Instagram ziet, en het verschil tussen "vijf tekeningen" en "vijf
+         tekeningen die bewegen" kun je niet uitleggen - dat moet je laten zien.
+         Dezelfde redenering als bij de voorbeeldclips verderop op de pagina.
+
+         Vier dingen die hier moeten kloppen:
+
+         - **Een eigen, kleine versie.** `vuurvogel.mp4` is 5 MB, en dat is te
+           veel voor iets dat vanzelf begint te spelen boven de vouw op een
+           telefoonbundel. `vuurvogel-hero.mp4` is 720 breed zonder geluid:
+           490 kB. De volle clip blijft staan voor het voorbeeldenblok, waar
+           iemand er zelf op drukt.
+         - **`muted` en `playsinline`**, anders weigert iOS af te spelen en
+           blijft het bij de poster. `autoplay` zonder `muted` doet geen enkele
+           browser meer.
+         - **De poster is de bestaande JPEG.** Speelt de video niet - data
+           besparen staat aan, het bestand faalt - dan staat er nog steeds
+           precies het beeld dat er eerst stond.
+         - **Wie geen beweging wil, krijgt geen beweging.** `prefers-reduced-
+           motion` verbergt de video en toont de poster; dat is een instelling
+           die mensen met goede reden aanzetten. -->
     <p class="welkom-beeld">
+      <video src="/voorbeelden/vuurvogel-hero.mp4"
+             poster="/voorbeelden/vuurvogel.jpg"
+             width="720" height="407"
+             autoplay muted loop playsinline preload="metadata"
+             aria-label="A panel from a real dream: a burning bird above misty hills."></video>
       <img src="/voorbeelden/vuurvogel.jpg" width="720" height="407"
            alt="A panel from a real dream: a burning bird above misty hills."
            decoding="async">
@@ -423,6 +451,63 @@
    * er is nog geen account om hem aan te hangen - dat blijft de grens, ook nu
    * het veld een pagina eerder staat.
    */
+  /* Het bewegende beeld boven de vouw, met een vangnet.
+   *
+   * `autoplay muted playsinline` is wat een browser nodig heeft om vanzelf te
+   * spelen, en dat staat er. Maar een telefoon in energiebesparing of met
+   * databesparing aan weigert het alsnog, en dan staat er een stilstaand
+   * eerste beeldje - of erger, een zwart vlak. Nagemeten: op een geëmuleerde
+   * telefoon startte hij niet vanzelf terwijl `play()` met de hand meteen
+   * werkte, dus die weigering is echt en niet theoretisch.
+   *
+   * Lukt het spelen niet, dan verbergen we de video en tonen we de poster -
+   * precies het stilstaande beeld dat er vóór vandaag stond. Dat is nooit
+   * slechter dan wat er was.
+   */
+  var hero = document.querySelector(".welkom-beeld video");
+  var heroPoster = document.querySelector(".welkom-beeld img");
+  if (hero) {
+    var terugvalOpPoster = function () {
+      hero.style.display = "none";
+      if (heroPoster) { heroPoster.style.display = "block"; }
+    };
+    var toonVideo = function () {
+      hero.style.display = "block";
+      if (heroPoster) { heroPoster.style.display = "none"; }
+    };
+
+    /* Nog één poging bij de eerste aanraking.
+     *
+     * Een iPhone in energiebesparing weigert autoplay, óók met `muted`, maar
+     * staat `play()` na een aanraking wél toe. Dat is precies dezelfde regel
+     * als bij Vera's begroeting in de app: de browser blokkeert het starten,
+     * niet het afspelen. Eén keer, en daarna is de wachter weg - een luisteraar
+     * die blijft hangen op een pagina waar niets meer te starten valt, is
+     * rommel.
+     *
+     * De poster blijft staan tot hij echt speelt, want een video die wel
+     * geladen is maar stilstaat ziet eruit als een kapot beeld.
+     */
+    var nogEenKeer = function () {
+      var t = hero.play();
+      if (t && t.then) { t.then(toonVideo).catch(function () { }); }
+      ["touchstart", "click", "scroll"].forEach(function (n) {
+        window.removeEventListener(n, nogEenKeer);
+      });
+    };
+
+    var proberen = hero.play();
+    if (proberen && proberen.catch) {
+      proberen.catch(function () {
+        terugvalOpPoster();
+        ["touchstart", "click", "scroll"].forEach(function (n) {
+          window.addEventListener(n, nogEenKeer, { once: true, passive: true });
+        });
+      });
+    }
+    hero.addEventListener("error", terugvalOpPoster);
+  }
+
   var veld = document.getElementById("w-droom");
   var door = document.getElementById("w-door");
   var fout = document.getElementById("w-fout");
