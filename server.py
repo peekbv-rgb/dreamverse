@@ -454,13 +454,14 @@ class Handler(SimpleHTTPRequestHandler):
         # oplevert: Instagram stuurt geen referrer mee, dus zonder dit blijft
         # het bij "er kwam iemand".
         gezien = self.path.split("?")[0]
+        taal_header = self.headers.get("Accept-Language")
         if gezien in ("/welkom.html", "/index.html"):
             agent = self.headers.get("User-Agent")
             accounts.tel_weergave(
-                "landing" if gezien == "/welkom.html" else "app", agent)
+                "landing" if gezien == "/welkom.html" else "app", agent, taal_header)
             bron = accounts.herkomst(vraag, agent)
             if bron:
-                accounts.tel_weergave("bron:" + bron, agent)
+                accounts.tel_weergave("bron:" + bron, agent, taal_header)
 
         # Vera's Dream Guide. Openbaar en zonder inlog: dit is de laag waar
         # Google op landt en vanwaar iemand de app in loopt.
@@ -472,14 +473,14 @@ class Handler(SimpleHTTPRequestHandler):
         if kaal == "/nl" + BASIS or kaal.startswith("/nl" + BASIS + "/"):
             gids_taal, gids_pad = "nl", kaal[3:]
         if gids_pad == BASIS or gids_pad == BASIS + "/":
-            accounts.tel_weergave("gids", self.headers.get("User-Agent"))
+            accounts.tel_weergave("gids", self.headers.get("User-Agent"), taal_header)
             return self.send_html(droomgids.overzicht(gids_taal))
         if gids_pad.startswith(BASIS + "/"):
             slug = gids_pad[len(BASIS) + 1:].strip("/")
             pagina = droomgids.artikel(slug, gids_taal) if slug else None
             if pagina is None:
                 return self.send_html(droomgids.overzicht(gids_taal), 404)
-            accounts.tel_weergave("gids:" + slug[:30], self.headers.get("User-Agent"))
+            accounts.tel_weergave("gids:" + slug[:30], self.headers.get("User-Agent"), taal_header)
             return self.send_html(pagina)
         if kaal == "/sitemap.xml":
             return self.send_tekst(droomgids.sitemap(), "application/xml")

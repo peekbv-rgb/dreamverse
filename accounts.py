@@ -643,13 +643,36 @@ def herkomst(query, agent=None):
     return None
 
 
-def tel_weergave(pagina, agent=None):
+def als_browser(taal_header):
+    """Vraagt dit om een pagina zoals een browser dat doet?
+
+    De zeef op de browsernaam vangt alleen scanners die zichzelf netjes noemen.
+    Wie zich Chrome noemt komt er doorheen, en die zijn er: in de serverlog van
+    14 september staan tientallen verzoeken op /wp-admin/install.php en op tien
+    varianten van wlwmanifest.xml, en dezelfde bezoekers vragen ook gewoon `/`
+    op. Die wp-paden worden niet geteld, `/` wel - dus stond er 468 waar er
+    misschien tientallen mensen waren, en dan is het cijfer waardeloos op precies
+    de dag dat je wilt weten of Instagram iets oplevert.
+
+    `Accept-Language` is het goedkoopste onderscheid dat er is. Elke browser
+    stuurt hem mee, want hij komt uit de taalinstelling van het toestel; een
+    scanner die met een kale HTTP-bibliotheek werkt laat hem vrijwel altijd weg.
+    Perfect is het niet - wie hem nadoet komt er alsnog door - maar het scheelt
+    het gros, en het kost niets.
+
+    Er wordt niets bewaard: de header wordt gelezen en weggegooid, net als de
+    browsernaam. Dus nog steeds geen banner en niets in de privacyverklaring.
+    """
+    return bool((taal_header or "").strip())
+
+
+def tel_weergave(pagina, agent=None, taal_header=None):
     """Eén weergave erbij. Faalt nooit hardop.
 
     Een teller mag nooit een pagina kosten: gaat het schrijven mis - schijf vol,
     database op slot - dan hoort de bezoeker daar niets van te merken.
     """
-    if is_robot(agent):
+    if is_robot(agent) or not als_browser(taal_header):
         return False
     try:
         with _lock:

@@ -73,8 +73,40 @@
            alt="A panel from a real dream: a burning bird above misty hills."
            decoding="async">
     </p>
+    <!-- De vraag staat hier, en niet een pagina verderop.
+
+         Dit was een knop naar /app, en dáár stond pas "Wat droomde je
+         vannacht?". Iemand die om zeven uur 's ochtends vanuit Instagram
+         binnenkomt met een droom in zijn hoofd kreeg dus eerst een pagina over
+         wat het product doet en wat het kost, en moest zelf de knop vinden. In
+         de cijfers van 9 tot 14 september: 468 bezoeken aan deze pagina tegen
+         136 aan /app, en nul aanmeldingen. Twee pagina's vóór de vraag is één
+         pagina te veel.
+
+         Het veld schrijft naar dezelfde `dreamverse_eerste_droom` in
+         localStorage die de poort van de app leest, dus wie hier typt komt op
+         /app meteen uit bij "Je droom staat klaar voor Vera" - de tekst reist
+         mee en hoeft niet opnieuw. Naar de server gaat er niets: er is nog geen
+         account om hem aan te hangen. -->
+    <div class="welkom-vertel">
+      <label for="w-droom" data-en="What did you dream last night?"
+             data-nl="Wat droomde je vannacht?">What did you dream last night?</label>
+      <textarea id="w-droom" rows="4" maxlength="4000"
+                data-ph-en="I was flying over the mountains and saw a friend crying by the pool…"
+                data-ph-nl="Ik vloog over de bergen en zag een vriendin huilen aan het zwembad…"
+                placeholder="I was flying over the mountains and saw a friend crying by the pool…"></textarea>
+      <p class="welkom-vertel-fout" id="w-fout" hidden
+         data-en="Tell a little more about it, then Vera has something to work with."
+         data-nl="Vertel er nog iets meer over, dan kan Vera er iets mee.">Tell a little more about it, then Vera has something to work with.</p>
+      <button type="button" class="primary" id="w-door"
+              data-en="Imagine this dream" data-nl="Verbeeld deze droom">Imagine this dream</button>
+      <p class="welkom-vertel-noot"
+         data-en="Your dream stays in this browser until you make an account. It is not sent anywhere."
+         data-nl="Je droom blijft in deze browser tot je een account maakt. Hij gaat nergens heen.">
+        Your dream stays in this browser until you make an account. It is not sent anywhere.</p>
+    </div>
     <p class="welkom-knoppen">
-      <a class="knop-als-link" href="/app" data-en="Start with your first dream" data-nl="Begin met je eerste droom">Start with your first dream</a>
+      <a class="knop-als-link ghost-link" href="/app" data-en="Or go straight to the app" data-nl="Of ga meteen naar de app">Or go straight to the app</a>
     </p>
     <!-- De belofte staat ná de knop, niet ervoor. Deze twee regels zeggen in
          het abstracte wat `.sub` er twee alinea's hoger al concreet zei, en
@@ -340,6 +372,11 @@
     document.querySelectorAll(".taalkeus").forEach(function (b) {
       b.setAttribute("aria-pressed", b.dataset.t === taal ? "true" : "false");
     });
+    // Een placeholder is geen textContent. Zonder deze regel blijft het
+    // voorbeeld in het droomveld Engels terwijl het label erboven Nederlands is.
+    document.querySelectorAll("[data-ph-" + taal + "]").forEach(function (e) {
+      e.placeholder = e.getAttribute("data-ph-" + taal);
+    });
     try { localStorage.setItem(SLEUTEL, taal); } catch (e) { /* niets */ }
   }
 
@@ -348,6 +385,41 @@
   });
 
   zet(gekozen());
+
+  /* De droom die hier verteld wordt, reist mee naar de app.
+   *
+   * Dezelfde sleutel en dezelfde vorm als in app.js (`dreamverse_eerste_droom`,
+   * {tekst, wanneer}, een dag geldig): de poort leest hem daar en slaat de vraag
+   * over, zodat iemand die hier typt op /app meteen bij "Je droom staat klaar
+   * voor Vera" uitkomt in plaats van hem opnieuw te moeten intikken.
+   *
+   * Naar de server gaat er niets. Een droom is een bijzonder persoonsgegeven en
+   * er is nog geen account om hem aan te hangen - dat blijft de grens, ook nu
+   * het veld een pagina eerder staat.
+   */
+  var veld = document.getElementById("w-droom");
+  var door = document.getElementById("w-door");
+  var fout = document.getElementById("w-fout");
+
+  if (veld && door) {
+    door.addEventListener("click", function () {
+      var tekst = veld.value.trim();
+      // Twintig tekens, net als in de app: onder dat aantal heeft iemand op de
+      // knop gedrukt zonder iets te vertellen.
+      if (tekst.length < 20) {
+        fout.hidden = false;
+        veld.focus();
+        return;
+      }
+      fout.hidden = true;
+      try {
+        localStorage.setItem("dreamverse_eerste_droom",
+                             JSON.stringify({ tekst: tekst, wanneer: Date.now() }));
+      } catch (e) { /* privévenster: dan vraagt de app het opnieuw */ }
+      location.href = "/app";
+    });
+    veld.addEventListener("input", function () { fout.hidden = true; });
+  }
 })();
 </script>
 

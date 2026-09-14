@@ -953,6 +953,26 @@ verkoper en beoordelen ze de site, en tot vandaag zag een beoordelaar alleen een
 inlogscherm. **Voor testers**: die kregen een wachtwoordveld zonder te weten waar
 ze aan begonnen.
 
+**En sinds 14 september staat de vraag er zelf op, boven de vouw.** Daar stond
+een knop naar `/app`, en dáár stond pas *Wat droomde je vannacht?*. Iemand die
+'s ochtends vanuit Instagram binnenkomt met een droom in zijn hoofd kreeg dus
+eerst een pagina over wat het product doet en wat het kost, en moest zelf de knop
+vinden. Van 9 tot 14 september: 468 bezoeken aan deze pagina tegen 136 aan
+`/app`, en **nul aanmeldingen** — ruim twee derde haalde de vraag niet eens.
+Twee pagina's vóór de vraag is er één te veel.
+
+Het veld schrijft naar dezelfde `dreamverse_eerste_droom` in `localStorage` die
+de poort van de app leest (zie *Eerst de droom, dan pas het account*), dus wie
+hier typt komt op `/app` meteen uit bij *Je droom staat klaar voor Vera* en hoeft
+niets over te typen. Naar de server gaat er nog steeds niets: er is geen account
+om die droom aan te hangen, en dat blijft de grens ook nu het veld een pagina
+eerder staat. De knop naar de app blijft eronder staan als bijrol.
+
+Let op: deze pagina heeft **geen `taal.js`** maar zijn eigen `zet()`, en die zet
+`textContent`. Een placeholder is dat niet — vandaar `data-ph-en` en
+`data-ph-nl` naast elkaar op het droomveld en een eigen regel in `zet()`. Zonder
+die regel blijft het voorbeeld in het veld Engels onder een Nederlands label.
+
 **En hij blijft bereikbaar na het inloggen.** `/` stuurt alleen naar
 `welkom.html` zolang je uitgelogd bent, dus wie eenmaal binnen is zag hem nooit
 meer — precies de mensen die betalen konden niet meer nalezen wat de app doet,
@@ -1023,7 +1043,22 @@ die mens herkennen, en precies dat doen we niet.
 Geteld wordt op de plek waar de **pagina** wordt geserveerd, niet bij de
 statische bestanden: anders tel je stylesheets en plaatjes mee. De scanbots die
 dagelijks op PHP-lekken zoeken vragen paden op die daar nooit langskomen, en wat
-er alsnog doorheen glipt vangt `is_robot()` op de browsernaam. Nagemeten: drie
+er alsnog doorheen glipt vangt `is_robot()` op de browsernaam.
+
+**En sinds 14 september ook `als_browser()` op `Accept-Language`.** De zeef op de
+browsernaam vangt alleen wie zichzelf netjes noemt; wie zich Chrome noemt komt
+erdoor, en die zijn er. In de serverlog van die dag staan tientallen verzoeken
+op `/wp-admin/install.php` en op tien varianten van `wlwmanifest.xml`, en
+dezelfde bezoekers vragen ook gewoon `/` op — die wp-paden worden niet geteld,
+`/` wel. Daardoor stond er 468 landingsbezoeken over zes dagen tegenover nul
+aanmeldingen, en was niet te zeggen of dat een trechterprobleem was of gewoon
+scanners. Elke browser stuurt `Accept-Language` mee (die komt uit de
+taalinstelling van het toestel); een scanner met een kale HTTP-bibliotheek laat
+hem vrijwel altijd weg. Nagemeten: een browser telt, een nep-Chrome zonder die
+header niet, en een bot niet. Er wordt niets bewaard — de header wordt gelezen en
+weggegooid, net als de browsernaam. **De cijfers van vóór 14 september zijn
+daarmee niet met die erna te vergelijken**, en de eerste zijn vrijwel zeker te
+hoog. Nagemeten: drie
 bezoeken als Chrome tellen, vijf als AhrefsBot niet, PHP-scans niet, de
 stylesheet niet. `tel_weergave()` faalt nooit hardop — een teller mag geen
 pagina kosten.

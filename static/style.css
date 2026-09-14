@@ -664,6 +664,42 @@ section .entry { border-left-width: 3px; border-left-color: var(--tint); }
 /* Kan de browser het niet, dan is dit geen terzijde maar het antwoord. */
 .invoer-hint.kan-niet { color: var(--solar); }
 
+/* Het droomveld op de landingspagina.
+
+   Dit is het enige element op die pagina dat iets van de bezoeker vraagt, dus
+   het mag er als enige uitspringen. Zelfde grond als de rest (.92, zie
+   *Leesbaar boven een bewegende achtergrond*) en een rand in de kroonkleur, wat
+   nergens anders op die pagina gebeurt. */
+.welkom-vertel {
+  margin: 1.4rem 0 .6rem; padding: 1.2rem 1.3rem; border-radius: 16px;
+  display: flex; flex-direction: column; gap: .7rem; align-items: stretch;
+  background: rgba(13, 7, 26, .92);
+  border: 1px solid rgba(179, 105, 222, .45);
+  box-shadow: 0 0 40px rgba(110, 98, 218, .16);
+  backdrop-filter: blur(10px);
+  text-align: left;
+}
+.welkom-vertel label {
+  font-size: .65rem; font-weight: 600; letter-spacing: .22em;
+  text-transform: uppercase; color: var(--muted);
+}
+#w-droom {
+  font-family: var(--body); font-size: 1rem; line-height: 1.5;
+  padding: .7rem .8rem; border-radius: 10px; resize: vertical;
+  background: rgba(43, 28, 74, .6); color: var(--ink);
+  border: 1px solid var(--line);
+}
+#w-droom:focus-visible { outline: 2px solid var(--crown); outline-offset: 2px; }
+.welkom-vertel-fout {
+  margin: 0; padding: .6rem .8rem; border-radius: 10px;
+  background: rgba(242, 120, 100, .14); border: 1px solid rgba(245, 160, 143, .45);
+  color: #F5A08F; font-size: .88rem;
+}
+.welkom-vertel-noot { margin: 0; font-size: .78rem; color: var(--muted); }
+/* De weg eromheen mag bestaan, maar hoeft niet te concurreren met het veld. */
+.ghost-link { background: none !important; box-shadow: none !important;
+              border: 1px solid var(--line) !important; }
+
 /* De leesalinea's van de landingspagina: het stuk van Ruud, en de uitnodiging
    naar de Dream Guide.
 
