@@ -195,8 +195,11 @@
     // vertelt. Bedoeld is dat hij niet verstuurd wordt, dus staat dat er nu.
     // "In this browser" blijft: het is localStorage, dus in Safari opslaan en in
     // Chrome terugkomen werkt niet - "on this device" zou dat verhullen.
-    ["Je droom blijft zolang in deze browser en gaat nergens heen. Heb je al een account?",
-     "Your dream stays in this browser until you make an account. It is not sent anywhere. Already have an account?"],
+    // De vraag "Heb je al een account?" is hier uit weggehaald: die staat nu in
+    // een eigen regel eronder, met de knop ernaast. Twee sleutels dus.
+    ["Je droom blijft zolang in deze browser en gaat nergens heen.",
+     "Your dream stays in this browser until you make an account. It is not sent anywhere."],
+    ["Heb je al een account?", "Already have an account?"],
     ["Je droom staat klaar voor Vera.", "Your dream is ready for Vera."],
     // "to see it imagined" is dezelfde constructie als "an imagining", op de
     // knop waar het om gaat. Vijf panelen: dat is wat een gratis eerste droom
@@ -287,6 +290,10 @@
     ["De server is even niet bereikbaar — hij start opnieuw op. Probeer het over een minuut nog eens.",
      "The server is briefly unreachable - it is restarting. Try again in a minute."],
     ["De server gaf een onverwacht antwoord.", "The server gave an unexpected answer."],
+    ["Er kwam een antwoord terug dat niet van Dreamverse is",
+     "An answer came back that is not from Dreamverse"],
+    ["Zit je op een bedrijfsnetwerk? Probeer het op 4G of een ander netwerk.",
+     "Are you on a company network? Try it on mobile data or another network."],
     ["Panelen erbij <b>1</b>", "Add the panels <b>1</b>"],
     ["Vijf panelen erbij <b>1 token</b>", "Add five panels <b>1 token</b>"],
     ["Maak de panelen", "Draw the panels"],

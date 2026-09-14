@@ -76,8 +76,30 @@
       <!-- De knop staat naast de <p> en niet erin: de vertaalslag vervangt de
            hele innerHTML van elke <p>, en dan is de listener op die knop weg. -->
       <p class="poort-uitleg">Je droom blijft zolang in deze browser en gaat
-        nergens heen. Heb je al een account?</p>
-      <button type="button" class="linkje" id="poort-al-account">Inloggen</button>
+        nergens heen.</p>
+      <!-- De weg terug voor wie hier al eens was.
+           Dit stond als een klein tekstlinkje onder twee regels uitleg, en dat
+           kostte iemand die alleen wilde inloggen - of zijn wachtwoord kwijt
+           was - drie keer zoeken. "Wachtwoord vergeten?" staat namelijk in het
+           inlogformulier, dus die is pas te vinden nadat je hier geklikt hebt;
+           wie hem niet vond concludeerde dat hij weg was. Nu een eigen regel
+           met een rand eromheen: zichtbaar voor wie hem zoekt, en nog steeds
+           rustiger dan de paarse knop erboven, want voor een nieuwe bezoeker is
+           dit niet de weg.
+
+           Let op: een <div> en geen <p>. `taal.js` vervangt de hele innerHTML
+           van elke <p>, en dan wordt deze knop bij een taalwissel opnieuw
+           opgebouwd en is zijn listener weg - dan doet "Inloggen" niets meer,
+           zonder fout en zonder melding. Zelfde reden als bij het zoekveld van
+           de gids.
+
+           En de zin zit in een eigen <p> naast de knop, niet in een <span>:
+           `TE_VERTALEN` bevat wel p maar geen kale span, dus een <span> blijft
+           Nederlands staan terwijl de knop ernaast keurig "Log in" wordt.
+           Nagemeten. Die <p> bevat alleen tekst, dus de knop loopt geen gevaar. -->
+      <div class="poort-terugweg"><p>Heb je al een account?</p>
+        <button type="button" class="linkje" id="poort-al-account">Inloggen</button>
+      </div>
     </div>
 
     <div class="poort-stap" id="poort-klaar" hidden>

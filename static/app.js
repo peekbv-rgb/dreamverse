@@ -1728,7 +1728,25 @@
   function lees(r) {
     return r.text().then(function (tekst) {
       try {
-        return { ok: r.ok, body: JSON.parse(tekst) };
+        var body = JSON.parse(tekst);
+        // Elk antwoord met een foutcode dat van onze server komt heeft een
+        // `error` met een zin erin - nagemeten op alle send_json-aanroepen in
+        // server.py, er is er geen enkele zonder. Komt er dus een mislukt
+        // antwoord terug dat wél JSON is maar géén foutmelding bevat, dan heeft
+        // iets anders dan Dreamverse geantwoord: een bedrijfsfirewall die het
+        // verzoek onderschept, een proxy, een portaal van een wifi-netwerk.
+        //
+        // Dat is precies wat er op 14 september gebeurde. De app zei toen "Dat
+        // lukte niet" - de terugvalzin die nergens over gaat - en daarmee ging
+        // een dag op aan zoeken naar een fout in de inlogcode die er niet was.
+        // Wie dit leest hoort meteen te weten dat hij naar zijn netwerk moet
+        // kijken en niet naar zijn wachtwoord.
+        if (!r.ok && !body.error) {
+          body.error = t("Er kwam een antwoord terug dat niet van Dreamverse is")
+            + " (" + r.status + "). "
+            + t("Zit je op een bedrijfsnetwerk? Probeer het op 4G of een ander netwerk.");
+        }
+        return { ok: r.ok, body: body };
       } catch (e) {
         return {
           ok: false,

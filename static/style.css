@@ -2041,6 +2041,23 @@ body.beheerpagina .beheerrij { margin-top: 0; }
 }
 .poort-uitleg a { color: var(--ink); }
 
+/* De weg terug voor wie hier al eens was.
+
+   Het linkje "Inloggen" stond onder twee regels uitleg en was daarmee zo goed
+   als onvindbaar: wie alleen wilde inloggen - of zijn wachtwoord kwijt was -
+   zag het niet, en omdat "Wachtwoord vergeten?" pas in het inlogformulier
+   staat, leek die helemaal verdwenen. Eigen regel, eigen rand. Bewust géén
+   gevulde knop: voor een nieuwe bezoeker is dit niet de weg, en er staat al een
+   paarse knop boven. */
+.poort-terugweg {
+  margin: .9rem 0 0; padding: .6rem .8rem; border-radius: 10px;
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: .5rem;
+  border: 1px solid var(--line); background: rgba(13, 7, 26, .5);
+  font-size: .85rem; color: var(--muted);
+}
+.poort-terugweg p { margin: 0; }
+.poort-terugweg .linkje { font-size: .9rem; font-weight: 600; }
+
 /* Voorbeelden van een kernmoment.
    Poster nu, animatie pas bij een klik: de drie clips zijn samen ruim 8 MB en
    dat wil je niet op iemands telefoonbundel zetten voor iets wat hij misschien

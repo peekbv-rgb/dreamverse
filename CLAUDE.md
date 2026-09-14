@@ -980,6 +980,42 @@ Drie dingen die hier stuk waren en meelopen:
   het profiel op en is dus later klaar. De introductie staat nog gewoon bij *Je
   gegevens*, en de geboortedatum wordt pas bij een aankoop gevraagd.
 
+- **"Inloggen" was op het eerste scherm zo goed als onvindbaar, en daarmee
+  leek "Wachtwoord vergeten?" verdwenen.** Sinds de poort met de droom begint,
+  is het inlogformulier een stap verderop — en *Wachtwoord vergeten?* staat
+  binnen dat formulier. Wie dus alleen wilde inloggen, of zijn wachtwoord kwijt
+  was, moest eerst een klein tekstlinkje vinden dat onder twee regels uitleg
+  hing. Ruud concludeerde dat de knop weg was; hij stond er, twee stappen diep.
+  Nu heeft *Heb je al een account? Inloggen* een eigen regel met een rand
+  eromheen. Bewust **geen** gevulde knop: voor een nieuwe bezoeker is dit niet
+  de weg, en er staat al een paarse knop boven.
+
+  Twee vallen zitten in die ene regel, en ze zijn allebei opgetreden tijdens het
+  bouwen. De knop staat in een **`<div>`** en niet in een `<p>`, want `taal.js`
+  vervangt de hele `innerHTML` van elke `<p>` en dan is de listener bij een
+  taalwissel weg — dan doet *Inloggen* niets meer, zonder fout en zonder
+  melding. En de zin ernaast staat in een **eigen `<p>`** en niet in een
+  `<span>`, want `TE_VERTALEN` bevat wel `p` maar geen kale `span`: met een
+  `<span>` bleef "Heb je al een account?" Nederlands terwijl de knop ernaast
+  keurig *Log in* werd. Allebei nagemeten in beide talen, inclusief of de knop
+  ná een taalwissel nog werkt.
+
+- **Een mislukt antwoord zonder foutmelding komt niet van ons, en dat zegt de
+  app nu.** `lees()` viel terug op *"Dat lukte niet."* — een zin die nergens
+  over gaat. Op 14 september kreeg Ruud die bij het inloggen, en er ging een dag
+  op aan zoeken naar een fout in de inlogcode die er niet was: zijn Sophos-
+  firewall onderschepte het verzoek. Nagemeten op **alle** `send_json`-aanroepen
+  in `server.py`: er is er geen enkele met een foutcode die geen `error` met een
+  zin erin meestuurt. Een antwoord dat wél JSON is, wél een foutcode heeft en
+  géén `error` bevat, komt dus per definitie ergens anders vandaan — een
+  bedrijfsfirewall, een proxy, een wifi-portaal. Daar staat nu: *Er kwam een
+  antwoord terug dat niet van Dreamverse is (403). Zit je op een bedrijfsnetwerk?*
+  Nagemeten door een firewall na te bootsen met een vervangen `fetch`.
+
+  **Dit is een eigenschap van de server die je kunt breken.** Voeg je ooit een
+  `send_json` met een foutcode toe zonder `error`, dan krijgt de gebruiker daar
+  een melding over zijn netwerk te zien die nergens op slaat.
+
 ## Twee letters, en waarvoor ze zijn
 
 `--display` is Cormorant Garamond, `--body` is Karla. De verdeling is niet
