@@ -345,6 +345,26 @@ en het scheelt direct in de kostprijs per verbeelding.
   de zip, weg bij het verwijderen van het account, en genoemd in
   `privacy.html`. Alles komt onderaan `python rapport.py` te staan.
 
+- **Feedback wordt nu ook gemaild, want opslaan alleen was niet genoeg.**
+  `POST /api/feedback` schreef netjes in de database en stuurde niets. Daarmee
+  bleef het enige kanaal dat we hebben liggen tot iemand `python rapport.py`
+  draaide of `/beheer` opende — en dat gebeurt niet op de dag dat het
+  binnenkomt. Eén zin van een dromer die afhaakt is op dit moment meer waard dan
+  elk cijfer in dat rapport. `mail.feedbackbericht()` stuurt hem door naar
+  `FEEDBACK_MAIL`, en zonder die variabele naar het adres waarmee we versturen —
+  dan komt het in de Vera-inbox terecht in plaats van nergens.
+
+  Het adres van de inzender gaat mee, want zonder dat kun je niet antwoorden, en
+  bij feedback is antwoorden precies wat je wilt kunnen. Dat blijft binnen
+  dezelfde verwerkingsverantwoordelijke: het stond al in de database en gaat
+  naar de eigen inbox, niet naar een derde. Staat SMTP uit, dan gaat het naar de
+  serverlog — zelfde tak als bij de herstelmail.
+
+  **Een mislukte mail mag de feedback nooit kosten.** Hij staat al in de
+  database voordat er iets verstuurd wordt, en de `except` eromheen is met opzet
+  breed: er is geen fout uit `smtplib` die belangrijker is dan dat de tekst
+  bewaard is.
+
 - **"Je dromen samen" is een beschouwing, geen samenvatting.** Het veld
   `together` was twee tot vier zinnen; nu zijn het drie tot vijf alinea's die
   vier dingen langslopen: wat er door alle nachten heen loopt, wat er verschoven

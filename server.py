@@ -1112,11 +1112,35 @@ class Handler(SimpleHTTPRequestHandler):
             # zien dat iemand wegblijft, maar nooit waarom.
             payload = self.read_json() or {}
             u = accounts.huidige()
+            aantal = len(accounts.dromen(u["id"]))
             try:
-                accounts.bewaar_feedback(u["id"], payload.get("tekst", ""),
-                                         len(accounts.dromen(u["id"])))
+                accounts.bewaar_feedback(u["id"], payload.get("tekst", ""), aantal)
             except accounts.AccountError as e:
                 return self.send_json({"error": str(e)}, 400)
+
+            # En doorsturen, want opslaan alleen is niet genoeg.
+            #
+            # Dit stond hier niet, en daarmee bleef het enige kanaal dat we
+            # hebben in de database liggen tot iemand `python rapport.py`
+            # draaide of /beheer opende. Dat gebeurt niet op de dag dat het
+            # binnenkomt, en een zin van een dromer die afhaakt is op dit moment
+            # meer waard dan elk cijfer in dat rapport.
+            #
+            # Brede except met opzet, net als bij de welkomstmail: er is geen
+            # fout uit smtplib die belangrijker is dan dat de feedback bewaard
+            # is. Hij staat al in de database; de mail is het gemak.
+            try:
+                if mail.enabled():
+                    mail.feedbackbericht(payload.get("tekst", ""),
+                                         u.get("email", ""), aantal,
+                                         u.get("taal", ""))
+                else:
+                    print("dreamverse: feedback van {} ({} dromen): {}".format(
+                        u.get("email", "?"), aantal,
+                        str(payload.get("tekst", ""))[:200]), flush=True)
+            except Exception as e:
+                self.log_message("feedbackmail mislukte: %s", e)
+
             return self.send_json({"ok": True})
 
         # -- de trechtertellers ----------------------------------------------- #

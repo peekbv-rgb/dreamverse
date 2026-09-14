@@ -250,6 +250,55 @@ def herstelbericht(naar, link, taal="nl"):
     return verstuur(naar, onderwerp, tekst.format(link=link))
 
 
+def beheerder():
+    """Waar meldingen voor de operator heen gaan.
+
+    `FEEDBACK_MAIL` als die gezet is, anders het adres waarmee we versturen -
+    dan komt het in elk geval in de Vera-inbox terecht in plaats van nergens.
+    """
+    doel = os.environ.get("FEEDBACK_MAIL", "").strip()
+    if doel:
+        return doel
+    return os.environ.get("SMTP_USER", "").strip()
+
+
+def feedbackbericht(tekst, van_wie="", dromen=0, taal=""):
+    """Wat een dromer instuurde, doorgestuurd naar de operator.
+
+    Dit ontbrak, en dat was het gat in het enige kanaal dat er is. De app meet
+    met opzet geen klikgedrag, dus `rapport.py` ziet wél dat iemand wegblijft en
+    nooit waarom; `POST /api/feedback` vult dat gat. Maar wat daar binnenkwam
+    bleef in de database staan tot iemand `python rapport.py` draaide of
+    `/beheer` opende - en dat gebeurt niet op de dag dat het binnenkomt.
+
+    Eén zin van een dromer die afhaakt is op dit moment meer waard dan elk
+    cijfer in het rapport. Die hoort dezelfde dag gelezen te worden.
+
+    Het adres van de inzender gaat mee, want zonder dat kun je niet antwoorden -
+    en bij feedback is antwoorden precies wat je wilt kunnen. Dat blijft bij
+    dezelfde verwerkingsverantwoordelijke: het stond al in de database en gaat
+    naar de eigen inbox, niet naar een derde.
+    """
+    doel = beheerder()
+    if not doel:
+        return False
+    kop = "Feedback van {}".format(van_wie or "een dromer")
+    regels = [
+        tekst.strip(),
+        "",
+        "---",
+        "Van      : {}".format(van_wie or "onbekend"),
+        "Dromen   : {}".format(dromen),
+    ]
+    if taal:
+        regels.append("Taal     : {}".format(taal))
+    regels += [
+        "",
+        "Antwoorden kan gewoon op dit adres.",
+    ]
+    return verstuur(doel, kop, chr(10).join(regels))
+
+
 def main():
     import argparse
     from dotenv import load_dotenv
