@@ -601,6 +601,17 @@ def main(argv=None):
                          "zonder dit wordt het gemeten")
     args = ap.parse_args(argv)
 
+    # De Nederlandse Reels gaan naar een eigen map.
+    #
+    # Zonder dit schrijven beide talen naar `data/reels/<slug>.mp4` én naar
+    # dezelfde caption, en overschrijft de tweede run stilletjes de eerste. Dat
+    # merk je pas als er al iets geplaatst is. Eén keer omzetten bij de start is
+    # genoeg; de rest van het script kent alleen DOEL en STIL.
+    global DOEL, STIL
+    if args.taal == "nl":
+        DOEL = DOEL.parent / (DOEL.name + "-nl")
+        STIL = DOEL / "stil"
+
     rijen = list(onderwerpen(set(args.slugs) or None))
     if not rijen:
         raise SystemExit("Geen onderwerpen gevonden.")

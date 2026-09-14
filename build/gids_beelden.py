@@ -54,6 +54,48 @@ WEBPAD = "/gids/{}.jpg"
 VERHOUDING = "16:9"
 
 PROMPTS = {
+    # Tien onderwerpen erbij op 14 september, tweede ronde. Dezelfde drie regels:
+    # geen gezichten, niet letterlijk, niet eng.
+    "train":
+        "an empty railway platform at dusk, the rails curving away into mist, "
+        "a single lamp lit further down, the departure board too far to read, "
+        "no people, wide and quiet",
+    "hair":
+        "a long dark ribbon of hair lifted on the wind against a pale morning "
+        "sky, drifting free of anything, seen from a distance, no face and no "
+        "head, weightless",
+    "stairs":
+        "a wide stone staircase curving upward into soft light, worn in the "
+        "middle by use, the top out of sight, warm light from above and cool "
+        "shadow below, no people",
+    "forest":
+        "tall trees in early morning mist, shafts of low sun between the "
+        "trunks, a faint path that disappears after a few steps, seen from "
+        "standing height, no figures",
+    "exam":
+        "a single empty desk in a large hall, a blank sheet of paper and one "
+        "pencil on it, high windows with grey light, rows of other desks "
+        "receding into soft focus, no people",
+    "wolf":
+        "a single wolf standing at the edge of a moonlit clearing, seen from a "
+        "distance in profile, breath visible in cold air, dark trees behind, "
+        "watchful and still rather than threatening",
+    "bridge":
+        "a long stone bridge over still water at first light, mist below it so "
+        "the far end is not visible, seen from the near bank, no people, calm "
+        "and wide",
+    "phone":
+        "an old telephone receiver lying off the hook on a dark table, the cord "
+        "curling away into shadow, a small warm light from one side, no hands "
+        "and no faces, quiet",
+    "storm":
+        "a great dark cloud front moving in over an open landscape, still "
+        "sunlit in the foreground, one distant flash inside the cloud, seen "
+        "from far away, no people and no buildings",
+    "door":
+        "a single old door standing ajar in a bare wall, warm light spilling "
+        "through the gap onto a dark floor, nothing visible beyond it, seen "
+        "straight on, no people",
     # Zes onderwerpen erbij op 14 september. Dezelfde drie regels als de rest:
     # geen gezichten, niet letterlijk, en niet eng. Bij de mensen-onderwerpen
     # (father) is het beeld de plek die hij net verliet, zoals bij mother.

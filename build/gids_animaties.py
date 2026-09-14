@@ -143,6 +143,37 @@ BEWEGING = {
     # mirror: een staande spiegel in een lege kamer, alleen licht erin.
     "mirror": "the light held in the mirror slowly brightens and dims again, "
               "dust drifts through the room, nothing appears in the glass",
+    # --- de tien van de tweede ronde ---------------------------------- #
+    # train: een leeg perron in de schemering, rails die de mist in lopen.
+    "train": "mist drifts slowly across the rails, the single lamp flickers "
+             "faintly, no train arrives and nobody appears",
+    # hair: een lint haar op de wind tegen een bleke ochtendlucht.
+    "hair": "the strands of hair ripple and drift on the wind, turning slowly, "
+            "the sky behind them brightens a little",
+    # stairs: een brede stenen trap die omhoog krult het licht in.
+    "stairs": "the light from above slowly brightens and moves down the steps, "
+              "dust drifts in the shaft of light, nothing climbs them",
+    # forest: hoge bomen in ochtendmist met zonneschachten.
+    "forest": "the mist drifts slowly between the trunks, the shafts of sun "
+              "shift and sharpen, leaves move in a faint breeze",
+    # exam: een lege tafel in een grote zaal, een blad en een potlood.
+    "exam": "the grey light from the high windows shifts slowly across the "
+            "desk, one corner of the paper lifts and settles, nobody enters",
+    # wolf: een wolf aan de rand van een maanverlichte open plek.
+    "wolf": "the wolf's breath drifts visibly in the cold air and its fur "
+            "stirs, the grass moves, it stays exactly where it stands",
+    # bridge: een stenen brug over stil water bij eerste licht.
+    "bridge": "the mist beneath the bridge drifts and thins slowly, the water "
+              "ripples faintly, the far end stays out of sight",
+    # phone: een hoorn naast de haak op een donkere tafel.
+    "phone": "the warm light shifts slowly across the receiver and the curling "
+             "cord, dust drifts, nothing is picked up",
+    # storm: een wolkenfront boven een open landschap.
+    "storm": "the cloud front rolls slowly forward, one distant flash pulses "
+             "inside it, the sunlit grass in front bends in the rising wind",
+    # door: een oude deur op een kier met warm licht erdoorheen.
+    "door": "the warm light through the gap slowly brightens and steadies, "
+            "dust drifts in it, the door neither opens nor closes",
 }
 
 # "no new people ... enter the frame" en niet "no people": bij cat, dogs, horse,

@@ -757,8 +757,19 @@ op een pagina die iemand vanaf zijn telefoon opent. Nu is de hele set 3,0 MB bij
 gemiddeld 110 kB per stuk, en de kaarten laden bovendien `lazy` — dus wie het
 overzicht opent haalt alleen wat er in beeld staat.
 
-**De achttien die nog te gaan waren zijn er, op 10 september 2026: de gids staat
-op zevenentwintig onderwerpen en ze hebben allemaal een beeld.** Elk nieuw
+**De gids staat op 14 september 2026 op drieënveertig onderwerpen**, allemaal
+met een beeld én een animatie. Zestien kwamen er op die dag bij, in twee rondes:
+vader, geld, bloed, verdrinken, bruiloft, spiegel, en daarna trein, haar, trap,
+bos, examen, wolf, brug, telefoon, storm, deur. Dat is zesentachtig artikelen in
+twee talen.
+
+**Waarom het daar stopte en niet bij honderd.** Het Kling-beeldtegoed stond toen
+nog op 352 eenheden — genoeg voor achtentachtig beelden. De beperking is niet het
+tegoed maar de tekst: elk onderwerp is twee volledige artikelen, en Google
+beoordeelt een site op zijn geheel. Honderd pagina's van halve kwaliteit maken
+het oordeel over álle pagina's slechter. Wat er nu staat is geschreven; wat er
+nog bij kan hoort dat ook te zijn.
+ Elk nieuw
 onderwerp heeft nog steeds een prompt nodig in `PROMPTS` in
 `build/gids_beelden.py`; zonder prompt weigert dat script te draaien in plaats
 van het onderwerp stil over te slaan. Het Kling-tegoed verloopt
@@ -916,6 +927,24 @@ keer misgegaan: wie de bovenste map opende pakte de stille versie, want de goede
 zat een niveau dieper. Logisch vanuit het script, verkeerd vanuit de map. De
 caption blijft wél boven staan, naast de video waar hij bij hoort. `--ja` schrijft
 de video dus in `stil/` en zegt erbij dat `--verdeel --ja` de volgende stap is.
+
+**Nederlands gaat naar een eigen map, en dat moest.** `--taal nl` schreef naar
+exact dezelfde bestandsnamen als het Engels — `data/reels/<slug>.mp4` én
+dezelfde caption — dus de tweede run overschreef de eerste zonder een woord.
+Dat merk je pas als er al iets geplaatst is. `main()` zet `DOEL` en `STIL` nu
+één keer om bij de start: Engels blijft in `data/reels/`, Nederlands gaat naar
+`data/reels-nl/`. De rest van het script kent alleen die twee namen.
+
+**Nederlandse Reels kosten geen enkele Kling-eenheid.** Ze gebruiken dezelfde
+animaties; alleen de titel in het beeld en de caption eronder zijn anders. Dat
+verdubbelt de voorraad naar 86 posts voor niets meer dan rendertijd.
+
+**Maar plaats ze niet door elkaar op één account.** Instagram leert van je
+eerste posts wie je publiek is en toont je daarna aan mensen die daarop lijken;
+twee talen door elkaar houdt dat leerproces vaag en bereikt geen van beide
+groepen goed. Engels is de hoofdweg — dezelfde redenering als bij de gids zelf,
+waar de Engelse zoekvraag vele malen groter is. De Nederlandse set ligt klaar
+voor een tweede account, of voor het geval Nederlands beter blijkt te converteren.
 
 **De hashtags zijn klein gehouden.** De slug plus hoogstens twee uit `also`, dan
 zes vaste. `also` bestaat voor de zoekwoorden van de gids en die zijn voor Google

@@ -1,0 +1,3 @@
+;/*FB_PKG_DELIM*/
+
+__d("maybeLoadPolarisImmersiveDirectChainQuery",["CometRelay","PolarisClipsTabHelpers","PolarisImmersiveFeedPostModalChainedClipsQuery.graphql","isPolarisImmersiveViewerEnabled"],(function(t,n,r,o,a,i,l){"use strict";var e=1;function s(t,n,a){return!a||!r("isPolarisImmersiveViewerEnabled")()?null:o("CometRelay").loadQuery(t,r("PolarisImmersiveFeedPostModalChainedClipsQuery.graphql"),{data:{chaining_media_id:n.split("_")[0],container_module:o("PolarisClipsTabHelpers").ClipsContainerModule.DESKTOP_FEED_CHAINING,should_refetch_chaining_media:!0},first:e})}l.default=s}),98);
