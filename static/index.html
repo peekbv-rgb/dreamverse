@@ -421,6 +421,25 @@
         <p class="vraag-melding" id="vraag-melding"></p>
       </div>
       <p class="question" id="question"></p>
+      <!-- De vraag van Vera en het antwoordveld horen aan elkaar vast.
+
+           Het kaartje "Wat kan er beter?" stond ertussen. Vera stelde dus een
+           vraag, daarna vroeg de app om feedback over de app, en pas daaronder
+           stond het veld waarin je Vera's vraag beantwoordt. Dan lijkt dat veld
+           bij de feedback te horen en blijft Vera's vraag onbeantwoord - terwijl
+           dat antwoord het enige is dat de dromer wakend opschrijft en dus het
+           zwaarst weegt in de duiding van zijn volgende droom.
+
+           De feedback staat nu onder allebei: die gaat over de app, niet over
+           deze droom, en hoort dus als laatste. -->
+      <div class="antwoord" id="antwoord-blok" hidden>
+        <label for="antwoord">Je antwoord</label>
+        <textarea id="antwoord" rows="2" placeholder="Schrijf op wat er in je opkomt. Het hoeft niet af te zijn."></textarea>
+        <div class="row">
+          <button type="button" class="primary" id="antwoord-op">Bewaren</button>
+          <span class="antwoord-uitleg" id="antwoord-uitleg">Dit gaat mee in de duiding van je volgende droom.</span>
+        </div>
+      </div>
       <div class="terugkoppeling" id="terugkoppeling" hidden>
         <span class="lbl">Wat kan er beter?</span>
         <p>Dreamverse is nieuw en jij bent een van de eersten. Wat zou je anders
@@ -431,14 +450,6 @@
           <button type="button" class="primary" id="feedback-op">Versturen</button>
           <button type="button" class="ghost" id="feedback-weg">Nu even niet</button>
           <span class="antwoord-uitleg" id="feedback-melding"></span>
-        </div>
-      </div>
-      <div class="antwoord" id="antwoord-blok" hidden>
-        <label for="antwoord">Je antwoord</label>
-        <textarea id="antwoord" rows="2" placeholder="Schrijf op wat er in je opkomt. Het hoeft niet af te zijn."></textarea>
-        <div class="row">
-          <button type="button" class="primary" id="antwoord-op">Bewaren</button>
-          <span class="antwoord-uitleg" id="antwoord-uitleg">Dit gaat mee in de duiding van je volgende droom.</span>
         </div>
       </div>
     </div>

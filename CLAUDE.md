@@ -409,6 +409,52 @@ Op de kaart staat **VERA DREAMVERSE** en niet DREAMVERSE. Dat is de regel uit
 Dreamverse. Deze kaart is het meest naar buiten wat de app maakt, en het adres
 eronder zegt hetzelfde.
 
+### De kaart voor een droom zonder beeld
+
+Bij Gratis krijgt alleen de eerste droom panelen (`GRATIS_MET_BEELD = 1`), en
+wie *alleen de duiding* kiest krijgt ze nooit. Die dromen waren **niet te
+delen**: `deelKnopBijwerken()` keek of er een paneelbeeld was en verborg de knop
+anders. Delen is het enige organische kanaal dat dit product heeft, en het viel
+weg bij precies de twee nachten waarin een gratis dromer beslist of hij blijft.
+
+Wat er nu op die kaart komt: **de kleurvelden die het model per paneel koos**,
+als één lichtbundel van boven naar beneden, in de volgorde van de nacht. Dat is
+persoonlijk zonder iets te verklappen — twee dromen zien er nooit hetzelfde uit.
+Dezelfde vorm als de chakrapilaar in de app, zonder de lotussen, dus herkenbaar
+van ons zonder dat er een spiritueel etiket op zit. Het kost niets: geen Kling,
+geen Runway, alleen tekenwerk op een doek.
+
+Vier dingen die bij het tekenen uitgevochten zijn, alle vier op het scherm
+vergeleken:
+
+- **Plateaus van 0,10, en dat is de hele vormgeving.** Zonder plateau lopen
+  oranje en groen over een halve kolom in elkaar en wordt alles grijsblauw — dan
+  zie je niet meer welke velden het waren. Met 0,34 worden het vijf harde
+  strepen en lijkt de kaart een vlaggetje. 0,10 laat de kleuren vloeien en houdt
+  elk veld herkenbaar.
+- **Een kolom, geen vlek.** De eerste opzet was vijf radiale vlekken onder
+  elkaar; dat werd een donkere modderplaat. Nu één verloop met de zijkanten
+  weggemaskerd via `destination-in`, en boven en onder uitgedoofd.
+- **Geen `ctx.filter`.** Dat kent Safari pas kort, en een kaart die daar met
+  harde randen uit komt is erger dan geen kaart. De zachtheid komt uit verlopen
+  die naar doorzichtig lopen, en dat doet elke browser die `canvas` kent.
+- **Ringen, nooit een teken.** Dezelfde regel als in `kling.py`, en ze liggen
+  ónder de bundel: die is het licht, de ringen zijn de ruimte.
+
+**Het vak is hier 930 hoog en niet 980.** Daaronder komt een regel bij die op de
+beeldkaart niet staat — de veldnamen op 1472 — en het merk (1548) en het adres
+(1610) blijven staan waar ze uitgemeten zijn. Nagemeten met `measureText`: de
+kop begint op 330, de namen op 1445 (45px onder het vak), en het adres eindigt
+op 1611, tegen een grens van 1635. **Een eerdere opzet zette het adres op 1655
+en viel er dus buiten** — in een verhaal ligt de antwoordbalk er dan overheen en
+in de feed wordt het weggesneden, precies de regel waarvoor de kaart bestaat.
+
+Onderaan staan de **neutrale veldnamen** — aarde, hart, stem — hoogstens drie en
+zonder herhaling. Dat is het enige op de kaart dat iets zégt, en het gaat over de
+kleuren en niet over de droom. Niet de Sanskrietnamen: dit is het meest naar
+buiten wat de app maakt, en daar hoort een kijker geen etiket te krijgen waar hij
+niet om vroeg.
+
 - **Vera's introductie komt één keer, niet elke keer.** `el("intro").hidden`
   stond onvoorwaardelijk op `false`, dus Vera stelde zich opnieuw voor aan iemand
   die zijn negende droom kwam vertellen. Een begroeting die je elke ochtend

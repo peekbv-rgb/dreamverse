@@ -1949,6 +1949,196 @@
     return new Promise(function (klaar) { c.toBlob(klaar, "image/jpeg", 0.92); });
   }
 
+  /* De kaart voor een droom zonder beeld.
+   *
+   * Bij Gratis krijgt alleen de eerste droom panelen (`GRATIS_MET_BEELD = 1`),
+   * en wie "alleen de duiding" kiest krijgt ze nooit. Die dromen waren **niet
+   * te delen**: `deelKnopBijwerken()` keek of er een paneelbeeld was en
+   * verborg de knop anders. Delen is het enige organische kanaal dat dit
+   * product heeft, en het viel weg bij precies de twee nachten waarin een
+   * gratis dromer beslist of hij blijft.
+   *
+   * Wat er dan op de kaart komt: **de kleurvelden die het model per paneel
+   * koos**, als vijf zachte lichtvlakken onder elkaar, in de volgorde van de
+   * nacht. Dat is persoonlijk zonder iets te verklappen - het is de
+   * kleurhandtekening van die ene nacht, en twee dromen zien er nooit
+   * hetzelfde uit.
+   *
+   * Dezelfde grenzen als bij de gewone kaart, en ze zijn hier strenger nodig:
+   * geen droomtekst, geen duiding, geen titel. Wie op delen drukt om iets moois
+   * te sturen hoort niet per ongeluk zijn nacht op straat te leggen. Onderaan
+   * staan wél de neutrale veldnamen - aarde, hart, stem - want dat is wat de
+   * kleuren betekenen en het zegt niets over de inhoud. **Neutrale namen en
+   * niet de Sanskrietnamen**: dit is het meest naar buiten wat de app maakt, en
+   * daar hoort de kijker niet ongevraagd een spiritueel etiket te krijgen.
+   *
+   * Het kost niets: geen Kling, geen Runway, alleen tekenwerk op een doek.
+   *
+   * Geen `ctx.filter` voor de zachte randen - dat kan Safari pas sinds kort en
+   * een kaart die daar hard afgesneden uit komt is erger dan geen kaart. De
+   * zachtheid komt uit radiale verlopen die naar doorzichtig lopen, en dat doet
+   * elke browser die `canvas` kent.
+   */
+  function veldVan(sleutel) {
+    for (var i = 0; i < VELDEN.length; i++) {
+      if (VELDEN[i].key === sleutel) { return VELDEN[i]; }
+    }
+    return VELDEN[VELDEN.length - 1];   // bij twijfel het bovenste veld
+  }
+
+  function hexNaarRgb(hex) {
+    var h = String(hex).replace("#", "");
+    return [parseInt(h.slice(0, 2), 16),
+            parseInt(h.slice(2, 4), 16),
+            parseInt(h.slice(4, 6), 16)];
+  }
+
+  function veldenVanDroom() {
+    if (!episode || !episode.panels || !episode.panels.length) { return []; }
+    return episode.panels.map(function (paneel) {
+      return veldVan(paneel && paneel.palette);
+    });
+  }
+
+  function kaartMakenVelden() {
+    var velden = veldenVanDroom();
+    if (!velden.length) { return Promise.resolve(null); }
+
+    var c = document.createElement("canvas");
+    c.width = KAART_B; c.height = KAART_H;
+    var ctx = c.getContext("2d");
+
+    ctx.fillStyle = "#08060F";
+    ctx.fillRect(0, 0, KAART_B, KAART_H);
+
+    /* Het vak is hier 930 hoog en niet 980 zoals bij de beeldkaart.
+     *
+     * Daaronder moet een regel bij die daar niet staat - de veldnamen - en
+     * eronder blijven het merk (1548) en het adres (1610) staan waar ze staan.
+     * Die twee zijn uitgemeten tegen de veilige strook van 285: het adres
+     * eindigt met zijn staartletters op ~1617 en de grens ligt op 1635. Een
+     * eerdere opzet zette het adres op 1655 en dat valt er dus buiten - in een
+     * Instagram-verhaal ligt de antwoordbalk er dan overheen en in de feed
+     * wordt het weggesneden. Precies de regel waarvoor de kaart bestaat.
+     *
+     * Verander je een van deze getallen, meet dan opnieuw.
+     */
+    var vakX = 60, vakY = 470, vakB = KAART_B - 120, vakH = 930;
+
+    /* De kolom apart tekenen en daarna de randen weghalen met destination-in.
+     *
+     * Rechtstreeks op de kaart tekenen kan niet: je wilt de kleuren laten
+     * uitdoven naar doorzichtig, en dat is een bewerking op de alfa van dit
+     * ene vlak. `ctx.filter` zou ook kunnen maar dat kent Safari pas kort, en
+     * een kaart die daar met harde randen uit komt is erger dan geen kaart.
+     */
+    var k = document.createElement("canvas");
+    k.width = vakB; k.height = vakH;
+    var kc = k.getContext("2d");
+
+    /* Elk veld krijgt een plateau, en de breedte daarvan is de hele vormgeving.
+     *
+     * Zonder plateau lopen oranje en groen over een halve kolom in elkaar en
+     * wordt alles grijsblauw - dan zie je niet meer welke velden het waren. Met
+     * een breed plateau (0,34 van een band) worden het vijf harde strepen en
+     * lijkt de kaart een vlaggetje. 0,10 houdt het midden: de kleuren vloeien,
+     * maar elk veld blijft herkenbaar. Op het scherm vergeleken.
+     */
+    var g = kc.createLinearGradient(0, 0, 0, vakH);
+    var band = 1 / velden.length;
+    velden.forEach(function (veld, i) {
+      var mid = band * (i + 0.5);
+      g.addColorStop(Math.max(0, mid - band * 0.10), veld.kleur);
+      g.addColorStop(Math.min(1, mid + band * 0.10), veld.kleur);
+    });
+    kc.fillStyle = g;
+    kc.fillRect(0, 0, vakB, vakH);
+
+    // De zijkanten weg: een lichtbundel, geen gevuld vlak. Dat is dezelfde
+    // vorm als de chakrapilaar in de app, zonder de lotussen - dus het is
+    // herkenbaar van ons zonder dat er een spiritueel etiket op zit.
+    kc.globalCompositeOperation = "destination-in";
+    var zij = kc.createLinearGradient(0, 0, vakB, 0);
+    zij.addColorStop(0.00, "rgba(0,0,0,0)");
+    zij.addColorStop(0.34, "rgba(0,0,0,.30)");
+    zij.addColorStop(0.50, "rgba(0,0,0,1)");
+    zij.addColorStop(0.66, "rgba(0,0,0,.30)");
+    zij.addColorStop(1.00, "rgba(0,0,0,0)");
+    kc.fillStyle = zij;
+    kc.fillRect(0, 0, vakB, vakH);
+
+    // En boven en onder uitdoven, anders staat de bundel op twee harde randen.
+    var vert = kc.createLinearGradient(0, 0, 0, vakH);
+    vert.addColorStop(0.00, "rgba(0,0,0,0)");
+    vert.addColorStop(0.13, "rgba(0,0,0,1)");
+    vert.addColorStop(0.87, "rgba(0,0,0,1)");
+    vert.addColorStop(1.00, "rgba(0,0,0,0)");
+    kc.fillStyle = vert;
+    kc.fillRect(0, 0, vakB, vakH);
+
+    ctx.save();
+    ctx.beginPath();
+    if (ctx.roundRect) { ctx.roundRect(vakX, vakY, vakB, vakH, 40); }
+    else { ctx.rect(vakX, vakY, vakB, vakH); }
+    ctx.clip();
+    ctx.fillStyle = "#0B0818";
+    ctx.fillRect(vakX, vakY, vakB, vakH);
+
+    /* Concentrische ringen achter de bundel, en met opzet niets anders.
+     *
+     * Dezelfde regel als in `kling.py`: ringen en bogen, nooit een teken. Een
+     * ster of een veelhoek in een app over iemands binnenwereld is geen sfeer
+     * maar een uitspraak, en niemand heeft erom gevraagd. Ze staan eronder en
+     * niet erover, zodat de bundel het licht is en zij de ruimte.
+     */
+    ctx.strokeStyle = "rgba(246, 242, 255, .10)";
+    ctx.lineWidth = 1.5;
+    for (var r = 130; r < vakB; r += 105) {
+      ctx.beginPath();
+      ctx.arc(vakX + vakB / 2, vakY + vakH / 2, r, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+
+    ctx.globalCompositeOperation = "lighter";
+    ctx.drawImage(k, vakX, vakY);
+    ctx.globalCompositeOperation = "source-over";
+    ctx.restore();
+
+    ctx.textAlign = "center";
+    ctx.fillStyle = "#F2EEFB";
+    ctx.font = 'italic 300 96px "Cormorant Garamond", Georgia, serif';
+    ctx.fillText(kaartTekst(), KAART_B / 2, 400);
+
+    /* De namen van de velden die voorkwamen, zonder herhaling en hoogstens
+     * drie: meer wordt een opsomming en past niet op een regel. Dit is het
+     * enige op de kaart dat iets zégt, en het gaat over de kleuren en niet
+     * over de droom. Neutrale namen - aarde, hart, stem - en niet de
+     * Sanskrietnamen: dit is het meest naar buiten wat de app maakt, en daar
+     * hoort een kijker geen spiritueel etiket te krijgen dat hij niet vroeg.
+     */
+    var namen = [];
+    velden.forEach(function (v) {
+      var naam = t(v.naam);
+      if (namen.indexOf(naam) === -1) { namen.push(naam); }
+    });
+    ctx.font = '400 38px Karla, "Segoe UI", Helvetica, Arial, sans-serif';
+    ctx.fillStyle = "rgba(216, 205, 234, .8)";
+    ctx.letterSpacing = "3px";
+    ctx.fillText(namen.slice(0, 3).join("  \u00b7  "), KAART_B / 2, 1472);
+    ctx.letterSpacing = "0px";
+
+    ctx.font = '600 34px Karla, "Segoe UI", Helvetica, Arial, sans-serif';
+    ctx.fillStyle = "rgba(167, 154, 203, .95)";
+    ctx.letterSpacing = "6px";
+    ctx.fillText("VERA DREAMVERSE", KAART_B / 2, 1548);
+    ctx.letterSpacing = "0px";
+    ctx.font = '400 30px Karla, "Segoe UI", Helvetica, Arial, sans-serif';
+    ctx.fillStyle = "rgba(167, 154, 203, .65)";
+    ctx.fillText("vera-dreamverse.com", KAART_B / 2, 1610);
+
+    return new Promise(function (klaar) { c.toBlob(klaar, "image/jpeg", 0.92); });
+  }
+
   /* Welk beeld gaat er op de kaart: wat er nu in de speler staat.
    *
    * Beweegt dit paneel, dan nemen we het beeldje van dit moment uit de video en
@@ -1967,7 +2157,10 @@
   function deelKnopBijwerken() {
     var knop = el("deel");
     if (!knop) { return; }
-    var kan = !!huidigPaneelBeeld() && !(episode && episode.demo);
+    // Ook zonder paneel valt er te delen: dan wordt het de kaart met de
+    // kleurvelden. Het voorbeeld blijft erbuiten - dat is niet iemands droom.
+    var kan = !(episode && episode.demo)
+              && (!!huidigPaneelBeeld() || veldenVanDroom().length > 0);
     knop.hidden = !kan;
   }
 
@@ -2017,7 +2210,7 @@
       // Geen enkele tak mag stil teruggeven. Hier stond `if (!bron) return;`,
       // en dan lijkt de knop kapot terwijl hij precies doet wat er staat.
       var bron = huidigPaneelBeeld();
-      if (!bron) {
+      if (!bron && !veldenVanDroom().length) {
         melding.className = "deel-melding err";
         melding.textContent = t("Er staat nog geen beeld bij deze droom om te delen.");
         return;
@@ -2037,7 +2230,7 @@
             new Promise(function (r) { setTimeout(r, 3000); })
           ]);
         }
-        var blob = await kaartMaken(bron);
+        var blob = bron ? await kaartMaken(bron) : await kaartMakenVelden();
         if (!blob) { throw new Error("geen kaart"); }
         var bestand = new File([blob], "dreamverse.jpg", { type: "image/jpeg" });
 
