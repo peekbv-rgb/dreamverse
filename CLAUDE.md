@@ -1610,6 +1610,30 @@ cookiebanner oplevert en het gedrag van dromers bij een advertentiebedrijf legt.
 
     python rapport.py
 
+### Wat de trechter op 15 september zei
+
+Het eerste hele etmaal mét de zeef op `Accept-Language`, en daarmee het eerste
+getal dat te geloven is: **19 bezoeken aan de landingspagina, 1 aan de app, nul
+gratis duidingen, nul aanmeldingen.** De zes dagen ervoor (9 tot 14 september)
+samen 537 landingsbezoeken, 107 op de gids en 156 op de app — met **één** gratis
+duiding en **nul** aanmeldingen. Van Instagram kwamen er aantoonbaar 22
+(`ig-bio` 17, `ig-app` 5). Er staan 4 mensen met 10 dromen, en die adressen zijn
+allemaal uit Ruuds eigen kring.
+
+Dat verplaatst het probleem, en dat is de hele reden dat het hier staat. Op
+14 september was de diagnose nog "twee pagina's vóór de vraag is er één te veel"
+en werd de gratis duiding gebouwd. Die drempel is nu weg: de vraag staat boven
+de vouw, er is geen wachtwoordveld meer, en een duiding kost de bezoeker niets.
+En er typt nog steeds niemand iets in. **Dan is het geen drempelprobleem maar
+een bereikprobleem**, en het enige dat daar iets aan doet zijn de 176
+gerenderde video's — waarvan er op dat moment twee geplaatst waren. Bouwen is
+hier niet meer het knelpunt; plaatsen wel.
+
+De vier tellers (`proef:start` en de rest) stonden alle vier op nul. Dat is geen
+storing: `POST /api/tel` is live nagemeten en geeft netjes 204 op een onbekende
+naam. Er is sinds de deploy simpelweg niemand door die trechter gelopen. Ze
+zeggen dus pas iets zodra er één iemand begint te typen.
+
 ## Wat er nog niet is
 
 - **Kling is aangesloten maar niet getest tegen de echte API** — er was hier geen
@@ -1674,6 +1698,41 @@ Nu:
   kracht loont.
 - **De header blijft werken.** `X-Admin-Token` doet het nog, voor een script of
   een curl vanaf de eigen machine.
+
+**De `ADMIN_TOKEN` in de lokale `.env` is niet die van de live server.** Ze zijn
+allebei geldig — elk voor zijn eigen installatie — maar ze zijn niet hetzelfde,
+en dat is precies de valkuil: het live rapport ophalen met de lokale sleutel
+geeft `403 {"error": "Geen toegang."}`, en dat ziet er hetzelfde uit als een
+sleutel die helemaal niet deugt. Zoeken naar een fout die er niet is, dus.
+
+Zo haal je het live rapport op zonder de sleutel ergens te laten staan — hij
+gaat uit de Render-API rechtstreeks in een variabele en komt niet op het scherm
+en niet in de shell-geschiedenis:
+
+```python
+import importlib.util, json, urllib.request
+from pathlib import Path
+
+WORTEL = Path(r"C:\Users\ruud\Desktop\AI\Projects\nieuwe-app")
+s = importlib.util.spec_from_file_location("render", WORTEL / "build" / "render.py")
+render = importlib.util.module_from_spec(s); s.loader.exec_module(render)
+render.laden()
+
+token = render.variabelen(render.kies_dienst())["ADMIN_TOKEN"]
+req = urllib.request.Request(
+    "https://dreamverse-qe19.onrender.com/api/beheer/rapport",
+    headers={"X-Admin-Token": token})
+with urllib.request.urlopen(req, timeout=90) as r:
+    rapport = json.load(r)
+```
+
+Let op het adres: **`dreamverse-qe19.onrender.com` en niet
+`vera-dreamverse.com`.** Vanaf deze machine komt het eigen domein niet door de
+Sophos-firewall (`SEC_E_UNTRUSTED_ROOT`), dus een script dat het echte domein
+gebruikt faalt hier op iets wat niets met de app te maken heeft.
+
+En `python rapport.py` leest de **lokale** database, niet de live. Dat zijn twee
+verschillende verzamelingen dromen; verwar ze niet.
 
 De paden zijn verhuisd: `/api/rapport` → `/api/beheer/rapport`,
 `/api/webhooklog` → `/api/beheer/webhooklog`, `/api/usage` →
