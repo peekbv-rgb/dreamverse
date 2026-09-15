@@ -847,6 +847,20 @@ Dus is ze in elk shot van achteren, en staat `face` in de negative prompt. Haar
 herkenningstekens — lang donker golvend haar, het gouden hoofdstuk met muntjes,
 de donkere mantel — doen het werk.
 
+**Op het Instagram-account staat inmiddels een derde gezicht, en dat is een
+open punt.** Naast de promo staat daar een vastgepinde post van een vrouw mét
+gezicht, met hetzelfde gouden muntenkapje. Daarmee zijn er drie: de
+Runway-avatar in de app, de figuur van achteren in de promo, en dit gezicht.
+Juist de twee vastgepinde posts zijn het eerste wat een bezoeker ziet.
+
+Dat is geen fout in die post en hij hoeft niet weg — het wordt er pas een als
+zij *de* Vera wordt. Wie dat gezicht tot het gezicht van het account maakt,
+moet de avatar in de app meenemen, en dat is een veel grotere ingreep dan een
+post vervangen: de avatar heeft een id, een stem (Violet, Gentle), gekoppelde
+kennisdocumenten en een status READY. Zolang die keuze niet gemaakt is, hoort
+Vera naar buiten herkenbaar te zijn aan het kapje, het haar en de mantel — niet
+aan een gezicht.
+
 **Twee mislukkingen, allebei uit de opdracht zelf.** Dit is de les die meer waard
 is dan het script:
 
@@ -1096,13 +1110,25 @@ vergissing van de lezer maar van de namen.
 
 | map | wat erin zit |
 |---|---|
-| **`data/reels-staand/`** | 43 schermvullende Reels, Engels, mét muziek en caption — **de hoofdset** |
+| **`data/reels/`** | 43 gekaderde Reels, Engels, mét muziek en caption — **hieruit wordt gepost** |
 | `data/reels-product/` | de Reel die zegt wát Dreamverse is; deze hoort vastgepind |
 | `data/promo-vera/` | de promo met Vera |
-| `data/reels/` | dezelfde 43, beeld in een kader in plaats van schermvullend |
+| `data/reels-staand/` | dezelfde 43, schermvullend in plaats van gekaderd |
 | `data/reels-nl/`, `data/reels-staand-nl/` | Nederlands, reserve — niet op dit account |
 | `data/gids-animatie/`, `-staand/` | **bron.** Ruwe Kling-clips van 5 seconden |
 | `data/vera-vliegt/` | **bron.** De text2video-shots voor de promo |
+
+**Er wordt uit de gekaderde set gepost, en dat is besloten op 15 september op
+het raster zelf.** Beide sets zijn compleet en allebei goed; de keuze gaat niet
+over één post maar over wat het profiel doet. Vier gekaderde posts naast elkaar
+lezen als één account: dezelfde donkere kaart, dezelfde typografie, hetzelfde
+ritme, en het onderwerp verschilt alleen in het kadertje. Schermvullend is per
+lósse post sterker — het beeld vult het scherm — maar in een raster heeft elk
+beeld zijn eigen kleur en valt de samenhang weg. Het raster is de etalage: wie
+via een Reel binnenkomt kijkt dáár of dit een account is om te volgen.
+
+De schermvullende set blijft staan en is niet overbodig: die is de betere vorm
+voor een verhaal, waar er geen buren zijn om bij te passen.
 
 **De twee bronmappen hebben geen geluid, en dat hoort zo.** Kling levert video
 zonder audiospoor — dat staat al bij het besluit van 7 september om de animatie
