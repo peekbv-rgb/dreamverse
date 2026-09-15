@@ -1881,10 +1881,39 @@ with urllib.request.urlopen(req, timeout=90) as r:
     rapport = json.load(r)
 ```
 
-Let op het adres: **`dreamverse-qe19.onrender.com` en niet
-`vera-dreamverse.com`.** Vanaf deze machine komt het eigen domein niet door de
-Sophos-firewall (`SEC_E_UNTRUSTED_ROOT`), dus een script dat het echte domein
-gebruikt faalt hier op iets wat niets met de app te maken heeft.
+**Het eigen domein werkt hier weer, sinds 15 september.** Hier stond dat
+`vera-dreamverse.com` vanaf deze machine niet door de Sophos-firewall kwam
+(`SEC_E_UNTRUSTED_ROOT`) en dat je daarom het Render-adres moest gebruiken. De
+IT-afdeling heeft dat die dag opgelost.
+
+Nagemeten, en de beslissende regel is niet of de pagina laadt maar **wie het
+certificaat uitgeeft**: er staat nu *Google Trust Services* — Renders eigen
+certificaat. Stond daar Sophos, dan brak de firewall de verbinding nog steeds
+open en zette hij er zijn eigen certificaat voor in de plaats. Zo controleer je
+het opnieuw als iemand ooit zegt dat de site het niet doet:
+
+```python
+ctx = ssl.create_default_context()
+with socket.create_connection(("vera-dreamverse.com", 443), timeout=15) as rauw:
+    with ctx.wrap_socket(rauw, server_hostname="vera-dreamverse.com") as s:
+        print(s.getpeercert()["issuer"])
+```
+
+Verder gemeten: acht publieke paden geven 200, en `POST` komt door met een echt
+antwoord — `/api/wachtwoord-vergeten` geeft 200 met zijn melding (dat is het pad
+dat op 14 september brak), `/api/inloggen` geeft 401 mét `error`, `/api/tel`
+geeft 204.
+
+**Het Render-adres blijft nuttig, maar nu als diagnose en niet als omweg.**
+Werkt `dreamverse-qe19.onrender.com` wel en het eigen domein niet, dan zit het
+in het netwerk of in DNS en niet in de app. Dat onderscheid is een half uur
+waard.
+
+**En test `/api/proef` niet zomaar even.** `proef:start` wordt geteld vóór de
+controle op twintig tekens, dus ook een testdroom van vier tekens komt in het
+rapport te staan — als iemand die begon en niets terugkreeg, precies het
+signaal waar dat blokje voor bestaat. Dat POST door een firewall komt bewijs je
+net zo goed op `/api/inloggen`.
 
 En `python rapport.py` leest de **lokale** database, niet de live. Dat zijn twee
 verschillende verzamelingen dromen; verwar ze niet.
