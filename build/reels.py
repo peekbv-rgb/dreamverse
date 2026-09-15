@@ -286,12 +286,38 @@ def overlaag_staand(titel, vraag, link):
     Bij de gekaderde versie staat alle tekst op een donkere grond en is
     leesbaarheid gratis. Hier ligt ze op het beeld, en dan is ze soms leesbaar
     en soms niet - en "soms" bestaat hier niet als eis, net als in de app. Dus
-    twee verlopen: een donkere kap bovenaan achter de titel en een donkere voet
-    onderaan achter de vraag en het merk. Het beeld blijft in het midden
-    onaangeroerd, en dat is precies het stuk waar de beweging zit.
+    een donkere kap bovenaan, waar alle tekst onder valt. Daaronder blijft het
+    beeld onaangeroerd, en dat is precies het stuk waar de beweging zit.
 
     Geen egale waas over het hele beeld: dat dooft de kleuren die de hele reden
     zijn om schermvullend te gaan.
+
+    **Alles staat bovenin, en dat is een correctie van 15 september.** Eerst
+    stond de titel boven en de vraag met het merk onderaan, netjes binnen de
+    veilige strook: de vraag op 1292-1350, het merk op 1404, het adres tot
+    1490. Dat las als een keurige indeling en botste in de praktijk met het
+    onderwerp - bij `wolf` liep VERA'S DREAM GUIDE dwars over de kop van het
+    dier, bij `horse` de vraag over zijn benen.
+
+    Dat is geen toeval maar een eigenschap van de hele reeks: elk gidsbeeld
+    heeft zijn onderwerp op een grondlijn in het onderste derde deel, en de
+    bron is al 9:16, dus `_vullend()` verandert daar niets aan. De strook waar
+    de tekst stond is bij drieënveertig beelden precies de strook waar het
+    onderwerp staat.
+
+    Twee dingen die níet werken en die geprobeerd zijn:
+
+    - **De tekst lager zetten.** Er is tien pixel speling tot 1500, en daar
+      houdt het op: alles daaronder ligt onder de bediening van Instagram.
+    - **Het beeld omhoog schuiven.** Inzoomen en het venster lager in de bron
+      kiezen tilt het onderwerp wel op, maar maakt het even hard groter - dus
+      het botst opnieuw, alleen groter.
+
+    Wat overblijft is de tekst verplaatsen naar waar in al die beelden ruimte
+    is: de lucht bovenin. Titel, vraag, merk en adres vormen nu één blok onder
+    elkaar, en de onderste tweederde van het beeld blijft vrij. Dat de
+    onderste 420 pixels toch door Instagram bedekt worden telt hier mee: daar
+    stond nu niets meer te verliezen.
     """
     laag = Image.new("RGBA", (BREEDTE, HOOGTE), (0, 0, 0, 0))
 
@@ -314,16 +340,12 @@ def overlaag_staand(titel, vraag, link):
     # anders aan. Zo doen ondertitels het ook. De verlopen blijven, maar nu
     # alleen om boven- en onderkant van het midden te scheiden - niet om het
     # werk te doen.
+    # De kap loopt dieper door dan eerst (tot 1020 in plaats van 900), want er
+    # staat nu meer onder: niet alleen de titel maar ook de vraag en het merk.
+    # Hij dooft naar doorzichtig, dus het beeld eronder blijft vol.
     kap = Image.new("RGBA", (BREEDTE, HOOGTE), VOID + (255,))
-    kap.putalpha(verloop(340, 900, 186, 0))
+    kap.putalpha(verloop(300, 1020, 200, 0))
     laag = Image.alpha_composite(laag, kap)
-
-    # Onder: begint op 820 en is vol op 1240, ruim voordat de vraag begint.
-    # Daaronder blijft hij vol - dat kost niets, want alles beneden 1500 ligt
-    # toch onder de bediening van Instagram.
-    voet = Image.new("RGBA", (BREEDTE, HOOGTE), VOID + (255,))
-    voet.putalpha(verloop(980, 1300, 0, 196))
-    laag = Image.alpha_composite(laag, voet)
 
     tekenen = ImageDraw.Draw(laag)
     ruimte = BREEDTE - 2 * KANTLIJN
@@ -336,32 +358,35 @@ def overlaag_staand(titel, vraag, link):
         regels = omslaan(tekenen, titel, kop, ruimte)
         if len(regels) <= 3:
             break
-    hoog = round(punten * 1.14)
-    y = VEILIG_BOVEN + 40
+    y = VEILIG_BOVEN + 30
     for r in regels:
         tekenen.text((BREEDTE / 2, y), r, font=kop, fill=INK, anchor="ma",
                      stroke_width=3, stroke_fill=VOID)
-        y += hoog
+        y += round(punten * 1.14)
 
-    # De vraag onderaan, boven het merk. Van onderen naar boven opgebouwd,
-    # zodat een vraag van drie regels het merk niet wegduwt.
+    # De vraag direct onder de titel, en van boven naar beneden opgebouwd. Een
+    # vraag van drie regels duwt het merk nu naar beneden in plaats van weg -
+    # daar is ruimte, want eronder ligt alleen nog beeld.
+    y += 22
     for punten in (44, 40, 36, 32):
         body = letter(("segoeui.ttf", "DejaVuSans.ttf"), punten)
         regels = omslaan(tekenen, vraag, body, ruimte)
         if len(regels) <= 3:
             break
-    regelhoog = round(punten * 1.32)
-    y = VEILIG_ONDER - 150 - len(regels) * regelhoog
     for r in regels:
         tekenen.text((BREEDTE / 2, y), r, font=body, fill=ZACHT, anchor="ma",
                      stroke_width=3, stroke_fill=VOID)
-        y += regelhoog
+        y += round(punten * 1.32)
 
-    klein = letter(("segoeuisb.ttf", "segoeuib.ttf", "DejaVuSans-Bold.ttf"), 32)
-    gespreid(tekenen, "VERA'S DREAM GUIDE", klein, BREEDTE / 2,
-             VEILIG_ONDER - 96, (196, 186, 224), contour=2)
-    adres = letter(("segoeui.ttf", "DejaVuSans.ttf"), 30)
-    tekenen.text((BREEDTE / 2, VEILIG_ONDER - 44), SITE + link, font=adres,
+    # Het overzichtsadres en niet de diepe link naar dit onderwerp: dat laatste
+    # is drieënveertig tekens die niemand overtypt. De diepe link staat wél in
+    # de caption.
+    y += 30
+    klein = letter(("segoeuisb.ttf", "segoeuib.ttf", "DejaVuSans-Bold.ttf"), 30)
+    gespreid(tekenen, "VERA'S DREAM GUIDE", klein, BREEDTE / 2, y,
+             (196, 186, 224), contour=2)
+    adres = letter(("segoeui.ttf", "DejaVuSans.ttf"), 28)
+    tekenen.text((BREEDTE / 2, y + 46), SITE + link, font=adres,
                  fill=(178, 168, 204), anchor="ma",
                  stroke_width=2, stroke_fill=VOID)
     return laag

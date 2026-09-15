@@ -1042,12 +1042,91 @@ nummer proberen kost seconden in plaats van een halve minuut per video. Zo is
 auditeren één regel per kandidaat:
 `python build/reels.py --muziek "<pad>" --ja being-chased`.
 
+### Bij de schermvullende Reel staat alle tekst bovenin
+
+En dat is een correctie van 15 september. Eerst stond de titel boven en de
+vraag met het merk onderaan, keurig binnen de veilige strook: de vraag op
+1292–1350, het merk op 1404, het adres tot 1490. Op papier een nette indeling,
+in de praktijk liep **VERA'S DREAM GUIDE dwars over de kop van de wolf** en de
+vraag over de benen van het paard. Ruud zag het; het stond er bij alle
+drieënveertig.
+
+Het is geen toeval maar een eigenschap van de reeks: elk gidsbeeld heeft zijn
+onderwerp op een grondlijn in het onderste derde deel, de bron is al 9:16, en
+`_vullend()` verandert daar dus niets aan. De strook waar de tekst stond ís de
+strook waar het onderwerp staat.
+
+**Twee voor de hand liggende oplossingen werken niet, en allebei gemeten:**
+
+- **De tekst lager zetten** — dat was Ruuds eerste ingeving en het is de
+  natuurlijke reactie. Er is tien pixel speling tot 1500, en daaronder ligt de
+  bediening van Instagram. Die deur zit dicht.
+- **Het beeld omhoog schuiven.** Verder inzoomen en het venster lager in de
+  bron kiezen tilt het onderwerp wel op, maar vergroot het even hard mee — dus
+  het botst opnieuw, alleen groter. Nagemeten op `wolf`.
+
+Wat overblijft is de tekst verplaatsen naar waar in al die beelden wél ruimte
+is: de lucht bovenin. Titel, vraag, merk en adres staan nu als één blok onder
+elkaar in de donkere kap (die daarvoor doorloopt tot 1020 in plaats van 900),
+en de onderste tweederde blijft vrij. Dat de onderste 420 pixels toch door
+Instagram bedekt worden telt hier mee: daar stond niets meer te verliezen.
+
+Nagemeten op de vier lastigste gevallen vóór het renderen van de hele reeks —
+`fire` en `flying` (de lichtste beelden, waar witte tekst het snelst wegvalt),
+`being-naked` (de langste titel, drie regels) en `wolf` (de aanleiding). De
+leesbaarheid komt nog steeds van de contour om de letters en niet van het
+verloop; dat blijft de les uit de eerste twee pogingen.
+
+**Dit raakt alleen `overlaag_staand()`.** De gekaderde set in `data/reels/`
+heeft dit probleem niet en is niet aangeraakt: daar staat de tekst op de donkere
+grond naast het beeld, en botsen kan per constructie niet.
+
 **In `data/reels/` staat wat je post, in `data/reels/stil/` de werkmap.** Dat was
 omgekeerd — bron boven, resultaat in `muziek/` eronder — en dat is precies één
 keer misgegaan: wie de bovenste map opende pakte de stille versie, want de goede
 zat een niveau dieper. Logisch vanuit het script, verkeerd vanuit de map. De
 caption blijft wél boven staan, naast de video waar hij bij hoort. `--ja` schrijft
 de video dus in `stil/` en zegt erbij dat `--verdeel --ja` de volgende stap is.
+
+### Uit welke map je post, en welke bronmappen zijn
+
+Dit is twee keer misgegaan en allebei de keren op dezelfde manier: de map die
+bovenaan in de verkenner staat is niet de map waar je moet zijn. Dat is geen
+vergissing van de lezer maar van de namen.
+
+| map | wat erin zit |
+|---|---|
+| **`data/reels-staand/`** | 43 schermvullende Reels, Engels, mét muziek en caption — **de hoofdset** |
+| `data/reels-product/` | de Reel die zegt wát Dreamverse is; deze hoort vastgepind |
+| `data/promo-vera/` | de promo met Vera |
+| `data/reels/` | dezelfde 43, beeld in een kader in plaats van schermvullend |
+| `data/reels-nl/`, `data/reels-staand-nl/` | Nederlands, reserve — niet op dit account |
+| `data/gids-animatie/`, `-staand/` | **bron.** Ruwe Kling-clips van 5 seconden |
+| `data/vera-vliegt/` | **bron.** De text2video-shots voor de promo |
+
+**De twee bronmappen hebben geen geluid, en dat hoort zo.** Kling levert video
+zonder audiospoor — dat staat al bij het besluit van 7 september om de animatie
+bij Runway te houden. Ze hebben ook geen titel, geen vraag, geen merk en duren
+vijf seconden in plaats van acht. Het zijn halffabrikaten; `reels.py` maakt er
+een Reel van. Wie ze op zijn telefoon zet en er niets hoort, heeft niets kapots
+gevonden maar de verkeerde map geopend. Op 15 september gebeurde dat, en de
+naam is de oorzaak: `gids-animatie` staat alfabetisch boven `reels-staand`.
+
+Nagemeten op 15 september, per bestand op het audiospoor én op de werkelijke
+luidheid: **133 van de 133 video's die bedoeld zijn om te plaatsen hebben
+geluid**, gemiddeld −12,5 dB met een piek rond −2 dB. Alleen de 86 gidsanimaties
+en de 4 shots van Vera zijn stil. Zo controleer je dat opnieuw zonder ffprobe
+(die zit niet bij `imageio_ffmpeg`, alleen ffmpeg zelf):
+
+```python
+r = subprocess.run([ff, "-hide_banner", "-i", str(p), "-af", "volumedetect",
+                    "-f", "null", "-"], capture_output=True, text=True)
+# "Audio:" in r.stderr zegt of er een spoor is,
+# "mean_volume:" of er ook iets te horen valt.
+```
+
+Dat onderscheid telt: een audiospoor dat alleen maar stilte bevat ziet er in een
+bestandslijst precies zo uit als muziek.
 
 **Nederlands gaat naar een eigen map, en dat moest.** `--taal nl` schreef naar
 exact dezelfde bestandsnamen als het Engels — `data/reels/<slug>.mp4` én
