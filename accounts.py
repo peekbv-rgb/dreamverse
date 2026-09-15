@@ -657,6 +657,26 @@ def herkomst(query, agent=None):
     en Instagram stuurt geen referrer mee - dus zonder deze tweede weg is de
     vraag "kwam er iemand van Instagram" gewoon niet te beantwoorden.
 
+    **Facebook en TikTok staan er sinds 15 september bij.** Hier stond dat het
+    bij Instagram bleef "zolang de bio-link het enige kanaal is", en dat is niet
+    meer zo: op die dag ging `dogs` op alle drie de platforms de deur uit. Alle
+    drie openen een link in hun eigen browser en alle drie sturen geen referrer,
+    dus zonder deze regels is een bezoek uit TikTok niet te onderscheiden van
+    een bezoek uit het niets - en dan is er over twee dagen geen antwoord op de
+    vraag welk kanaal werkt.
+
+    De merktekens: Facebook zet `FBAN`, `FBAV` of `FB_IAB`, TikTok zet
+    `BytedanceWebview` of `musical_ly`. Die van Facebook stonden al jaren in de
+    commentaarregel in `app.js`; die van TikTok komen uit de documentatie en
+    zijn hier **niet** nagemeten - komt er verkeer uit TikTok dat als niets
+    binnenkomt, dan is dit de eerste plek om te kijken.
+
+    De getagde weg blijft daarnaast bestaan en is preciezer: die weet of iemand
+    uit de bio kwam of uit een post. `fb` en `tiktok` stonden al in `HERKOMST`.
+    `*-app` staat daar met opzet **niet** in: wat hier uit de browsernaam komt
+    is onze eigen vaste tekst, en wat uit de query komt is invoer van een
+    vreemde. Die twee horen niet door dezelfde deur.
+
     Wat er bewaard wordt is één woord bij een dagteller. Geen IP-adres, geen
     cookie, geen browsernaam: die wordt gelezen en weggegooid, net als bij de
     zeef op robots.
@@ -664,6 +684,13 @@ def herkomst(query, agent=None):
     a = (agent or "").lower()
     if "instagram" in a:
         return "ig-app"
+    if "bytedancewebview" in a or "musical_ly" in a:
+        return "tiktok-app"
+    # Na Instagram, want de browser van Instagram zet FBAN/FBAV óók mee - het is
+    # dezelfde webview van Meta. Andersom zou elk Instagram-bezoek als Facebook
+    # geteld worden.
+    if "fban" in a or "fbav" in a or "fb_iab" in a:
+        return "fb-app"
     for stuk in (query or "").split("&"):
         if stuk.startswith("van="):
             waarde = stuk[4:].lower()

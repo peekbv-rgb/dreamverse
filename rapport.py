@@ -327,8 +327,10 @@ def main():
         for naam, aantal in c["bronnen"].items():
             print("    %-12s %8d" % (naam, aantal))
         print("")
-        print("    ig-app is de eigen browser van Instagram, ook zonder tag in")
-        print("    de link. De rest komt van ?van=... achter het adres.")
+        print("    Wat op -app eindigt komt uit de eigen browser van die app")
+        print("    (ig-app, fb-app, tiktok-app) en wordt ook zonder tag in de")
+        print("    link herkend. De rest komt van ?van=... achter het adres,")
+        print("    en die is preciezer: die weet bio van post te scheiden.")
     else:
         print("")
         print("  WAAR ZE VANDAAN KWAMEN: nog niets gemeten. Zet ?van=ig achter")
