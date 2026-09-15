@@ -1255,29 +1255,39 @@
   var Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   var recogniser = null, listening = false;
 
-  /* Kijkt iemand mee vanuit de app van Instagram?
+  /* Kijkt iemand mee vanuit de browser ín een andere app?
    *
-   * Instagram opent een link niet in Safari of Chrome maar in een browser die
-   * hij zelf in de app heeft zitten, en dat is precies de weg waarlangs
-   * iedereen van de bio-link binnenkomt. In die browser bestaat de Web Speech
-   * API niet: op een iPhone zit `webkitSpeechRecognition` alleen in Safari
-   * zelf. Dus zeggen we "Inspreken kan alleen in Chrome en Edge" tegen iemand
-   * die Chrome misschien wel op zijn telefoon heeft staan - en er staat een
-   * oplossing van twee tikken achter.
+   * Instagram, Facebook en TikTok openen een link niet in Safari of Chrome
+   * maar in een browser die ze zelf in de app hebben zitten, en dat is precies
+   * de weg waarlangs iedereen van een bio-link binnenkomt. In die browser
+   * bestaat de Web Speech API niet: op een iPhone zit
+   * `webkitSpeechRecognition` alleen in Safari zelf. Dus zeggen we "Inspreken
+   * kan alleen in Chrome en Edge" tegen iemand die Chrome misschien wel op
+   * zijn telefoon heeft staan - en er staat een oplossing van twee tikken
+   * achter.
    *
-   * Alleen Instagram, met opzet. De browser van Facebook (FBAN, FBAV, FB_IAB)
-   * doet precies hetzelfde en is één regexp erbij, maar zolang de bio-link het
-   * enige kanaal is hoort er niet meer te staan dan we gemeten hebben.
+   * **Alle drie sinds 15 september, en tot dan alleen Instagram.** Hier stond
+   * dat het bij Instagram bleef "zolang de bio-link het enige kanaal is". Op
+   * die dag gingen er posts naar alle drie de platforms, en daarmee kreeg twee
+   * derde van de bezoekers het verkeerde antwoord te lezen.
+   *
+   * Dezelfde merktekens als in `accounts.herkomst()` aan de serverkant, en die
+   * twee horen samen te blijven: FBAN/FBAV/FB_IAB voor Facebook,
+   * BytedanceWebview/musical_ly voor TikTok. Hier hoeft Instagram niet eerst,
+   * want er komt maar één antwoord uit - welke van de drie het is doet er voor
+   * de tekst niet toe, en dát is de reden dat die zinnen nu geen app meer bij
+   * naam noemen.
    */
-  function instagramBrowser() {
-    return /Instagram/i.test(navigator.userAgent || "");
+  function inAppBrowser() {
+    return /Instagram|FBAN|FBAV|FB_IAB|BytedanceWebview|musical_ly/i
+      .test(navigator.userAgent || "");
   }
 
   /* Waarom inspreken hier niet kan, met wat je eraan doet. Nederlands, want dit
    * is de brontekst waar de vertaalslag op zoekt. */
   function geenSpraakUitleg() {
-    return instagramBrowser()
-      ? "Je bekijkt Dreamverse in de browser van Instagram, en inspreken kan"
+    return inAppBrowser()
+      ? "Je bekijkt Dreamverse binnen een andere app, en inspreken kan"
         + " daar niet. Tik op de drie puntjes en kies Openen in Safari of"
         + " Openen in Chrome. Of typ je droom hierboven."
       : "Inspreken kan alleen in Chrome en Edge. Typ je droom hierboven.";
@@ -1404,8 +1414,8 @@
       // te missen op een laptop. Wat je overhoudt is een grijze knop die niets
       // doet zonder te zeggen waarom - en dan denk je dat de app stuk is.
       mic.disabled = true;
-      mic.title = instagramBrowser()
-        ? t("Inspreken kan niet in de browser van Instagram")
+      mic.title = inAppBrowser()
+        ? t("Inspreken kan niet binnen een andere app")
         : t("Inspreken werkt in Chrome en Edge");
       hintVervangen(document.querySelector(".invoer-hint"), geenSpraakUitleg());
       return;
@@ -1488,16 +1498,16 @@
    * privévenster of van dictaat dat uitstaat, en dat kun je gewoon zeggen.
    */
   function spraakfout(code) {
-    // In de browser van Instagram is dit geen storing maar de browser zelf: die
+    // In de browser binnen een app is dit geen storing maar de browser zelf: die
     // komt niet bij de microfoon en niet bij de spraakdienst. Op Android
     // bestaat SpeechRecognition daar wél, dus komt het daar niet naar buiten
     // als een ontbrekende functie maar als een van deze drie codes - en dan
     // stond er "zet de microfoon aan bij je site-instellingen", wat in die
     // browser niet bestaat.
-    if (instagramBrowser() && (code === "not-allowed"
+    if (inAppBrowser() && (code === "not-allowed"
                                || code === "service-not-allowed"
                                || code === "network")) {
-      return ("Inspreken kan niet in de browser van Instagram. Tik op de drie "
+      return ("Inspreken kan niet binnen een andere app. Tik op de drie "
               + "puntjes en kies Openen in Safari of Openen in Chrome.");
     }
     return {
@@ -1528,8 +1538,8 @@
       // een keuze heen: build/controle.py zoekt naar een t met de hele zin er
       // letterlijk in, dus een zin die eerst wordt samengesteld valt buiten
       // die controle.
-      meeschrijfMelding(instagramBrowser()
-        ? t("In de browser van Instagram schrijft Dreamverse niet mee.")
+      meeschrijfMelding(inAppBrowser()
+        ? t("Binnen een andere app schrijft Dreamverse niet mee.")
         : t("Meeschrijven kan alleen in Chrome en Edge."), true);
       return;
     }
@@ -3712,7 +3722,7 @@
   }
   poortMic();
 
-  /* Eén regel bij de knop van Vera, als we in de browser van Instagram staan.
+  /* Eén regel bij de knop van Vera, als we binnen een andere app staan.
    *
    * Een gesprek wordt ná afloop afgerekend op werkelijk gesproken tijd. Wie
    * hier begint en niet gehoord wordt omdat de app-browser niet bij de
@@ -3720,17 +3730,17 @@
    * praatte. Vóór de klik waarschuwen is daarom geen vriendelijkheid maar het
    * verschil tussen een mislukte poging en een mislukte poging met een rekening.
    */
-  function instagramWaarschuwing() {
+  function inAppWaarschuwing() {
     var doos = el("call-melding");
-    if (!instagramBrowser() || !doos) { return; }
-    var bron = "Je bekijkt Dreamverse in de browser van Instagram. Praten met"
+    if (!inAppBrowser() || !doos) { return; }
+    var bron = "Je bekijkt Dreamverse binnen een andere app. Praten met"
       + " Vera werkt daar niet altijd: tik op de drie puntjes en kies Openen in"
       + " Safari of Openen in Chrome.";
     doos.hidden = false;
     doos.dataset.nl = bron;
     doos.textContent = t(bron);
   }
-  instagramWaarschuwing();
+  inAppWaarschuwing();
 
   if (el("poort-verder")) {
     el("poort-verder").addEventListener("click", function () {

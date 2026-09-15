@@ -79,14 +79,14 @@
     // De browser van Instagram. Iedereen die van de bio-link komt zit daarin, en
     // daar bestaat spraak naar tekst niet - dus is "Chrome en Edge" daar het
     // verkeerde antwoord: er staat een oplossing van twee tikken achter.
-    ["Je bekijkt Dreamverse in de browser van Instagram, en inspreken kan daar niet. Tik op de drie puntjes en kies Openen in Safari of Openen in Chrome. Of typ je droom hierboven.",
-     "You are looking at Dreamverse inside Instagram's own browser, and speaking it in cannot work there. Tap the three dots and choose Open in Safari or Open in Chrome. Or type your dream above."],
-    ["Inspreken kan niet in de browser van Instagram",
-     "Speaking it in does not work in Instagram's browser"],
-    ["Inspreken kan niet in de browser van Instagram. Tik op de drie puntjes en kies Openen in Safari of Openen in Chrome.",
-     "Speaking it in does not work in Instagram's browser. Tap the three dots and choose Open in Safari or Open in Chrome."],
-    ["Je bekijkt Dreamverse in de browser van Instagram. Praten met Vera werkt daar niet altijd: tik op de drie puntjes en kies Openen in Safari of Openen in Chrome.",
-     "You are looking at Dreamverse inside Instagram's own browser. Talking with Vera does not always work there: tap the three dots and choose Open in Safari or Open in Chrome."],
+    ["Je bekijkt Dreamverse binnen een andere app, en inspreken kan daar niet. Tik op de drie puntjes en kies Openen in Safari of Openen in Chrome. Of typ je droom hierboven.",
+     "You are looking at Dreamverse inside another app, and speaking it in cannot work there. Tap the three dots and choose Open in Safari or Open in Chrome. Or type your dream above."],
+    ["Inspreken kan niet binnen een andere app",
+     "Speaking it in does not work inside another app"],
+    ["Inspreken kan niet binnen een andere app. Tik op de drie puntjes en kies Openen in Safari of Openen in Chrome.",
+     "Speaking it in does not work inside another app. Tap the three dots and choose Open in Safari or Open in Chrome."],
+    ["Je bekijkt Dreamverse binnen een andere app. Praten met Vera werkt daar niet altijd: tik op de drie puntjes en kies Openen in Safari of Openen in Chrome.",
+     "You are looking at Dreamverse inside another app. Talking with Vera does not always work there: tap the three dots and choose Open in Safari or Open in Chrome."],
     // De voetnootregel is één sleutel, want de vertaalslag vervangt de hele
     // innerHTML van de <p> en niet de <a>'s erbinnen. Drie losse linkteksten
     // pasten daarom nergens op. Enkele aanhalingstekens, want er staan dubbele
@@ -351,8 +351,8 @@
      "This was left from your conversation with Vera. I kept it for you."],
     ["woord", "word"],
     ["woorden", "words"],
-    ["In de browser van Instagram schrijft Dreamverse niet mee.",
-     "Inside Instagram's browser Dreamverse cannot write along."],
+    ["Binnen een andere app schrijft Dreamverse niet mee.",
+     "Inside another app Dreamverse cannot write along."],
     ["Meeschrijven kan alleen in Chrome en Edge.",
      "Writing along only works in Chrome and Edge."],
     ["Meeschrijven kwam niet op gang.", "Writing along did not start."],
