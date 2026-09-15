@@ -492,8 +492,10 @@ niet om vroeg.
 
 ## Van Instagram naar de app
 
-Het Instagram-account *Veradreamverse* is het enige kanaal dat er is, en de weg
-loopt via één link in de bio. Vier dingen stonden die weg in de weg; ze zijn
+Het Instagram-account *Veradreamverse* was tot 15 september het enige kanaal; op
+die dag ging `dogs` ook naar Facebook en TikTok. De weg loopt bij alle drie via
+één link in de bio, en alle drie sturen geen referrer mee - vandaar dat de
+herkomst aan de browsernaam hangt en niet aan waar iemand vandaan klikte. Vier dingen stonden die weg in de weg; ze zijn
 allemaal gemeten, en het zijn allemaal fouten van de soort die zich niet melden.
 
 **Een gedeelde link had geen beeld.** `welkom.html` had geen enkele `og:`-tag,
@@ -521,9 +523,30 @@ nu, in `accounts.herkomst()`:
 - `?van=ig` achter de link. Alleen woorden uit de vaste lijst `HERKOMST` worden
   geteld — `weergaven` heeft (datum, pagina) als sleutel, dus een vrij veld laat
   iemand die tabel met duizenden regels per dag vullen.
-- **De browsernaam.** Instagram opent een link in zijn eigen browser en zet
-  zichzelf in de `User-Agent`; dat wordt `ig-app` en werkt ook als de link niet
-  getagd is. Dit is de betrouwbaarste van de twee.
+- **De browsernaam.** Instagram, Facebook en TikTok openen een link in hun
+  eigen browser en zetten zichzelf in de `User-Agent`; dat wordt `ig-app`,
+  `fb-app` of `tiktok-app` en werkt ook als de link niet getagd is. Dit is de
+  betrouwbaarste van de twee.
+
+  **Facebook en TikTok staan er sinds 15 september bij**, de dag dat `dogs` op
+  alle drie geplaatst werd. Daarvoor kwam een bezoek uit TikTok binnen als een
+  bezoek uit het niets, en dan is er twee dagen later geen antwoord op de vraag
+  welk kanaal werkt. Merktekens: `FBAN`, `FBAV`, `FB_IAB` voor Facebook,
+  `BytedanceWebview` en `musical_ly` voor TikTok.
+
+  **De volgorde telt.** Instagram wordt eerst getest, want de webview van
+  Instagram zet `FBAN` óók mee - het is dezelfde webview van Meta. Andersom
+  wordt elk Instagram-bezoek als Facebook geteld, en dat merk je aan niets.
+  Nagemeten op elf browsernamen, inclusief die val.
+
+  Die van TikTok komen uit de documentatie en zijn **niet** nagemeten tegen een
+  echt bezoek; die van Facebook stonden al in onze eigen code. Komt er verkeer
+  uit TikTok dat als niets binnenkomt, dan is dat de eerste plek om te kijken.
+
+  **`*-app` staat met opzet niet in `HERKOMST`.** Wat uit de browsernaam komt
+  is onze eigen vaste tekst; wat uit de query komt is invoer van een vreemde.
+  Die twee horen niet door dezelfde deur, en `?van=tiktok-app` geeft dus niets
+  - ook dat is nagemeten.
 
 Wat er bewaard wordt is één woord bij een dagteller, **naast** de gewone
 telling en niet in plaats daarvan — anders is het aantal bezoeken aan de
@@ -554,9 +577,36 @@ plaats van als ontbrekende functie. Bij de knop van Vera staat er een regel
 afgerekend, dus wie daar begint en niet gehoord wordt heeft betaald voor een
 minuut waarin hij tegen niets praatte.
 
-Alleen Instagram, met opzet. De browser van Facebook (`FBAN`, `FBAV`, `FB_IAB`)
-doet precies hetzelfde en is één regexp erbij, maar zolang de bio-link het
-enige kanaal is hoort er niet meer te staan dan we gemeten hebben.
+**Sinds 15 september alle drie, en tot dan alleen Instagram.** Hier stond dat
+het bij Instagram bleef "zolang de bio-link het enige kanaal is". Op die dag
+ging `dogs` naar Instagram, Facebook én TikTok, en daarmee las twee derde van
+wie binnenkwam het verkeerde antwoord. Facebook en TikTok openen een link
+precies zo in hun eigen browser, met dezelfde ontbrekende Web Speech API.
+
+`instagramBrowser()` heet nu `inAppBrowser()` en kent dezelfde merktekens als
+`accounts.herkomst()` aan de serverkant - `FBAN`, `FBAV`, `FB_IAB`,
+`BytedanceWebview`, `musical_ly`. **Die twee horen samen te blijven**: de een
+bepaalt wat de bezoeker leest, de ander of je hem terugziet in het rapport, en
+ze uit elkaar laten lopen levert een kanaal op dat wel gemeten wordt en
+verkeerd bediend, of andersom.
+
+**De zinnen noemen geen app meer bij naam.** *In de browser van Instagram* is
+*binnen een andere app* geworden, in alle vijf en in beide talen. Welke van de
+drie het is doet er voor de tekst niet toe - de oplossing is overal dezelfde
+drie puntjes - en per app een eigen zin zou vijftien vertalingen betekenen in
+plaats van vijf. Aan de serverkant is dat andersom: daar is juist *welke* app
+het hele punt.
+
+Drie van die vijf worden in `app.js` uit stukken samengesteld en vallen dus
+buiten `build/controle.py`, precies zoals hieronder bij *Wat de controle hier
+niet ziet* staat. Ze zijn nageteld met een script in plaats van met het oog:
+elke samengestelde zin opbouwen zoals de code het doet, en kijken of hij
+letterlijk als sleutel in `taal.js` staat. Dat is twee minuten werk en het
+haalt precies de fout die je met het oog overslaat.
+
+Nagemeten in de browser op 15 september: de regexp herkent Instagram, Facebook
+(iOS en Android) en TikTok (iOS en Android), laat gewone Safari en Chrome met
+rust, en alle vijf de zinnen komen in het Engels terug.
 
 Nagemeten op een tijdelijke kopie van de app die zich als de Instagram-browser
 voordeed: de hint wordt vervangen, de knop gaat op grijs, de regel bij Vera
