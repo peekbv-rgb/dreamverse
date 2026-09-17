@@ -52,8 +52,11 @@ import kling                                                     # noqa: E402
 
 UIT = WORTEL / "data" / "vera-vliegt"
 
-MODEL = "kling-v2-5-turbo"
-MODUS = "std"
+# `kling-v3` in `pro`, gelijk met gids_scenes.py en gids_animaties.py.
+# Die drie horen gelijk op te lopen; zie CLAUDE.md over modellen die
+# onder je handen verdwijnen.
+MODEL = "kling-v3"
+MODUS = "pro"
 # Tien en niet vijf, sinds 17 september. `kling-v2-5-turbo` accepteert allebei,
 # en een Reel voor TikTok wil 12 tot 18 seconden - dat komt uit monteren, en dan
 # is tien seconden per shot twee keer zoveel om uit te kiezen. De drie
@@ -230,6 +233,68 @@ SHOTS = {
         "of them. The camera holds still; only the kitten and the curl of light "
         "move. Dreamlike illustration, flowing ink and watercolour, soft "
         "luminous glow, painterly. No text, no letters, no logos."
+    )},
+    # Drie erbij op 17 september: dieren en gezelligheid. Ruuds vraag, en het is
+    # dezelfde redenering als bij de gidsscènes - wat Vera dóet beweegt, en dus
+    # beweegt het beeld.
+    #
+    # **De glazen zijn bijzaak en geen onderwerp, en dat is opzet.** TikTok
+    # beperkt het promoten van alcohol en kan zulke posts achter een
+    # leeftijdsgrens zetten. Een glas op tafel tussen de kaarsen valt daar niet
+    # onder; een shot dat over drinken gaat wel. Bovendien verkoopt dit product
+    # geen avond maar een ochtend - gezelligheid mag, dronkenschap niet.
+    "hondjes": {"negatief": BASIS + (
+        ", front view, facing camera, distorted paws, extra legs, merged "
+        "animals, aggressive dogs, bared teeth, leash, collar with tag, "
+        "modern clothing, park bench, buildings"
+    ), "prompt": (
+        "A woman sitting on the grass in an open meadow at morning, seen from "
+        "directly behind, playing with two small puppies that tumble and roll "
+        "around her and climb into her lap. Long dark wavy hair down her back, "
+        "a fine gold headpiece with small hanging coins, a dark cloak spread on "
+        "the grass around her. The puppies move constantly. Tall grass sways in "
+        "the breeze, seed heads drift through the low sun. Warm amber light, "
+        "deep violet shadows in the treeline behind. Faint concentric rings of "
+        "light spread outward across the grass. The camera holds still. "
+        "Dreamlike illustration, flowing ink and watercolour, soft luminous "
+        "glow, painterly. No text, no letters, no logos."
+    )},
+    "vogels": {"negatief": BASIS + (
+        ", front view, facing camera, birds of prey, crows attacking, dead "
+        "birds, cage, distorted wings, flock covering her face"
+    ), "prompt": (
+        "A woman standing in a wide field at dawn, seen from directly behind, "
+        "one arm held out level while small pale birds land on her arm and "
+        "shoulder and lift off again, one after another, circling around her. "
+        "Long dark wavy hair lifting in the wind, a fine gold headpiece with "
+        "small hanging coins, a dark cloak moving in loose soft folds. The "
+        "birds are in constant motion. Warm amber and rose along the horizon, "
+        "deep violet above, thin mist over the grass. Faint concentric rings of "
+        "light spread outward from where she stands. The camera holds still. "
+        "Dreamlike illustration, flowing ink and watercolour, soft luminous "
+        "glow, painterly. No text, no letters, no logos."
+    )},
+    "tafel": {"negatief": BASIS + (
+        # Iedereen van achteren of in silhouet: dezelfde regel als voor Vera
+        # zelf, en hier ook omdat verzonnen gezichten aan een tafel er snel
+        # griezelig uitzien.
+        ", front view, facing camera, visible faces, portraits, bottles in "
+        "the foreground, drinking from a glass, toasting, crowd, modern "
+        "clothing, brand labels, neon, restaurant interior"
+    ), "prompt": (
+        "A long wooden table outdoors under a tree at dusk, seen from behind "
+        "one end. A woman sits at the near end with her back to the camera - "
+        "long dark wavy hair down her back, a fine gold headpiece with small "
+        "hanging coins, a dark cloak over the chair. Four or five other people "
+        "sit further along the table, all seen from behind or in silhouette "
+        "against the light, leaning towards each other and gesturing as they "
+        "talk. Lanterns and candles line the table among plates and a few "
+        "glasses. The candle flames flicker constantly, the lanterns sway in "
+        "the breeze, leaves move overhead and warm light shifts across the "
+        "table. Warm amber light, deep violet dusk beyond. Faint concentric "
+        "rings of light in the air. The camera holds still. Dreamlike "
+        "illustration, flowing ink and watercolour, soft luminous glow, "
+        "painterly. No text, no letters, no logos."
     )},
 }
 

@@ -162,7 +162,9 @@ SCENES = {
         "past her continuously and tear apart and reform."
     ),
     "flying": VERA + (
-        "She glides far above a sleeping landscape at dawn, seen from behind "
+        "She glides through open air far above a sleeping landscape at dawn, "
+        "with nothing beneath her - no ground, no rock, no ridge, no edge "
+        "anywhere in the frame, only sky and cloud. Seen from behind "
         "and very small against the sky, arms loose at her sides. Layered "
         "clouds stream steadily past beneath her catching the first light, the "
         "horizon glows and shifts, thin mist tears apart and reforms."
@@ -182,11 +184,23 @@ SCENES = {
 }
 
 
-def start(prompt):
+# Twee scènes gaan over zweven, en daar geldt de regel uit `vera_vliegt.py`:
+# **er mag geen grond in beeld zijn.** Zonder die regel zet het model haar op de
+# eerste rand die het kan bedenken - bij `flying` gebeurde dat op 17 september
+# precies zo, ze stond op een richel boven de wolken. Bij de tien andere scènes
+# mag dit er juist niet in: een trap, een perron en een keukenvloer zijn grond.
+GEEN_GROND = (", ground, land, rock, cliff, cliff edge, ledge, hill, ridge, "
+              "mountain top, standing on something, walking on something, "
+              "footprints, rope, cable, wire, harness, wings")
+
+ZWEVEND = ("falling", "flying")
+
+
+def start(prompt, extra=""):
     antwoord = kling._call("POST", "/v1/videos/text2video", {
         "model_name": MODEL,
         "prompt": prompt + " " + STIJL,
-        "negative_prompt": NEGATIEF,
+        "negative_prompt": NEGATIEF + extra,
         # Hoger dan de 0,5 van image2video: daar moest een bestaand beeld
         # herkenbaar blijven, hier is er geen beeld om te bewaren en mag het
         # model de scène zelf opbouwen.
@@ -255,7 +269,8 @@ def main():
     for i, naam in enumerate(te_doen, 1):
         print("[%d/%d] %s" % (i, len(te_doen), naam), flush=True)
         try:
-            taak = start(SCENES[naam])
+            taak = start(SCENES[naam],
+                         GEEN_GROND if naam in ZWEVEND else "")
             if not taak:
                 print("      geen task_id terug")
                 continue
