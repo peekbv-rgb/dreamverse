@@ -1765,29 +1765,56 @@ cookiebanner oplevert en het gedrag van dromers bij een advertentiebedrijf legt.
 
     python rapport.py
 
-### Wat de trechter op 15 september zei
+### Wat de trechter zei, 15 tot 17 september
 
-Het eerste hele etmaal mét de zeef op `Accept-Language`, en daarmee het eerste
-getal dat te geloven is: **19 bezoeken aan de landingspagina, 1 aan de app, nul
-gratis duidingen, nul aanmeldingen.** De zes dagen ervoor (9 tot 14 september)
-samen 537 landingsbezoeken, 107 op de gids en 156 op de app — met **één** gratis
-duiding en **nul** aanmeldingen. Van Instagram kwamen er aantoonbaar 22
-(`ig-bio` 17, `ig-app` 5). Er staan 4 mensen met 10 dromen, en die adressen zijn
-allemaal uit Ruuds eigen kring.
+| | 12/9 | 13/9 | 14/9 | 15/9 | 16/9 | 17/9 |
+|---|---|---|---|---|---|---|
+| landing | 64 | 63 | 78 | 67 | 93 | 39 |
+| gids | 3 | 1 | 6 | **32** | 1 | 1 |
+| app | 25 | 10 | 24 | 11 | 10 | 5 |
+| gratis duiding | 0 | 0 | 1 | 0 | 0 | 0 |
+| nieuw account | 0 | 0 | 0 | 0 | 0 | 0 |
 
-Dat verplaatst het probleem, en dat is de hele reden dat het hier staat. Op
-14 september was de diagnose nog "twee pagina's vóór de vraag is er één te veel"
-en werd de gratis duiding gebouwd. Die drempel is nu weg: de vraag staat boven
-de vouw, er is geen wachtwoordveld meer, en een duiding kost de bezoeker niets.
-En er typt nog steeds niemand iets in. **Dan is het geen drempelprobleem maar
-een bereikprobleem**, en het enige dat daar iets aan doet zijn de 176
-gerenderde video's — waarvan er op dat moment twee geplaatst waren. Bouwen is
-hier niet meer het knelpunt; plaatsen wel.
+**Hier stond eerst "19 bezoeken op 15 september", en dat was fout.** Dat rapport
+was 's ochtends opgehaald; de volle dag werd 67. Het verkeer zakte dus niet in
+na de zeef op `Accept-Language` - het ligt rond de 60 à 90 per dag. **Een
+dagteller die je halverwege de dag leest is geen dagcijfer**, en dat is precies
+het soort fout dat zich niet meldt: zo'n getal ziet er even echt uit als elk
+ander. Lees een dag pas de volgende ochtend.
 
-De vier tellers (`proef:start` en de rest) stonden alle vier op nul. Dat is geen
-storing: `POST /api/tel` is live nagemeten en geeft netjes 204 op een onbekende
-naam. Er is sinds de deploy simpelweg niemand door die trechter gelopen. Ze
-zeggen dus pas iets zodra er één iemand begint te typen.
+**De posts leverden geen meetbaar bezoek op, en TikTok legt uit waarom.** `dogs`
+ging op 15 september naar Instagram, Facebook en TikTok. Sindsdien: die
+gidspagina van 2 naar 3 bezoeken, en de herkomst geen millimeter bewogen -
+`ig-bio` 17 en `ig-app` 5, exact dezelfde getallen als ervoor.
+
+In TikTok Studio staat de reden, en die is harder dan een tegenvallende
+conversie: **de posts van 14 en 15 september hebben nul weergaven.** Niet weinig
+- geen. De drie van 17 september kregen wel bereik (65, 16 en 12 binnen een paar
+uur), dus het account wordt nu wél getoond. Wat er in die twee dagen misging is
+van hier niet vast te stellen; wat wél vaststaat is dat een post zonder
+weergaven nooit een bezoek kán opleveren. **Meet een kanaal dus altijd eerst aan
+zijn eigen weergavecijfer, en pas daarna aan de trechter** - anders zoek je een
+conversieprobleem bij een post die niemand gezien heeft.
+
+**Wat wél groeit is de gids, en dat ziet eruit als Google.** Op 15 september een
+piek van 32 bezoeken, en het aantal onderwerpen mét bezoek ging van 13 naar 22:
+`flying`, `getting-lost`, `school`, `car`, `cat`, `cheating`, `dying`, `phone`
+en `pregnancy` kwamen erbij, allemaal met één of twee. **Zo spreidt bezoek zich
+als het uit een zoekmachine komt.** Kwam het van een Reel over honden, dan zou
+het zich juist ophopen bij `dogs` - en dat gebeurt niet. De gids is daarmee het
+enige onderdeel dat uit zichzelf bezoek begint te trekken, en dat is precies wat
+er bij het bouwen van beloofd werd.
+
+Drie dagen op rij nul gratis duidingen, nul accounts, nul dromen. De vier
+tellers staan nog steeds op nul; `POST /api/tel` is live nagemeten en geeft
+netjes 204, dus dat is geen storing maar simpelweg niemand.
+
+**Wat dit rapport niet kan zien:** of die 60 à 90 landingsbezoeken echte mensen
+zijn. De zeef vangt scanners die zichzelf netjes noemen en die geen
+`Accept-Language` sturen, niet allemaal. Dat de herkomst op nul blijft staan
+terwijl het verkeer doorloopt, is een aanwijzing dat een deel ervan geen mens is
+- en met 93 TikTok-weergaven op één middag is één of twee doorklikken ook
+gewoon binnen de verwachting.
 
 ## Wat er nog niet is
 
