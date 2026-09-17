@@ -116,8 +116,11 @@ GEEN_GROND = (", rope, cable, wire, string, kite, parachute, harness, tether, "
 # vrouw die wegloopt, dus staat er per shot expliciet bij hoe je haar ziet: van
 # achteren, van opzij op afstand, of over haar schouder heen.
 VERA_SPORT = ("A woman with long dark wavy hair tied back, wearing a fine gold "
-              "headpiece with small hanging coins, in dark athletic clothing. "
-              "Never her face. ")
+              "headpiece with small hanging coins, in modest dark athletic "
+              "clothing that covers her fully: a long-sleeved dark top and "
+              "long dark leggings, nothing tight-fitting or revealing, no bare "
+              "midriff. She is small in the frame and the shot is about the "
+              "movement, not about her body. Never her face. ")
 
 SHOTS = {
     "opstijgen": {"negatief": BASIS + GEEN_GROND, "prompt": (
@@ -274,7 +277,9 @@ SHOTS = {
     # onder; een shot dat over drinken gaat wel. Bovendien verkoopt dit product
     # geen avond maar een ochtend - gezelligheid mag, dronkenschap niet.
     "vogels": {"negatief": BASIS + (
-        ", front view, facing camera, birds of prey, crows attacking, dead "
+        ", front view, facing camera, profile view, three-quarter view, side "
+        "view of her head, any part of her face, cheek, nose, chin, birds "
+        "of prey, crows attacking, dead "
         "birds, cage, distorted wings, flock covering her face"
     ), "prompt": (
         "A woman standing in a wide field at dawn, seen from directly behind, "
@@ -326,7 +331,7 @@ SHOTS = {
         "painterly. No text."
     )},
     "hardlopen": {"negatief": BASIS + (
-        ", front view, facing camera, crowd, spectators, race numbers, bib, "
+        ", front view, facing camera, crowd, spectators, race numbers, bib, sports bra, crop top, bare midriff, bare back, short shorts, briefs, tight clothing, body focus, glamour pose, rear view of her body filling the frame, "
         "brand logos, city street, traffic, cloak, cape, long dress"
     ), "prompt": VERA_SPORT + (
         "She runs steadily along an empty coastal path at dawn, seen from "
@@ -340,7 +345,7 @@ SHOTS = {
         "glow, painterly. No text."
     )},
     "hordelopen": {"negatief": BASIS + (
-        ", front view, facing camera, crowd, spectators, stadium seating, race "
+        ", front view, facing camera, crowd, spectators, stadium seating, race sports bra, crop top, bare midriff, bare back, short shorts, briefs, tight clothing, body focus, glamour pose, rear view of her body filling the frame, "
         "numbers, bib, brand logos, cloak, cape, long dress, fallen hurdle"
     ), "prompt": VERA_SPORT + (
         "She clears a hurdle on an empty running track at dawn, caught in "
@@ -353,7 +358,7 @@ SHOTS = {
         "watercolour, soft luminous glow, painterly. No text."
     )},
     "tennis": {"negatief": BASIS + (
-        ", front view, facing camera, crowd, spectators, umpire, scoreboard, "
+        ", front view, facing camera, crowd, spectators, umpire, scoreboard, sports bra, crop top, bare midriff, bare back, short shorts, briefs, tight clothing, body focus, glamour pose, rear view of her body filling the frame, "
         "brand logos, cloak, cape, long dress, two players, opponent visible"
     ), "prompt": VERA_SPORT + (
         "She serves on an empty clay court at dusk, seen from behind and "
@@ -366,7 +371,7 @@ SHOTS = {
         "glow, painterly. No text."
     )},
     "hockey": {"negatief": BASIS + (
-        ", front view, facing camera, crowd, spectators, team of players, "
+        ", front view, facing camera, crowd, spectators, team of players, sports bra, crop top, bare midriff, bare back, short shorts, briefs, tight clothing, body focus, glamour pose, rear view of her body filling the frame, "
         "opponents, brand logos, cloak, cape, long dress, ice hockey, skates"
     ), "prompt": VERA_SPORT + (
         "She runs with a field hockey stick low to the ground, pushing the ball "
@@ -398,7 +403,7 @@ SHOTS = {
     "kiten": {"negatief": BASIS + (
         # Hier is een kite juist de bedoeling; `kite` staat dus NIET in de
         # negatieve prompt, anders dan bij de zweefshots.
-        ", front view, facing camera, crowd, beach umbrellas, buildings, boats, "
+        ", front view, facing camera, crowd, beach umbrellas, buildings, boats, sports bra, crop top, bare midriff, bare back, short shorts, briefs, tight clothing, body focus, glamour pose, rear view of her body filling the frame, "
         "brand logos, cloak, cape, long dress, tangled lines, falling"
     ), "prompt": VERA_SPORT + (
         "She rides a kiteboard across open water at dawn, seen from behind and "
@@ -427,8 +432,9 @@ SHOTS = {
     )},
     "casino": {"negatief": BASIS + (
         # Geen merken, geen geld in beeld, geen spelers met gezichten.
-        ", front view, facing camera, visible faces, any face, crowd, dealer "
-        "face, brand logos, casino name, banknotes, cash, slot machines, neon "
+        ", front view, facing camera, visible faces, any face, human figure "
+        "across the table, other players, men in hats, dealer, crowd, "
+        "brand logos, casino name, banknotes, cash, slot machines, neon "
         "signs, cigarettes"
     ), "prompt": (
         "Seen from close behind her shoulder: a woman at a green baize table in "
@@ -444,7 +450,7 @@ SHOTS = {
         "glow, painterly. No text."
     )},
     "racefiets": {"negatief": BASIS + (
-        ", front view, facing camera, peloton, other cyclists, team car, race "
+        ", front view, facing camera, peloton, other cyclists, team car, race sports bra, crop top, bare midriff, bare back, short shorts, briefs, tight clothing, body focus, glamour pose, rear view of her body filling the frame, "
         "numbers, brand logos, sponsor jersey, traffic, cloak, cape, long dress"
     ), "prompt": VERA_SPORT + (
         "She rides a slender dark road bike along an empty coastal road at "
@@ -475,7 +481,7 @@ SHOTS = {
         "luminous glow, painterly. No text."
     )},
     "skateboard": {"negatief": BASIS + (
-        ", front view, facing camera, crowd, other skaters, graffiti tags with "
+        ", front view, facing camera, crowd, other skaters, graffiti tags with sports bra, crop top, bare midriff, bare back, short shorts, briefs, tight clothing, body focus, glamour pose, rear view of her body filling the frame, "
         "letters, brand logos, traffic, falling, crash, cloak, cape, long dress"
     ), "prompt": VERA_SPORT + (
         "She rides a skateboard down a long empty street at dawn, seen from "
