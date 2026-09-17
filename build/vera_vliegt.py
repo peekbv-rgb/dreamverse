@@ -102,6 +102,23 @@ GEEN_GROND = (", rope, cable, wire, string, kite, parachute, harness, tether, "
               "paraglider, ground, rock, cliff, cliff edge, ledge, standing, "
               "walking, footprints")
 
+# Vanaf hier: Vera die dingen doet, op verzoek van Ruud op 17 september. Bedoeld
+# als losse beelden om korte Reels mee te maken - een terugkerende figuur die
+# steeds iets anders doet werkt op TikTok beter dan steeds een ander beeld.
+#
+# **Bij sport gaat de mantel eraf, en dat is een besluit.** Haar drie kenmerken
+# zijn het haar, het gouden kapje en de mantel. Hordelopen in een zware mantel
+# is geen droom maar een kostuumfilm. Het kapje en het lange donkere haar
+# blijven daarom in elk shot staan - dat is de draad - en de kleding past zich
+# aan, altijd donker.
+#
+# **Nooit haar gezicht, ook hier niet.** Bij sport is dat lastiger dan bij een
+# vrouw die wegloopt, dus staat er per shot expliciet bij hoe je haar ziet: van
+# achteren, van opzij op afstand, of over haar schouder heen.
+VERA_SPORT = ("A woman with long dark wavy hair tied back, wearing a fine gold "
+              "headpiece with small hanging coins, in dark athletic clothing. "
+              "Never her face. ")
+
 SHOTS = {
     "opstijgen": {"negatief": BASIS + GEEN_GROND, "prompt": (
         "A woman seen from behind, rising slowly through night air above a "
@@ -256,22 +273,6 @@ SHOTS = {
     # leeftijdsgrens zetten. Een glas op tafel tussen de kaarsen valt daar niet
     # onder; een shot dat over drinken gaat wel. Bovendien verkoopt dit product
     # geen avond maar een ochtend - gezelligheid mag, dronkenschap niet.
-    "hondjes": {"negatief": BASIS + (
-        ", front view, facing camera, distorted paws, extra legs, merged "
-        "animals, aggressive dogs, bared teeth, leash, collar with tag, "
-        "modern clothing, park bench, buildings"
-    ), "prompt": (
-        "A woman sitting on the grass in an open meadow at morning, seen from "
-        "directly behind, playing with two small puppies that tumble and roll "
-        "around her and climb into her lap. Long dark wavy hair down her back, "
-        "a fine gold headpiece with small hanging coins, a dark cloak spread on "
-        "the grass around her. The puppies move constantly. Tall grass sways in "
-        "the breeze, seed heads drift through the low sun. Warm amber light, "
-        "deep violet shadows in the treeline behind. Faint concentric rings of "
-        "light spread outward across the grass. The camera holds still. "
-        "Dreamlike illustration, flowing ink and watercolour, soft luminous "
-        "glow, painterly. No text, no letters, no logos."
-    )},
     "vogels": {"negatief": BASIS + (
         ", front view, facing camera, birds of prey, crows attacking, dead "
         "birds, cage, distorted wings, flock covering her face"
@@ -280,34 +281,167 @@ SHOTS = {
         "one arm held out level while small pale birds land on her arm and "
         "shoulder and lift off again, one after another, circling around her. "
         "Long dark wavy hair lifting in the wind, a fine gold headpiece with "
-        "small hanging coins, a dark cloak moving in loose soft folds. The "
+        "small hanging coins, and a heavy dark charcoal-black cloak over dark "
+        "clothing, moving in loose soft folds. She wears no pale or white "
+        "gown. The "
         "birds are in constant motion. Warm amber and rose along the horizon, "
         "deep violet above, thin mist over the grass. Faint concentric rings of "
         "light spread outward from where she stands. The camera holds still. "
         "Dreamlike illustration, flowing ink and watercolour, soft luminous "
         "glow, painterly. No text, no letters, no logos."
     )},
-    "tafel": {"negatief": BASIS + (
-        # Iedereen van achteren of in silhouet: dezelfde regel als voor Vera
-        # zelf, en hier ook omdat verzonnen gezichten aan een tafel er snel
-        # griezelig uitzien.
-        ", front view, facing camera, visible faces, portraits, bottles in "
-        "the foreground, drinking from a glass, toasting, crowd, modern "
-        "clothing, brand labels, neon, restaurant interior"
+    "hondjes": {"negatief": BASIS + (
+        ", front view, facing camera, pale dress, white gown, bare shoulders, "
+        "distorted paws, extra legs, merged animals, adult dogs, aggressive "
+        "dogs, bared teeth, leash, empty background, wide empty field"
     ), "prompt": (
-        "A long wooden table outdoors under a tree at dusk, seen from behind "
-        "one end. A woman sits at the near end with her back to the camera - "
-        "long dark wavy hair down her back, a fine gold headpiece with small "
-        "hanging coins, a dark cloak over the chair. Four or five other people "
-        "sit further along the table, all seen from behind or in silhouette "
-        "against the light, leaning towards each other and gesturing as they "
-        "talk. Lanterns and candles line the table among plates and a few "
-        "glasses. The candle flames flicker constantly, the lanterns sway in "
-        "the breeze, leaves move overhead and warm light shifts across the "
-        "table. Warm amber light, deep violet dusk beyond. Faint concentric "
-        "rings of light in the air. The camera holds still. Dreamlike "
+        "Close view from low down and behind: a woman kneeling in tall grass in "
+        "warm morning light, seen from directly behind, with two round fluffy "
+        "puppies tumbling over each other right in front of her, close to the "
+        "camera and filling the lower third of the frame. One puppy climbs into "
+        "her hands. Long dark wavy hair down her back, a fine gold headpiece "
+        "with small hanging coins, a heavy dark charcoal-black cloak over dark "
+        "clothing. Tall sunlit grass all around them, seed heads drifting "
+        "through low golden light, no empty horizon. Faint concentric rings of "
+        "light in the grass. The camera holds still. Dreamlike illustration, "
+        "flowing ink and watercolour, soft luminous glow, painterly. No text."
+    )},
+    "tafel": {"negatief": BASIS + (
+        ", front view, facing camera, visible faces, any face, human face, "
+        "profile view, three-quarter view, eyes, crowd, long banquet, wedding, "
+        "bottles in the foreground, drinking from a glass, toasting, brand "
+        "labels, neon, restaurant interior"
+    ), "prompt": (
+        "A small round table outdoors under a tree at dusk, seen from close "
+        "behind one chair. A woman sits with her back to the camera, filling "
+        "much of the frame - long dark wavy hair down her back, a fine gold "
+        "headpiece with small hanging coins, a heavy dark charcoal-black cloak "
+        "over the chair behind her. Three friends sit around the small table "
+        "with her, every one of them strictly in dark silhouette against the "
+        "lantern light with no face visible anywhere. Candles and two lanterns "
+        "on the table among plates and glasses. The flames flicker constantly, "
+        "the lanterns sway, leaves move overhead, warm light shifts across the "
+        "table. Deep violet dusk beyond. The camera holds still. Dreamlike "
         "illustration, flowing ink and watercolour, soft luminous glow, "
-        "painterly. No text, no letters, no logos."
+        "painterly. No text."
+    )},
+    "hardlopen": {"negatief": BASIS + (
+        ", front view, facing camera, crowd, spectators, race numbers, bib, "
+        "brand logos, city street, traffic, cloak, cape, long dress"
+    ), "prompt": VERA_SPORT + (
+        "She runs steadily along an empty coastal path at dawn, seen from "
+        "directly behind and slightly below, moving away from the camera. Her "
+        "ponytail swings with each stride, grass and low shrubs blur past at "
+        "the edges of the frame, and long shadows stretch ahead of her. Warm "
+        "amber and rose along the horizon, deep violet above, thin sea mist to "
+        "one side. Faint concentric rings of light spread outward from each "
+        "footfall. The camera holds still while she runs away from it. "
+        "Dreamlike illustration, flowing ink and watercolour, soft luminous "
+        "glow, painterly. No text."
+    )},
+    "hordelopen": {"negatief": BASIS + (
+        ", front view, facing camera, crowd, spectators, stadium seating, race "
+        "numbers, bib, brand logos, cloak, cape, long dress, fallen hurdle"
+    ), "prompt": VERA_SPORT + (
+        "She clears a hurdle on an empty running track at dawn, caught in "
+        "mid-air over the bar, seen from directly behind as she moves away down "
+        "the lane. Further hurdles stand in a line ahead of her. Her ponytail "
+        "and the coins of the headpiece lift with the movement, dust rises off "
+        "the track behind her. Warm amber light low across the empty stadium, "
+        "deep violet shadows. Faint concentric rings of light on the lane. The "
+        "camera holds still. Dreamlike illustration, flowing ink and "
+        "watercolour, soft luminous glow, painterly. No text."
+    )},
+    "tennis": {"negatief": BASIS + (
+        ", front view, facing camera, crowd, spectators, umpire, scoreboard, "
+        "brand logos, cloak, cape, long dress, two players, opponent visible"
+    ), "prompt": VERA_SPORT + (
+        "She serves on an empty clay court at dusk, seen from behind and "
+        "slightly below, racket high above her and the ball just leaving her "
+        "hand. Clay dust lifts around her feet and drifts through the low "
+        "light, her ponytail swings, the net shivers. Warm amber floodlight "
+        "from one side, deep violet shadows across the empty court. Faint "
+        "concentric rings of light in the clay. The camera holds still. "
+        "Dreamlike illustration, flowing ink and watercolour, soft luminous "
+        "glow, painterly. No text."
+    )},
+    "hockey": {"negatief": BASIS + (
+        ", front view, facing camera, crowd, spectators, team of players, "
+        "opponents, brand logos, cloak, cape, long dress, ice hockey, skates"
+    ), "prompt": VERA_SPORT + (
+        "She runs with a field hockey stick low to the ground, pushing the ball "
+        "ahead of her across an empty pitch at dusk, seen from directly behind "
+        "and moving away from the camera. Water sprays up from the wet turf "
+        "with each stride, her ponytail swings, the ball rolls ahead. Warm "
+        "amber floodlight low across the empty field, deep violet sky. Faint "
+        "concentric rings of light spreading in the wet surface. The camera "
+        "holds still. Dreamlike illustration, flowing ink and watercolour, soft "
+        "luminous glow, painterly. No text."
+    )},
+    "raceauto": {"negatief": BASIS + (
+        # Geen bestaand merk, en geen tweede auto: een inhaalactie is precies
+        # waar een beeldmodel de twee door elkaar laat lopen.
+        ", front view, facing camera, brand logos, sponsor decals, second car, "
+        "crash, fire, crowd, grandstand, cloak, cape, long dress"
+    ), "prompt": (
+        "Seen from directly behind and just above: a woman driving a sleek "
+        "unmarked dark racing car at speed along an empty track at dusk, only "
+        "the back of her helmet and her long dark hair beneath it visible, a "
+        "fine gold band with small hanging coins around the helmet. The track "
+        "streaks past beneath, trackside lights smear into long lines, heat "
+        "shimmers off the surface, tyre smoke curls behind. Warm amber and rose "
+        "along the horizon, deep violet above. Faint concentric rings of light "
+        "trail behind the car. The camera holds still while the car pulls away. "
+        "Dreamlike illustration, flowing ink and watercolour, soft luminous "
+        "glow, painterly. No text."
+    )},
+    "kiten": {"negatief": BASIS + (
+        # Hier is een kite juist de bedoeling; `kite` staat dus NIET in de
+        # negatieve prompt, anders dan bij de zweefshots.
+        ", front view, facing camera, crowd, beach umbrellas, buildings, boats, "
+        "brand logos, cloak, cape, long dress, tangled lines, falling"
+    ), "prompt": VERA_SPORT + (
+        "She rides a kiteboard across open water at dawn, seen from behind and "
+        "to one side at a distance, leaning back against the lines with a large "
+        "pale kite high above and ahead of her. A long sheet of spray fans out "
+        "behind the board, the water races past, the kite tugs and shifts in "
+        "the wind. Warm amber and rose along the horizon, deep violet above, "
+        "thin mist further out. Faint concentric rings of light spreading on "
+        "the water. The camera holds still. Dreamlike illustration, flowing ink "
+        "and watercolour, soft luminous glow, painterly. No text."
+    )},
+    "trein": {"negatief": BASIS + (
+        ", front view, facing camera, crowd, other passengers, brand logos, "
+        "modern advertising, falling, danger, closing doors trapping her"
+    ), "prompt": (
+        "A woman running the last few steps along an empty platform at dusk and "
+        "reaching for the open door of a waiting train, seen from directly "
+        "behind, one arm out towards the handrail. Long dark wavy hair flying "
+        "behind her, a fine gold headpiece with small hanging coins, a heavy "
+        "dark charcoal-black cloak streaming out to one side in loose folds. "
+        "Steam and mist roll along the platform, warm light spills from the "
+        "carriage windows, a lamp swings overhead. Deep violet dusk. Faint "
+        "concentric rings of light on the wet platform. The camera holds still. "
+        "Dreamlike illustration, flowing ink and watercolour, soft luminous "
+        "glow, painterly. No text."
+    )},
+    "casino": {"negatief": BASIS + (
+        # Geen merken, geen geld in beeld, geen spelers met gezichten.
+        ", front view, facing camera, visible faces, any face, crowd, dealer "
+        "face, brand logos, casino name, banknotes, cash, slot machines, neon "
+        "signs, cigarettes"
+    ), "prompt": (
+        "Seen from close behind her shoulder: a woman at a green baize table in "
+        "a warm dim room, pushing a small stack of pale chips forward with one "
+        "hand. Long dark wavy hair down her back, a fine gold headpiece with "
+        "small hanging coins, a heavy dark charcoal-black cloak over dark "
+        "clothing. Across the table only dark silhouettes against a low lamp, "
+        "no face visible anywhere. A roulette wheel turns steadily at the side "
+        "of the frame, the chips clink and settle, smoke curls slowly through "
+        "the lamplight. Deep violet shadows, warm amber pools of light. Faint "
+        "concentric rings of light across the baize. The camera holds still. "
+        "Dreamlike illustration, flowing ink and watercolour, soft luminous "
+        "glow, painterly. No text."
     )},
 }
 
