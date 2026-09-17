@@ -1022,6 +1022,95 @@ Vijf dingen die in dat script bewust zo zijn:
   overzichtsadres en niet de diepe link — dat laatste is 43 tekens die niemand
   overtypt. De diepe link staat wél in de caption.
 
+### Hoeveel er beweegt is een getal, geen indruk
+
+Op 17 september zag Ruud dat de Reel over `ex` eruitzag als tekst op een
+plaatje. Gemeten met het gemiddelde absolute verschil tussen beeldjes -
+
+    np.abs(beeldjes[i] - beeldjes[i - 3]).mean()
+
+- bleek dat geen indruk maar een feit: `ex` haalde **0,49** op een schaal waar
+de Runway-vuurvogel in `static/voorbeelden/` **30,3** haalt. De mediaan over
+alle drieënveertig was 1,90, en **twaalf zaten onder de 1,0**: being-naked,
+father, train, being-late, exam, getting-lost, mother, ex, falling, flying, cat
+en stairs. Dat is geen animatie maar een tekening.
+
+**De oorzaak zat niet per onderwerp maar in de gedeelde staart.** In `ALGEMEEN`
+stond *"very slow, gentle, ambient motion"*, onder alle drieënveertig. Het idee
+eronder was goed - een beeld dat ademt, geen filmpje - maar het sloeg door naar
+niet ademen, en de twaalf timide opdrachten eronder (*faintly*, *slowly*,
+*almost imperceptibly*, *nobody*, *nothing*) deden de rest. Nu staat er
+*"continuous, clearly visible movement throughout the whole shot"*, met de
+goede regels ongewijzigd: camera stil, niets nieuws in beeld.
+
+**Meet dit na een wijziging aan de prompt, altijd.** Eén getal per bestand, en
+het verschil tussen 0,5 en 5 zie je eerder in dat getal dan op je scherm - zeker
+bij een clip die je al twintig keer hebt gezien. De oude versies zijn bewaard
+als `<slug>-stil.mp4`, zodat een slechtere uitkomst terug te draaien is.
+
+### Vera staat nu in de gids, en dat loste het bewegingsprobleem op
+
+Toen de twaalf stille onderwerpen ook op `kling-v3` nauwelijks bewogen, vroeg
+Ruud waarom Vera nergens in de gids voorkomt terwijl het *Vera's Dream Guide*
+heet. Dat was de oplossing en niet een omweg: **een lege zaal kán niet bewegen,
+een mens die iets doet altijd.**
+
+`build/gids_scenes.py` maakt daarom **text2video**-scènes voor die twaalf, met
+Vera erin en de beweging in wat zij doet. Gemeten op `ex`:
+
+| | beweging |
+|---|---|
+| origineel, oud model, geen Vera | 0,49 |
+| image2video `kling-v3` pro 10 s, geen Vera | 1,44 |
+| **text2video `kling-v3` pro 10 s, mét Vera** | **2,94** |
+
+Zes keer het origineel, en de winst komt van haar en niet van het model - dat
+was de stap van 0,49 naar 1,44 en die was op zichzelf niet genoeg.
+
+**Wat het kost, en dat is een echt besluit.** Het beeld in de Reel is niet meer
+het beeld op de gidspagina. Tot dan was dat één wereld: dezelfde hand als de
+panelen, en wie van een Reel doorklikte zag hetzelfde terug. Ruud heeft die
+prijs op 17 september bewust betaald, omdat een Reel die niet beweegt op TikTok
+niets doet. **De gidspagina's zelf zijn niet aangeraakt** - dit raakt alleen
+`data/gids-animatie-staand/`, en de oude versies staan er als `<slug>-stil.mp4`
+en `<slug>-i2v.mp4` naast. Terugdraaien is een hernoeming.
+
+**Wat het oplevert bovenop de beweging:** de gids krijgt één terugkerende
+figuur. Wie drie Reels ziet, ziet drie keer dezelfde vrouw met hetzelfde gouden
+kapje. Dat is precies wat een account herkenbaar maakt, en het bestond nog niet
+- de drieënveertig gidsreels hadden drieënveertig losse beelden en geen gezicht.
+
+**Dezelfde regel als overal: nooit haar gezicht.** `VERA` in dat bestand is één
+vaste zin die aan elke scène vastzit, en `face` staat in de negatieve prompt.
+Kling verzint een gezicht en dat wordt niet dat van de Runway-avatar in de app;
+drie verschillende Vera's is erger dan twee. En geen beeldspraak over die
+mantel - *"trailing behind her in one long line"* leverde ooit een vrouw aan een
+kabel op.
+
+**`cfg_scale` staat hier op 0,7 en bij image2video op 0,5.** Daar moest een
+bestaand beeld herkenbaar blijven; hier is er geen beeld om te bewaren.
+
+### Het Kling-model verdwijnt onder je handen
+
+**Twee keer op één dag, 17 september.** `kling-v1` deed op 14 september
+text2video en was toen de enige; nu geeft hij `1203 discontinued`. En
+`kling-v2-1`, dat al die tijd image2video deed voor de gidsanimaties, geeft
+sinds diezelfde dag precies dezelfde fout. Ook weg: `v1-5`, `v1-6`,
+`v2-master`, `v2-1-master`.
+
+Wat er nu is: **`kling-v2-5-turbo`**, voor allebei - text2video in `std`,
+image2video in `pro`. Die doet bovendien **tien seconden** waar het oude model
+op vijf zat.
+
+**Zoeken kost niets, en dat is het hele punt.** Een verzoek met een onbekend of
+opgeheven model wordt geweigerd vóór er iets gerenderd wordt: de mislukte ronde
+van twaalf animaties kostte nul eenheden. Loop dus een lijstje kandidaten langs
+en laat het eindpunt zelf zeggen wat er nog bestaat - dat is sneller en
+betrouwbaarder dan de documentatie, die hier aantoonbaar achterloopt.
+
+**Waar het staat:** `MODEL` in `build/gids_animaties.py` en in
+`build/vera_vliegt.py`. Die twee horen gelijk op te lopen.
+
 **De Reels bewegen echt, sinds 14 september.** `build/gids_animaties.py` maakt
 van elk gidsbeeld een animatie van vijf seconden bij Kling (`kling-v2-1`, `pro`,
 3,5 eenheden per stuk), en `maak()` gebruikt die in plaats van de zoom zodra het

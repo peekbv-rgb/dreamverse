@@ -24,8 +24,16 @@ Drie dingen die in beide opdrachten bewust staan:
 - **Geen superheldenpose.** Armen los, niet gestrekt. Dit moet een droom blijven
   en geen actiescène.
 
-`kling-v1` en niet `kling-v2-1`: die tweede weigert text2video met "model is not
-supported" - nagemeten op 14 september 2026.
+**Het model verandert onder je handen, en dat is hier twee keer gebeurd.** Op
+14 september was `kling-v1` de enige die text2video deed en weigerde
+`kling-v2-1` met "model is not supported". Op 17 september geeft `kling-v1`
+zelf `1203 discontinued`, net als `kling-v1-5`, `kling-v1-6`, `kling-v2-master`
+en `kling-v2-1-master`. Wat er dan nog overblijft is **`kling-v2-5-turbo`**.
+
+Zoeken kost niets: een verzoek met een onbekend model wordt geweigerd voordat
+er iets gerenderd wordt, dus een lijstje kandidaten langslopen is gratis. Dat
+is de manier om dit op te lossen als het over een maand weer verschoven is -
+niet de documentatie lezen maar het eindpunt het zelf laten zeggen.
 """
 
 import argparse
@@ -44,22 +52,42 @@ import kling                                                     # noqa: E402
 
 UIT = WORTEL / "data" / "vera-vliegt"
 
-MODEL = "kling-v1"
+MODEL = "kling-v2-5-turbo"
 MODUS = "std"
-SECONDEN = 5
+# Tien en niet vijf, sinds 17 september. `kling-v2-5-turbo` accepteert allebei,
+# en een Reel voor TikTok wil 12 tot 18 seconden - dat komt uit monteren, en dan
+# is tien seconden per shot twee keer zoveel om uit te kiezen. De drie
+# vliegshots blijven op vijf staan zoals ze zijn; die zijn af.
+SECONDEN = 10
 VERHOUDING = "9:16"
 
-# `rope, cable, wire, string, kite, parachute, harness` staan erbij sinds de
-# eerste poging op "overkomen" een figuurtje aan een lijn opleverde. Een
-# beeldmodel dat "trailing in one long line" leest, tekent een lijn.
-NEGATIEF = ("face, facial features, portrait, close-up, text, letters, numbers, "
-            "watermark, signature, logo, wings, superhero pose, religious "
-            "symbol, national flag, extra limbs, distorted hands, rope, cable, "
-            "wire, string, kite, parachute, harness, tether, paraglider, "
-            "ground, rock, cliff, cliff edge, ledge, standing, walking, footprints")
+# De negatieve prompt staat per shot, en dat moest.
+#
+# Eerst was het één lijst voor alles, en die was gebouwd om *vliegen* af te
+# dwingen: `ground, walking, footprints` erin om te voorkomen dat het model haar
+# ergens op neerzet, en `rope, cable, wire, string` omdat een eerdere opdracht
+# een figuurtje aan een kabel opleverde.
+#
+# Zodra er shots bijkomen die niet over vliegen gaan, werkt diezelfde lijst
+# tegen je: een paard op het strand *heeft* grond nodig en loopt, en een
+# zeilboot *heeft* touwen. Eén lijst die voor het ene shot de oplossing is, is
+# voor het andere de fout - en het is het soort fout dat je pas ziet als het
+# beeld terugkomt en er iets ontbreekt dat je nooit hebt weggevraagd.
+#
+# Dus: `BASIS` geldt altijd, en elk shot zegt er zelf bij wat het verder niet
+# wil. Wat in `BASIS` staat is wat voor Vera als personage geldt en niet voor
+# een scène.
+BASIS = ("face, facial features, portrait, close-up, text, letters, numbers, "
+         "watermark, signature, logo, wings, superhero pose, religious symbol, "
+         "national flag, extra limbs, distorted hands")
+
+# Wat de drie vliegshots nodig hadden. Zie de les hieronder bij `overkomen`.
+GEEN_GROND = (", rope, cable, wire, string, kite, parachute, harness, tether, "
+              "paraglider, ground, rock, cliff, cliff edge, ledge, standing, "
+              "walking, footprints")
 
 SHOTS = {
-    "opstijgen": (
+    "opstijgen": {"negatief": BASIS + GEEN_GROND, "prompt": (
         "A woman seen from behind, rising slowly through night air above a "
         "wide misty valley. Long dark wavy hair lifting on the wind, a fine "
         "gold headpiece with small hanging coins catching the light, a dark "
@@ -71,7 +99,7 @@ SHOTS = {
         "at her sides, she is not straining. The camera holds still while she "
         "rises. Dreamlike illustration, flowing ink and watercolour, soft "
         "luminous glow, painterly. No text, no letters, no logos."
-    ),
+    )},
     # Derde poging, en de twee mislukkingen staan hier omdat ze allebei uit de
     # opdracht zelf kwamen.
     #
@@ -91,7 +119,7 @@ SHOTS = {
     # "line" heet wordt een kabel. Hier staat er expliciet dat het uit licht en
     # nevel bestaat, en `rope, cable, wire` staan al in de negative prompt. Zij
     # is klein en ver weg - het spoor is het onderwerp, niet zij.
-    "boog": (
+    "boog": {"negatief": BASIS + GEEN_GROND, "prompt": (
         "A vast golden dawn sky above an unbroken sea of cloud. A long, slow, "
         "luminous arc of light curves across the whole frame, like the trail of "
         "a comet made of light and mist, softly glowing and gradually fading at "
@@ -102,8 +130,8 @@ SHOTS = {
         "concentric rings spread outward from the arc. Dreamlike illustration, "
         "flowing ink and watercolour, soft luminous glow, painterly. No text, "
         "no letters, no logos."
-    ),
-    "overkomen": (
+    )},
+    "overkomen": {"negatief": BASIS + GEEN_GROND, "prompt": (
         "A woman flying high in the air, her whole body horizontal and level, "
         "lying flat on the air far above an unbroken sea of cloud. Nothing "
         "beneath her, no ground, no rock, no cliff, no edge anywhere in the "
@@ -118,15 +146,99 @@ SHOTS = {
         "moving. Faint concentric rings of light spread outward from where she "
         "passes. Dreamlike illustration, flowing ink and watercolour, soft "
         "luminous glow, painterly. No text, no letters, no logos."
-    ),
+    )},
+    # Drie shots die niet over vliegen gaan, van 17 september. Ruuds idee: Vera
+    # die gewone, prettige dingen doet, als losse beelden om promo's mee te
+    # maken. Ze delen dezelfde regel als de rest - geen gezicht - maar elk heeft
+    # een eigen negatieve prompt, want wat je bij vliegen wegvraagt heb je hier
+    # juist nodig.
+    "strand": {"negatief": BASIS + (
+        # Geen `walking` en geen `ground` hier: het paard loopt en er is strand.
+        # Wel weg: een tweede ruiter en alles wat er modern uitziet, want dan
+        # wordt het een vakantiefoto in plaats van een droom.
+        ", front view, facing camera, second rider, crowd, buildings, houses, "
+        "modern clothing, jeans, sunglasses, helmet, saddle branding, galloping, "
+        "rearing horse, motion blur"
+    ), "prompt": (
+        "A woman riding a dark horse along a wide empty beach at sunrise, seen "
+        "from directly behind and slightly above, small in the frame. Long dark "
+        "wavy hair falling down her back, a fine gold headpiece with small "
+        "hanging coins, a dark cloak over her shoulders. The horse walks calmly "
+        "through the shallow edge of the surf; water lifts softly around its "
+        "hooves. Wet sand mirrors the sky. Warm amber and rose along the "
+        "horizon, deep violet above, low mist further out over the water. Faint "
+        "concentric rings of light spread outward across the wet sand. The "
+        "camera holds still while she rides slowly away from it. Dreamlike "
+        "illustration, flowing ink and watercolour, soft luminous glow, "
+        "painterly. No text, no letters, no logos."
+    )},
+    # Let op: `rope` en `string` staan hier met opzet **niet** in de negatieve
+    # prompt. Een zeilboot heeft touwen, en die wegvragen levert een schip op
+    # waarvan het tuig niet klopt.
+    "zeilen": {"negatief": BASIS + (
+        # `rowing boat, oars, distant sailboat` staan erbij sinds de eerste
+        # poging: die leverde haar in een roeiboot op met het zeil op een
+        # bootje in de verte. Het model maakte iets ernaast, net als destijds
+        # bij `rand.mp4` - en dan moet je wegvragen wat het in plaats daarvan
+        # koos, niet nog eens vragen om wat je al vroeg.
+        ", front view, facing camera, other boats, second boat, distant "
+        "sailboat, rowing boat, rowboat, oars, paddles, harbour, motor, "
+        "engine, outboard, flag, pennant, modern yacht, life jacket, choppy "
+        "waves, storm"
+    ), "prompt": (
+        "A woman alone in a small wooden sailing boat on calm open water at "
+        "dawn, seen from behind, sitting low at the stern with one hand resting "
+        "on the tiller. Directly above her and filling the upper half of the "
+        "frame is her own single tall pale sail, close to the camera, its boom "
+        "just above her head and its mast rising from the boat she is sitting "
+        "in. The sail is softly filled by a light breeze. There is no other "
+        "boat anywhere in the frame. Long dark wavy hair lifting slightly in "
+        "the wind, a fine gold headpiece with small hanging coins, a dark cloak "
+        "around her shoulders. The water is glassy, with long slow ripples spreading out "
+        "behind the boat. Warm amber and rose along the horizon, deep violet "
+        "above, thin mist on the far water. Faint concentric rings of light "
+        "spread outward from the hull. The camera holds still while the boat "
+        "glides slowly away. Dreamlike illustration, flowing ink and "
+        "watercolour, soft luminous glow, painterly. No text, no letters, no "
+        "logos."
+    )},
+    # Het lastigste van de drie, om twee redenen. Haar handen komen in beeld en
+    # die zijn waar een beeldmodel het vaakst de mist in gaat - vandaar `hands
+    # relaxed and low` in de opdracht en `distorted hands` in BASIS. En het
+    # lichtspoor waar het katje naar slaat heet met opzet geen lint of draad:
+    # dat is precies de val uit de eerste ronde, waar "one long line" een kabel
+    # werd. Hier is het een krul van licht en verder niets.
+    "katje": {"negatief": BASIS + (
+        # `artist signature` en de rest staan erbij omdat de eerste poging een
+        # gekrabbeld kunstenaarsmerkje rechtsonder opleverde - terwijl
+        # `watermark, signature` al in BASIS stonden. Eén woord is bij dit soort
+        # artefacten blijkbaar niet genoeg; het moet benoemd worden zoals het
+        # eruitziet.
+        ", front view, facing camera, second animal, dog, kitten face close-up, "
+        "distorted paws, extra legs, toy mouse, leash, collar with tag, clutter, "
+        "modern furniture, television, artist signature, initials, handwriting, "
+        "corner mark, autograph, stamp, border, frame"
+    ), "prompt": (
+        "A woman sitting on the floor of a warm dim room at dawn, seen from "
+        "directly behind, playing with a small kitten in front of her. Long dark "
+        "wavy hair down her back, a fine gold headpiece with small hanging "
+        "coins, a dark cloak pooled around her on the floor. Her hands rest low "
+        "and relaxed. The kitten reaches up and bats at a slow curl of soft "
+        "light drifting just above the floorboards. A low window beyond them "
+        "lets in pale dawn light. Deep violet shadows, warm amber glow near the "
+        "floor. Faint concentric rings of light hang in the air around the two "
+        "of them. The camera holds still; only the kitten and the curl of light "
+        "move. Dreamlike illustration, flowing ink and watercolour, soft "
+        "luminous glow, painterly. No text, no letters, no logos."
+    )},
 }
 
 
-def start(prompt):
+def start(prompt, negatief):
     antwoord = kling._call("POST", "/v1/videos/text2video", {
         "model_name": MODEL,
         "prompt": prompt,
-        "negative_prompt": NEGATIEF,
+        "negative_prompt": negatief,
         # Laag: hoger laat het model zijn eigen interpretatie doorduwen, en dan
         # verdwijnt de stijl die de rest van het product heeft.
         "cfg_scale": 0.5,
@@ -179,7 +291,7 @@ def main():
           % (len(te_doen), MODEL, MODUS, SECONDEN, VERHOUDING))
     if not args.ja:
         for n in te_doen:
-            print("\n  %s\n    %s" % (n, SHOTS[n][:160]))
+            print("\n  %s\n    %s" % (n, SHOTS[n]["prompt"][:160]))
         print("\nNiets gedaan. Geef --ja mee om ze te maken.")
         return 0
 
@@ -187,7 +299,7 @@ def main():
     for i, naam in enumerate(te_doen, 1):
         print("[%d/%d] %s" % (i, len(te_doen), naam), flush=True)
         try:
-            taak = start(SHOTS[naam])
+            taak = start(SHOTS[naam]["prompt"], SHOTS[naam]["negatief"])
             if not taak:
                 print("      geen task_id terug")
                 continue

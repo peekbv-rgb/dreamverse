@@ -54,9 +54,23 @@ UIT = WORTEL / "data" / "gids-animatie"
 BEELDEN_STAAND = WORTEL / "data" / "gids-staand"
 UIT_STAAND = WORTEL / "data" / "gids-animatie-staand"
 
-MODEL = "kling-v2-1"
+# **Het model verdwijnt onder je handen.** Op 14 september deed `kling-v2-1`
+# dit werk; op 17 september geeft datzelfde model `1203 discontinued`, net als
+# `kling-v1`, `v1-5`, `v1-6`, `v2-master` en `v2-1-master`. Wat er nog is:
+# `kling-v2-5-turbo`, en daarboven nog **`kling-v3`** en `kling-v2-6`.
+# Die laatste twee kwamen pas boven water door ze te proberen; ze staan
+# nergens in wat we hadden. `kling-v3` in `pro` is wat hier nu draait.
+#
+# Zoeken kost niets - een verzoek met een onbekend model wordt geweigerd vóór
+# er iets gerenderd wordt. De hele mislukte ronde van twaalf kostte dan ook nul
+# eenheden. Zelfde methode als in `vera_vliegt.py`: niet de documentatie lezen
+# maar het eindpunt het zelf laten zeggen.
+MODEL = "kling-v3"
 MODUS = "pro"
-SECONDEN = 5
+# Tien en niet vijf, sinds 17 september: `kling-v3` doet het, de Reels zijn acht
+# seconden en het inzichtformaat vijftien. Met vijf seconden moet er heen en
+# terug gespeeld worden om dat te vullen; met tien hoeft dat veel minder.
+SECONDEN = 10
 KOSTEN = 3.5          # eenheden per animatie, gemeten op droom 12
 
 # Wat er in elk beeld beweegt. Zonder deze regel krijgt het model alleen de
@@ -68,9 +82,9 @@ BEWEGING = {
     # being-chased: een pad met mist.
     "being-chased": "mist drifts slowly across the path, the grass bends in a light wind",
     # being-late: een klok en stoflicht.
-    "being-late": "dust motes drift through the light, the shadows creep almost imperceptibly",
+    "being-late": "the hands of the clock turn visibly, long shadows sweep across the floor, dust swirls through the shifting light",
     # being-naked: een lege zaal met een stoel.
-    "being-naked": "dust motes drift through the empty hall, the light shifts slowly across the floor",
+    "being-naked": "broad shafts of light sweep steadily across the hall as clouds pass outside, dust swirls visibly in the beams, the cloth on the floor lifts and settles in a draught",
     # birds: vogels tegen de lucht.
     "birds": "the birds glide slowly on held wings, the clouds drift behind them",
     # cant-move: een lege slaapkamer op het blauwe uur, deur op een kier.
@@ -80,8 +94,7 @@ BEWEGING = {
     "car": "the wet asphalt glistens as the light moves over it, fine rain drifts "
            "through the headlight beams, the road stays still",
     # cat: een kat op een vensterbank, van achteren.
-    "cat": "the cat's fur stirs faintly, its ear turns a little, moonlight shifts "
-           "in the dark garden beyond the glass",
+    "cat": "the cat's tail flicks and its head turns, its fur ripples, moonlight moves across the garden as the branches sway beyond the glass",
     # cheating: een leeg vertrek met een gordijn.
     "cheating": "the curtain stirs faintly, the light moves across the empty room",
     # deceased-person: kaarslicht.
@@ -92,23 +105,22 @@ BEWEGING = {
     # dying: mist die oplicht.
     "dying": "the mist drifts slowly upward and the light behind it brightens",
     # ex: een foto in schuin licht.
-    "ex": "dust drifts through the slanted light, one edge of the photograph lifts faintly",
+    "ex": "the door swings slowly wider open, light sweeps across the floor as clouds pass outside, dust swirls thickly through the beam",
     # falling: wolken van bovenaf.
-    "falling": "the clouds move slowly past, the air below shimmers",
+    "falling": "clouds rush past continuously, the land far below turns and shifts, the air ripples and distorts",
     # fire: vuur.
     "fire": "the flames move slowly, embers rise and fade into the dark",
     # flying: wolken onder je.
-    "flying": "the clouds drift below, the light along the horizon shifts",
+    "flying": "clouds stream past steadily below, the light along the horizon pulses and shifts, mist tears apart and reforms",
     # getting-lost: een doolhof van straatjes van bovenaf, met warme ramen.
-    "getting-lost": "the warm windows flicker faintly one by one, thin mist drifts "
-                    "between the rooftops, the streets stay still",
+    "getting-lost": "the windows light up and go dark in waves across the rooftops, mist rolls steadily through the streets, smoke curls from the chimneys",
     # horse: een paard in een veld bij eerste licht, mist tot de knieen.
     "horse": "the mist drifts slowly across the field, the horse's mane and tail "
              "move in a light wind, the sky slowly brightens",
     # house: kamers met licht.
     "house": "the light moves slowly across the rooms, a curtain stirs",
     # mother: een stoel, een warme kop, een jas.
-    "mother": "steam rises slowly from the cup, the sleeve of the coat stirs faintly",
+    "mother": "steam pours and curls upward from the cup, the coat sleeve sways in the draught, the light shifts across the table",
     # pregnancy: licht in het midden, water.
     "pregnancy": "the light at the centre pulses slowly, the water ripples outward",
     # school: raamlicht en stof.
@@ -129,8 +141,7 @@ BEWEGING = {
     "water": "the surface ripples outward in slow rings, the reflections shift",
     # --- de zes van 14 september ------------------------------------------ #
     # father: een lege werkplaats bij eerste licht, jas over de stoel.
-    "father": "the morning light through the window slowly brightens, dust "
-              "drifts across the bench, the sleeve of the jacket stirs faintly",
+    "father": "sunlight moves steadily across the bench as clouds pass the window, the jacket sleeve lifts and falls in the breeze, dust swirls brightly through the beam",
     # money: oude munten op een donkere tafel, een vangt het licht.
     "money": "the light shifts slowly across the coins so the glints travel "
              "from one to the next, the shadows lengthen a little",
@@ -148,20 +159,17 @@ BEWEGING = {
               "dust drifts through the room, nothing appears in the glass",
     # --- de tien van de tweede ronde ---------------------------------- #
     # train: een leeg perron in de schemering, rails die de mist in lopen.
-    "train": "mist drifts slowly across the rails, the single lamp flickers "
-             "faintly, no train arrives and nobody appears",
+    "train": "thick mist rolls steadily along the platform, the lamp swings and pulses, a warm light grows and fades deep in the tunnel",
     # hair: een lint haar op de wind tegen een bleke ochtendlucht.
     "hair": "the strands of hair ripple and drift on the wind, turning slowly, "
             "the sky behind them brightens a little",
     # stairs: een brede stenen trap die omhoog krult het licht in.
-    "stairs": "the light from above slowly brightens and moves down the steps, "
-              "dust drifts in the shaft of light, nothing climbs them",
+    "stairs": "the light from above pulses and pours down the steps, dust swirls thickly in the shaft, shadows sweep across the treads",
     # forest: hoge bomen in ochtendmist met zonneschachten.
     "forest": "the mist drifts slowly between the trunks, the shafts of sun "
               "shift and sharpen, leaves move in a faint breeze",
     # exam: een lege tafel in een grote zaal, een blad en een potlood.
-    "exam": "the grey light from the high windows shifts slowly across the "
-            "desk, one corner of the paper lifts and settles, nobody enters",
+    "exam": "clouds move past the high windows so the light swings across the desk, the papers lift and flutter in a draught",
     # wolf: een wolf aan de rand van een maanverlichte open plek.
     "wolf": "the wolf's breath drifts visibly in the cold air and its fur "
             "stirs, the grass moves, it stays exactly where it stands",
@@ -183,10 +191,25 @@ BEWEGING = {
 # birds en snakes staat het dier er juist al, en dat moet blijven bewegen. Met de
 # kortere formulering leest het model het als "geen dieren" en houdt het het beest
 # stil of laat het uit beeld lopen.
-ALGEMEEN = ("very slow, gentle, ambient motion. the camera does not move, "
-            "no pan, no zoom, no dolly. keep the composition exactly as it is. "
-            "no new people, faces, animals or objects enter the frame, "
-            "and no text or letters appear. painterly, dreamlike, calm.")
+# **"very slow, gentle, ambient motion" stond hier, en dat was te ver
+# doorgeslagen.** Het idee was goed - een beeld dat ademt, geen filmpje - maar
+# nagemeten op 17 september bewogen twaalf van de drieënveertig animaties minder
+# dan 1,0 op een schaal waar de Runway-vuurvogel 30 haalt. Dat is geen ademen,
+# dat is een tekening. Ruud zag het aan de Reel over `ex` (0,49): tekst op een
+# plaatje.
+#
+# Meet dit na met het gemiddelde absolute verschil tussen beeldjes; dat is één
+# getal en het zegt meteen of er iets beweegt:
+#
+#     np.abs(beeldjes[i] - beeldjes[i - 3]).mean()
+#
+# De camera staat nog steeds stil en er komt nog steeds niets nieuws in beeld -
+# dat waren de goede regels en die blijven. Alleen "very slow, gentle" is weg.
+ALGEMEEN = ("continuous, clearly visible movement throughout the whole shot. "
+            "the camera does not move, no pan, no zoom, no dolly. keep the "
+            "composition exactly as it is. no new people, faces, animals or "
+            "objects enter the frame, and no text or letters appear. "
+            "painterly, dreamlike.")
 
 
 def onderwerpen():
