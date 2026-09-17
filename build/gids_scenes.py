@@ -122,6 +122,50 @@ VERA = ("A woman seen from behind, never her face: long dark wavy hair down her 
         "in loose soft folds. She wears no pale or white gown. ")
 
 SCENES = {
+    "being-chased": VERA + (
+        "She runs away from the camera down a long corridor of tall dark trees "
+        "at dusk, seen from far behind and small in the frame, her cloak "
+        "streaming out behind her in loose folds. Warm light waits at the far "
+        "end of the corridor and long blue shadows sweep across the path as she "
+        "passes. Mist rolls between the trunks, branches move overhead, leaves "
+        "blow past her. Nothing follows her; the path behind is empty."
+    ),
+    "baby": VERA + (
+        "She kneels in a warm dark room, seen from directly behind and close, "
+        "holding a small bundle of soft golden light in her cupped hands and "
+        "slowly rocking it. The light in her hands pulses and breathes, casting "
+        "a moving glow up across her arms and the folds of her cloak. Dust "
+        "drifts through the beam, deep warm dark all around, no other faces."
+    ),
+    "snakes": VERA + (
+        "She stands still in tall dark grass at night, seen from behind and "
+        "slightly above, watching a single long serpent of light coil and "
+        "uncoil slowly through the grass in front of her. Its scales catch a "
+        "low green glow as it moves. The grass sways steadily around them both, "
+        "mist drifts low, her cloak stirs. She is calm and does not step back."
+    ),
+    "spiders": VERA + (
+        "She stands before an enormous web strung between bare branches at "
+        "dawn, seen from behind and small against it, one hand half raised "
+        "towards it. Every thread is beaded with dew; the whole web sways and "
+        "trembles steadily in the breeze and the drops catch the light and "
+        "fall one by one. No spider anywhere. Mist drifts through the branches, "
+        "her cloak moves."
+    ),
+    "cant-move": VERA + (
+        "She sits on the edge of a bed in a dim bedroom at the blue hour, seen "
+        "from directly behind, entirely still while the room moves around her: "
+        "long shadows slide across the floor, the curtain billows steadily at "
+        "the open window, the door swings slowly on its hinge, dust swirls "
+        "through the pale light. She alone does not move."
+    ),
+    "dogs": VERA + (
+        "She walks slowly away from the camera down a long moonlit path, seen "
+        "from far behind, towards a dog waiting at the far end. The dog stands "
+        "up, its tail moving, and trots a little way towards her. Her cloak "
+        "sways as she walks, mist drifts across the path, the grass on either "
+        "side moves in the wind. Cool blue night, warm light around the dog."
+    ),
     "being-naked": VERA + (
         "She walks slowly down the aisle of a large bright hall, away from the "
         "camera, between long rows of empty seats, towards a single empty chair "
