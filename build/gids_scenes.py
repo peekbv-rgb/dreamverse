@@ -122,6 +122,71 @@ VERA = ("A woman seen from behind, never her face: long dark wavy hair down her 
         "in loose soft folds. She wears no pale or white gown. ")
 
 SCENES = {
+    "dying": VERA + (
+        "She walks slowly along a path through long grass at night towards a "
+        "doorway of soft warm light standing open in the middle of a dark "
+        "field, seen from far behind and small in the frame. She does not reach "
+        "it. The grass moves steadily in the wind all around her, mist drifts "
+        "low across the field, the light in the doorway pulses gently and casts "
+        "a long moving glow down the path."
+    ),
+    "mirror": VERA + (
+        "She stands before an old standing mirror in an empty room at dusk, "
+        "seen from directly behind. The mirror holds only light and the outline "
+        "of a window - it does not reflect her. A curtain billows steadily at "
+        "that window, light sweeps across the glass as clouds pass, dust swirls "
+        "through the beam, her cloak stirs in the draught."
+    ),
+    "wedding": VERA + (
+        "She stands at a long table laid with pale linen in an empty hall at "
+        "dusk, seen from directly behind, one hand resting near two rings lying "
+        "side by side. Dried petals lift off the linen and drift through the "
+        "air around her, candle flames flicker along the table, a curtain moves "
+        "at the far window, warm light shifts across the cloth."
+    ),
+    "house": VERA + (
+        "She stands in a garden at dusk looking up at a quiet house, seen from "
+        "directly behind and small in the frame. One upstairs window is lit warm "
+        "gold and the rest are dark; the front door stands slightly open and "
+        "swings a little in the wind. Tall grass and shrubs move steadily around "
+        "her, leaves blow across the path, the lit window flickers."
+    ),
+    "door": VERA + (
+        "She stands in a bare dark room facing a single old door standing ajar "
+        "in the wall, seen from directly behind, one hand half raised towards "
+        "it. Warm light spills through the gap and sweeps across the dark floor "
+        "as the door swings slowly wider and part way back again. Dust swirls "
+        "thickly through the beam, her cloak stirs."
+    ),
+    "phone": VERA + (
+        "She sits at a dark table in a dim room, seen from directly behind, "
+        "reaching towards an old telephone receiver lying off the hook. The cord "
+        "swings slowly where it curls away into shadow, a small warm lamp "
+        "flickers to one side, smoke or steam curls through the light, a curtain "
+        "moves at a window behind her."
+    ),
+    "stranger": VERA + (
+        "She stands inside a dim room facing an open doorway, seen from directly "
+        "behind, while a still silhouette waits in the doorway with warm morning "
+        "light behind it so that no face is visible. The figure does not step "
+        "forward. Light floods past it and sweeps across the floor, dust swirls "
+        "in the beam, a curtain billows, her cloak stirs."
+    ),
+    "school": VERA + (
+        "She walks away from the camera down a long empty school corridor in "
+        "afternoon light, lockers along one side, an open classroom door at the "
+        "far end with light spilling out. Loose papers blow along the floor past "
+        "her, the light swings as clouds pass the high windows, a door at the "
+        "side swings on its hinge, her cloak sways as she walks."
+    ),
+    "wolf": VERA + (
+        "She stands at the edge of a moonlit clearing, seen from directly behind "
+        "and small in the frame, facing a single wolf standing quietly across "
+        "from her. The wolf's breath shows in the cold air and its fur ripples; "
+        "it turns its head and takes one slow step, then stops. Mist rolls "
+        "steadily between the dark trees, the grass moves, her cloak stirs. "
+        "Neither of them is afraid."
+    ),
     "being-chased": VERA + (
         "She runs away from the camera down a long corridor of tall dark trees "
         "at dusk, seen from far behind and small in the frame, her cloak "
