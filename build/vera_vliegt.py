@@ -55,7 +55,20 @@ UIT = WORTEL / "data" / "vera-vliegt"
 # `kling-v3` in `pro`, gelijk met gids_scenes.py en gids_animaties.py.
 # Die drie horen gelijk op te lopen; zie CLAUDE.md over modellen die
 # onder je handen verdwijnen.
-MODEL = "kling-v3"
+# **`kling-v2-5-turbo` in `pro`, en niet `kling-v3` - nagemeten op 17 september.**
+# v3 is nieuwer en geeft hier een plattere, anime-achtige tekening; turbo geeft
+# diepte, echte stof en filmisch licht. Ruud zag dat aan het paardshot voor ik
+# het zag, en noemde het "veel betere kwaliteit".
+#
+# Het was niet de resolutie: dat shot was 720x1280 en de v3-scenes 1080x1920.
+# Het was ook niet de stijlregel - dezelfde scene met de kale stijlregel op v3
+# bleef vlak. Twee proeven om die twee variabelen te scheiden kostten samen een
+# fractie van een ronde van twaalf, en dat is hier de les: verander er een
+# tegelijk en laat het beeld zelf zeggen welke het deed.
+#
+# `pro` en niet `std`: dat is het verschil tussen 1080x1920 en 720x1280, en de
+# Reels zijn 1080 breed.
+MODEL = "kling-v2-5-turbo"
 MODUS = "pro"
 # Tien en niet vijf, sinds 17 september. `kling-v2-5-turbo` accepteert allebei,
 # en een Reel voor TikTok wil 12 tot 18 seconden - dat komt uit monteren, en dan

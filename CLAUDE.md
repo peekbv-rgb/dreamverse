@@ -1090,6 +1090,36 @@ kabel op.
 **`cfg_scale` staat hier op 0,7 en bij image2video op 0,5.** Daar moest een
 bestaand beeld herkenbaar blijven; hier is er geen beeld om te bewaren.
 
+### Het nieuwste model is niet het beste model
+
+**`kling-v2-5-turbo` in `pro`, en niet `kling-v3`.** Ruud zag het aan het
+paardshot voordat ik het zag: *"de kwaliteit van de video op paard is veel beter
+dan de andere animaties."* Dat klopte, en het was leerzaam waaróm.
+
+Niet de resolutie, en dat was de eerste verrassing: het paard was **720 × 1280**
+en de v3-scènes **1080 × 1920**. Technisch was het lievelingsshot dus de
+mindere. Wat hij zag was de hand: turbo geeft diepte, echte stof en filmisch
+licht, v3 geeft een plattere, anime-achtige tekening.
+
+**Twee variabelen tegelijk veranderd, dus twee proeven om ze te scheiden.** Bij
+het paard hoorden een ander model én een kalere stijlregel. Dezelfde scène op v3
+met die kale stijlregel bleef vlak; dezelfde scène op turbo met de volle
+stijlregel werd rijk. **Het is het model.** Die twee proeven kostten samen een
+fractie van een ronde van twaalf - verander er één tegelijk en laat het beeld
+zelf zeggen welke het deed.
+
+En `pro` en niet `std`: dat is het verschil tussen 1080 × 1920 en 720 × 1280.
+De Reels zijn 1080 breed, dus `std` betekent opschalen.
+
+**De les die hier blijft staan:** een nieuwer versienummer is een andere smaak,
+geen betere. Bij een model dat beeld maakt is "nieuwer" geen argument - zet ze
+naast elkaar op dezelfde scène en kijk.
+
+**En herhaling weegt zwaarder dan precisie.** In de eerste turbo-proef stond
+*"a dark cloak"* en kwam er een lichte japon uit. Nu staat `dark` er drie keer
+in plus *"She wears no pale or white gown"*, en dat is bij een beeldmodel geen
+slordigheid maar techniek.
+
 ### Het Kling-model verdwijnt onder je handen
 
 **Twee keer op één dag, 17 september.** `kling-v1` deed op 14 september

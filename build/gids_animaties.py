@@ -65,7 +65,20 @@ UIT_STAAND = WORTEL / "data" / "gids-animatie-staand"
 # er iets gerenderd wordt. De hele mislukte ronde van twaalf kostte dan ook nul
 # eenheden. Zelfde methode als in `vera_vliegt.py`: niet de documentatie lezen
 # maar het eindpunt het zelf laten zeggen.
-MODEL = "kling-v3"
+# **`kling-v2-5-turbo` in `pro`, en niet `kling-v3` - nagemeten op 17 september.**
+# v3 is nieuwer en geeft hier een plattere, anime-achtige tekening; turbo geeft
+# diepte, echte stof en filmisch licht. Ruud zag dat aan het paardshot voor ik
+# het zag, en noemde het "veel betere kwaliteit".
+#
+# Het was niet de resolutie: dat shot was 720x1280 en de v3-scenes 1080x1920.
+# Het was ook niet de stijlregel - dezelfde scene met de kale stijlregel op v3
+# bleef vlak. Twee proeven om die twee variabelen te scheiden kostten samen een
+# fractie van een ronde van twaalf, en dat is hier de les: verander er een
+# tegelijk en laat het beeld zelf zeggen welke het deed.
+#
+# `pro` en niet `std`: dat is het verschil tussen 1080x1920 en 720x1280, en de
+# Reels zijn 1080 breed.
+MODEL = "kling-v2-5-turbo"
 MODUS = "pro"
 # Tien en niet vijf, sinds 17 september: `kling-v3` doet het, de Reels zijn acht
 # seconden en het inzichtformaat vijftien. Met vijf seconden moet er heen en

@@ -65,7 +65,20 @@ UIT = WORTEL / "data" / "gids-animatie-staand"
 # Dezelfde hoogste categorie als in gids_animaties.py; die twee horen gelijk op
 # te lopen. 17 eenheden per clip bij pro en tien seconden - nagemeten, want de
 # schatting in het script stond nog op de 3,5 van het opgeheven model.
-MODEL = "kling-v3"
+# **`kling-v2-5-turbo` in `pro`, en niet `kling-v3` - nagemeten op 17 september.**
+# v3 is nieuwer en geeft hier een plattere, anime-achtige tekening; turbo geeft
+# diepte, echte stof en filmisch licht. Ruud zag dat aan het paardshot voor ik
+# het zag, en noemde het "veel betere kwaliteit".
+#
+# Het was niet de resolutie: dat shot was 720x1280 en de v3-scenes 1080x1920.
+# Het was ook niet de stijlregel - dezelfde scene met de kale stijlregel op v3
+# bleef vlak. Twee proeven om die twee variabelen te scheiden kostten samen een
+# fractie van een ronde van twaalf, en dat is hier de les: verander er een
+# tegelijk en laat het beeld zelf zeggen welke het deed.
+#
+# `pro` en niet `std`: dat is het verschil tussen 1080x1920 en 720x1280, en de
+# Reels zijn 1080 breed.
+MODEL = "kling-v2-5-turbo"
 MODUS = "pro"
 SECONDEN = 10
 VERHOUDING = "9:16"
@@ -100,9 +113,13 @@ NEGATIEF = ("face, facial features, portrait, close-up, recognisable person, "
 # En geen beeldspraak over die mantel. "Trailing behind her in one long line"
 # leverde ooit een vrouw aan een kabel op; er staat hier dus wat er letterlijk
 # te zien moet zijn.
+# `dark` staat er drie keer in, en dat is geen slordigheid: de eerste proef op
+# turbo leverde een lichte japon op terwijl er "a dark cloak" stond. Bij een
+# beeldmodel telt herhaling zwaarder dan precisie.
 VERA = ("A woman seen from behind, never her face: long dark wavy hair down her "
-        "back, a fine gold headpiece with small hanging coins, a dark cloak "
-        "that moves in loose soft folds. ")
+        "back, a fine gold headpiece with small hanging coins, and a heavy "
+        "dark charcoal-black cloak over dark clothing, the dark cloak moving "
+        "in loose soft folds. She wears no pale or white gown. ")
 
 SCENES = {
     "being-naked": VERA + (
