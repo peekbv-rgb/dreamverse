@@ -443,6 +443,67 @@ SHOTS = {
         "Dreamlike illustration, flowing ink and watercolour, soft luminous "
         "glow, painterly. No text."
     )},
+    "racefiets": {"negatief": BASIS + (
+        ", front view, facing camera, peloton, other cyclists, team car, race "
+        "numbers, brand logos, sponsor jersey, traffic, cloak, cape, long dress"
+    ), "prompt": VERA_SPORT + (
+        "She rides a slender dark road bike along an empty coastal road at "
+        "dawn, seen from directly behind and slightly below, moving away from "
+        "the camera. The wheels spin, her ponytail streams back under the rim "
+        "of a dark helmet with a fine gold band and small hanging coins around "
+        "it, the road surface streaks past beneath. Grass and low shrubs blur "
+        "at the edges, thin sea mist to one side. Warm amber and rose along the "
+        "horizon, deep violet above. Faint concentric rings of light trail "
+        "behind the wheels. The camera holds still while she pulls away. "
+        "Dreamlike illustration, flowing ink and watercolour, soft luminous "
+        "glow, painterly. No text."
+    )},
+    "motor": {"negatief": BASIS + (
+        ", front view, facing camera, brand logos, sponsor decals, second "
+        "motorcycle, crash, fire, traffic, crowd, long dress, loose cape "
+        "caught in the wheel"
+    ), "prompt": (
+        "Seen from directly behind and just above: a woman riding a dark "
+        "unmarked motorcycle at speed along an empty mountain road at dusk, "
+        "leaning into a long curve. Only the back of her dark helmet is "
+        "visible, a fine gold band with small hanging coins around it and long "
+        "dark hair beneath. The road streaks past, the valley drops away to one "
+        "side, warm tail light glows, heat shimmers off the surface. Warm amber "
+        "and rose along the horizon, deep violet above. Faint concentric rings "
+        "of light trail behind her. The camera holds still while she pulls "
+        "away. Dreamlike illustration, flowing ink and watercolour, soft "
+        "luminous glow, painterly. No text."
+    )},
+    "skateboard": {"negatief": BASIS + (
+        ", front view, facing camera, crowd, other skaters, graffiti tags with "
+        "letters, brand logos, traffic, falling, crash, cloak, cape, long dress"
+    ), "prompt": VERA_SPORT + (
+        "She rides a skateboard down a long empty street at dawn, seen from "
+        "directly behind and low to the ground, rolling away from the camera. "
+        "One foot pushes off and returns to the deck, her ponytail swings, the "
+        "wheels blur and the road surface streaks past just beneath the camera. "
+        "Low buildings and trees stand quiet on both sides, mist hangs at the "
+        "far end of the street. Warm amber light down the road, deep violet "
+        "shadows. Faint concentric rings of light spreading behind the wheels. "
+        "The camera holds still. Dreamlike illustration, flowing ink and "
+        "watercolour, soft luminous glow, painterly. No text."
+    )},
+    "cockpit": {"negatief": BASIS + (
+        ", front view, facing camera, second pilot, passengers, brand logos, "
+        "airline livery, crash, fire, storm, warning lights, cluttered "
+        "instruments with readable numbers"
+    ), "prompt": (
+        "Seen from directly behind her seat: a woman alone at the controls of a "
+        "small aircraft, both hands on the yoke, framed by the cockpit windows. "
+        "Long dark wavy hair down her back, a fine gold headpiece with small "
+        "hanging coins, a heavy dark charcoal-black cloak over the seat behind "
+        "her. Beyond the glass an unbroken sea of cloud streams steadily past "
+        "at dawn, the horizon glowing warm amber and rose, deep violet above. "
+        "Soft light from the instruments pulses gently across the panel, the "
+        "yoke moves slightly under her hands. Faint concentric rings of light "
+        "in the air outside. The camera holds still. Dreamlike illustration, "
+        "flowing ink and watercolour, soft luminous glow, painterly. No text."
+    )},
 }
 
 
