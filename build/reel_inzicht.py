@@ -86,6 +86,38 @@ HERKADER = {
         "en": "It may be about who you were back then.",
         "nl": "Misschien gaat het over wie jij toen was.",
     },
+    "being-chased": {
+        "en": "It may be less about what was behind you than what you keep ahead of.",
+        "nl": "Misschien gaat het minder om wat achter je zat dan om wat je voorblijft.",
+    },
+    "baby": {
+        "en": "It may be less about a child than about what depends on you.",
+        "nl": "Misschien gaat het minder om een kind dan om wat van jou afhangt.",
+    },
+    "teeth-falling-out": {
+        "en": "It may be less about your teeth than about what you were about to say.",
+        "nl": "Misschien gaat het minder om je tanden dan om wat je wilde zeggen.",
+    },
+    "being-late": {
+        "en": "It may be less about being late than about what kept getting in the way.",
+        "nl": "Misschien gaat het minder om te laat zijn dan om wat er steeds tussen kwam.",
+    },
+    "snakes": {
+        "en": "It may be less about the snake than about how calm you were.",
+        "nl": "Misschien gaat het minder om de slang dan om hoe rustig jij was.",
+    },
+    "being-naked": {
+        "en": "It may be less about being seen than about who actually noticed.",
+        "nl": "Misschien gaat het minder om gezien worden dan om wie het opviel.",
+    },
+    "falling": {
+        "en": "It may be less about falling than about whether you let go.",
+        "nl": "Misschien gaat het minder om vallen dan om of je losliet.",
+    },
+    "water": {
+        "en": "It may be less about the water than about where you were standing.",
+        "nl": "Misschien gaat het minder om het water dan om waar jij stond.",
+    },
 }
 
 AFSLUITER = {
