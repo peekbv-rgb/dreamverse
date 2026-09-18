@@ -53,9 +53,23 @@ SHOTS = WORTEL / "data" / "vera-vliegt"
 DOEL = WORTEL / "data" / "reels-vera"
 MUZIEK = WORTEL / "data" / "muziek"
 
+def tellen_van(reeks, taal):
+    """De tellen van een reeks, met de lengtes van deze taal erin.
+
+    **Een gesproken shot is in twee talen niet even lang.** Vera doet er in het
+    Nederlands 5,7 seconden over waar het Engels op 4,8 zit, en met een vaste
+    tel valt haar laatste zin er gewoon af - zonder dat iets het meldt, want
+    het beeld loopt netjes door. `sec_per_taal` in de reeks zegt per shot welke
+    lengte bij welke taal hoort; wat er niet in staat blijft zoals het staat.
+    """
+    per = REEKSEN[reeks].get("sec_per_taal", {})
+    return [(slug, per.get(slug, {}).get(taal, sec), regels)
+            for slug, sec, regels in REEKSEN[reeks]["tellen"]]
+
+
 # De lengte komt uit de reeks zelf; niet elke Reel is even lang.
-def duur_van(reeks):
-    return sum(sec for _, sec, _ in REEKSEN[reeks]["tellen"])
+def duur_van(reeks, taal):
+    return sum(sec for _, sec, _ in tellen_van(reeks, taal))
 
 KOP = ("georgiai.ttf", "Georgia Italic.ttf", "DejaVuSerif-Italic.ttf")
 BODY = ("segoeui.ttf", "DejaVuSans.ttf")
@@ -67,9 +81,22 @@ VET = ("segoeuisb.ttf", "segoeuib.ttf", "DejaVuSans-Bold.ttf")
 # Dat is dezelfde vorm als de promo, en het werkt omdat de kijker de tweede
 # helft al wil hebben voordat hij er is.
 # Clips die niet in data/vera-vliegt/ staan.
+#
+# **Een waarde mag een woordenboek per taal zijn.** Bij `vera-intro` moet dat:
+# die clip is Vera die praat, en in de Nederlandse Reel stond haar Engelse
+# opname onder Nederlandse tekst in beeld. Dat is precies het soort fout dat
+# niets meldt - het beeld klopt, de tekst klopt, alleen wat je hoort niet.
 ELDERS = {
-    "vera-intro": WORTEL / "data" / "vera-frames" / "origineel-en.mp4",
+    "vera-intro": {
+        "en": WORTEL / "data" / "vera-frames" / "origineel-en.mp4",
+        "nl": WORTEL / "data" / "vera-frames" / "origineel-nl.mp4",
+    },
 }
+
+
+def elders(slug, taal):
+    p = ELDERS.get(slug)
+    return p.get(taal) if isinstance(p, dict) else p
 
 REEKSEN = {
     # De kennismaking, om vast te pinnen. Vier tellen en twaalf seconden.
@@ -104,6 +131,8 @@ REEKSEN = {
         # Haar opname staat rond -22 dB; zonder optillen valt ze weg
         # zodra de muziek hoorbaar wordt gezet.
         "stem_luider": 7.0,
+        # Gemeten: origineel-en.mp4 duurt 4,80 s, origineel-nl.mp4 5,67 s.
+        "sec_per_taal": {"vera-intro": {"nl": 5.7}},
         "kader": ("vera-intro",),
     },
 
@@ -237,13 +266,13 @@ def maak(naam, taal):
 
     # Per shot één keer inlezen, ook als hij twee tellen bedient.
     ruw = {}
-    for slug, _, _ in reeks["tellen"]:
+    for slug, _, _ in tellen_van(naam, taal):
         if slug not in ruw:
             # Een tel mag ook naar een bestand elders wijzen - de
             # kennismakingsclip staat in data/vera-frames/ en niet bij de
             # text2video-shots. `ELDERS` is de uitzonderingenlijst; alles wat
             # er niet in staat is gewoon een shot.
-            p = ELDERS.get(slug) or (SHOTS / (slug + ".mp4"))
+            p = elders(slug, taal) or (SHOTS / (slug + ".mp4"))
             if not p.exists():
                 raise SystemExit("Geen shot %s gevonden (%s)." % (slug, p))
             ruw[slug] = lees(p)
@@ -253,7 +282,7 @@ def maak(naam, taal):
     # per shot één keer uitgerekt over de volle tijd die hij in beeld is, en
     # daarna in stukken geknipt.
     duur = {}
-    for slug, sec, _ in reeks["tellen"]:
+    for slug, sec, _ in tellen_van(naam, taal):
         duur[slug] = duur.get(slug, 0.0) + sec
     stroom = {s: reels.uitgerekt(ruw[s], int(FPS * duur[s])) for s in ruw}
     op = {s: 0 for s in ruw}
@@ -263,8 +292,9 @@ def maak(naam, taal):
         ffmpeg_params=["-crf", "21", "-profile:v", "high",
                        "-movflags", "+faststart"])
     try:
-        for i, (slug, sec, regels) in enumerate(reeks["tellen"]):
-            laatste = i == len(reeks["tellen"]) - 1
+        tellen = tellen_van(naam, taal)
+        for i, (slug, sec, regels) in enumerate(tellen):
+            laatste = i == len(tellen) - 1
             laag = overlaag(regels[taal],
                             reeks["knop"][taal] if laatste else None, laatste)
             for _ in range(int(FPS * sec)):
@@ -287,12 +317,12 @@ def maak(naam, taal):
     if reeks.get("stem"):
         stem_slug = reeks["stem"]
         begin = 0.0
-        for slug, sec, _ in reeks["tellen"]:
+        for slug, sec, _ in tellen_van(naam, taal):
             if slug == stem_slug:
                 break
             begin += sec
-        duur = sum(sec for _, sec, _ in reeks["tellen"])
-        bron = ELDERS.get(stem_slug) or (SHOTS / (stem_slug + ".mp4"))
+        duur = duur_van(naam, taal)
+        bron = elders(stem_slug, taal) or (SHOTS / (stem_slug + ".mp4"))
         tijdelijk = doel.with_name(doel.stem + "-stem.mp4")
         ff = imageio_ffmpeg.get_ffmpeg_exe()
         subprocess.run([
@@ -394,8 +424,8 @@ def main():
         return 1
 
     print("%s, %.0f seconden, taal %s."
-          % (args.reeks, duur_van(args.reeks), args.taal))
-    for slug, sec, regels in REEKSEN[args.reeks]["tellen"]:
+          % (args.reeks, duur_van(args.reeks, args.taal), args.taal))
+    for slug, sec, regels in tellen_van(args.reeks, args.taal):
         print("  %-9s %4.1f s  %s" % (slug, sec, regels[args.taal] or "(merk en knop)"))
     if not args.ja:
         print("\nNiets gedaan. Geef --ja mee.")
@@ -408,7 +438,7 @@ def main():
             print("Dat nummer staat niet in data/muziek/: %s" % nummer.name)
             return 1
         reels.geluid_eronder(
-            doel, nummer, duur_van(args.reeks),
+            doel, nummer, duur_van(args.reeks, args.taal),
             # -3 dB en niet -6: onder een gemengd spoor zakt muziek
             # verder weg dan wanneer ze het hele spoor is.
             luider=REEKSEN[args.reeks].get("luider", -3.0),

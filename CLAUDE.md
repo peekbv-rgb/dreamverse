@@ -980,6 +980,16 @@ dB zachter dan hij was.
   ziet er in een bestandslijst precies zo uit als een bestand met geluid. Zelfde
   controle als bij de Reels: `Audio:` zegt of er een spoor is, `mean_volume:` of
   er ook iets te horen valt.
+- **De bronclip heeft ook een taal, en `ELDERS` wees altijd naar het Engels.**
+  De tekst in beeld kwam keurig in het Nederlands, de knop ook, maar Vera sprak
+  Engels - en dat meldt zich nergens, want beeld en tekst kloppen allebei.
+  `origineel-nl.mp4` stond er al naast. `elders(slug, taal)` kiest nu per taal.
+- **En die twee opnames zijn niet even lang.** Engels duurt 4,80 s, Nederlands
+  5,67 s. Met een vaste tel van 4,8 valt haar laatste zin er in het Nederlands
+  gewoon af. `sec_per_taal` in de reeks zet die tel per taal; de Nederlandse
+  Reel is daarmee 12,9 seconden en de Engelse 12,0. **Meet die lengte opnieuw
+  als er een nieuwe opname komt** - het beeld loopt door of de tel nu klopt of
+  niet.
 - **Rendeer één keer, meng daarna per kandidaat.** Het renderen kost minuten,
   muziek eronder leggen kost seconden (`-c:v copy`). Drie nummers naast elkaar
   zetten is dus geen drie keer het werk.
