@@ -56,8 +56,8 @@ VEILIG_BOVEN, VEILIG_ONDER = reels.VEILIG_BOVEN, reels.VEILIG_ONDER
 KANTLIJN = reels.KANTLIJN
 VOID, INK, SITE = reels.VOID, reels.INK, reels.SITE
 
-BRON = WORTEL / "data" / "vera-vliegt"
-DOEL = WORTEL / "data" / "promo-vera"
+BRON = WORTEL / "data" / "2-bron" / "vera-shots"
+DOEL = WORTEL / "data" / "1-posten" / "promo"
 
 SECONDEN_PER_BEELD = 5
 

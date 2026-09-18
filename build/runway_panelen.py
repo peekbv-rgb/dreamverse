@@ -33,7 +33,7 @@ load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 import accounts   # noqa: E402
 import kling      # noqa: E402
 
-UIT = Path(__file__).resolve().parent.parent / "data" / "vergelijk"
+UIT = Path(__file__).resolve().parent.parent / "data" / "4-oud" / "vergelijk"
 RATIO = "1920:1080"   # 16:9, dezelfde verhouding als Kling levert
 
 

@@ -1327,15 +1327,36 @@ Dit is twee keer misgegaan en allebei de keren op dezelfde manier: de map die
 bovenaan in de verkenner staat is niet de map waar je moet zijn. Dat is geen
 vergissing van de lezer maar van de namen.
 
+**Op 18 september is `data/` opnieuw ingedeeld**, want er stonden Reels in
+elf mappen door elkaar en de bronmappen sorteerden bovenaan. Nu vier bakken,
+met een cijfer ervoor zodat de verkenner de goede bovenaan zet. De leeswijzer
+staat in `data/LEESMIJ.md`, naast de bestanden zelf - dat is de plek waar je
+hem nodig hebt.
+
 | map | wat erin zit |
 |---|---|
-| **`data/reels/`** | 43 gekaderde Reels, Engels, mét muziek en caption — **hieruit wordt gepost** |
-| `data/reels-product/` | de Reel die zegt wát Dreamverse is; deze hoort vastgepind |
-| `data/promo-vera/` | de promo met Vera |
-| `data/reels-staand/` | dezelfde 43, schermvullend in plaats van gekaderd |
-| `data/reels-nl/`, `data/reels-staand-nl/` | Nederlands, reserve — niet op dit account |
-| `data/gids-animatie/`, `-staand/` | **bron.** Ruwe Kling-clips van 5 seconden |
-| `data/vera-vliegt/` | **bron.** De text2video-shots voor de promo |
+| **`data/1-posten/gids-en/`** | 43 gekaderde Reels, Engels, mét muziek en caption — **hieruit wordt gepost** |
+| `data/1-posten/gids-en-vullend/` | dezelfde 43, schermvullend in plaats van gekaderd |
+| `data/1-posten/gids-nl/`, `gids-nl-vullend/` | Nederlands, reserve — niet op dit account |
+| `data/1-posten/inzicht/` | de 20 Reels van vijftien seconden |
+| `data/1-posten/vera/` | strand, motor en de kennismaking |
+| `data/1-posten/product/` | de Reel die zegt wát Dreamverse is; deze hoort vastgepind |
+| `data/1-posten/promo/` | de promo met Vera |
+| `data/2-bron/gids-animatie/`, `-staand/` | **bron.** Ruwe Kling-clips |
+| `data/2-bron/gids-beeld-staand/` | **bron.** De stilstaande gidsbeelden, staand |
+| `data/2-bron/vera-shots/` | **bron.** De text2video-shots met Vera |
+| `data/2-bron/vera-opnames/` | **bron.** Haar gesproken introductie, en/nl |
+| `data/3-werk/` | de gerenderde video's **zonder muziek**; mag weg |
+| `data/4-oud/` | vergelijkingsbeelden en oude proeven |
+
+`panels/`, `episodes/`, `dreamverse.db`, `usage.jsonl` en `muziek/` zijn niet
+meeverhuisd: dat is geen werkmateriaal maar wat de app draaiende houdt.
+
+**De vier sets staan nu als kaart in `reels.py` en worden niet meer uit
+elkaars naam afgeleid.** Er stond `DOEL.name + "-staand"` en daarna
+`+ "-nl"`, wat werkte zolang de mappen naar elkaar vernoemd waren. `SETS`
+koppelt (taal, opmaak) aan een mapnaam, en dat is meteen de plek waar in één
+oogopslag staat welke vier er zijn.
 
 **Er wordt uit de gekaderde set gepost, en dat is besloten op 15 september op
 het raster zelf.** Beide sets zijn compleet en allebei goed; de keuze gaat niet

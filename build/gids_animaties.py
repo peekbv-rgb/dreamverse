@@ -49,10 +49,10 @@ import kling                                                     # noqa: E402
 
 ONDERWERPEN = WORTEL / "knowledge" / "droomgids"
 BEELDEN = WORTEL / "static" / "gids"
-UIT = WORTEL / "data" / "gids-animatie"
+UIT = WORTEL / "data" / "2-bron" / "gids-animatie"
 # De staande set, voor de schermvullende Reels. Zie gids_beelden.py --staand.
-BEELDEN_STAAND = WORTEL / "data" / "gids-staand"
-UIT_STAAND = WORTEL / "data" / "gids-animatie-staand"
+BEELDEN_STAAND = WORTEL / "data" / "2-bron" / "gids-beeld-staand"
+UIT_STAAND = WORTEL / "data" / "2-bron" / "gids-animatie-staand"
 
 # **Het model verdwijnt onder je handen.** Op 14 september deed `kling-v2-1`
 # dit werk; op 17 september geeft datzelfde model `1203 discontinued`, net als

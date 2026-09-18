@@ -60,7 +60,7 @@ load_dotenv(WORTEL / ".env")
 
 import kling                                                     # noqa: E402
 
-UIT = WORTEL / "data" / "gids-animatie-staand"
+UIT = WORTEL / "data" / "2-bron" / "gids-animatie-staand"
 
 # Dezelfde hoogste categorie als in gids_animaties.py; die twee horen gelijk op
 # te lopen. 17 eenheden per clip bij pro en tien seconden - nagemeten, want de

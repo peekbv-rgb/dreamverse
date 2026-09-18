@@ -57,7 +57,28 @@ from og_beeld import letter  # noqa: E402  - dezelfde letterzoeker als het og-be
 
 ONDERWERPEN = WORTEL / "knowledge" / "droomgids"
 BEELDEN = WORTEL / "static" / "gids"
-DOEL = WORTEL / "data" / "reels"
+# Waar het heen gaat, met de nieuwe indeling van `data/`.
+#
+# `1-posten` is wat je plaatst, `2-bron` is ruw materiaal en `3-werk` zijn de
+# tussenstappen. De cijfers staan er zodat de map die je nodig hebt bovenaan
+# staat in de verkenner: twee keer is er uit de verkeerde map gepost omdat
+# `gids-animatie` alfabetisch boven `reels-staand` stond.
+POSTEN = WORTEL / "data" / "1-posten"
+BRON = WORTEL / "data" / "2-bron"
+WERK = WORTEL / "data" / "3-werk"
+
+# Taal en opmaak bepalen samen de map. Dit stond eerder als het aanplakken van
+# "-staand" en "-nl" achter de mapnaam, en dat kan niet meer nu de mappen niet
+# meer naar elkaar vernoemd zijn - en het is ook duidelijker zo: hier staat in
+# één oogopslag welke vier sets er zijn.
+SETS = {
+    ("en", False): "gids-en",
+    ("en", True):  "gids-en-vullend",
+    ("nl", False): "gids-nl",
+    ("nl", True):  "gids-nl-vullend",
+}
+
+DOEL = POSTEN / SETS[("en", False)]
 
 # De stille versies staan een niveau dieper, en dat is met opzet omgedraaid.
 #
@@ -66,10 +87,10 @@ DOEL = WORTEL / "data" / "reels"
 # wie de bovenste map opende pakte de versie die hij níet wil hebben, en de
 # goede zat een niveau dieper. Nu staat in `data/reels/` wat je post - video mét
 # muziek, plus de caption ernaast - en is `stil/` de werkmap.
-STIL = DOEL / "stil"
+STIL = WERK / SETS[("en", False)]
 # De animaties uit build/gids_animaties.py. Is er geen bestand voor een
 # onderwerp, dan valt maak() terug op de zoom over het stilstaande beeld.
-ANIMATIES = DOEL.parent / "gids-animatie"
+ANIMATIES = BRON / "gids-animatie"
 
 BREEDTE, HOOGTE = 1080, 1920
 FPS, SECONDEN = 30, 8
@@ -256,7 +277,7 @@ def achtergrond(titel, vraag, link):
 
 
 # De staande animaties uit `build/gids_animaties.py --staand`.
-ANIMATIES_STAAND = DOEL.parent / "gids-animatie-staand"
+ANIMATIES_STAAND = BRON / "gids-animatie-staand"
 
 # Gezet door main(); maak() leest hem.
 STAAND = False
@@ -910,15 +931,11 @@ def main(argv=None):
     # genoeg; de rest van het script kent alleen DOEL en STIL.
     global DOEL, STIL, STAAND
     STAAND = args.staand
-    if STAAND:
-        # Een eigen map, want dit is een andere opmaak van hetzelfde onderwerp.
-        # In dezelfde map zou de tweede run de eerste overschrijven, net als bij
-        # de talen.
-        DOEL = DOEL.parent / (DOEL.name + "-staand")
-        STIL = DOEL / "stil"
-    if args.taal == "nl":
-        DOEL = DOEL.parent / (DOEL.name + "-nl")
-        STIL = DOEL / "stil"
+    # Vier sets, en elke set een eigen map: een andere taal of een andere
+    # opmaak van hetzelfde onderwerp zou anders de vorige overschrijven.
+    set_ = SETS[(args.taal, bool(STAAND))]
+    DOEL = POSTEN / set_
+    STIL = WERK / set_
 
     rijen = list(onderwerpen(set(args.slugs) or None))
     if not rijen:

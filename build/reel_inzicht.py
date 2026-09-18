@@ -66,9 +66,9 @@ VOID, INK, ZACHT = reels.VOID, reels.INK, reels.ZACHT
 SITE = reels.SITE
 
 ONDERWERPEN = WORTEL / "knowledge" / "droomgids"
-ANIMATIES = WORTEL / "data" / "gids-animatie-staand"
+ANIMATIES = WORTEL / "data" / "2-bron" / "gids-animatie-staand"
 BEELDEN = WORTEL / "static" / "gids"
-DOEL = WORTEL / "data" / "reels-inzicht"
+DOEL = WORTEL / "data" / "1-posten" / "inzicht"
 MUZIEK = WORTEL / "data" / "muziek"
 
 SECONDEN = 15
@@ -139,7 +139,7 @@ HERKADER = {
 # breekt de band tussen de Reel en de pagina een stukje verder, en dat was op
 # 17 september een bewuste prijs en geen gewoonte.
 EIGEN_BEELD = {
-    "horse": WORTEL / "data" / "vera-vliegt" / "strand.mp4",
+    "horse": WORTEL / "data" / "2-bron" / "vera-shots" / "strand.mp4",
 }
 
 AFSLUITER = {

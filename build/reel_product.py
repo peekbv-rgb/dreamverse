@@ -57,7 +57,7 @@ VOID, INK, ZACHT, MERK = reels.VOID, reels.INK, reels.ZACHT, reels.MERK
 SITE = reels.SITE
 
 CLIPS = WORTEL / "static" / "voorbeelden"
-DOEL = WORTEL / "data" / "reels-product"
+DOEL = WORTEL / "data" / "1-posten" / "product"
 
 # Drie tellen, elk met een clip en een regel. De vuurvogel staat achteraan:
 # dat is het sterkste beeld en het laatste wat iemand ziet voordat hij besluit

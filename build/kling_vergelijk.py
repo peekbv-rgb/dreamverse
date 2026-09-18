@@ -37,7 +37,7 @@ import accounts          # noqa: E402
 import kling             # noqa: E402
 import video             # noqa: E402
 
-UIT = Path(__file__).resolve().parent.parent / "data" / "vergelijk"
+UIT = Path(__file__).resolve().parent.parent / "data" / "4-oud" / "vergelijk"
 
 
 def paneel_bestand(uid, droom, index):

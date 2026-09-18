@@ -49,8 +49,8 @@ KANTLIJN = reels.KANTLIJN
 VOID, INK = reels.VOID, reels.INK
 SITE = reels.SITE
 
-SHOTS = WORTEL / "data" / "vera-vliegt"
-DOEL = WORTEL / "data" / "reels-vera"
+SHOTS = WORTEL / "data" / "2-bron" / "vera-shots"
+DOEL = WORTEL / "data" / "1-posten" / "vera"
 MUZIEK = WORTEL / "data" / "muziek"
 
 def tellen_van(reeks, taal):
@@ -88,8 +88,8 @@ VET = ("segoeuisb.ttf", "segoeuib.ttf", "DejaVuSans-Bold.ttf")
 # niets meldt - het beeld klopt, de tekst klopt, alleen wat je hoort niet.
 ELDERS = {
     "vera-intro": {
-        "en": WORTEL / "data" / "vera-frames" / "origineel-en.mp4",
-        "nl": WORTEL / "data" / "vera-frames" / "origineel-nl.mp4",
+        "en": WORTEL / "data" / "2-bron" / "vera-opnames" / "origineel-en.mp4",
+        "nl": WORTEL / "data" / "2-bron" / "vera-opnames" / "origineel-nl.mp4",
     },
 }
 

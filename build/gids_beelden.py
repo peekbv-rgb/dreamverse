@@ -64,7 +64,7 @@ VERHOUDING = "16:9"
 # Ze gaan naar `data/` en niet naar `static/`: ze worden nergens geserveerd,
 # alleen door build/reels.py gelezen. In `static/` zouden ze bij elke deploy
 # meegaan zonder dat iemand ze opvraagt.
-DOEL_STAAND = WORTEL / "data" / "gids-staand"
+DOEL_STAAND = WORTEL / "data" / "2-bron" / "gids-beeld-staand"
 VERHOUDING_STAAND = "9:16"
 
 PROMPTS = {

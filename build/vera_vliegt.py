@@ -50,7 +50,7 @@ load_dotenv(WORTEL / ".env")
 
 import kling                                                     # noqa: E402
 
-UIT = WORTEL / "data" / "vera-vliegt"
+UIT = WORTEL / "data" / "2-bron" / "vera-shots"
 
 # `kling-v3` in `pro`, gelijk met gids_scenes.py en gids_animaties.py.
 # Die drie horen gelijk op te lopen; zie CLAUDE.md over modellen die
