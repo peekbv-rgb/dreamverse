@@ -95,7 +95,9 @@ REEKSEN = {
             ("strand", 3.0, {"en": None, "nl": None}),
         ],
         "knop": {"en": "Start free", "nl": "Gratis beginnen"},
-        "nummer": "mixkit-trap-hamza-267.mp3",
+        # Hetzelfde nummer als de gidsreels in de stemming `licht` - dat is
+        # de Reel waarvan Ruud zei dat de muziek beter stond dan de trap.
+        "nummer": "mixkit-house-vibes-129.mp3",
         # Het geluid van de clip zelf blijft staan: zij praat erin.
         "behoud": True,
         "stem": "vera-intro",
