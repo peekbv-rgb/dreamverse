@@ -251,8 +251,41 @@ def slot(taal):
     return laag
 
 
+# Vanaf hoeveel bron je mag vertragen in plaats van heen en weer te spelen.
+#
+# 0,6 betekent: een clip die minstens zestig procent van de lengte heeft wordt
+# uitgerekt (hooguit ~1,7x langzamer). Daaronder wordt het schokkerig en is
+# heen-en-weer het minste kwaad.
+# 0,45 en niet 0,6: de liggende gidsanimaties zijn vijf seconden en de
+# gekaderde Reel acht, dus 121 beeldjes in 240 - net onder een hogere
+# drempel. Twee keer vertraagd is bij deze rustige beelden beter dan
+# achteruit lopen, en dat is de afweging: liever iets te traag dan iets
+# dat de verkeerde kant op gaat.
+GENOEG = 0.45
+
+
 def beeldjes(pad, aantal):
-    """Heen en terug, zodat vijf seconden animatie vijftien seconden vult."""
+    """De clip uitrekken tot `aantal` beeldjes, of anders heen en weer.
+
+    **Heen en weer stond hier eerst altijd, en dat was fout.** Die truc komt uit
+    `reels.py` en werkt daar omdat de beweging in een gidsanimatie traag en
+    omkeerbaar is: mist, water, licht. Achteruit ziet er dan niet achteruit uit.
+
+    Bij een shot met een *richting* klopt dat niet. Ruud zag het meteen in de
+    Reel over paarden: **"paard gaat achteruitlopen"**, en even later **"golven
+    ook de verkeerde kant op"**. Tien seconden bron in vijftien seconden Reel is
+    tien vooruit en vijf achteruit, en een paard dat achteruit loopt is het
+    eerste wat iemand ziet.
+
+    Vertragen heeft dat probleem niet: dezelfde beeldjes in dezelfde volgorde,
+    alleen langzamer bemonsterd. Bij een rustig beeld valt het niet op en het
+    staat de droomsfeer eerder goed dan slecht. Het kan alleen als er genoeg
+    bron is - zie `GENOEG` - want drie keer uitrekken wordt een diavoorstelling.
+
+    De les die blijft staan: **heen en weer mag alleen als de beweging
+    omkeerbaar is.** Loopt er iets, rijdt er iets, of rolt er water naar de
+    kust, dan niet.
+    """
     lezer = imageio.get_reader(str(pad))
     try:
         ruw = [Image.fromarray(b).convert("RGB") for b in lezer]
@@ -260,6 +293,15 @@ def beeldjes(pad, aantal):
         lezer.close()
     if not ruw:
         raise SystemExit("{} bevat geen beeldjes.".format(pad.name))
+
+    if len(ruw) >= aantal * GENOEG:
+        # Lineair uitrekken: beeldje i van de Reel is beeldje i * M/N van de
+        # bron. Bij M >= N is dat gewoon versnellen of gelijk blijven, en dat
+        # klopt ook.
+        laatste = len(ruw) - 1
+        return [ruw[min(round(i * len(ruw) / aantal), laatste)]
+                for i in range(aantal)]
+
     reeks = ruw + ruw[-2:0:-1] if len(ruw) > 1 else ruw
     return [reeks[i % len(reeks)] for i in range(aantal)]
 

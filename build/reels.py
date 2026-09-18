@@ -407,6 +407,46 @@ def _vullend(beeld):
                                                    Image.LANCZOS)
 
 
+# Vanaf hoeveel bron je mag vertragen in plaats van heen en weer te spelen.
+# 0,6 betekent hooguit ongeveer 1,7x langzamer; daaronder wordt het schokkerig.
+# 0,45 en niet 0,6: de liggende gidsanimaties zijn vijf seconden en de
+# gekaderde Reel acht, dus 121 beeldjes in 240 - net onder een hogere
+# drempel. Twee keer vertraagd is bij deze rustige beelden beter dan
+# achteruit lopen, en dat is de afweging: liever iets te traag dan iets
+# dat de verkeerde kant op gaat.
+GENOEG = 0.45
+
+
+def uitgerekt(ruw, aantal):
+    """`aantal` beeldjes uit `ruw`, zonder ooit achteruit te lopen.
+
+    **Heen en weer stond hier eerst altijd, en dat was maar de halve waarheid.**
+    De truc werkt bij een gidsanimatie omdat de beweging traag en omkeerbaar is:
+    mist, water, licht. Achteruit ziet er dan niet achteruit uit, en dat staat
+    ook zo in CLAUDE.md.
+
+    Bij beweging met een *richting* klopt het niet, en sinds de gidsscenes met
+    Vera erin zit die richting er overal in: ze loopt, een trein rijdt door,
+    golven rollen naar de kust. Ruud zag het op 18 september achter elkaar bij
+    drie Reels - "paard gaat achteruitlopen", "golven ook de verkeerde kant op",
+    "de slangen ook".
+
+    Vertragen heeft dat probleem niet: dezelfde beeldjes in dezelfde volgorde,
+    alleen langzamer bemonsterd. Dat kan zodra er genoeg bron is; daaronder
+    blijft heen-en-weer het minste kwaad.
+    """
+    if not ruw:
+        return []
+    if len(ruw) == 1:
+        return [ruw[0]] * aantal
+    if len(ruw) >= aantal * GENOEG:
+        laatste = len(ruw) - 1
+        return [ruw[min(round(i * len(ruw) / aantal), laatste)]
+                for i in range(aantal)]
+    reeks = ruw + ruw[-2:0:-1]
+    return [reeks[i % len(reeks)] for i in range(aantal)]
+
+
 def frames_staand(pad, titel, vraag, link):
     """Elk beeldje van de staande animatie, schermvullend, met de tekst erover.
 
@@ -423,10 +463,8 @@ def frames_staand(pad, titel, vraag, link):
     if not ruw:
         raise SystemExit("De animatie {} bevat geen beeldjes.".format(pad.name))
 
-    reeks = ruw + ruw[-2:0:-1]
-    totaal = FPS * SECONDEN
-    for i in range(totaal):
-        doek = _vullend(reeks[i % len(reeks)]).convert("RGBA")
+    for beeld in uitgerekt(ruw, FPS * SECONDEN):
+        doek = _vullend(beeld).convert("RGBA")
         yield np.asarray(Image.alpha_composite(doek, laag).convert("RGB"))
 
 
@@ -499,13 +537,7 @@ def frames_uit_animatie(pad, titel, vraag, link):
     if not ruw:
         raise SystemExit("De animatie {} bevat geen beeldjes.".format(pad.name))
 
-    # Heen en terug, zonder het eerste en laatste beeldje te verdubbelen.
-    reeks = ruw + ruw[-2:0:-1]
-    totaal = FPS * SECONDEN
-    for i in range(totaal):
-        # Modulo, zodat een kortere animatie dan verwacht nooit een IndexError
-        # geeft maar gewoon nog een keer heen en terug gaat.
-        beeld = reeks[i % len(reeks)]
+    for beeld in uitgerekt(ruw, FPS * SECONDEN):
         doek = grond.copy()
         doek.paste(_binnen_kader(beeld, vak_b, vak_h), (VAK[0], VAK[1]), vorm)
         yield np.asarray(doek)
