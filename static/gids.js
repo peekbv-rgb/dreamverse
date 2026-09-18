@@ -11,6 +11,36 @@
 (function () {
   "use strict";
 
+  // De knop naar de app, geteld. **Dit staat boven de zoekcode met opzet.**
+  //
+  // Hieronder springt dit bestand er met een `return` uit zodra er geen
+  // zoekveld is - en dat veld staat alleen op de overzichtspagina. De knop
+  // naar de app staat juist op elk artikel. Onderaan zou deze teller dus
+  // precies nergens werken waar hij nodig is.
+  //
+  // Waarom hij er is: de gids is het enige onderdeel dat uit zichzelf bezoek
+  // trekt - 22 van de 43 onderwerpen hadden bezoek, verspreid zoals verkeer
+  // uit een zoekmachine zich verspreidt. Of zo iemand dan ook doorklikt was
+  // niet te zien, en dat is precies de stap waar het om gaat.
+  //
+  // `sendBeacon` en geen `fetch`: deze knop navigeert meteen weg, en een
+  // lopende fetch wordt door die navigatie afgebroken. Een beacon wordt juist
+  // wél afgeleverd nadat de pagina weg is.
+  //
+  // Eén vaste naam en niet de slug erbij: `weergaven` heeft (datum, pagina)
+  // als sleutel, dus een vrij veld laat iemand die tabel volschrijven. Welk
+  // onderwerp het was staat toch al in de gidsteller van diezelfde dag.
+  [].slice.call(document.querySelectorAll('.gids-cta a[href="/app"]'))
+    .forEach(function (a) {
+      a.addEventListener("click", function () {
+        try {
+          navigator.sendBeacon("/api/tel",
+            new Blob([JSON.stringify({ wat: "gids:naar-app" })],
+                     { type: "application/json" }));
+        } catch (e) { /* een teller mag nooit een klik kosten */ }
+      });
+    });
+
   var veld = document.getElementById("gids-zoek");
   var doos = document.getElementById("gids-kaarten");
   var leeg = document.getElementById("gids-leeg");

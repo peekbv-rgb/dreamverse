@@ -133,6 +133,11 @@ def cijfers(dagen=30):
             # De stappen die alleen in de browser te zien zijn. Ze staan in
             # dezelfde tabel als de paginatellers, met dezelfde soort inhoud:
             # een naam en een aantal per dag, en verder niets.
+            #
+            # **Deze tak moet vóór de gids-tak blijven staan.** `gids:naar-app`
+            # begint met "gids:" en zou daar anders als gidsonderwerp
+            # "naar-app" opduiken - een onderwerp dat niet bestaat - terwijl de
+            # stap zelf op nul blijft staan. Draai deze twee dus niet om.
             stappen[naam] += r["aantal"]
         elif naam == "gids" or naam.startswith("gids:"):
             gidsview[r["datum"]] += r["aantal"]

@@ -637,6 +637,7 @@ GEBEURTENISSEN = (
     "proef:klaar",      # er kwam een duiding terug
     "proef:account",    # op "Maak een account en bewaar hem" gedrukt
     "poort:account",    # het aanmeldformulier in de app bereikt
+    "gids:naar-app",    # op de knop naar de app gedrukt, op een gidspagina
 )
 
 
