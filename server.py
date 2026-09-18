@@ -584,6 +584,38 @@ class Handler(SimpleHTTPRequestHandler):
             if bron:
                 accounts.tel_weergave("bron:" + bron, agent, taal_header)
 
+        # **Een tweede teller op de stylesheet, en dat is de enige uitzondering
+        # op de regel hierboven dat statische bestanden niet meetellen.**
+        #
+        # Op 18 september stonden er vier dagen achter elkaar zestig tot negentig
+        # landingsbezoeken per dag tegenover nul duidingen, nul accounts, nul
+        # kliks op welke knop dan ook, en een herkomst die sinds 15 september
+        # geen millimeter bewoog. Een mens die op die pagina komt doet iets. Hier
+        # gebeurde niets, vier dagen lang.
+        #
+        # De zeef op `Accept-Language` vangt scanners die die header weglaten,
+        # maar niet wie hem wel meestuurt. Dit vangt de volgende laag: **een
+        # browser die een pagina tekent haalt daarna de stylesheet op, een
+        # scraper die alleen de HTML binnenhaalt niet.** Het verschil tussen die
+        # twee getallen is het antwoord op de vraag of er een bereikprobleem is
+        # of helemaal geen publiek.
+        #
+        # Eén bestand en niet alle, want `weergaven` heeft (datum, pagina) als
+        # sleutel en elk plaatje erbij is een regel per dag extra. `style.css`
+        # wordt door de landingspagina, de app en elke gidspagina geladen, dus
+        # het getal hoort vergeleken te worden met die drie bij elkaar.
+        #
+        # **Het is een ondergrens en geen exact aantal**: een browser bewaart de
+        # stylesheet, dus wie terugkomt haalt hem niet opnieuw op. Bij vrijwel
+        # geen terugkerende bezoekers maakt dat weinig uit, en het valt de goede
+        # kant op - staat het getal hoog, dan zijn het zeker mensen.
+        #
+        # Verder verandert er niets: geen IP-adres, geen cookie, dezelfde zeven
+        # op browsernaam en taalinstelling. Optellen, geen volgen.
+        elif gezien == "/style.css":
+            accounts.tel_weergave("css", self.headers.get("User-Agent"),
+                                  taal_header)
+
         # Vera's Dream Guide. Openbaar en zonder inlog: dit is de laag waar
         # Google op landt en vanwaar iemand de app in loopt.
         # Engels is het kale adres, Nederlands krijgt /nl ervoor. Twee adressen

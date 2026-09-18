@@ -111,6 +111,10 @@ def cijfers(dagen=30):
     gidspaginas = Counter()
     stappen = Counter()
     bronnen = Counter()
+    # Hoeveel van die bezoeken ook de stylesheet ophaalden. Zie het commentaar
+    # bij de teller in server.py: een browser die tekent doet dat, een scraper
+    # die alleen de HTML binnenhaalt niet.
+    cssview = Counter()
     # Elke soort in zijn eigen bak. Dit stond eerst als "landing of anders app",
     # en daarmee kwamen de gidspagina's - die met "gids" en "gids:<slug>" ook
     # geteld worden - in de kolom van de app terecht. Dan lijkt het alsof er
@@ -123,6 +127,8 @@ def cijfers(dagen=30):
             appview[r["datum"]] += r["aantal"]
         elif naam.startswith("bron:"):
             bronnen[naam[5:]] += r["aantal"]
+        elif naam == "css":
+            cssview[r["datum"]] += r["aantal"]
         elif naam in accounts.GEBEURTENISSEN:
             # De stappen die alleen in de browser te zien zijn. Ze staan in
             # dezelfde tabel als de paginatellers, met dezelfde soort inhoud:
@@ -175,6 +181,14 @@ def cijfers(dagen=30):
                             | set(nieuw_per_dag) | set(dromen_per_dag),
                             reverse=True)
         ],
+        # Twee getallen die naast elkaar horen: wat er geserveerd is en hoeveel
+        # daarvan ook een stylesheet ophaalde. Het tweede is een ondergrens -
+        # een browser bewaart die stylesheet - dus een hoog getal bewijst
+        # mensen en een laag getal maakt ze onwaarschijnlijk.
+        "css": sum(cssview.values()),
+        "paginas_totaal": (sum(landing.values()) + sum(appview.values())
+                           + sum(gidsview.values())),
+        "css_per_dag": dict(sorted(cssview.items(), reverse=True)),
         "proef": sum(proef_per_dag.values()),
         "proef_kosten": round(proef_kosten, 2),
         "bronnen": dict(bronnen.most_common()),
@@ -320,6 +334,26 @@ def main():
         if stil:
             print("")
             print("    Nog geen enkel bezoek: %s" % ", ".join(stil[:12]))
+
+    # Hoeveel van die bezoeken een echte browser waren, voor zover te zien.
+    # Zie het commentaar bij de teller in server.py: dit is een ondergrens.
+    css = c.get("css") or 0
+    paginas = c.get("paginas_totaal") or 0
+    if paginas:
+        print("")
+        print("  WAS HET EEN BROWSER?")
+        print("    paginas geserveerd   %6d" % paginas)
+        print("    stylesheet opgehaald %6d" % css)
+        if css * 3 < paginas:
+            print("")
+            print("    Minder dan een derde haalde de stylesheet op. Een browser")
+            print("    die een pagina tekent doet dat wel, dus het grootste deel")
+            print("    van dit verkeer tekent niets - vrijwel zeker geen mensen.")
+        elif css * 2 >= paginas:
+            print("")
+            print("    Ruim de helft haalde de stylesheet op: dit zijn browsers.")
+            print("    Dan is het geen publiek dat ontbreekt maar een reden om")
+            print("    iets te doen.")
 
     if c["bronnen"]:
         print("")
