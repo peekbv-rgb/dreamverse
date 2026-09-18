@@ -162,8 +162,10 @@ def beeldjes_van(pad, aantal):
         raise SystemExit("{} bevat geen beeldjes.".format(pad.name))
     # Heen en terug als de clip te kort is: liever een omgekeerde beweging dan
     # een sprong terug naar het begin. Dezelfde keuze als bij de gidsreels.
-    reeks = ruw + ruw[-2:0:-1] if len(ruw) > 1 else ruw
-    return [reeks[i % len(reeks)] for i in range(aantal)]
+    # Via reels.uitgerekt(): vertragen in plaats van terugspelen. Zie de
+    # correctie van 18 september - Vera die naar een rand loopt en dan weer
+    # achteruit is het eerste wat een kijker ziet.
+    return reels.uitgerekt(ruw, aantal)
 
 
 def maak(taal):
