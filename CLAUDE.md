@@ -1122,8 +1122,15 @@ het beeld op de gidspagina. Tot dan was dat één wereld: dezelfde hand als de
 panelen, en wie van een Reel doorklikte zag hetzelfde terug. Ruud heeft die
 prijs op 17 september bewust betaald, omdat een Reel die niet beweegt op TikTok
 niets doet. **De gidspagina's zelf zijn niet aangeraakt** - dit raakt alleen
-`data/gids-animatie-staand/`, en de oude versies staan er als `<slug>-stil.mp4`
-en `<slug>-i2v.mp4` naast. Terugdraaien is een hernoeming.
+`data/2-bron/gids-animatie-staand/`.
+
+**De oude versies zijn op 18 september weggegooid, en dat is definitief.** Er
+stonden er 41 naast de 43 actuele - `-stil`, `-i2v`, `-oud` en `-v3`, samen
+290 MB - en terugdraaien was tot dat moment een hernoeming. Dat kan niet meer,
+en opnieuw maken ook niet: het Kling-tegoed verliep diezelfde dag. Wat er nu
+staat is wat er is. Gecontroleerd voor het wissen: alle 43 gidsonderwerpen
+hebben een actuele animatie en geen enkele oude versie stond er zonder
+opvolger.
 
 **Wat het oplevert bovenop de beweging:** de gids krijgt één terugkerende
 figuur. Wie drie Reels ziet, ziet drie keer dezelfde vrouw met hetzelfde gouden
