@@ -118,6 +118,28 @@ HERKADER = {
         "en": "It may be less about the water than about where you were standing.",
         "nl": "Misschien gaat het minder om het water dan om waar jij stond.",
     },
+    # Deze wending staat letterlijk in het artikel: "the position matters so
+    # much - on its back, holding the reins, or standing in a field watching".
+    "horse": {
+        "en": "It may be less about the horse than about whether you were on it.",
+        "nl": "Misschien gaat het minder om het paard dan om of jij erop zat.",
+    },
+}
+
+# Een ander beeld dan de gidsanimatie, per onderwerp.
+#
+# Normaal is het beeld de animatie van dat gidsonderwerp - dan herkent iemand
+# die doorklikt hetzelfde artikel. Bij `horse` staat er iets beters klaar: het
+# shot uit `vera_vliegt.py` waarin Vera over het strand rijdt. Dat is tien
+# seconden in plaats van vijf, het is het beeld met de meeste diepte van alles
+# wat er ligt, en Vera zit er zelf op - wat precies is waar het artikel over
+# gaat: zat je erop, of keek je ernaar.
+#
+# **Alleen doen als het echt beter is.** Elk onderwerp dat hier in komt te staan
+# breekt de band tussen de Reel en de pagina een stukje verder, en dat was op
+# 17 september een bewuste prijs en geen gewoonte.
+EIGEN_BEELD = {
+    "horse": WORTEL / "data" / "vera-vliegt" / "strand.mp4",
 }
 
 AFSLUITER = {
@@ -183,8 +205,19 @@ def lagen(d, slug, taal):
     return [
         tekstlaag({"tekst": haak, "letters": KOP, "max": 3},
                   (92, 84, 74, 64), VEILIG_BOVEN + 60, INK, 940),
+        # **`INK` en niet `ZACHT`, en de kap dieper.** Dit is de langste tekst
+        # van de vier en dus de kwetsbaarste: bij `horse` (een strand bij
+        # zonsopgang) viel de onderste regel over de lichte horizon en was hij
+        # nauwelijks te lezen, terwijl hij bij `ex` (een donkere kamer) prima
+        # stond. Een blok dat bij het ene beeld werkt en bij het andere niet is
+        # hier geen blok dat werkt - zie *Leesbaar boven een bewegende
+        # achtergrond* in CLAUDE.md.
+        #
+        # De kleur doet het werk en niet een waas over het beeld: fellere letters
+        # met dezelfde contour, en de kap loopt dieper door omdat deze tekst
+        # verder naar beneden komt dan de andere drie.
         tekstlaag({"tekst": inzicht, "letters": BODY, "max": 7},
-                  (46, 42, 38, 34), VEILIG_BOVEN + 50, ZACHT, 1120),
+                  (46, 42, 38, 34), VEILIG_BOVEN + 50, INK, 1260),
         tekstlaag({"tekst": wending, "letters": KOP, "max": 3},
                   (74, 66, 58, 52), VEILIG_BOVEN + 80, INK, 940),
         slot(taal),
@@ -234,7 +267,7 @@ def beeldjes(pad, aantal):
 def maak(d, slug, taal):
     DOEL.mkdir(parents=True, exist_ok=True)
     doel = DOEL / (slug + "-" + taal + ".mp4")
-    bron = ANIMATIES / (slug + ".mp4")
+    bron = EIGEN_BEELD.get(slug) or (ANIMATIES / (slug + ".mp4"))
     if not bron.exists():
         raise SystemExit("Geen staande animatie voor {}.".format(slug))
 
