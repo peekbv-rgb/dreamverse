@@ -694,7 +694,7 @@ def beste_start(muziek, stappen=(0, 8, 16, 24, 32, 40, 48)):
     return float(gemeten[0][0])
 
 
-def geluid_eronder(video, nummer, duur, luider=-3.0, vanaf=None):
+def geluid_eronder(video, nummer, duur, luider=-3.0, vanaf=None, behoud=False):
     """Muziek onder een willekeurige video zetten, zonder het beeld te hercoderen.
 
     Dit stond drie keer los: hieronder voor de gidsreels, nog eens in
@@ -708,6 +708,18 @@ def geluid_eronder(video, nummer, duur, luider=-3.0, vanaf=None):
     `vanaf` is het startpunt in de track; zonder opgave wordt dat gemeten met
     `beste_start()` - bijna elk nummer begint met een kale opbouw, en die is
     een ander nummer dan de rest.
+
+    **`behoud=True` mengt in plaats van te vervangen.** Standaard gooit deze
+    functie het bestaande audiospoor weg, en dat mag ook: de Reels komen stil
+    uit de renderstap, daar valt niets te bewaren. Maar bij een clip die al
+    geluid heeft - een opname van Vera bijvoorbeeld - is vervangen precies het
+    verkeerde: dan is haar stem weg en merk je dat pas bij het terugkijken.
+    Vandaar deze stand, die het origineel op volle sterkte laat staan en de
+    muziek eronder mengt.
+
+    `normalize=0` bij `amix` is daarbij geen detail: zonder die vlag halveert
+    ffmpeg beide sporen om oversturen te voorkomen, en dan is het origineel
+    ineens zes dB zachter dan het was.
     """
     import subprocess
     import imageio_ffmpeg
@@ -719,12 +731,38 @@ def geluid_eronder(video, nummer, duur, luider=-3.0, vanaf=None):
                "afade=t=out:st={:.2f}:d=1.4,volume={:.1f}dB".format(
                    fade_uit, luider))
     tijdelijk = video.with_name(video.stem + "-geluid.mp4")
-    subprocess.run([
-        imageio_ffmpeg.get_ffmpeg_exe(), "-hide_banner", "-loglevel", "error",
-        "-y", "-i", str(video), "-ss", str(vanaf), "-i", str(nummer),
-        "-c:v", "copy", "-c:a", "aac", "-b:a", "128k", "-ac", "2",
-        "-af", filter_, "-shortest", "-movflags", "+faststart", str(tijdelijk),
-    ], check=True)
+    ff = imageio_ffmpeg.get_ffmpeg_exe()
+
+    # `behoud` op een video zonder audiospoor is geen fout van de beller maar
+    # een lege wens: er valt niets te bewaren. Eerst kijken en dan pas mengen,
+    # want ffmpeg valt hier hard om met een filter dat naar [0:a] wijst - en
+    # dan verlies je de hele stap in plaats van alleen het behouden.
+    if behoud:
+        kijk = subprocess.run([ff, "-hide_banner", "-i", str(video)],
+                              capture_output=True, text=True, errors="replace")
+        if "Audio:" not in kijk.stderr:
+            behoud = False
+
+    if behoud:
+        opdracht = [
+            ff, "-hide_banner", "-loglevel", "error", "-y",
+            "-i", str(video), "-ss", str(vanaf), "-i", str(nummer),
+            "-filter_complex",
+            "[1:a]{}[m];[0:a][m]amix=inputs=2:duration=first:normalize=0[a]"
+            .format(filter_),
+            "-map", "0:v", "-map", "[a]",
+            "-c:v", "copy", "-c:a", "aac", "-b:a", "160k", "-ac", "2",
+            "-movflags", "+faststart", str(tijdelijk),
+        ]
+    else:
+        opdracht = [
+            ff, "-hide_banner", "-loglevel", "error", "-y",
+            "-i", str(video), "-ss", str(vanaf), "-i", str(nummer),
+            "-c:v", "copy", "-c:a", "aac", "-b:a", "128k", "-ac", "2",
+            "-af", filter_, "-shortest", "-movflags", "+faststart",
+            str(tijdelijk),
+        ]
+    subprocess.run(opdracht, check=True)
     video.unlink()
     tijdelijk.rename(video)
     return video

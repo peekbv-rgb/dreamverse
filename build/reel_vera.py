@@ -36,7 +36,9 @@ _spec = importlib.util.spec_from_file_location("reels", WORTEL / "build" / "reel
 reels = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(reels)
 
+import subprocess                                                # noqa: E402
 import imageio                                                   # noqa: E402
+import imageio_ffmpeg                                            # noqa: E402
 import numpy as np                                               # noqa: E402
 from PIL import Image, ImageDraw                                 # noqa: E402
 
@@ -64,7 +66,45 @@ VET = ("segoeuisb.ttf", "segoeuib.ttf", "DejaVuSans-Bold.ttf")
 # De zin loopt door over de knip - beeld één stelt vast, beeld twee antwoordt.
 # Dat is dezelfde vorm als de promo, en het werkt omdat de kijker de tweede
 # helft al wil hebben voordat hij er is.
+# Clips die niet in data/vera-vliegt/ staan.
+ELDERS = {
+    "vera-intro": WORTEL / "data" / "vera-frames" / "origineel-en.mp4",
+}
+
 REEKSEN = {
+    # De kennismaking, om vast te pinnen. Vier tellen en twaalf seconden.
+    #
+    # **Het beeld gaat in een kader en wordt niet bijgesneden.** De clip is
+    # 1088 x 704 en liggend; naar 9:16 snijden laat een strook van 396 pixels
+    # breed over, die dan bijna drie keer opgeblazen moet worden. Op een donkere
+    # grond in een kader blijft hij scherp - dezelfde afweging als bij de
+    # gekaderde gidsreels.
+    #
+    # Daarna het strandshot, en dat is geen willekeurige keuze: beide beelden
+    # spelen op een strand bij laag licht, dus de knip valt niet op.
+    "kennismaking": {
+        "tellen": [
+            ("vera-intro", 4.8, {
+                "en": "Hi, I am Vera.",
+                "nl": "Hoi, ik ben Vera.",
+            }),
+            ("strand", 4.2, {
+                "en": "Tell me your dream in the morning.",
+                "nl": "Vertel me 's ochtends je droom.",
+            }),
+            ("strand", 3.0, {"en": None, "nl": None}),
+        ],
+        "knop": {"en": "Start free", "nl": "Gratis beginnen"},
+        "nummer": "mixkit-trap-hamza-267.mp3",
+        # Het geluid van de clip zelf blijft staan: zij praat erin.
+        "behoud": True,
+        "stem": "vera-intro",
+        # Haar opname staat rond -22 dB; zonder optillen valt ze weg
+        # zodra de muziek hoorbaar wordt gezet.
+        "stem_luider": 7.0,
+        "kader": ("vera-intro",),
+    },
+
     # Eén shot, drie tellen: haak, belofte, merk. Twaalf seconden - binnen de
     # twaalf tot achttien die op TikTok blijven hangen, en precies wat één shot
     # van tien seconden kan dragen zonder te rekken.
@@ -118,6 +158,21 @@ def vullend(beeld):
     y = (beeld.height - h) // 2
     return beeld.crop((x, y, x + b, y + h)).resize((BREEDTE, HOOGTE),
                                                    Image.LANCZOS)
+
+
+def gekaderd(beeld):
+    """Het beeld op ware grootte midden op een donkere grond.
+
+    Voor een liggende clip die te smal is om schermvullend te maken zonder hem
+    op te blazen. Dezelfde vorm als de gekaderde gidsreels: het beeld blijft
+    heel, de grond doet de rest.
+    """
+    doek = Image.new("RGB", (BREEDTE, HOOGTE), VOID)
+    breed = BREEDTE - 2 * 40
+    hoog = round(beeld.height * breed / beeld.width)
+    doek.paste(beeld.resize((breed, hoog), Image.LANCZOS),
+               (40, (HOOGTE - hoog) // 2))
+    return doek
 
 
 def overlaag(regel, knop=None, merk=False):
@@ -182,9 +237,13 @@ def maak(naam, taal):
     ruw = {}
     for slug, _, _ in reeks["tellen"]:
         if slug not in ruw:
-            p = SHOTS / (slug + ".mp4")
+            # Een tel mag ook naar een bestand elders wijzen - de
+            # kennismakingsclip staat in data/vera-frames/ en niet bij de
+            # text2video-shots. `ELDERS` is de uitzonderingenlijst; alles wat
+            # er niet in staat is gewoon een shot.
+            p = ELDERS.get(slug) or (SHOTS / (slug + ".mp4"))
             if not p.exists():
-                raise SystemExit("Geen shot %s in data/vera-vliegt/." % slug)
+                raise SystemExit("Geen shot %s gevonden (%s)." % (slug, p))
             ruw[slug] = lees(p)
 
     # Een shot dat twee tellen achter elkaar bedient moet doorlopen en niet
@@ -209,15 +268,70 @@ def maak(naam, taal):
             for _ in range(int(FPS * sec)):
                 beeld = stroom[slug][min(op[slug], len(stroom[slug]) - 1)]
                 op[slug] += 1
-                doek = vullend(beeld).convert("RGBA")
+                if slug in reeks.get("kader", ()):
+                    doek = gekaderd(beeld).convert("RGBA")
+                else:
+                    doek = vullend(beeld).convert("RGBA")
                 schrijver.append_data(
                     np.asarray(Image.alpha_composite(doek, laag).convert("RGB")))
     finally:
         schrijver.close()
+
+    # **De stem van de bronclip terugzetten.** De Reel wordt beeldje voor
+    # beeldje opgebouwd, en daarbij gaat het audiospoor van de bron verloren -
+    # ook als die bron iemand is die praat. Bij de kennismaking is dat precies
+    # het geluid dat er moet zijn, dus hij wordt er na het renderen weer onder
+    # gelegd, op de plek waar die tel begint.
+    if reeks.get("stem"):
+        stem_slug = reeks["stem"]
+        begin = 0.0
+        for slug, sec, _ in reeks["tellen"]:
+            if slug == stem_slug:
+                break
+            begin += sec
+        duur = sum(sec for _, sec, _ in reeks["tellen"])
+        bron = ELDERS.get(stem_slug) or (SHOTS / (stem_slug + ".mp4"))
+        tijdelijk = doel.with_name(doel.stem + "-stem.mp4")
+        ff = imageio_ffmpeg.get_ffmpeg_exe()
+        subprocess.run([
+            ff, "-hide_banner", "-loglevel", "error", "-y",
+            "-i", str(doel), "-i", str(bron),
+            "-filter_complex",
+            "[1:a]volume={1:.1f}dB,adelay={0}|{0},apad[s]".format(
+                int(begin * 1000), reeks.get("stem_luider", 0.0)),
+            # `-t` en niet `-shortest`: `apad` vult het spoor eindeloos aan,
+            # en die combinatie blijft hangen in plaats van af te kappen. De
+            # lengte staat toch vast, dus zeg hem gewoon.
+            "-map", "0:v", "-map", "[s]", "-c:v", "copy", "-c:a", "aac",
+            "-b:a", "160k", "-ac", "2", "-t", "%.2f" % duur,
+            "-movflags", "+faststart", str(tijdelijk),
+        ], check=True)
+        doel.unlink()
+        tijdelijk.rename(doel)
     return doel
 
 
 CAPTION = {
+    "kennismaking": {
+        "en": """Hi, I am Vera. Tell me your dream in the morning.
+
+You get it back as five panels, a reading and a look ahead - and every dream you
+tell counts in the next one. After a few months the places, people and animals
+that keep coming back become one world of their own.
+
+Free to start. Link in bio.
+
+#dreams #dreammeaning #dreaminterpretation #dreamjournal #luciddreaming #veradreamverse""",
+        "nl": """Hoi, ik ben Vera. Vertel me 's ochtends je droom.
+
+Je krijgt hem terug als vijf panelen, met een duiding en een vooruitblik - en
+elke droom die je vertelt telt mee in de volgende. Na een paar maanden worden de
+plekken, personen en dieren die blijven terugkomen een eigen wereld.
+
+Gratis om te beginnen. Link in bio.
+
+#dromen #droombetekenis #droomuitleg #droomdagboek #veradreamverse""",
+    },
     "strand": {
         "en": """Every night you go somewhere. Dreamverse remembers where.
 
@@ -291,7 +405,12 @@ def main():
         if not nummer.exists():
             print("Dat nummer staat niet in data/muziek/: %s" % nummer.name)
             return 1
-        reels.geluid_eronder(doel, nummer, duur_van(args.reeks))
+        reels.geluid_eronder(
+            doel, nummer, duur_van(args.reeks),
+            # -3 dB en niet -6: onder een gemengd spoor zakt muziek
+            # verder weg dan wanneer ze het hele spoor is.
+            luider=REEKSEN[args.reeks].get("luider", -3.0),
+            behoud=REEKSEN[args.reeks].get("behoud", False))
     tekst = DOEL / ("%s-%s.txt" % (args.reeks, args.taal))
     tekst.write_text(CAPTION[args.reeks][args.taal], encoding="utf-8")
     print("\n  %s  %.1f MB" % (doel.name, doel.stat().st_size / 1e6))

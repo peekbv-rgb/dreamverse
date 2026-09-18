@@ -944,6 +944,46 @@ weet dat het reclame is voordat het beeld iets heeft kunnen doen. De muziek is
 deze doet een belofte. `--nummer` probeert een ander nummer zonder het beeld
 opnieuw te coderen.
 
+## De kennismaking-Reel, en het geluid dat er niet onder kwam
+
+`python build/reel_vera.py kennismaking --taal en --ja` maakt de Reel die
+bovenaan de TikTok-pagina hoort: twaalf seconden, Vera die zichzelf voorstelt,
+dan het strandshot met de belofte en het merk. Het beeld komt uit
+`data/vera-frames/origineel-en.mp4` - de Vera **mét** gezicht, en dat is precies
+het open punt uit *De promo met Vera*: zolang niet besloten is wie de Vera is,
+staat er naar buiten een derde gezicht.
+
+**Het beeld gaat in een kader en wordt niet bijgesneden.** De clip is 1088 x 704
+en liggend; naar 9:16 snijden laat een strook van 396 pixels over die bijna drie
+keer opgeblazen moet worden. Zelfde afweging als bij de gekaderde gidsreels.
+
+**Haar stem moet er na het renderen weer onder.** De Reel wordt beeldje voor
+beeldje opgebouwd, dus het audiospoor van de bron gaat verloren - ook als er
+iemand in praat. Dat is bij elk ander shot geen verlies (Kling levert stil) maar
+hier is het het hele punt. `"stem"` in `REEKSEN` zegt welk shot zijn geluid
+terugkrijgt, en op welke tel het begint. Haar opname staat rond **-22 dB**, dus
+zonder `stem_luider` valt ze weg zodra de muziek hoorbaar staat; nu +7 dB.
+
+**En dan mengen in plaats van vervangen.** `geluid_eronder(..., behoud=True)`
+laat het bestaande spoor staan en legt de muziek eronder, met `normalize=0` bij
+`amix` - zonder die vlag halveert ffmpeg beide sporen en is haar stem ineens zes
+dB zachter dan hij was.
+
+- **`apad` en `-shortest` samen blijven hangen.** `adelay` zet de stem op de
+  goede tel, `apad` vult de rest van het spoor aan zodat de mix niet halverwege
+  ophoudt - maar dat spoor eindigt daarmee nooit, en `-shortest` kapte het hier
+  niet af. Het tussenbestand werd nooit afgerond, de hernoeming kwam nooit, en
+  wat er bleef staan was de Reel **zonder enig geluid**. Er komt geen fout: het
+  proces staat gewoon te draaien. Nu staat er `-t` met de lengte die toch al
+  vastligt.
+- **Meet het spoor, kijk niet naar de map.** Een bestand van 5,4 MB met beeld
+  ziet er in een bestandslijst precies zo uit als een bestand met geluid. Zelfde
+  controle als bij de Reels: `Audio:` zegt of er een spoor is, `mean_volume:` of
+  er ook iets te horen valt.
+- **Rendeer één keer, meng daarna per kandidaat.** Het renderen kost minuten,
+  muziek eronder leggen kost seconden (`-c:v copy`). Drie nummers naast elkaar
+  zetten is dus geen drie keer het werk.
+
 ## De Reel die zegt wat Dreamverse is
 
 `python build/reel_product.py --ja` maakt er één van negen seconden in drie
