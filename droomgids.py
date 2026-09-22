@@ -554,16 +554,41 @@ def _schema_lijst(lijst, taal="en"):
     })
 
 
+# Wanneer de gids voor het laatst inhoudelijk veranderde. Eén datum voor alles
+# wat geen eigen `updated` heeft; zet die in de JSON van een onderwerp zodra je
+# dat onderwerp herschrijft, dan loopt het los van de rest.
+#
+# **Met opzet niet de mtime van het bestand.** Op Render is dat het moment van
+# de deploy, dus dan zou elke deploy aan Google melden dat alle eenennegentig
+# adressen veranderd zijn. Dat is niet waar, en een sitemap die elke week
+# hetzelfde onwaar beweert wordt genegeerd - precies het tegenovergestelde van
+# wat `lastmod` moet doen.
+STAND = "2026-09-14"
+
+
+def _stand(d=None):
+    return str((d or {}).get("updated") or STAND)[:10]
+
+
 def sitemap():
-    """Alle adressen die Google mag kennen, in beide talen."""
-    adressen = [SITE + "/", SITE + "/welkom.html", SITE + "/privacy.html"]
+    """Alle adressen die Google mag kennen, in beide talen.
+
+    Met `lastmod`, want zonder dat heeft een crawler geen reden om terug te
+    komen bij een pagina die hij al kent, en geen reden om te beginnen bij de
+    pagina die het laatst veranderd is. Van de eenennegentig adressen hier
+    stond er op 22 september precies één in de index.
+    """
+    adressen = [(SITE + "/", STAND), (SITE + "/welkom.html", STAND),
+                (SITE + "/privacy.html", STAND)]
     for taal in TALEN:
         lijst = [d for d in onderwerpen() if heeft_taal(d, taal)]
         if not lijst and taal != "en":
             continue
-        adressen.append(SITE + pad_voor(taal))
-        adressen += [SITE + pad_voor(taal, d["slug"]) for d in lijst]
-    regels = "".join("  <url><loc>{}</loc></url>\n".format(_e(a)) for a in adressen)
+        adressen.append((SITE + pad_voor(taal), STAND))
+        adressen += [(SITE + pad_voor(taal, d["slug"]), _stand(d)) for d in lijst]
+    regels = "".join(
+        "  <url><loc>{}</loc><lastmod>{}</lastmod></url>\n".format(_e(a), _e(m))
+        for a, m in adressen)
     return ('<?xml version="1.0" encoding="UTF-8"?>\n'
             '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
             + regels + "</urlset>\n")

@@ -711,8 +711,10 @@ en in de app bij *Los te koop* — want het verschil tussen "vijf tekeningen" en
 "vijf tekeningen plus een bewegend kernmoment" kun je niet uitleggen, dat moet je
 laten zien.
 
-**Het beeld boven de vouw op de landingspagina beweegt, sinds 14 september.**
-Daar stond een stilstaande vuurvogel. Dit is het eerste wat iemand vanuit
+**Het beeld op de landingspagina beweegt, sinds 14 september — en staat sinds
+22 september ónder de vraag.** Zie *De vouw op de landingspagina* hieronder: het
+stond boven het droomveld en duwde dat naar 656 pixels, voorbij het venster van
+de in-app browser van Instagram. Daar stond een stilstaande vuurvogel. Dit is het eerste wat iemand vanuit
 Instagram ziet, en het verschil tussen "vijf tekeningen" en "vijf tekeningen die
 bewegen" kun je niet uitleggen — dezelfde redenering als bij de voorbeeldclips
 zelf. Vier dingen die daar moeten kloppen:
@@ -809,6 +811,58 @@ De lijst met woorden eronder staat op een **eigen donkere grond**. Zie
 hoort bij de publieke laag, en die begint bij de landingspagina. Voor iemand van
 Google verandert er niets; wie ingelogd is werd door `/` de app in geduwd, met
 Vera's introductie erbij, en dat is geen "terug".
+
+### Wat Google van de site weet, en dat is bijna niets
+
+**Op 22 september stonden er twee adressen in de index en het was twee keer de
+homepage:** `https://vera-dreamverse.com` en `http://www.vera-dreamverse.com`.
+Van de eenennegentig adressen in de sitemap — 43 Engelse artikelen, 44
+Nederlandse, de twee overzichten — staat er **geen enkel gidsartikel** in.
+Het hele organische kanaal is voor Google onzichtbaar.
+
+Te controleren in dertig seconden, en dat hoort elke week te gebeuren zolang dit
+het plan is:
+
+```
+site:vera-dreamverse.com
+```
+
+**Technisch mankeert er niets**, en dat is nagemeten op `snakes`: `robots.txt`
+staat op `Allow: /`, de canonical klopt, `hreflang` wijst en/nl/x-default goed
+aan, er staat JSON-LD met Article én FAQPage in, de pagina is 655 woorden en
+komt server-gerenderd binnen, en er staat nergens een `noindex`. De deur staat
+open; Google is nog niet binnen geweest.
+
+Wat er wél aan lag, en wat eraan gedaan is:
+
+- **De sitemap had geen `lastmod`.** Zonder dat heeft een crawler geen reden om
+  terug te komen bij een pagina die hij kent, en geen reden om te beginnen bij
+  wat het laatst veranderde. Staat er nu in, uit `STAND` in `droomgids.py` of
+  uit een eigen `updated` in de JSON van een onderwerp. **Met opzet niet de
+  mtime van het bestand** — op Render is dat het moment van de deploy, en dan
+  meldt elke deploy dat alle eenennegentig adressen veranderd zijn. Een sitemap
+  die elke week hetzelfde onwaar beweert wordt genegeerd.
+- **De www-variant werd apart geïndexeerd.** Dezelfde homepage die twee keer
+  meedoet, dus elk signaal over twee hostnamen verdeeld. `canonieke_host()` in
+  `server.py` stuurt `www.vera-dreamverse.com` met een 301 naar het kale domein.
+  **Alleen die ene host**: het Render-adres blijft met rust, want dat is het
+  diagnosemiddel waarmee je een netwerkprobleem van een appprobleem
+  onderscheidt. En alleen bij GET en HEAD — een 301 op een POST laat de browser
+  zelf beslissen of hij de body meestuurt, en dat is bij
+  `/api/stripe/webhook` het verschil tussen een betaling die doorkomt en een die
+  stil verdwijnt.
+
+**Wat hier niet vanuit de code kan.** Search Console is de enige stap die
+indexering echt versnelt: de sitemap indienen en de vijf sterkste onderwerpen
+met URL-inspectie handmatig laten ophalen. Dat vraagt om het Google-account van
+Ruud en staat dus open.
+
+**En verwacht daarna geen wonder.** Voor `dream about snakes meaning` staan
+Verywell Mind, Business Insider, Reddit, Quora en dreamdictionary.org. 655
+woorden op een domein van zestien dagen haalt dat niet. De kans zit in longtail
+— *dream about being chased by a snake in water* — en dat is een argument om de
+drieënveertig bestaande artikelen te verdiepen met scenario's, en niet om
+onderwerp vierenveertig te schrijven.
 
 Zoeken op de overzichtspagina filtert wat er al staat (`static/gids.js`), zonder
 verzoek naar de server. Bij tientallen onderwerpen is dat sneller dan wat dan
@@ -1792,7 +1846,7 @@ verkoper en beoordelen ze de site, en tot vandaag zag een beoordelaar alleen een
 inlogscherm. **Voor testers**: die kregen een wachtwoordveld zonder te weten waar
 ze aan begonnen.
 
-**En sinds 14 september staat de vraag er zelf op, boven de vouw.** Daar stond
+**En sinds 14 september staat de vraag er zelf op.** Daar stond
 een knop naar `/app`, en dáár stond pas *Wat droomde je vannacht?*. Iemand die
 's ochtends vanuit Instagram binnenkomt met een droom in zijn hoofd kreeg dus
 eerst een pagina over wat het product doet en wat het kost, en moest zelf de knop
@@ -1800,12 +1854,67 @@ vinden. Van 9 tot 14 september: 468 bezoeken aan deze pagina tegen 136 aan
 `/app`, en **nul aanmeldingen** — ruim twee derde haalde de vraag niet eens.
 Twee pagina's vóór de vraag is er één te veel.
 
+**Hier stond "boven de vouw", en dat was niet nagemeten.** Op 22 september
+gemeten op de live pagina: het veld begon op 656 en de knop eindigde op 838. In
+de eigen browser van Instagram en TikTok is het venster ongeveer 600 tot 680
+pixels hoog, dus het publiek waarvoor deze pagina bestaat zag de vraag niet en
+de knop zeker niet. Een pagina eerder zetten is niet hetzelfde als boven de
+vouw zetten. Zie *De vouw op de landingspagina*.
+
 Het veld schrijft naar dezelfde `dreamverse_eerste_droom` in `localStorage` die
 de poort van de app leest (zie *Eerst de droom, dan pas het account*), dus wie
 hier typt komt op `/app` meteen uit bij *Je droom staat klaar voor Vera* en hoeft
 niets over te typen. Naar de server gaat er nog steeds niets: er is geen account
 om die droom aan te hangen, en dat blijft de grens ook nu het veld een pagina
 eerder staat. De knop naar de app blijft eronder staan als bijrol.
+
+### De vouw op de landingspagina
+
+Op 22 september gemeten op de live pagina, op een telefoon. Wat er boven het
+droomveld stond:
+
+| | begint op | hoog |
+|---|---|---|
+| bovenregel | 0 | 114 |
+| `h1` *Je droom als verbeelding* | 114 | 91 |
+| `.sub`, vier regels | 219 | 124 |
+| `.welkom-beeld`, de vuurvogel | 376 | 205 |
+| **label + veld** | **656** | 130 |
+| **knop *Lees deze droom*** | **797** | eindigt op 838 |
+
+In de eigen browser van Instagram en TikTok is het bruikbare venster ongeveer
+600 tot 680 pixels hoog — de balk bovenaan en die onderaan gaan eraf. Precies
+het publiek waarvoor deze pagina gebouwd is zag het veld dus niet, en de knop
+onder geen beding.
+
+**Twee dingen zijn verplaatst, geen van beide weggehaald.**
+
+- **Het beeld staat onder de knop**, direct na *Of ga meteen naar de app*. Het
+  argument om het bovenaan te zetten was goed — dit product ís beeld, en wie van
+  Instagram komt heeft net een vuurvogel gezien — maar 205 pixels is te duur op
+  de enige plek die telt. Onder de knop staaft het de belofte voor wie twijfelt,
+  in plaats van hem weg te drukken bij wie al overtuigd is. Zelfde redenering als
+  bij `.belofte`, die om dezelfde reden ná de knop staat.
+- **`.sub` is van vier regels naar twee**, en zegt nu wat de knop dóet. Er stond
+  *"vijf panelen, een duiding en een vooruitblik"* — dat is wat de app geeft,
+  niet deze knop: `/api/proef` maakt met opzet geen panelen. Wie hier drukte
+  verwachtte beeld en kreeg tekst, op precies het moment dat hij beslist of hij
+  een account maakt. Nu: *Typ hem hieronder, dan leest Vera hem meteen voor je.*
+
+Nagemeten na de verhuizing: het veld begint op **372** en de knop eindigt op
+**546**. 284 pixels gewonnen, en daarmee past de hele stap binnen een venster
+van 600.
+
+**De les die hier blijft staan:** een pagina korter maken is niet hetzelfde als
+het veld omhoog halen. Op 14 september is de vraag van `/app` naar deze pagina
+gehaald en werd er "boven de vouw" opgeschreven; het veld lag daarna nog steeds
+656 pixels diep. Meet de positie, schat hem niet — het is één regel in de
+console:
+
+```js
+const b = document.querySelector("#w-door").getBoundingClientRect();
+console.log(Math.round(b.bottom + scrollY));
+```
 
 Let op: deze pagina heeft **geen `taal.js`** maar zijn eigen `zet()`, en die zet
 `textContent`. Een placeholder is dat niet — vandaar `data-ph-en` en
@@ -1993,14 +2102,24 @@ weergaven nooit een bezoek kán opleveren. **Meet een kanaal dus altijd eerst aa
 zijn eigen weergavecijfer, en pas daarna aan de trechter** - anders zoek je een
 conversieprobleem bij een post die niemand gezien heeft.
 
-**Wat wél groeit is de gids, en dat ziet eruit als Google.** Op 15 september een
-piek van 32 bezoeken, en het aantal onderwerpen mét bezoek ging van 13 naar 22:
-`flying`, `getting-lost`, `school`, `car`, `cat`, `cheating`, `dying`, `phone`
-en `pregnancy` kwamen erbij, allemaal met één of twee. **Zo spreidt bezoek zich
-als het uit een zoekmachine komt.** Kwam het van een Reel over honden, dan zou
-het zich juist ophopen bij `dogs` - en dat gebeurt niet. De gids is daarmee het
-enige onderdeel dat uit zichzelf bezoek begint te trekken, en dat is precies wat
-er bij het bouwen van beloofd werd.
+**Hier stond dat de gids groeit en dat dat eruitziet als Google. Dat kan niet.**
+Op 15 september een piek van 32 bezoeken, en het aantal onderwerpen mét bezoek
+ging van 13 naar 22: `flying`, `getting-lost`, `school`, `car`, `cat`,
+`cheating`, `dying`, `phone` en `pregnancy` kwamen erbij, allemaal met één of
+twee. Daar stond: zo spreidt bezoek zich als het uit een zoekmachine komt, want
+kwam het van een Reel over honden dan zou het zich ophopen bij `dogs`.
+
+Die redenering klopt, alleen de conclusie niet: **die pagina's staan niet in de
+index van Google**, op 22 september nagemeten met `site:vera-dreamverse.com`.
+Dat geeft twee resultaten en het is twee keer de homepage. Van de eenennegentig
+adressen in de sitemap staat er geen enkele gidspagina in. Uit een zoekmachine
+kan dat bezoek dus niet komen; gelijkmatig gespreid over negen onderwerpen is
+precies hoe een crawler een sitemap afloopt.
+
+**De les is algemener dan deze piek.** Een verdeling die bij een verhaal past is
+geen bewijs voor dat verhaal zolang er een tweede verhaal is dat er even goed
+bij past. Google staat of valt bij één controle die dertig seconden kost, en die
+was hier niet gedaan.
 
 Drie dagen op rij nul gratis duidingen, nul accounts, nul dromen. De vier
 tellers staan nog steeds op nul; `POST /api/tel` is live nagemeten en geeft

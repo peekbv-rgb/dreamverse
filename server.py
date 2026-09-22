@@ -529,7 +529,40 @@ class Handler(SimpleHTTPRequestHandler):
 
     # -- routes ------------------------------------------------------------- #
 
+    def canonieke_host(self):
+        """www naar het kale domein, in één keer en blijvend.
+
+        Google had op 22 september twee adressen van deze site in zijn index,
+        en het waren allebei de homepage: `https://vera-dreamverse.com` en
+        `http://www.vera-dreamverse.com`. Dat is dezelfde pagina die twee keer
+        meedoet, dus elke link en elk signaal wordt over twee hostnamen
+        verdeeld terwijl er maar één telt.
+
+        **Alleen de www-variant van het eigen domein wordt omgeleid**, en niets
+        anders. Het Render-adres blijft werken zoals het is: dat is volgens
+        CLAUDE.md het diagnosemiddel waarmee je een netwerkprobleem van een
+        appprobleem onderscheidt, en een omleiding daarvandaan gooit precies
+        dat weg. `127.0.0.1` en het adres op het thuisnetwerk raken we om
+        dezelfde reden niet aan.
+
+        Alleen bij GET en HEAD. Een 301 op een POST laat de browser zelf
+        beslissen of hij de body meestuurt, en dat is bij `/api/stripe/webhook`
+        het verschil tussen een betaling die doorkomt en een die stil verdwijnt.
+        """
+        host = (self.headers.get("Host") or "").split(":")[0].lower()
+        if not host.startswith("www."):
+            return False
+        if host[4:] != droomgids.SITE.split("://")[1]:
+            return False
+        self.send_response(301)
+        self.send_header("Location", droomgids.SITE + self.path)
+        self.send_header("Content-Length", "0")
+        self.end_headers()
+        return True
+
     def do_GET(self):
+        if self.canonieke_host():
+            return
         if not self.guard():
             return
 

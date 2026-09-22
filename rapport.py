@@ -179,7 +179,8 @@ def cijfers(dagen=30):
         "feedback": terugkoppeling,
         "trechter": [
             {"datum": d, "landing": landing.get(d, 0), "gids": gidsview.get(d, 0),
-             "app": appview.get(d, 0), "proef": proef_per_dag.get(d, 0),
+             "app": appview.get(d, 0), "css": cssview.get(d, 0),
+             "proef": proef_per_dag.get(d, 0),
              "nieuw": nieuw_per_dag.get(d, 0), "dromen": dromen_per_dag.get(d, 0)}
             for d in sorted(set(landing) | set(appview) | set(gidsview)
                             | set(proef_per_dag)
@@ -257,25 +258,44 @@ def main():
     print("  betalingen      %s, samen EUR %.2f" % (c["betalingen"], c["omzet"]))
     print("")
     print("  DE TRECHTER  (bezoek -> gratis duiding -> account -> droom)")
-    print("    %-12s %8s %8s %8s %8s %8s %8s" % (
-        "datum", "landing", "gids", "app", "duiding", "nieuw", "dromen"))
-    tot = {"landing": 0, "gids": 0, "app": 0, "proef": 0, "nieuw": 0, "dromen": 0}
+    # De kolom `css` staat naast de drie soorten bezoek en niet onderaan bij
+    # "was het een browser", want daar beantwoordt hij de verkeerde vraag.
+    # Zolang je niet weet welk deel van die bezoeken een mens was, is nul
+    # aanmeldingen op zestig bezoeken geen conversiecijfer maar een onbekende
+    # gedeeld door een onbekende - en dan ga je de landingspagina verbouwen
+    # terwijl het probleem is dat er niemand komt. Naast elkaar in dezelfde rij
+    # zie je in één oogopslag welk van de twee je aan het oplossen bent.
+    print("    %-12s %8s %8s %8s %8s %8s %8s %8s" % (
+        "datum", "landing", "gids", "app", "css", "duiding", "nieuw", "dromen"))
+    tot = {"landing": 0, "gids": 0, "app": 0, "css": 0, "proef": 0,
+           "nieuw": 0, "dromen": 0}
     # Alleen dagen waarop er ook echt geteld is. Het tellen begon later dan de
     # eerste accounts, en dan deel je twee getallen op elkaar die over
     # verschillende weken gaan - dat leest als een percentage en is het niet.
     gemeten = {"landing": 0, "nieuw": 0}
     for r in c["trechter"][:14]:
-        print("    %-12s %8d %8d %8d %8d %8d %8d" % (
-            r["datum"], r["landing"], r["gids"], r["app"], r["proef"],
-            r["nieuw"], r["dromen"]))
+        print("    %-12s %8d %8d %8d %8d %8d %8d %8d" % (
+            r["datum"], r["landing"], r["gids"], r["app"], r["css"],
+            r["proef"], r["nieuw"], r["dromen"]))
         for k in tot:
             tot[k] += r[k]
         if r["landing"] or r["app"]:
             gemeten["landing"] += r["landing"]
             gemeten["nieuw"] += r["nieuw"]
-    print("    %-12s %8d %8d %8d %8d %8d %8d" % (
-        "samen", tot["landing"], tot["gids"], tot["app"], tot["proef"],
-        tot["nieuw"], tot["dromen"]))
+    print("    %-12s %8d %8d %8d %8d %8d %8d %8d" % (
+        "samen", tot["landing"], tot["gids"], tot["app"], tot["css"],
+        tot["proef"], tot["nieuw"], tot["dromen"]))
+    paginas = tot["landing"] + tot["gids"] + tot["app"]
+    if paginas:
+        deel = 100 * tot["css"] / paginas
+        print("")
+        print("    %d van %d weergaven haalde ook de stylesheet op (%.0f%%)."
+              % (tot["css"], paginas, deel))
+        if deel < 33:
+            print("    Een browser die een pagina tekent doet dat wel, dus het")
+            print("    grootste deel hiervan tekent niets - vrijwel zeker geen")
+            print("    mensen. Reken de trechter hieronder daar niet op af:")
+            print("    dit is een verkeersprobleem en geen conversieprobleem.")
     if c["proef"]:
         # Wat de gratis duiding tot nu toe gekost heeft, en wat hij opleverde.
         # Dit zijn de twee getallen waarop dit onderdeel beoordeeld hoort te

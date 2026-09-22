@@ -255,14 +255,14 @@
         if ((c.trechter || []).length) {
           html += '<p class="lbl">Per dag: bezoek, gratis duiding, account, droom</p>';
           html += '<table class="rapport-tabel"><thead><tr>' +
-            ["datum", "landing", "gids", "app", "duiding", "nieuw", "dromen"]
+            ["datum", "landing", "gids", "app", "css", "duiding", "nieuw", "dromen"]
               .map(function (k) { return "<th>" + k + "</th>"; }).join("") +
             "</tr></thead><tbody>";
           // De volgorde van deze sleutels is de volgorde van de kolommen: de
           // rijen worden eruit opgebouwd met Object.keys. Zet "proef" dus op de
           // plek waar "duiding" in de kop staat, anders schuiven de getallen
           // een kolom op zonder dat iets het meldt.
-          var tot = { landing: 0, gids: 0, app: 0, proef: 0, nieuw: 0, dromen: 0 };
+          var tot = { landing: 0, gids: 0, app: 0, css: 0, proef: 0, nieuw: 0, dromen: 0 };
           // Alleen dagen waarop er ook echt geteld is. Het tellen begon later
           // dan de eerste accounts, en anders deel je twee getallen op elkaar
           // die over verschillende weken gaan.
@@ -291,6 +291,23 @@
             html += '<p class="meter-noot">' + c.proef +
               " gratis duidingen, samen EUR " + (c.proef_kosten || 0).toFixed(2) +
               " (EUR " + (c.proef_kosten / c.proef).toFixed(3) + " per stuk).</p>";
+          }
+          // Welk deel van die weergaven een browser was. Zonder dit getal is
+          // het percentage hieronder een onbekende gedeeld door een onbekende,
+          // en ga je de landingspagina verbouwen terwijl het probleem is dat
+          // er niemand komt.
+          var paginas = tot.landing + tot.gids + tot.app;
+          if (paginas) {
+            var deel = Math.round(100 * tot.css / paginas);
+            html += '<p class="meter-noot">' + tot.css + " van " + paginas +
+              " weergaven haalde ook de stylesheet op (" + deel + "%).";
+            if (deel < 33) {
+              html += " Een browser die een pagina tekent doet dat wel, dus het" +
+                " grootste deel hiervan tekent niets - vrijwel zeker geen mensen." +
+                " Reken de trechter daar niet op af: dit is een verkeersprobleem" +
+                " en geen conversieprobleem.";
+            }
+            html += "</p>";
           }
           if (gemeten.landing >= 10) {
             html += '<p class="meter-noot">Van ' + gemeten.landing +

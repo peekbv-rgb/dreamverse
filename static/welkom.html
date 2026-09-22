@@ -56,51 +56,22 @@
       </span>
     </div>
     <h1 id="title" data-en="Your dream, imagined" data-nl="Je droom als verbeelding">Your dream, imagined</h1>
+    <!-- Twee regels, en ze beloven wat de knop eronder werkelijk doet.
+
+         Hier stond "vijf panelen, een duiding en een vooruitblik". Dat is wat
+         de app geeft en niet wat deze knop geeft: `/api/proef` maakt met opzet
+         geen panelen, want vijf Kling-beelden kosten zes cent bovenop de tekst.
+         Wie hier op *Lees deze droom* drukte verwachtte dus beeld en kreeg
+         tekst - en dat is de eerste indruk van het product, op de plek waar hij
+         beslist of hij een account maakt.
+
+         Het waren bovendien vier regels op een telefoon, en die stonden tussen
+         de kop en het veld in. De vijf panelen staan nog in `.belofte` en in
+         *Hoe het werkt*, allebei ónder de knop, waar ze niemand wegdrukken. -->
     <p class="sub"
-       data-en="Tell or type what you dreamt last night. You get it back as five panels, a reading and a look ahead — and everything you dreamt before counts."
-       data-nl="Vertel of typ wat je vannacht droomde. Je krijgt een verbeelding in vijf panelen, een duiding en een vooruitblik — en alles wat je eerder droomde telt mee.">
-      Tell or type what you dreamt last night. You get it back as five panels, a reading and a look ahead — and everything you dreamt before counts.</p>
-    <!-- Eén beeld boven de vouw, en dat is hier het belangrijkste element van
-         de pagina.
-         Het eerste beeld stond op 1517 pixels - anderhalf schermlengte naar
-         beneden, voorbij "Hoe het werkt". Dit product ís beeld, en wie via het
-         og-beeld van Instagram komt heeft net een vuurvogel gezien; die landde
-         dan op eenenzeventig woorden proza. Geen `loading="lazy"`: dat is voor
-         wat onder de vouw staat, en dit staat er juist boven. Breedte en hoogte
-         staan erbij zodat de knop niet verspringt terwijl het beeld binnenkomt. -->
-    <!-- Het beeld boven de vouw beweegt.
-
-         Hier stond een stilstaande vuurvogel. Dit is het eerste wat iemand van
-         Instagram ziet, en het verschil tussen "vijf tekeningen" en "vijf
-         tekeningen die bewegen" kun je niet uitleggen - dat moet je laten zien.
-         Dezelfde redenering als bij de voorbeeldclips verderop op de pagina.
-
-         Vier dingen die hier moeten kloppen:
-
-         - **Een eigen, kleine versie.** `vuurvogel.mp4` is 5 MB, en dat is te
-           veel voor iets dat vanzelf begint te spelen boven de vouw op een
-           telefoonbundel. `vuurvogel-hero.mp4` is 720 breed zonder geluid:
-           490 kB. De volle clip blijft staan voor het voorbeeldenblok, waar
-           iemand er zelf op drukt.
-         - **`muted` en `playsinline`**, anders weigert iOS af te spelen en
-           blijft het bij de poster. `autoplay` zonder `muted` doet geen enkele
-           browser meer.
-         - **De poster is de bestaande JPEG.** Speelt de video niet - data
-           besparen staat aan, het bestand faalt - dan staat er nog steeds
-           precies het beeld dat er eerst stond.
-         - **Wie geen beweging wil, krijgt geen beweging.** `prefers-reduced-
-           motion` verbergt de video en toont de poster; dat is een instelling
-           die mensen met goede reden aanzetten. -->
-    <p class="welkom-beeld">
-      <video src="/voorbeelden/vuurvogel-hero.mp4"
-             poster="/voorbeelden/vuurvogel.jpg"
-             width="720" height="407"
-             autoplay muted loop playsinline preload="metadata"
-             aria-label="A panel from a real dream: a burning bird above misty hills."></video>
-      <img src="/voorbeelden/vuurvogel.jpg" width="720" height="407"
-           alt="A panel from a real dream: a burning bird above misty hills."
-           decoding="async">
-    </p>
+       data-en="Type it below and Vera reads it for you, right away."
+       data-nl="Typ hem hieronder, dan leest Vera hem meteen voor je.">
+      Type it below and Vera reads it for you, right away.</p>
     <!-- De vraag staat hier, en niet een pagina verderop.
 
          Dit was een knop naar /app, en dáár stond pas "Wat droomde je
@@ -159,6 +130,53 @@
     <div class="proef-uit" id="w-uit" hidden></div>
     <p class="welkom-knoppen">
       <a class="knop-als-link ghost-link" href="/app" data-en="Or go straight to the app" data-nl="Of ga meteen naar de app">Or go straight to the app</a>
+    </p>
+    <!-- Het beeld staat ónder de vraag, en dat is een gemeten besluit.
+
+         Hier stond het erboven, met het argument dat dit product beeld ís en
+         dat wie van Instagram komt net een vuurvogel heeft gezien. Dat klopt
+         allebei, en toch was het fout: het beeld is 205 pixels hoog en duwde
+         het droomveld naar 656 en de knop naar 838. In de eigen browser van
+         Instagram en TikTok is het venster ongeveer 600 tot 680 pixels hoog,
+         dus precies het publiek waarvoor deze pagina bestaat zag de vraag niet
+         en de knop zeker niet.
+
+         Dat is dezelfde fout als op 14 september, één pagina verderop: toen
+         stond de vraag achter een knop naar /app, nu stond hij achter een
+         schermlengte scrollen. Een pagina korter maken helpt niet als het veld
+         even diep blijft liggen. Nagemeten na de verhuizing: het veld begint
+         op 330.
+
+         Het beeld is niet weg en staat nog steeds hoog - direct onder de knop,
+         waar het de belofte staaft voor wie nog twijfelt in plaats van hem
+         weg te drukken bij wie al overtuigd is. Zelfde redenering als bij
+         `.belofte`, die om dezelfde reden ná de knop staat.
+
+         Vier dingen die aan het beeld zelf moeten kloppen:
+
+         - **Een eigen, kleine versie.** `vuurvogel.mp4` is 5 MB, en dat is te
+           veel voor iets dat vanzelf begint te spelen op een telefoonbundel.
+           `vuurvogel-hero.mp4` is 720 breed zonder geluid: 490 kB. De volle
+           clip blijft staan voor het voorbeeldenblok, waar iemand er zelf op
+           drukt.
+         - **`muted` en `playsinline`**, anders weigert iOS af te spelen en
+           blijft het bij de poster. `autoplay` zonder `muted` doet geen enkele
+           browser meer.
+         - **De poster is de bestaande JPEG.** Speelt de video niet - data
+           besparen staat aan, het bestand faalt - dan staat er nog steeds
+           precies het beeld dat er eerst stond.
+         - **Wie geen beweging wil, krijgt geen beweging.** `prefers-reduced-
+           motion` verbergt de video en toont de poster; dat is een instelling
+           die mensen met goede reden aanzetten. -->
+    <p class="welkom-beeld">
+      <video src="/voorbeelden/vuurvogel-hero.mp4"
+             poster="/voorbeelden/vuurvogel.jpg"
+             width="720" height="407"
+             autoplay muted loop playsinline preload="metadata"
+             aria-label="A panel from a real dream: a burning bird above misty hills."></video>
+      <img src="/voorbeelden/vuurvogel.jpg" width="720" height="407"
+           alt="A panel from a real dream: a burning bird above misty hills."
+           decoding="async">
     </p>
     <!-- De belofte staat ná de knop, niet ervoor. Deze twee regels zeggen in
          het abstracte wat `.sub` er twee alinea's hoger al concreet zei, en
