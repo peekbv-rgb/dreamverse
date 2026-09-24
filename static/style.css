@@ -721,6 +721,20 @@ section .entry { border-left-width: 3px; border-left-color: var(--tint); }
   color: #F5A08F; font-size: .88rem;
 }
 .welkom-vertel-noot { margin: 0; font-size: .78rem; color: var(--muted); }
+
+/* Twee knoppen na een duiding: bewaren, of nog een droom.
+
+   Ze staan naast elkaar en niet onder elkaar, want dat is één keuze en geen
+   volgorde. De tweede is met opzet geen gevulde knop - een account is waar we
+   heen willen - maar hij moet wel te zien zijn, en `button.ghost` is met .78rem
+   in var(--muted) te zwak voor iets waar je op hoort te kunnen drukken. Zelfde
+   afweging als bij *Heb je al een account? Inloggen* in de poort. */
+.proef-knoppen { display: flex; flex-wrap: wrap; gap: .6rem; align-items: center; }
+button.ghost-knop {
+  background: transparent; color: var(--ink);
+  border: 1px solid rgba(179, 105, 222, .55);
+}
+button.ghost-knop:hover { border-color: var(--crown); }
 /* De gratis duiding, op de landingspagina zelf.
 
    Iemand die hier leest heeft geen account en heeft nog niets betaald, dus dit

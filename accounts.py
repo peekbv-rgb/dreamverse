@@ -636,6 +636,7 @@ GEBEURTENISSEN = (
     "proef:start",      # op "Lees deze droom" gedrukt
     "proef:klaar",      # er kwam een duiding terug
     "proef:account",    # op "Maak een account en bewaar hem" gedrukt
+    "proef:nog",        # op "Nog een droom lezen" gedrukt, na een duiding
     "poort:account",    # het aanmeldformulier in de app bereikt
     "gids:naar-app",    # op de knop naar de app gedrukt, op een gidspagina
 )

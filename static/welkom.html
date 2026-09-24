@@ -88,6 +88,30 @@
          mee en hoeft niet opnieuw. Naar de server gaat er niets: er is nog geen
          account om hem aan te hangen. -->
     <div class="welkom-vertel">
+      <!-- "Gratis" staat op de knop, en dat is de goedkoopste plek die er is.
+
+           Het stond onder de knop, in grijs van .78rem, achter een komma - de
+           plek waar je iets zet dat vermeld moet worden maar niet gelezen hoeft
+           te worden. Terwijl dit de vraag is die iemand tegenhoudt: kost dit
+           geld?
+
+           Eerst als groen merkteken naast het label geprobeerd. Dat werkt in
+           het Nederlands en niet in het Engels: "WHAT DID YOU DREAM LAST
+           NIGHT?" is breder dan de Nederlandse vraag, dus op 375 pixels zakte
+           het merkteken naar een eigen regel en kostte het 31 pixels - en
+           Engels is de hoofdweg. Gemeten: NL 554, EN 577, tegen 546 zonder.
+           Krapper letterspatiëren op het label hielp niet.
+
+           Op de knop kost het niets: 372 en 546 in **beide** talen, en de knop
+           loopt niet over (264 van 308 beschikbare pixels). Het is bovendien de
+           sterkste plek - het antwoord op "kost dit geld?" staat op het ding
+           waar je op drukt, en niet drie regels verderop. Onder de knop blijft
+           staan wat er met de droom gebeurt; die regel is kort genoeg geworden
+           om gelezen te worden.
+
+           Verander je dit opschrift, meet dan opnieuw in beide talen: de knop
+           heeft `white-space: nowrap`, dus te lang betekent overlopen en niet
+           afbreken. -->
       <label for="w-droom" data-en="What did you dream last night?"
              data-nl="Wat droomde je vannacht?">What did you dream last night?</label>
       <textarea id="w-droom" rows="4" maxlength="4000"
@@ -98,7 +122,8 @@
          data-en="Tell a little more about it, then Vera has something to work with."
          data-nl="Vertel er nog iets meer over, dan kan Vera er iets mee.">Tell a little more about it, then Vera has something to work with.</p>
       <button type="button" class="primary" id="w-door"
-              data-en="Read this dream" data-nl="Lees deze droom">Read this dream</button>
+              data-en="Read this dream · free"
+              data-nl="Lees deze droom · gratis">Read this dream · free</button>
       <!-- Dezelfde zandloper met meelopende klok als in de app.
 
            Hier stond een pulserend stipje, en dat was te weinig: het schrijven
@@ -111,9 +136,9 @@
            schrijft textContent, en dat zou de klok en het icoon wegvagen. -->
       <p class="voortgang w-voortgang" id="w-wacht" hidden></p>
       <p class="welkom-vertel-noot"
-         data-en="Free, no account. Your dream is read and not stored."
-         data-nl="Gratis, zonder account. Je droom wordt gelezen en niet bewaard.">
-        Free, no account. Your dream is read and not stored.</p>
+         data-en="No account. Your dream is read and not stored."
+         data-nl="Zonder account. Je droom wordt gelezen en niet bewaard.">
+        No account. Your dream is read and not stored.</p>
     </div>
 
     <!-- Hier komt de duiding te staan. Leeg tot er een is.
@@ -287,49 +312,6 @@
     </div>
   </section>
 
-  <section id="kosten">
-    <div class="head-rule">
-      <h2 data-en="What it costs" data-nl="Wat het kost">What it costs</h2>
-      <p data-en="Monthly, cancel any time. Prices include VAT."
-         data-nl="Per maand, maandelijks opzegbaar. Prijzen zijn inclusief btw.">
-        Monthly, cancel any time. Prices include VAT.</p>
-    </div>
-    <div class="tiers">
-      <div class="tier">
-        <span class="tier-name" data-en="Free · €0" data-nl="Gratis · € 0">Free · €0</span>
-        <a class="knop-als-link tier-knop" href="/app?kies=gratis" data-en="Start for free" data-nl="Gratis beginnen">Start for free</a>
-        <p data-en="Three dreams a month. The first with five drawn panels, then the full reading — and from your third dream Vera shows you what runs through them. No animation, and you speak to Vera only with tokens."
-           data-nl="Drie dromen per maand. De eerste met vijf getekende panelen, daarna de volledige duiding — en vanaf je derde droom laat Vera zien wat er doorheen loopt. Geen animatie, en Vera spreek je alleen met tokens.">
-          Three dreams a month. The first with five drawn panels, then the full reading — and from your third dream Vera shows you what runs through them. No animation, and you speak to Vera only with tokens.</p>
-      </div>
-      <div class="tier">
-        <span class="tier-name" data-en="Lite · €2.99" data-nl="Lite · € 2,99">Lite · €2.99</span>
-        <a class="knop-als-link tier-knop" href="/app?kies=lite" data-en="Choose Lite" data-nl="Kies Lite">Choose Lite</a>
-        <p data-en="Three dreams a month, each with five drawn panels and the whole reading. Talking to Vera runs on tokens."
-           data-nl="Drie dromen per maand, elk met vijf getekende panelen en de hele duiding. Praten met Vera gaat op tokens.">
-          Three dreams a month, each with five drawn panels and the whole reading. Talking to Vera runs on tokens.</p>
-      </div>
-      <div class="tier on">
-        <span class="tier-name" data-en="Plus · €7.99" data-nl="Plus · € 7,99">Plus · €7.99</span>
-        <a class="knop-als-link tier-knop" href="/app?kies=plus" data-en="Choose Plus" data-nl="Kies Plus">Choose Plus</a>
-        <p data-en="Six dreams a month, and three moving key moments of four seconds with sound - the most important moment of your dream. Want more, or a talk with Vera? Those run on tokens."
-           data-nl="Zes dromen per maand, en drie bewegende kernmomenten van vier seconden met geluid — het belangrijkste moment uit je droom. Wil je er meer, of een gesprek met Vera, dan gaat dat op tokens.">
-          Six dreams a month, and three moving key moments of four seconds with sound - the most important moment of your dream. Want more, or a talk with Vera? Those run on tokens.</p>
-      </div>
-      <div class="tier">
-        <span class="tier-name" data-en="Ultra · €29.99" data-nl="Ultra · € 29,99">Ultra · €29.99</span>
-        <a class="knop-als-link tier-knop" href="/app?kies=ultra" data-en="Choose Ultra" data-nl="Kies Ultra">Choose Ultra</a>
-        <p data-en="Ten dreams a month, five of them with a key moment on the best animation model, and ten minutes with Vera included."
-           data-nl="Tien dromen per maand, waarvan vijf met een kernmoment op het beste animatiemodel, en tien minuten met Vera inbegrepen.">
-          Ten dreams a month, five of them with a key moment on the best animation model, and ten minutes with Vera included.</p>
-      </div>
-    </div>
-    <p class="waaraan-kop" data-en="Tokens, for what does not fit in a plan" data-nl="Tokens, voor wat niet in een pakket past">Tokens, for what does not fit in a plan</p>
-    <p class="sub"
-       data-en="Talking to Vera costs 2 tokens a minute, an extra dream costs 3, and the key moment on the best model costs 10. You buy them in packs of 20 for €7.00, 40 for €12.00 or 100 for €25.00 - the more you buy, the cheaper they get. Tokens you bought stay yours, also after you cancel."
-       data-nl="Praten met Vera kost 2 tokens per minuut, een extra droom kost er 3, en het kernmoment op het beste model kost er 10. Je koopt ze in pakketten van 20 voor € 7,00, 40 voor € 12,00 of 100 voor € 25,00 — hoe meer je er koopt, hoe goedkoper. Gekochte tokens blijven van jou, ook na opzeggen.">
-      Talking to Vera costs 2 tokens a minute, an extra dream costs 3, and the key moment on the best model costs 10. You buy them in packs of 20 for €7.00, 40 for €12.00 or 100 for €25.00 - the more you buy, the cheaper they get. Tokens you bought stay yours, also after you cancel.</p>
-  </section>
 
   <section>
     <div class="head-rule">
@@ -369,6 +351,69 @@
       <a class="knop-als-link" href="/dream-meaning/"
          data-en="Explore Vera's Dream Guide" data-nl="Naar Vera's Dream Guide">Explore Vera's Dream Guide</a>
     </p>
+  </section>
+
+  <!-- De prijzen staan onderaan, en dat is een verplaatsing van 24 september.
+
+       Ze stonden als vierde sectie, meteen na "Waarom ik Dreamverse bouwde" en
+       ruim voor de grenzen en de gids. Daarmee was het derde wat een bezoeker
+       tegenkwam een prijslijst van vier pakketten met tokens erbij, terwijl het
+       enige dat hij op deze pagina kan doen gratis is en geen account vraagt.
+       Wie halverwege stopt met scrollen heeft dan wel de prijzen gezien en niet
+       waar ze voor zijn.
+
+       Ze zijn niet weggehaald en ook niet kleiner gemaakt: Stripe beoordeelt
+       deze pagina bij Managed Payments, en wie wil weten wat het kost hoort
+       het te kunnen vinden. `#kosten` blijft het anker, dus de regel onderaan
+       de app (*Pakketten en prijzen*) komt nog steeds precies hier uit.
+
+       **Dit is niet waarom er nul aanmeldingen zijn.** Op 24 september stond
+       `proef:start` op nul - niemand heeft ook maar op de knop gedrukt, en die
+       staat boven elke prijs. Wat hier verandert is de volgorde van de pagina,
+       niet de reden dat hij leeg is; zie *Wat de css-kolom liet zien*. -->
+  <section id="kosten">
+    <div class="head-rule">
+      <h2 data-en="Free to begin, and what it costs after"
+          data-nl="Gratis beginnen, en wat het daarna kost">Free to begin, and what it costs after</h2>
+      <p data-en="Reading a dream here stays free and needs no account. Below is what a subscription costs if you want to keep them. Monthly, cancel any time, VAT included."
+         data-nl="Een droom laten lezen op deze pagina blijft gratis en vraagt geen account. Hieronder staat wat een abonnement kost als je ze wilt bewaren. Per maand, maandelijks opzegbaar, inclusief btw.">
+        Reading a dream here stays free and needs no account. Below is what a subscription costs if you want to keep them. Monthly, cancel any time, VAT included.</p>
+    </div>
+    <div class="tiers">
+      <div class="tier">
+        <span class="tier-name" data-en="Free · €0" data-nl="Gratis · € 0">Free · €0</span>
+        <a class="knop-als-link tier-knop" href="/app?kies=gratis" data-en="Start for free" data-nl="Gratis beginnen">Start for free</a>
+        <p data-en="Three dreams a month. The first with five drawn panels, then the full reading — and from your third dream Vera shows you what runs through them. No animation, and you speak to Vera only with tokens."
+           data-nl="Drie dromen per maand. De eerste met vijf getekende panelen, daarna de volledige duiding — en vanaf je derde droom laat Vera zien wat er doorheen loopt. Geen animatie, en Vera spreek je alleen met tokens.">
+          Three dreams a month. The first with five drawn panels, then the full reading — and from your third dream Vera shows you what runs through them. No animation, and you speak to Vera only with tokens.</p>
+      </div>
+      <div class="tier">
+        <span class="tier-name" data-en="Lite · €2.99" data-nl="Lite · € 2,99">Lite · €2.99</span>
+        <a class="knop-als-link tier-knop" href="/app?kies=lite" data-en="Choose Lite" data-nl="Kies Lite">Choose Lite</a>
+        <p data-en="Three dreams a month, each with five drawn panels and the whole reading. Talking to Vera runs on tokens."
+           data-nl="Drie dromen per maand, elk met vijf getekende panelen en de hele duiding. Praten met Vera gaat op tokens.">
+          Three dreams a month, each with five drawn panels and the whole reading. Talking to Vera runs on tokens.</p>
+      </div>
+      <div class="tier on">
+        <span class="tier-name" data-en="Plus · €7.99" data-nl="Plus · € 7,99">Plus · €7.99</span>
+        <a class="knop-als-link tier-knop" href="/app?kies=plus" data-en="Choose Plus" data-nl="Kies Plus">Choose Plus</a>
+        <p data-en="Six dreams a month, and three moving key moments of four seconds with sound - the most important moment of your dream. Want more, or a talk with Vera? Those run on tokens."
+           data-nl="Zes dromen per maand, en drie bewegende kernmomenten van vier seconden met geluid — het belangrijkste moment uit je droom. Wil je er meer, of een gesprek met Vera, dan gaat dat op tokens.">
+          Six dreams a month, and three moving key moments of four seconds with sound - the most important moment of your dream. Want more, or a talk with Vera? Those run on tokens.</p>
+      </div>
+      <div class="tier">
+        <span class="tier-name" data-en="Ultra · €29.99" data-nl="Ultra · € 29,99">Ultra · €29.99</span>
+        <a class="knop-als-link tier-knop" href="/app?kies=ultra" data-en="Choose Ultra" data-nl="Kies Ultra">Choose Ultra</a>
+        <p data-en="Ten dreams a month, five of them with a key moment on the best animation model, and ten minutes with Vera included."
+           data-nl="Tien dromen per maand, waarvan vijf met een kernmoment op het beste animatiemodel, en tien minuten met Vera inbegrepen.">
+          Ten dreams a month, five of them with a key moment on the best animation model, and ten minutes with Vera included.</p>
+      </div>
+    </div>
+    <p class="waaraan-kop" data-en="Tokens, for what does not fit in a plan" data-nl="Tokens, voor wat niet in een pakket past">Tokens, for what does not fit in a plan</p>
+    <p class="sub"
+       data-en="Talking to Vera costs 2 tokens a minute, an extra dream costs 3, and the key moment on the best model costs 10. You buy them in packs of 20 for €7.00, 40 for €12.00 or 100 for €25.00 - the more you buy, the cheaper they get. Tokens you bought stay yours, also after you cancel."
+       data-nl="Praten met Vera kost 2 tokens per minuut, een extra droom kost er 3, en het kernmoment op het beste model kost er 10. Je koopt ze in pakketten van 20 voor € 7,00, 40 voor € 12,00 of 100 voor € 25,00 — hoe meer je er koopt, hoe goedkoper. Gekochte tokens blijven van jou, ook na opzeggen.">
+      Talking to Vera costs 2 tokens a minute, an extra dream costs 3, and the key moment on the best model costs 10. You buy them in packs of 20 for €7.00, 40 for €12.00 or 100 for €25.00 - the more you buy, the cheaper they get. Tokens you bought stay yours, also after you cancel.</p>
   </section>
 
   <section>
@@ -599,6 +644,7 @@
                      + "Vera hem als vijf panelen — en vanaf de derde nacht ziet ze "
                      + "wat er door al je dromen heen loopt." },
     houknop:     { en: "Make an account and keep it", nl: "Maak een account en bewaar hem" },
+    nogknop:     { en: "Read another dream", nl: "Nog een droom lezen" },
     houklein:    { en: "Free. Three dreams a month, the first one with five panels.",
                    nl: "Gratis. Drie dromen per maand, de eerste met vijf panelen." },
     bereikkop:   { en: "Not for me to imagine", nl: "Hier ga ik niet over" },
@@ -662,9 +708,18 @@
       'class="proef-verder-kop">' + esc(w("houkop")) + "</h3>" +
       '<p data-en="' + esc(W.hou.en) + '" data-nl="' + esc(W.hou.nl) + '">' +
       esc(w("hou")) + "</p>" +
+      '<div class="proef-knoppen">' +
       '<button type="button" class="primary" id="w-bewaar" data-en="' +
       esc(W.houknop.en) + '" data-nl="' + esc(W.houknop.nl) + '">' +
       esc(w("houknop")) + "</button>" +
+      // Nog een droom, en dat was er niet. Na een duiding was een account de
+      // enige uitweg - terwijl /api/proef er met gemak nog een aankan en de
+      // tweede duiding juist is wat iemand overtuigt: de eerste kan toeval
+      // zijn. Het kost ons EUR 0,058 en het is het enige moment waarop iemand
+      // uit zichzelf nog eens iets intypt.
+      '<button type="button" class="ghost-knop" id="w-nog" data-en="' +
+      esc(W.nogknop.en) + '" data-nl="' + esc(W.nogknop.nl) + '">' +
+      esc(w("nogknop")) + "</button></div>" +
       '<p class="proef-klein" data-en="' + esc(W.houklein.en) + '" data-nl="' +
       esc(W.houklein.nl) + '">' + esc(w("houklein")) + "</p></div>";
 
@@ -680,6 +735,20 @@
         tel("proef:account");
         bewaarLokaal(veld.value.trim());
         location.href = "/app";
+      });
+    }
+    var nog = document.getElementById("w-nog");
+    if (nog) {
+      nog.addEventListener("click", function () {
+        tel("proef:nog");
+        uit.hidden = true;
+        uit.innerHTML = "";
+        veld.value = "";
+        meldStandaard();
+        fout.hidden = true;
+        document.querySelector(".welkom-vertel")
+                .scrollIntoView({ behavior: "smooth", block: "center" });
+        veld.focus();
       });
     }
     uit.scrollIntoView({ behavior: "smooth", block: "start" });

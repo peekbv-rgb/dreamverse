@@ -327,6 +327,13 @@ def main():
         rijen = [
             ("op 'Lees deze droom' gedrukt", st.get("proef:start", 0)),
             ("duiding gekregen", st.get("proef:klaar", 0)),
+            # Deze staat tussen duiding en account, want dat is waar hij
+            # gebeurt: na het lezen kiest iemand tussen bewaren en nog een
+            # droom. Hij hoort niet in de percentagekolom thuis als afhaken -
+            # wie hier drukt gaat juist door - maar hij staat wel in dezelfde
+            # rij, want het is het enige signaal dat zegt of de duiding goed
+            # genoeg was om er nog een te willen.
+            ("op 'Nog een droom' gedrukt", st.get("proef:nog", 0)),
             ("op 'Maak een account' gedrukt", st.get("proef:account", 0)),
             ("aanmeldformulier bereikt", st.get("poort:account", 0)),
         ]

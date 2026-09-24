@@ -1244,16 +1244,29 @@ class Handler(SimpleHTTPRequestHandler):
             # Volgorde telt. Eerst de rem per adres, dan het dagplafond: anders
             # kan één script het plafond opeten en krijgt iedereen daarna te
             # horen dat het op is.
+            # Deze twee meldingen waren altijd Nederlands, en ze staan juist
+            # op het pad dat Engels hoort te zijn: de gids en de bio-link
+            # sturen Engelstaligen hierheen, en sinds er een knop "Read another
+            # dream" onder de duiding staat is de rem van een minuut geen
+            # randgeval meer maar de normale tweede klik. `payload` is hier al
+            # gelezen, dus de taal die de pagina meestuurt is bekend.
+            engels = str(payload.get("taal") or "en").lower().startswith("en")
+
             if proef_te_snel(self.proef_adres()):
                 return self.send_json(
-                    {"error": "Even wachten - je kunt hier één droom per minuut "
-                              "laten duiden.",
+                    {"error": ("One dream a minute here - give it a moment."
+                               if engels else
+                               "Even wachten - je kunt hier één droom per "
+                               "minuut laten duiden."),
                      "te_snel": True}, 429)
 
             if not proef_ruimte():
                 return self.send_json(
-                    {"error": "Er zijn vandaag al veel dromen geduid. Maak een "
-                              "account aan, dan kan het meteen.",
+                    {"error": ("A lot of dreams have been read today. Make an "
+                               "account and you can go straight ahead."
+                               if engels else
+                               "Er zijn vandaag al veel dromen geduid. Maak een "
+                               "account aan, dan kan het meteen."),
                      "op": True, "account": True}, 429)
 
             # Geteld zodra het verzoek de remmen voorbij is: dit is iemand die
