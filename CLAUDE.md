@@ -2132,6 +2132,69 @@ terwijl het verkeer doorloopt, is een aanwijzing dat een deel ervan geen mens is
 - en met 93 TikTok-weergaven op één middag is één of twee doorklikken ook
 gewoon binnen de verwachting.
 
+**Dat is op 24 september beantwoord, en het antwoord is nee.** Zie hieronder:
+de css-kolom bestond toen nog niet in de trechter, en dat was precies het gat
+waardoor deze vraag open bleef staan.
+
+### Wat de css-kolom liet zien, 18 tot 24 september
+
+De eerste meting mét de kolom uit *Waar ze afhaken*, live opgehaald op
+24 september.
+
+| datum | landing | gids | app | **css** | duiding | nieuw | dromen |
+|---|---|---|---|---|---|---|---|
+| 24/9 | 25 | 2 | 0 | 4 | 0 | 0 | 0 |
+| 23/9 | 51 | 0 | 5 | 1 | 0 | 0 | 0 |
+| 22/9 | 55 | 41 | 13 | 10 | 0 | 0 | 0 |
+| 21/9 | 64 | 41 | 5 | 2 | 0 | 0 | 0 |
+| 20/9 | 51 | 37 | 5 | 2 | 0 | 0 | 0 |
+| 19/9 | 64 | 0 | 5 | 0 | 0 | 0 | 0 |
+| 18/9 | 48 | 2 | 5 | 4 | 0 | 0 | 0 |
+
+**519 weergaven, 23 keer de stylesheet opgehaald. Vier procent.** Een browser
+die een pagina tekent haalt die stylesheet op; wat dat niet doet, tekent niets.
+De 50 à 60 landingsbezoeken per dag zijn dus geen publiek, en daarmee is
+"nul aanmeldingen" geen conversiecijfer maar de uitkomst van een lege zaal.
+
+**En van die 23 zijn er een aantal van onszelf.** Op 22 september is de pagina
+meermalen geladen om de vouw na te meten en de deploy te controleren - dat
+verklaart de 10 op die dag en een deel van de 13 app-weergaven. Het echte
+aandeel ligt dus onder de vier procent. **Meet dus niet op een dag waarop je
+zelf aan het meten was**, of trek je eigen bezoeken eraf; anders bewijst de
+teller vooral dat jij bestaat.
+
+**De gidspiek van 20 tot 22 september is een crawler, en dat is nu aan te
+tonen.** 41, 41 en 37, daarna 0 en 2. Het aantal onderwerpen mét bezoek ging
+van 22 naar **43** - allemaal. Een crawler die de sitemap afloopt raakt elk
+onderwerp precies één keer, en 43 onderwerpen is ongeveer 41 weergaven. Dat is
+dezelfde les als bij de piek van 15 september, nu met het getal erbij: een
+publiek dat drie dagen achter elkaar elk artikel exact één keer bekijkt bestaat
+niet.
+
+**De herkomst staat stil op `ig-bio` 17 en `ig-app` 5** - exact dezelfde
+getallen als op 15 september. Negen dagen, geen enkel nieuw bezoek uit
+Instagram, Facebook of TikTok. Dat kanaal levert niets, en dat staat los van de
+landingspagina.
+
+**Alle vier de tellers uit *Waar ze afhaken* staan op nul.** Niemand heeft ook
+maar op *Lees deze droom* gedrukt. De vier accounts en tien dromen die er staan
+zijn van begin september.
+
+**Google, twee dagen na de deploy:** nog steeds twee resultaten en allebei de
+homepage. Eén ding is wel veranderd - het fragment onder het kale domein toont
+de nieuwe tekst van de pagina, dus de homepage is sinds de deploy opnieuw
+opgehaald. De www-versie staat er nog met het oude fragment; die 301 is nog
+niet verwerkt en dat duurt weken. Van de 43 gidsartikelen staat er nog altijd
+geen enkele in de index.
+
+**Wat dit wel en niet zegt over de fixes van 22 september.** Twee dagen is te
+kort voor `lastmod`: dat werkt pas als Google terugkomt, en dat doet hij nu
+alleen op de homepage. En de vouw heeft **geen kans gehad** zich te bewijzen -
+er is geen mens langsgekomen om hem te zien. Dat is geen aanwijzing dat die fix
+niet werkt; het is een aanwijzing dat er niets te converteren viel. Search
+Console blijft de enige openstaande stap, en zolang die niet gedaan is staat de
+gids buiten de index en social op nul: dan is er geen kanaal dat mensen levert.
+
 ## Wat er nog niet is
 
 - **Kling is aangesloten maar niet getest tegen de echte API** — er was hier geen
